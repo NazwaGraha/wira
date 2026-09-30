@@ -277,18 +277,18 @@
 </section>
 
 <!-- Struktur Organisasi Dinamis dari Database / Backoffice -->
-<section class="py-16 sm:py-20 bg-slate-100/80 border-t border-slate-200/80">
+<section class="py-16 sm:py-24 bg-slate-100/80 border-t border-slate-200/80">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div class="text-center max-w-3xl mx-auto mb-16">
-            <div class="text-pmr-primary font-bold text-xs uppercase tracking-widest mb-2">{{ $organizationSetting->badge ?? 'Bagan Kepengurusan' }}</div>
-            <h2 class="text-3xl sm:text-4xl font-extrabold text-slate-900 tracking-tight">{{ $organizationSetting->title ?? 'Struktur Organisasi 2026/2027' }}</h2>
+        <div class="text-center max-w-3xl mx-auto mb-16 sm:mb-20">
+            <div class="text-pmr-primary font-bold text-xs sm:text-sm uppercase tracking-widest mb-2">{{ $organizationSetting->badge ?? 'Bagan Kepengurusan' }}</div>
+            <h2 class="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-slate-900 tracking-tight">{{ $organizationSetting->title ?? 'Struktur Organisasi 2026/2027' }}</h2>
             @if(!empty($organizationSetting->subtitle))
-                <p class="text-slate-600 text-sm mt-3 leading-relaxed">{{ $organizationSetting->subtitle }}</p>
+                <p class="text-slate-600 text-sm sm:text-base mt-3 sm:mt-4 leading-relaxed max-w-2xl mx-auto">{{ $organizationSetting->subtitle }}</p>
             @endif
         </div>
 
         <!-- Organizational Chart Flow -->
-        <div class="max-w-6xl mx-auto flex flex-col items-center">
+        <div class="w-full flex flex-col items-center">
             @php
                 $pembina = $organizationMembers->get(1, collect());
                 $ketua = $organizationMembers->get(2, collect());
@@ -302,24 +302,18 @@
                 <div class="flex flex-wrap justify-center gap-6">
                     @foreach($pembina as $m)
                         @php
-                            $photoUrl = $m->photo_url;
+                            $photoUrl = $m->photo_url ?: ('https://ui-avatars.com/api/?name=' . urlencode($m->name) . '&background=dc2626&color=ffffff&bold=true');
                             $initials = strtoupper(substr($m->name, 0, 2));
                         @endphp
-                        <div class="bg-stone-900 text-white p-4 sm:p-5 rounded-2xl shadow-xl flex items-center gap-4 min-w-[280px] max-w-sm border-t-4 border-pmr-primary hover:shadow-2xl transition duration-300">
-                            @if($photoUrl)
-                                <img src="{{ $photoUrl }}" alt="{{ $m->name }}" class="w-14 h-14 rounded-full object-cover border-2 border-red-500/80 shadow-md flex-shrink-0">
-                            @else
-                                <div class="w-14 h-14 rounded-full bg-stone-800 border-2 border-red-500/80 text-red-300 font-black text-base flex items-center justify-center flex-shrink-0 shadow-inner">
-                                    {{ $initials }}
-                                </div>
-                            @endif
+                        <div class="bg-stone-900 text-white p-5 sm:p-6 rounded-3xl shadow-xl flex items-center gap-5 min-w-[320px] max-w-md border-t-4 border-pmr-primary hover:shadow-2xl hover:scale-[1.01] transition duration-300">
+                            <img src="{{ $photoUrl }}" alt="{{ $m->name }}" class="w-16 h-16 sm:w-18 sm:h-18 rounded-full object-cover border-2 border-red-500 shadow-lg flex-shrink-0">
                             <div class="text-left">
-                                <div class="text-[11px] uppercase tracking-wider text-red-400 font-bold flex items-center gap-1.5">
-                                    <i class="fa-solid fa-shield-halved text-[10px]"></i> {{ $m->position }}
+                                <div class="text-xs uppercase tracking-wider text-red-400 font-extrabold flex items-center gap-1.5">
+                                    <i class="fa-solid fa-shield-halved text-xs"></i> {{ $m->position }}
                                 </div>
-                                <div class="text-base font-extrabold mt-0.5 text-white leading-tight">{{ $m->name }}</div>
+                                <div class="text-lg sm:text-xl font-extrabold mt-1 text-white leading-snug">{{ $m->name }}</div>
                                 @if($m->subtitle)
-                                    <div class="text-xs text-stone-400 mt-0.5">{{ $m->subtitle }}</div>
+                                    <div class="text-xs sm:text-sm text-stone-400 mt-0.5">{{ $m->subtitle }}</div>
                                 @endif
                             </div>
                         </div>
@@ -328,7 +322,7 @@
             @endif
 
             @if($pembina->isNotEmpty() && ($ketua->isNotEmpty() || $bph->isNotEmpty() || $seksi->isNotEmpty()))
-                <div class="w-0.5 h-8 bg-slate-300 my-1"></div>
+                <div class="w-0.5 h-10 bg-slate-300 my-2"></div>
             @endif
 
             <!-- Level 2: Ketua Umum / Pimpinan -->
@@ -336,24 +330,18 @@
                 <div class="flex flex-wrap justify-center gap-6">
                     @foreach($ketua as $m)
                         @php
-                            $photoUrl = $m->photo_url;
+                            $photoUrl = $m->photo_url ?: ('https://ui-avatars.com/api/?name=' . urlencode($m->name) . '&background=dc2626&color=ffffff&bold=true');
                             $initials = strtoupper(substr($m->name, 0, 2));
                         @endphp
-                        <div class="bg-gradient-to-br from-pmr-primary to-pmr-dark text-white p-5 sm:p-6 rounded-2xl shadow-2xl flex items-center gap-4 min-w-[300px] max-w-md border border-red-400/30 hover:shadow-red-950/20 hover:scale-[1.02] transition duration-300">
-                            @if($photoUrl)
-                                <img src="{{ $photoUrl }}" alt="{{ $m->name }}" class="w-16 h-16 rounded-full object-cover border-2 border-white/80 shadow-lg flex-shrink-0">
-                            @else
-                                <div class="w-16 h-16 rounded-full bg-white/20 border-2 border-white/80 text-white font-black text-lg flex items-center justify-center flex-shrink-0 shadow-inner">
-                                    {{ $initials }}
-                                </div>
-                            @endif
+                        <div class="bg-gradient-to-br from-pmr-primary via-red-700 to-pmr-dark text-white p-6 sm:p-7 rounded-3xl shadow-2xl flex items-center gap-5 min-w-[340px] max-w-lg border border-red-400/30 hover:shadow-red-950/30 hover:scale-[1.02] transition duration-300">
+                            <img src="{{ $photoUrl }}" alt="{{ $m->name }}" class="w-20 h-20 sm:w-22 sm:h-22 rounded-full object-cover border-4 border-white/90 shadow-2xl flex-shrink-0">
                             <div class="text-left">
-                                <div class="text-xs uppercase tracking-wider text-red-100 font-bold flex items-center gap-1.5">
-                                    <i class="fa-solid fa-crown text-amber-300 text-xs"></i> {{ $m->position }}
+                                <div class="text-xs uppercase tracking-wider text-red-100 font-black flex items-center gap-1.5">
+                                    <i class="fa-solid fa-crown text-amber-300 text-sm"></i> {{ $m->position }}
                                 </div>
-                                <div class="text-lg sm:text-xl font-extrabold mt-0.5 text-white leading-tight">{{ $m->name }}</div>
+                                <div class="text-xl sm:text-2xl font-black mt-1 text-white leading-snug">{{ $m->name }}</div>
                                 @if($m->subtitle)
-                                    <div class="text-xs text-red-100/90 mt-0.5">{{ $m->subtitle }}</div>
+                                    <div class="text-xs sm:text-sm text-red-100/90 mt-1 font-medium">{{ $m->subtitle }}</div>
                                 @endif
                             </div>
                         </div>
@@ -362,32 +350,26 @@
             @endif
 
             @if($ketua->isNotEmpty() && ($bph->isNotEmpty() || $seksi->isNotEmpty()))
-                <div class="w-0.5 h-8 bg-slate-300 my-1"></div>
+                <div class="w-0.5 h-10 bg-slate-300 my-2"></div>
             @endif
 
             <!-- Level 3: Pengurus Harian / BPH (Sekretaris & Bendahara) -->
             @if($bph->isNotEmpty())
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-6 w-full max-w-2xl">
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-6 w-full max-w-3xl">
                     @foreach($bph as $m)
                         @php
-                            $photoUrl = $m->photo_url;
+                            $photoUrl = $m->photo_url ?: ('https://ui-avatars.com/api/?name=' . urlencode($m->name) . '&background=dc2626&color=ffffff&bold=true');
                             $initials = strtoupper(substr($m->name, 0, 2));
                         @endphp
-                        <div class="bg-white p-4 sm:p-5 rounded-2xl shadow-md border border-slate-200/90 flex items-center gap-3.5 hover:shadow-lg hover:border-pmr-primary transition duration-300">
-                            @if($photoUrl)
-                                <img src="{{ $photoUrl }}" alt="{{ $m->name }}" class="w-12 h-12 rounded-full object-cover border border-slate-200 shadow-sm flex-shrink-0">
-                            @else
-                                <div class="w-12 h-12 rounded-full bg-red-50 text-pmr-primary font-extrabold text-sm flex items-center justify-center border border-red-100 flex-shrink-0">
-                                    {{ $initials }}
-                                </div>
-                            @endif
+                        <div class="bg-white p-5 sm:p-6 rounded-3xl shadow-md border border-slate-200/90 flex items-center gap-4 hover:shadow-xl hover:border-pmr-primary transition duration-300">
+                            <img src="{{ $photoUrl }}" alt="{{ $m->name }}" class="w-16 h-16 rounded-full object-cover border-2 border-slate-200 shadow-sm flex-shrink-0">
                             <div class="text-left">
-                                <div class="text-xs font-extrabold text-pmr-primary uppercase tracking-wide flex items-center gap-1.5">
+                                <div class="text-xs font-black text-pmr-primary uppercase tracking-wide flex items-center gap-1.5">
                                     <i class="{{ $m->icon ?: 'fa-solid fa-user' }} text-xs"></i> {{ $m->position }}
                                 </div>
-                                <div class="font-extrabold text-slate-900 text-sm mt-0.5 leading-tight">{{ $m->name }}</div>
+                                <div class="font-extrabold text-slate-900 text-base sm:text-lg mt-0.5 leading-snug">{{ $m->name }}</div>
                                 @if($m->subtitle)
-                                    <div class="text-xs text-slate-500 mt-0.5">{{ $m->subtitle }}</div>
+                                    <div class="text-xs sm:text-sm text-slate-500 mt-0.5">{{ $m->subtitle }}</div>
                                 @endif
                             </div>
                         </div>
@@ -396,94 +378,81 @@
             @endif
 
             @if($bph->isNotEmpty() && ($seksi->isNotEmpty() || $others->isNotEmpty()))
-                <div class="w-0.5 h-8 bg-slate-300 my-1"></div>
+                <div class="w-0.5 h-10 bg-slate-300 my-2"></div>
             @endif
 
             <!-- Level 4: 5 Bidang Utama (Markas, Pelayanan, Diklat, Humas, Kreasi) -->
             @if($seksi->isNotEmpty())
-                <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 w-full">
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-5 sm:gap-6 w-full mt-2">
                     @foreach($seksi as $m)
                         @php
-                            $photoUrl = $m->photo_url;
+                            $photoUrl = $m->photo_url ?: ('https://ui-avatars.com/api/?name=' . urlencode($m->name) . '&background=dc2626&color=ffffff&bold=true');
                             $initials = strtoupper(substr($m->name, 0, 2));
                             $staffList = is_array($m->staff_members) ? $m->staff_members : [];
                             $workProg = trim($m->work_program ?? '');
                         @endphp
-                        <div class="bg-white rounded-2xl shadow-sm border border-slate-200/90 overflow-hidden flex flex-col hover:shadow-xl hover:border-pmr-primary transition-all duration-300 group">
+                        <div class="bg-white rounded-3xl shadow-md border border-slate-200 overflow-hidden flex flex-col hover:shadow-2xl hover:border-pmr-primary transition-all duration-300 group">
                             
                             <!-- Header Bidang -->
-                            <div class="bg-gradient-to-r from-red-50 via-rose-50 to-white px-4 py-3 border-b border-red-100/80 flex items-center gap-2">
-                                <div class="w-7 h-7 rounded-lg bg-red-100 text-pmr-primary flex items-center justify-center text-xs font-bold flex-shrink-0 shadow-xs">
+                            <div class="bg-gradient-to-r from-red-50 via-rose-50 to-white px-5 py-4 border-b border-red-100 flex items-center gap-3">
+                                <div class="w-9 h-9 rounded-xl bg-pmr-primary text-white flex items-center justify-center text-sm font-bold flex-shrink-0 shadow-sm">
                                     <i class="{{ $m->icon ?: 'fa-solid fa-shapes' }}"></i>
                                 </div>
-                                <h3 class="font-extrabold text-xs text-slate-900 uppercase tracking-tight group-hover:text-pmr-primary transition">
+                                <h3 class="font-black text-sm text-slate-900 uppercase tracking-tight group-hover:text-pmr-primary transition">
                                     {{ $m->position }}
                                 </h3>
                             </div>
 
                             <!-- Ketua Bidang -->
-                            <div class="p-4 flex items-center gap-3 border-b border-slate-100 bg-white">
-                                @if($photoUrl)
-                                    <img src="{{ $photoUrl }}" alt="{{ $m->name }}" class="w-11 h-11 rounded-full object-cover border-2 border-slate-200 shadow-sm flex-shrink-0">
-                                @else
-                                    <div class="w-11 h-11 rounded-full bg-red-50 text-pmr-primary font-black text-xs flex items-center justify-center border border-red-200 flex-shrink-0">
-                                        {{ $initials }}
-                                    </div>
-                                @endif
+                            <div class="p-5 flex items-center gap-3.5 border-b border-slate-100 bg-white">
+                                <img src="{{ $photoUrl }}" alt="{{ $m->name }}" class="w-14 h-14 sm:w-15 sm:h-15 rounded-full object-cover border-2 border-pmr-primary/40 shadow-md flex-shrink-0">
                                 <div class="min-w-0">
-                                    <div class="font-extrabold text-slate-900 text-xs sm:text-sm truncate" title="{{ $m->name }}">{{ $m->name }}</div>
-                                    <div class="text-[11px] text-slate-500 truncate mt-0.5">
+                                    <div class="font-extrabold text-slate-900 text-sm sm:text-base leading-snug truncate" title="{{ $m->name }}">{{ $m->name }}</div>
+                                    <div class="text-xs text-slate-500 font-semibold truncate mt-0.5">
                                         {{ $m->subtitle ?: 'Ketua ' . $m->position }}
                                     </div>
                                 </div>
                             </div>
 
-                            <!-- Bagian Staf (Bisa Lebih dari 2 Orang) -->
-                            <div class="p-3.5 bg-slate-50/60 flex-grow">
-                                <div class="flex items-center justify-between mb-2">
-                                    <span class="text-[10px] font-extrabold uppercase tracking-wider text-slate-500">Staf</span>
-                                    <span class="text-[10px] font-bold px-1.5 py-0.2 rounded-full bg-slate-200/80 text-slate-600">{{ count($staffList) }} Orang</span>
+                            <!-- Bagian Staf (FOTO STAF DIPERBESAR) -->
+                            <div class="p-4 sm:p-5 bg-slate-50/70 flex-grow space-y-3">
+                                <div class="flex items-center justify-between pb-1">
+                                    <span class="text-xs font-black uppercase tracking-wider text-slate-600">Staf</span>
+                                    <span class="text-xs font-extrabold px-2 py-0.5 rounded-full bg-slate-200 text-slate-700">{{ count($staffList) }} Orang</span>
                                 </div>
 
                                 @if(!empty($staffList) && count($staffList) > 0)
-                                    <div class="space-y-2">
+                                    <div class="space-y-2.5">
                                         @foreach($staffList as $st)
                                             @php
                                                 $stName = $st['name'] ?? '';
                                                 $stClass = $st['class_grade'] ?? '';
-                                                $stPhoto = $st['photo'] ?? '';
-                                                $stInitials = strtoupper(substr($stName ?: 'ST', 0, 2));
+                                                $stPhoto = $st['photo'] ?? ('https://ui-avatars.com/api/?name=' . urlencode($stName) . '&background=dc2626&color=ffffff&bold=true');
                                             @endphp
-                                            <div class="flex items-center gap-2">
-                                                @if($stPhoto)
-                                                    <img src="{{ $stPhoto }}" alt="{{ $stName }}" class="w-6 h-6 rounded-full object-cover border border-slate-200 flex-shrink-0">
-                                                @else
-                                                    <div class="w-6 h-6 rounded-full bg-red-100 text-pmr-primary font-bold text-[9px] flex items-center justify-center flex-shrink-0">
-                                                        {{ $stInitials }}
-                                                    </div>
-                                                @endif
+                                            <div class="bg-white p-2.5 sm:p-3 rounded-2xl border border-slate-200/80 shadow-xs flex items-center gap-3 hover:border-pmr-primary/40 hover:shadow-sm transition">
+                                                <img src="{{ $stPhoto }}" alt="{{ $stName }}" class="w-11 h-11 sm:w-12 sm:h-12 rounded-full object-cover border-2 border-slate-200 shadow-sm flex-shrink-0">
                                                 <div class="min-w-0 text-left">
-                                                    <div class="text-xs font-semibold text-slate-800 truncate" title="{{ $stName }}">{{ $stName }}</div>
+                                                    <div class="text-xs sm:text-sm font-bold text-slate-900 truncate leading-snug" title="{{ $stName }}">{{ $stName }}</div>
                                                     @if($stClass)
-                                                        <div class="text-[10px] text-slate-400 truncate">{{ $stClass }}</div>
+                                                        <div class="text-[11px] text-slate-500 font-medium truncate mt-0.5">{{ $stClass }}</div>
                                                     @endif
                                                 </div>
                                             </div>
                                         @endforeach
                                     </div>
                                 @else
-                                    <div class="text-[11px] text-slate-400 italic py-1">Staf operasional bidang</div>
+                                    <div class="text-xs text-slate-400 italic py-2">Staf operasional bidang</div>
                                 @endif
                             </div>
 
                             <!-- Tombol Klik Disini Untuk Melihat Program Kerja -->
-                            <div class="p-3 bg-white border-t border-slate-100 mt-auto">
+                            <div class="p-4 bg-white border-t border-slate-100 mt-auto">
                                 <button type="button" 
                                     onclick="openProgramModal('{{ addslashes($m->position) }}', '{{ addslashes($m->name) }}', '{{ addslashes($m->subtitle ?: 'Ketua ' . $m->position) }}', '{{ addslashes($photoUrl ?? '') }}', '{{ addslashes($m->icon ?: 'fa-solid fa-shapes') }}', {!! htmlspecialchars(json_encode($workProg), ENT_QUOTES, 'UTF-8') !!})"
-                                    class="w-full text-center py-2 px-2.5 rounded-xl bg-red-50 hover:bg-pmr-primary text-pmr-primary hover:text-white font-bold text-[11px] transition duration-200 flex items-center justify-center gap-1.5 group/btn">
-                                    <i class="fa-solid fa-clipboard-list text-xs group-hover/btn:scale-110 transition"></i>
+                                    class="w-full text-center py-3 px-3 rounded-2xl bg-red-50 hover:bg-pmr-primary text-pmr-primary hover:text-white font-black text-xs sm:text-sm transition-all duration-200 flex items-center justify-center gap-2 shadow-xs group/btn">
+                                    <i class="fa-solid fa-clipboard-list text-sm group-hover/btn:scale-110 transition"></i>
                                     <span>Program Kerja</span>
-                                    <i class="fa-solid fa-arrow-right text-[9px]"></i>
+                                    <i class="fa-solid fa-arrow-right text-xs"></i>
                                 </button>
                             </div>
 
@@ -494,12 +463,12 @@
 
             <!-- Level 5: Divisi / Anggota Tambahan (jika ada) -->
             @if($others->isNotEmpty())
-                <div class="w-0.5 h-8 bg-slate-300 my-1"></div>
-                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 w-full">
+                <div class="w-0.5 h-10 bg-slate-300 my-2"></div>
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 w-full">
                     @foreach($others as $m)
-                        <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-200 text-center hover:shadow-md transition">
+                        <div class="bg-white p-5 rounded-3xl shadow-sm border border-slate-200 text-center hover:shadow-md transition">
                             <div class="text-xs font-bold text-slate-500 uppercase">{{ $m->position }}</div>
-                            <div class="font-semibold text-slate-800 text-sm mt-1">{{ $m->name }}</div>
+                            <div class="font-extrabold text-slate-800 text-base mt-1">{{ $m->name }}</div>
                             @if($m->subtitle)
                                 <div class="text-xs text-slate-500 mt-0.5">{{ $m->subtitle }}</div>
                             @endif
@@ -509,7 +478,7 @@
             @endif
 
             @if($organizationMembers->isEmpty())
-                <div class="text-center p-8 bg-white rounded-2xl border border-slate-200 text-slate-500 text-xs">
+                <div class="text-center p-8 bg-white rounded-3xl border border-slate-200 text-slate-500 text-sm">
                     Data kepengurusan sedang dalam proses pemutakhiran.
                 </div>
             @endif
