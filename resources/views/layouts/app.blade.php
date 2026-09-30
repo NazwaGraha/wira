@@ -76,24 +76,24 @@
     <!-- Main Navigation Header (Lebar Penuh & Mewah) -->
     <header class="sticky top-0 z-50 bg-pmr-primary text-white shadow-xl border-b border-pmr-dark">
         <div class="w-full max-w-[1720px] mx-auto px-3 sm:px-8 lg:px-12">
-            <div class="flex items-center justify-between h-20 sm:h-28">
+            <div class="flex items-center justify-between h-16 sm:h-24 lg:h-28 gap-2">
                 
-                <!-- Logo & School Brand (Diperbesar & Sangat Jelas) -->
-                <a href="{{ route('home') }}" class="flex items-center gap-2.5 sm:gap-4 group flex-shrink-0">
-                    <div class="h-14 sm:h-20 bg-white rounded-xl sm:rounded-2xl px-2.5 sm:px-4 py-1 sm:py-1.5 flex items-center justify-center shadow-lg group-hover:scale-105 transition-transform duration-200">
-                        <img src="{{ asset('images/logo.png') }}" alt="Logo PMR Wira SMAN 1 Ciawi & PMI" class="h-11 sm:h-16 w-auto object-contain">
+                <!-- Logo & School Brand (Responsif & Rapi di Mobile Maupun Desktop) -->
+                <a href="{{ route('home') }}" class="flex items-center gap-2 sm:gap-3.5 group min-w-0 flex-1 sm:flex-initial">
+                    <div class="h-11 sm:h-16 lg:h-20 bg-white rounded-xl sm:rounded-2xl px-2 sm:px-3.5 py-1 flex items-center justify-center shadow-lg group-hover:scale-105 transition-transform duration-200 flex-shrink-0">
+                        <img src="{{ asset('images/logo.png') }}" alt="Logo PMR Wira SMAN 1 Ciawi & PMI" class="h-8 sm:h-12 lg:h-16 w-auto object-contain">
                     </div>
-                    <div>
-                        <div class="font-black text-sm sm:text-2xl tracking-tight leading-tight uppercase group-hover:text-red-100 transition">
+                    <div class="min-w-0">
+                        <div class="font-black text-xs sm:text-lg lg:text-2xl tracking-tight leading-tight uppercase group-hover:text-red-100 transition truncate">
                             PMR WIRA SMAN 1 CIAWI
                         </div>
-                        <div class="text-[10px] sm:text-sm font-semibold text-red-200 tracking-wider">
+                        <div class="text-[9px] sm:text-xs lg:text-sm font-semibold text-red-200 tracking-wider truncate">
                             RAGANA DWI PANTARA 2026/2027
                         </div>
                     </div>
                 </a>
 
-                <!-- Desktop Menu (Lebar & Terbuka Nyaman) -->
+                <!-- Desktop Menu (Lebar & Terbuka Nyaman - Hanya Tampil di Desktop xl:) -->
                 <nav class="hidden xl:flex items-center gap-1.5 font-semibold text-[15px]">
                     <a href="{{ route('home') }}" class="px-4 py-2.5 rounded-xl transition {{ request()->routeIs('home') ? 'bg-black/30 text-white font-bold shadow-inner' : 'hover:bg-white/10 text-white/90' }}">
                         Beranda
@@ -168,30 +168,31 @@
                     </a>
                 </nav>
 
-                <!-- Action Button -->
-                <div class="hidden sm:flex items-center gap-3 flex-shrink-0">
+                <!-- Action Button (Desktop Only) -->
+                <div class="hidden xl:flex items-center gap-3 flex-shrink-0">
                     <a href="{{ route('kontak') }}#daftar" class="bg-white text-pmr-primary hover:bg-red-50 hover:shadow-xl font-extrabold text-xs uppercase tracking-wider px-6 py-3 rounded-full transition-all duration-200 transform hover:-translate-y-0.5 active:scale-95 shadow-md flex items-center gap-2">
                         <i class="fa-solid fa-hand-holding-heart text-red-600 text-sm"></i> Gabung Relawan
                     </a>
                 </div>
 
-                <!-- Mobile Menu Button (Modern & Responsive) -->
-                <div class="flex xl:hidden items-center gap-2">
-                    <a href="{{ route('lomba.index') }}" class="bg-amber-400 hover:bg-amber-300 text-stone-900 px-3 py-1.5 rounded-xl font-black text-xs shadow-md transition flex items-center gap-1.5">
-                        <i class="fa-solid fa-trophy text-amber-800 text-xs"></i> Lomba
+                <!-- Mobile Header Actions & Hamburger Menu Button (Jelas & Menonjol) -->
+                <div class="flex xl:hidden items-center gap-2 flex-shrink-0">
+                    <a href="{{ route('lomba.index') }}" class="bg-amber-400 hover:bg-amber-300 text-stone-900 px-2.5 py-1.5 sm:px-3 sm:py-2 rounded-xl font-black text-[11px] sm:text-xs shadow-md transition flex items-center gap-1 sm:gap-1.5">
+                        <i class="fa-solid fa-trophy text-amber-900 text-xs"></i>
+                        <span class="hidden xs:inline">Lomba</span>
                     </a>
-                    <button type="button" onclick="toggleMobileMenu()" class="w-10 h-10 rounded-xl bg-white/15 hover:bg-white/25 active:scale-95 text-white border border-white/20 flex items-center justify-center transition focus:outline-none" aria-label="Menu Navigasi">
-                        <i id="mobile-menu-icon" class="fa-solid fa-bars text-lg"></i>
+                    <button type="button" onclick="toggleMobileMenu()" class="w-10 h-10 sm:w-11 sm:h-11 rounded-xl bg-white text-pmr-primary hover:bg-red-50 active:scale-95 shadow-lg flex items-center justify-center transition focus:outline-none border-2 border-white/80" aria-label="Buka Menu Navigasi">
+                        <i id="mobile-menu-icon" class="fa-solid fa-bars text-lg sm:text-xl"></i>
                     </button>
                 </div>
             </div>
         </div>
 
-        <!-- Modern Mobile App-Style Menu Drawer -->
-        <div id="mobile-menu" class="hidden xl:hidden bg-stone-900/98 backdrop-blur-xl border-t border-red-900/60 px-4 py-6 shadow-2xl transition-all duration-300 max-h-[85vh] overflow-y-auto">
+        <!-- Modern Mobile App-Style Menu Drawer (Popup Navigasi) -->
+        <div id="mobile-menu" class="hidden xl:hidden bg-stone-900/98 backdrop-blur-xl border-t border-red-900/60 px-4 py-5 shadow-2xl transition-all duration-300 max-h-[85vh] overflow-y-auto">
             
             <!-- Quick Event Banner in Mobile Menu -->
-            <a href="{{ route('lomba.index') }}" class="mb-4 block bg-gradient-to-r from-red-600 to-amber-600 p-4 rounded-2xl text-white shadow-lg border border-red-400/30">
+            <a href="{{ route('lomba.index') }}" class="mb-4 block bg-gradient-to-r from-red-600 to-amber-600 p-4 rounded-2xl text-white shadow-lg border border-red-400/30 hover:opacity-95 transition">
                 <div class="flex items-center justify-between">
                     <div class="flex items-center gap-3">
                         <div class="w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center text-xl">
@@ -253,7 +254,7 @@
             </div>
 
             <!-- Call to Action Button in Mobile Menu -->
-            <div class="pt-2">
+            <div class="pt-1">
                 <a href="{{ route('kontak') }}#daftar" class="block text-center w-full bg-red-600 hover:bg-red-700 text-white font-extrabold py-3.5 rounded-xl shadow-lg shadow-red-950/50 text-xs uppercase tracking-wider flex items-center justify-center gap-2">
                     <i class="fa-solid fa-hand-holding-heart text-sm"></i> Formulir Calon Anggota PMR
                 </a>
