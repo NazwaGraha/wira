@@ -43,8 +43,23 @@ class OrganizationController extends Controller
 
     public function create()
     {
-        $members = Member::orderBy('name')->get();
-        return view('admin.organization.create', compact('members'));
+        $members = collect();
+        try {
+            $members = Member::orderBy('name')->get(['id', 'name', 'class_grade', 'nis']);
+        } catch (\Throwable $e) {
+            $members = collect();
+        }
+
+        $membersJson = $members->map(function($m) {
+            return [
+                'id' => $m->id,
+                'name' => $m->name,
+                'class_grade' => $m->class_grade ?? '',
+                'nis' => $m->nis ?? '',
+            ];
+        })->values();
+
+        return view('admin.organization.create', compact('members', 'membersJson'));
     }
 
     public function store(Request $request)
@@ -69,8 +84,23 @@ class OrganizationController extends Controller
 
     public function edit(OrganizationMember $member)
     {
-        $members = Member::orderBy('name')->get();
-        return view('admin.organization.edit', compact('member', 'members'));
+        $members = collect();
+        try {
+            $members = Member::orderBy('name')->get(['id', 'name', 'class_grade', 'nis']);
+        } catch (\Throwable $e) {
+            $members = collect();
+        }
+
+        $membersJson = $members->map(function($m) {
+            return [
+                'id' => $m->id,
+                'name' => $m->name,
+                'class_grade' => $m->class_grade ?? '',
+                'nis' => $m->nis ?? '',
+            ];
+        })->values();
+
+        return view('admin.organization.edit', compact('member', 'members', 'membersJson'));
     }
 
     public function update(Request $request, OrganizationMember $member)

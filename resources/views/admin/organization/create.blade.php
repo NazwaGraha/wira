@@ -181,10 +181,12 @@
         <div class="p-4 overflow-y-auto flex-grow space-y-2 max-h-[50vh]" id="modal-member-list">
             @forelse($members as $m)
                 <div class="member-item p-3.5 rounded-xl border border-slate-200 hover:border-pmr-primary hover:bg-red-50/50 flex items-center justify-between cursor-pointer transition group"
-                     onclick="selectMember({ id: {{ $m->id }}, name: '{{ addslashes($m->name) }}', class_grade: '{{ addslashes($m->class_grade ?? '') }}', nis: '{{ addslashes($m->nis ?? '') }}' })"
-                     data-name="{{ strtolower($m->name) }}"
-                     data-class="{{ strtolower($m->class_grade ?? '') }}"
-                     data-nis="{{ strtolower($m->nis ?? '') }}">
+                     onclick="selectMemberFromEl(this)"
+                     data-id="{{ $m->id }}"
+                     data-name="{{ $m->name }}"
+                     data-class="{{ $m->class_grade ?? '' }}"
+                     data-nis="{{ $m->nis ?? '' }}"
+                     data-search="{{ strtolower($m->name . ' ' . ($m->class_grade ?? '') . ' ' . ($m->nis ?? '')) }}">
                     <div class="flex items-center gap-3">
                         <div class="w-10 h-10 rounded-full bg-slate-100 border border-slate-200 text-pmr-primary flex items-center justify-center font-black text-sm flex-shrink-0 group-hover:bg-pmr-primary group-hover:text-white transition">
                             {{ strtoupper(substr($m->name, 0, 2)) }}
@@ -226,14 +228,7 @@
 
 @push('scripts')
 <script>
-    const membersData = @json($members->map(function($m) {
-        return [
-            'id' => $m->id,
-            'name' => $m->name,
-            'class_grade' => $m->class_grade ?? '',
-            'nis' => $m->nis ?? '',
-        ];
-    }));
+    const membersData = {!! json_encode($membersJson) !!};
 
     function handleNameInput(query) {
         const list = document.getElementById('autocomplete-list');
@@ -245,9 +240,9 @@
 
         const q = query.toLowerCase().trim();
         const matches = membersData.filter(m => 
-            m.name.toLowerCase().includes(q) || 
-            m.class_grade.toLowerCase().includes(q) ||
-            m.nis.toLowerCase().includes(q)
+            (m.name && m.name.toLowerCase().includes(q)) || 
+            (m.class_grade && m.class_grade.toLowerCase().includes(q)) ||
+            (m.nis && m.nis.toLowerCase().includes(q))
         ).slice(0, 6);
 
         if (matches.length === 0) {
@@ -257,13 +252,14 @@
         }
 
         let html = '';
-        matches.forEach(m => {
+        matches.forEach((m, idx) => {
+            const shortName = m.name ? m.name.substring(0, 2).toUpperCase() : 'PM';
             html += `
                 <div class="p-3 hover:bg-red-50 cursor-pointer flex items-center justify-between transition"
-                     onclick="selectMember(${JSON.stringify(m).replace(/"/g, '&quot;')})">
+                     onclick="selectMemberById(${m.id})">
                     <div class="flex items-center gap-2.5">
                         <div class="w-8 h-8 rounded-full bg-red-100 text-pmr-primary flex items-center justify-center font-bold text-xs">
-                            ${m.name.substring(0,2).toUpperCase()}
+                            ${shortName}
                         </div>
                         <div>
                             <div class="font-bold text-xs text-slate-800">${m.name}</div>
@@ -279,6 +275,22 @@
         list.classList.remove('hidden');
     }
 
+    function selectMemberFromEl(el) {
+        selectMember({
+            id: el.getAttribute('data-id'),
+            name: el.getAttribute('data-name'),
+            class_grade: el.getAttribute('data-class'),
+            nis: el.getAttribute('data-nis')
+        });
+    }
+
+    function selectMemberById(id) {
+        const m = membersData.find(item => item.id == id);
+        if (m) {
+            selectMember(m);
+        }
+    }
+
     function selectMember(m) {
         const nameInput = document.getElementById('name');
         const subtitleInput = document.getElementById('subtitle');
@@ -287,13 +299,13 @@
         const badgeClass = document.getElementById('badge-class');
         const list = document.getElementById('autocomplete-list');
 
-        if (nameInput) nameInput.value = m.name;
+        if (nameInput && m.name) nameInput.value = m.name;
         if (subtitleInput && (!subtitleInput.value || subtitleInput.value.trim() === '')) {
             subtitleInput.value = m.class_grade ? 'Kelas ' + m.class_grade : '';
         }
 
         if (badge && badgeName && badgeClass) {
-            badgeName.textContent = m.name;
+            badgeName.textContent = m.name || '';
             badgeClass.textContent = m.class_grade ? 'Kelas ' + m.class_grade : 'Anggota PMR';
             badge.classList.remove('hidden');
         }
@@ -333,11 +345,8 @@
         const q = query.toLowerCase().trim();
         const items = document.querySelectorAll('.member-item');
         items.forEach(item => {
-            const name = item.getAttribute('data-name') || '';
-            const cls = item.getAttribute('data-class') || '';
-            const nis = item.getAttribute('data-nis') || '';
-
-            if (name.includes(q) || cls.includes(q) || nis.includes(q)) {
+            const search = item.getAttribute('data-search') || '';
+            if (search.includes(q)) {
                 item.classList.remove('hidden');
             } else {
                 item.classList.add('hidden');
