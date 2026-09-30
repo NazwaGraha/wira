@@ -51,7 +51,9 @@ class PageController extends Controller
             ->get()
             ->groupBy('level');
 
-        return view('pages.tentang-kami', compact('organizationSetting', 'organizationMembers'));
+        $allMembers = \App\Models\Member::all()->keyBy('name');
+
+        return view('pages.tentang-kami', compact('organizationSetting', 'organizationMembers', 'allMembers'));
     }
 
     public function kegiatan(Request $request)

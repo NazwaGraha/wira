@@ -31,7 +31,7 @@
 </head>
 <body class="bg-slate-100 text-slate-800 font-sans p-4 sm:p-8 min-h-screen">
 
-    <div class="max-w-[1500px] mx-auto space-y-16">
+    <div class="max-w-[1550px] mx-auto space-y-16">
         <!-- Header Section -->
         <div class="text-center max-w-3xl mx-auto">
             <div class="inline-flex items-center gap-2 bg-red-100 text-pmr-primary font-extrabold text-xs px-3.5 py-1.5 rounded-full uppercase tracking-wider mb-3">
@@ -39,64 +39,97 @@
             </div>
             <h1 class="text-3xl sm:text-4xl lg:text-5xl font-black text-slate-900 tracking-tight">Struktur Organisasi PMR Wira</h1>
             <p class="text-slate-600 text-sm sm:text-base mt-3">Masa Bakti Ragana Dwi Pantara &mdash; SMAN 1 Ciawi, Kabupaten Bogor</p>
+            <p class="text-xs text-pmr-primary font-bold mt-2"><i class="fa-solid fa-hand-pointer animate-bounce mr-1"></i> Klik pada foto atau tombol untuk melihat Biodata Pribadi anggota</p>
         </div>
 
         <!-- Organizational Tree Chart -->
         <div class="w-full flex flex-col items-center">
             
-            <!-- LEVEL 1: PEMBINA PMR -->
-            <div class="bg-stone-900 text-white p-6 sm:p-7 rounded-3xl shadow-xl flex flex-col sm:flex-row items-center gap-6 w-full max-w-lg border-t-4 border-pmr-primary transform hover:scale-[1.01] transition duration-200">
-                <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=256&auto=format&fit=crop&q=80" alt="Foto Pembina" class="w-24 h-24 sm:w-28 sm:h-28 rounded-2xl object-cover border-4 border-red-500 flex-shrink-0 shadow-xl cursor-pointer hover:opacity-90 transition">
+            <!-- LEVEL 1: PEMBINA PMR (Foto Ukuran Sama Besar) -->
+            <div class="bg-stone-900 text-white p-6 sm:p-7 rounded-3xl shadow-xl flex flex-col sm:flex-row items-center gap-6 w-full max-w-lg border-t-4 border-pmr-primary transform hover:scale-[1.01] transition duration-200 group">
+                <div class="relative cursor-pointer group/photo flex-shrink-0" onclick="openBio('Drs. H. Mulyadi, M.Pd', 'Pembina PMR', 'Guru Pembina', 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&auto=format&fit=crop&q=80', '242510001', 'Laki-laki', 'Bogor, 17 Agustus 1975', 'Jl. Veteran III No. 45, Ciawi, Bogor', '081288990011', 'mulyadi.pembina@pmrwirasman1c.sch.id', 'Mendidik relawan muda yang berkarakter, tanggap, dan berjiwa kemanusiaan.')">
+                    <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&auto=format&fit=crop&q=80" alt="Foto Pembina" class="w-28 h-28 sm:w-32 sm:h-32 rounded-3xl object-cover border-4 border-red-500 flex-shrink-0 shadow-xl group-hover/photo:scale-105 transition-transform duration-300">
+                    <div class="absolute inset-0 rounded-3xl bg-black/40 opacity-0 group-hover/photo:opacity-100 flex items-center justify-center transition text-white text-xs font-bold gap-1.5 backdrop-blur-xs">
+                        <i class="fa-solid fa-id-card"></i> Biodata
+                    </div>
+                </div>
                 <div class="text-center sm:text-left">
                     <div class="text-xs font-bold text-red-400 uppercase tracking-wider flex items-center justify-center sm:justify-start gap-1.5">
                         <i class="fa-solid fa-shield-halved text-xs"></i> Pembina PMR
                     </div>
-                    <div class="font-black text-xl sm:text-2xl leading-tight text-white mt-1">Drs. H. Mulyadi, M.Pd</div>
+                    <div class="font-black text-xl sm:text-2xl leading-tight text-white mt-1 cursor-pointer hover:text-red-300 transition" onclick="openBio('Drs. H. Mulyadi, M.Pd', 'Pembina PMR', 'Guru Pembina', 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&auto=format&fit=crop&q=80', '242510001', 'Laki-laki', 'Bogor, 17 Agustus 1975', 'Jl. Veteran III No. 45, Ciawi, Bogor', '081288990011', 'mulyadi.pembina@pmrwirasman1c.sch.id', 'Mendidik relawan muda yang berkarakter, tanggap, dan berjiwa kemanusiaan.')">Drs. H. Mulyadi, M.Pd</div>
                     <div class="text-xs sm:text-sm text-stone-400 mt-1">Pembina Ekstrakurikuler</div>
+                    <button type="button" onclick="openBio('Drs. H. Mulyadi, M.Pd', 'Pembina PMR', 'Guru Pembina', 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&auto=format&fit=crop&q=80', '242510001', 'Laki-laki', 'Bogor, 17 Agustus 1975', 'Jl. Veteran III No. 45, Ciawi, Bogor', '081288990011', 'mulyadi.pembina@pmrwirasman1c.sch.id', 'Mendidik relawan muda yang berkarakter, tanggap, dan berjiwa kemanusiaan.')" class="mt-3 inline-flex items-center gap-1.5 text-xs font-bold text-red-300 hover:text-white bg-white/10 hover:bg-red-600/60 px-3 py-1.5 rounded-full transition">
+                        <i class="fa-solid fa-address-card text-xs"></i> Lihat Biodata
+                    </button>
                 </div>
             </div>
 
             <!-- Connector Line -->
             <div class="w-0.5 h-12 bg-slate-300 my-2"></div>
 
-            <!-- LEVEL 2: KETUA UMUM (HERO CARD) -->
-            <div class="bg-gradient-to-br from-pmr-primary via-red-700 to-pmr-dark text-white p-7 sm:p-9 rounded-3xl shadow-2xl flex flex-col sm:flex-row items-center gap-7 w-full max-w-2xl border border-red-400/30 transform hover:scale-[1.01] transition duration-200">
-                <img src="https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?w=256&auto=format&fit=crop&q=80" alt="Foto Ketua Umum" class="w-28 h-28 sm:w-36 sm:h-36 rounded-3xl object-cover border-4 border-white/90 flex-shrink-0 shadow-2xl ring-2 ring-red-400 cursor-pointer hover:scale-105 transition duration-300">
+            <!-- LEVEL 2: KETUA UMUM (Foto Ukuran Sama Besar) -->
+            <div class="bg-gradient-to-br from-pmr-primary via-red-700 to-pmr-dark text-white p-7 sm:p-9 rounded-3xl shadow-2xl flex flex-col sm:flex-row items-center gap-7 w-full max-w-2xl border border-red-400/30 transform hover:scale-[1.01] transition duration-200 group">
+                <div class="relative cursor-pointer group/photo flex-shrink-0" onclick="openBio('Tom Cruz', 'Ketua Umum 2026/2027', 'Kelas XI-MIPA 1', 'https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?w=400&auto=format&fit=crop&q=80', '242510002', 'Laki-laki', 'Bogor, 03 Juli 2008', 'Komplek Griya Ciawi Asri Blok B2 No. 12, Bogor', '081399887766', 'tom.cruz@pmrwirasman1c.sch.id', 'Siamo Tutti Fratelli — Memimpin dengan keteladanan, melayani dengan ketulusan hati.')">
+                    <img src="https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?w=400&auto=format&fit=crop&q=80" alt="Foto Ketua Umum" class="w-28 h-28 sm:w-32 sm:h-32 rounded-3xl object-cover border-4 border-white/90 shadow-2xl ring-2 ring-red-400 group-hover/photo:scale-105 transition-transform duration-300">
+                    <div class="absolute inset-0 rounded-3xl bg-black/40 opacity-0 group-hover/photo:opacity-100 flex items-center justify-center transition text-white text-xs font-bold gap-1.5 backdrop-blur-xs">
+                        <i class="fa-solid fa-id-card"></i> Biodata
+                    </div>
+                </div>
                 <div class="text-center sm:text-left">
                     <div class="inline-flex items-center gap-2 bg-white/20 backdrop-blur-xs px-3.5 py-1 rounded-full text-xs uppercase tracking-wider text-red-100 font-black mb-1">
                         <i class="fa-solid fa-crown text-amber-300 text-sm"></i> Ketua Umum 2026/2027
                     </div>
-                    <div class="font-black text-2xl sm:text-3xl leading-tight text-white mt-1">Tom Cruz</div>
+                    <div class="font-black text-2xl sm:text-3xl leading-tight text-white mt-1 cursor-pointer hover:text-amber-200 transition" onclick="openBio('Tom Cruz', 'Ketua Umum 2026/2027', 'Kelas XI-MIPA 1', 'https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?w=400&auto=format&fit=crop&q=80', '242510002', 'Laki-laki', 'Bogor, 03 Juli 2008', 'Komplek Griya Ciawi Asri Blok B2 No. 12, Bogor', '081399887766', 'tom.cruz@pmrwirasman1c.sch.id', 'Siamo Tutti Fratelli — Memimpin dengan keteladanan, melayani dengan ketulusan hati.')">Tom Cruz</div>
                     <div class="text-sm sm:text-base text-red-100/90 font-medium mt-1">Masa Bakti Ragana Dwi Pantara &bull; Kelas XI-MIPA 1</div>
+                    <button type="button" onclick="openBio('Tom Cruz', 'Ketua Umum 2026/2027', 'Kelas XI-MIPA 1', 'https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?w=400&auto=format&fit=crop&q=80', '242510002', 'Laki-laki', 'Bogor, 03 Juli 2008', 'Komplek Griya Ciawi Asri Blok B2 No. 12, Bogor', '081399887766', 'tom.cruz@pmrwirasman1c.sch.id', 'Siamo Tutti Fratelli — Memimpin dengan keteladanan, melayani dengan ketulusan hati.')" class="mt-3 inline-flex items-center gap-1.5 text-xs font-bold text-white bg-white/20 hover:bg-white hover:text-pmr-primary px-3.5 py-1.5 rounded-full transition shadow-xs">
+                        <i class="fa-solid fa-address-card text-xs"></i> Lihat Biodata Pribadi
+                    </button>
                 </div>
             </div>
 
             <!-- Connector Line -->
             <div class="w-0.5 h-12 bg-slate-300 my-2"></div>
 
-            <!-- LEVEL 3: BPH (SEKRETARIS & BENDAHARA) -->
+            <!-- LEVEL 3: BPH (SEKRETARIS & BENDAHARA) (Foto Ukuran Sama Besar) -->
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6 w-full max-w-4xl">
                 <!-- Sekretaris -->
-                <div class="bg-white p-6 sm:p-7 rounded-3xl shadow-lg border border-slate-200/90 flex flex-col sm:flex-row items-center gap-5 hover:shadow-2xl hover:border-pmr-primary transition duration-300">
-                    <img src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=256&auto=format&fit=crop&q=80" alt="Foto Sekretaris" class="w-24 h-24 sm:w-28 sm:h-28 rounded-2xl object-cover border-4 border-slate-100 flex-shrink-0 shadow-md cursor-pointer hover:opacity-90 transition">
+                <div class="bg-white p-6 sm:p-7 rounded-3xl shadow-lg border border-slate-200/90 flex flex-col sm:flex-row items-center gap-5 hover:shadow-2xl hover:border-pmr-primary transition duration-300 group">
+                    <div class="relative cursor-pointer group/photo flex-shrink-0" onclick="openBio('Siti Nurhaliza', 'Sekretaris', 'Kelas XI-MIPA 2', 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=400&auto=format&fit=crop&q=80', '242510003', 'Perempuan', 'Jakarta, 12 September 2008', 'Jl. Raya Puncak Km. 72, Cisarua, Bogor', '081211223344', 'siti.nurhaliza@pmrwirasman1c.sch.id', 'Tertib administrasi adalah kunci kesuksesan setiap program kemanusiaan.')">
+                        <img src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=400&auto=format&fit=crop&q=80" alt="Foto Sekretaris" class="w-28 h-28 sm:w-32 sm:h-32 rounded-3xl object-cover border-4 border-slate-100 shadow-md group-hover/photo:scale-105 transition-transform duration-300">
+                        <div class="absolute inset-0 rounded-3xl bg-black/40 opacity-0 group-hover/photo:opacity-100 flex items-center justify-center transition text-white text-xs font-bold gap-1.5 backdrop-blur-xs">
+                            <i class="fa-solid fa-id-card"></i> Biodata
+                        </div>
+                    </div>
                     <div class="text-center sm:text-left">
                         <div class="text-xs font-black text-pmr-primary uppercase tracking-wider flex items-center justify-center sm:justify-start gap-1.5">
                             <i class="fa-solid fa-file-signature text-xs"></i> Sekretaris
                         </div>
-                        <div class="font-extrabold text-lg sm:text-xl text-slate-900 leading-tight mt-1">Siti Nurhaliza</div>
+                        <div class="font-extrabold text-lg sm:text-xl text-slate-900 leading-tight mt-1 cursor-pointer hover:text-pmr-primary transition" onclick="openBio('Siti Nurhaliza', 'Sekretaris', 'Kelas XI-MIPA 2', 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=400&auto=format&fit=crop&q=80', '242510003', 'Perempuan', 'Jakarta, 12 September 2008', 'Jl. Raya Puncak Km. 72, Cisarua, Bogor', '081211223344', 'siti.nurhaliza@pmrwirasman1c.sch.id', 'Tertib administrasi adalah kunci kesuksesan setiap program kemanusiaan.')">Siti Nurhaliza</div>
                         <div class="text-xs sm:text-sm text-slate-500 mt-1">Administrasi & Kesekretariatan &bull; Kelas XI-MIPA 2</div>
+                        <button type="button" onclick="openBio('Siti Nurhaliza', 'Sekretaris', 'Kelas XI-MIPA 2', 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=400&auto=format&fit=crop&q=80', '242510003', 'Perempuan', 'Jakarta, 12 September 2008', 'Jl. Raya Puncak Km. 72, Cisarua, Bogor', '081211223344', 'siti.nurhaliza@pmrwirasman1c.sch.id', 'Tertib administrasi adalah kunci kesuksesan setiap program kemanusiaan.')" class="mt-2.5 inline-flex items-center gap-1.5 text-xs font-bold text-pmr-primary hover:text-white bg-red-50 hover:bg-pmr-primary px-3 py-1.5 rounded-full transition border border-red-100">
+                            <i class="fa-solid fa-address-card text-xs"></i> Lihat Biodata
+                        </button>
                     </div>
                 </div>
 
                 <!-- Bendahara -->
-                <div class="bg-white p-6 sm:p-7 rounded-3xl shadow-lg border border-slate-200/90 flex flex-col sm:flex-row items-center gap-5 hover:shadow-2xl hover:border-pmr-primary transition duration-300">
-                    <img src="https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=256&auto=format&fit=crop&q=80" alt="Foto Bendahara" class="w-24 h-24 sm:w-28 sm:h-28 rounded-2xl object-cover border-4 border-slate-100 flex-shrink-0 shadow-md cursor-pointer hover:opacity-90 transition">
+                <div class="bg-white p-6 sm:p-7 rounded-3xl shadow-lg border border-slate-200/90 flex flex-col sm:flex-row items-center gap-5 hover:shadow-2xl hover:border-pmr-primary transition duration-300 group">
+                    <div class="relative cursor-pointer group/photo flex-shrink-0" onclick="openBio('Farhan Ramadhan', 'Bendahara', 'Kelas XI-IPS 1', 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=400&auto=format&fit=crop&q=80', '242510004', 'Laki-laki', 'Bandung, 20 April 2008', 'Perumahan Ciawi Permai No. 8, Ciawi', '081355667788', 'farhan.ramadhan@pmrwirasman1c.sch.id', 'Amanah, transparan, dan akuntabel dalam setiap rupiah dana sosial.')">
+                        <img src="https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=400&auto=format&fit=crop&q=80" alt="Foto Bendahara" class="w-28 h-28 sm:w-32 sm:h-32 rounded-3xl object-cover border-4 border-slate-100 shadow-md group-hover/photo:scale-105 transition-transform duration-300">
+                        <div class="absolute inset-0 rounded-3xl bg-black/40 opacity-0 group-hover/photo:opacity-100 flex items-center justify-center transition text-white text-xs font-bold gap-1.5 backdrop-blur-xs">
+                            <i class="fa-solid fa-id-card"></i> Biodata
+                        </div>
+                    </div>
                     <div class="text-center sm:text-left">
                         <div class="text-xs font-black text-pmr-primary uppercase tracking-wider flex items-center justify-center sm:justify-start gap-1.5">
                             <i class="fa-solid fa-wallet text-xs"></i> Bendahara
                         </div>
-                        <div class="font-extrabold text-lg sm:text-xl text-slate-900 leading-tight mt-1">Farhan Ramadhan</div>
+                        <div class="font-extrabold text-lg sm:text-xl text-slate-900 leading-tight mt-1 cursor-pointer hover:text-pmr-primary transition" onclick="openBio('Farhan Ramadhan', 'Bendahara', 'Kelas XI-IPS 1', 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=400&auto=format&fit=crop&q=80', '242510004', 'Laki-laki', 'Bandung, 20 April 2008', 'Perumahan Ciawi Permai No. 8, Ciawi', '081355667788', 'farhan.ramadhan@pmrwirasman1c.sch.id', 'Amanah, transparan, dan akuntabel dalam setiap rupiah dana sosial.')">Farhan Ramadhan</div>
                         <div class="text-xs sm:text-sm text-slate-500 mt-1">Keuangan & Kas Organisasi &bull; Kelas XI-IPS 1</div>
+                        <button type="button" onclick="openBio('Farhan Ramadhan', 'Bendahara', 'Kelas XI-IPS 1', 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=400&auto=format&fit=crop&q=80', '242510004', 'Laki-laki', 'Bandung, 20 April 2008', 'Perumahan Ciawi Permai No. 8, Ciawi', '081355667788', 'farhan.ramadhan@pmrwirasman1c.sch.id', 'Amanah, transparan, dan akuntabel dalam setiap rupiah dana sosial.')" class="mt-2.5 inline-flex items-center gap-1.5 text-xs font-bold text-pmr-primary hover:text-white bg-red-50 hover:bg-pmr-primary px-3 py-1.5 rounded-full transition border border-red-100">
+                            <i class="fa-solid fa-address-card text-xs"></i> Lihat Biodata
+                        </button>
                     </div>
                 </div>
             </div>
@@ -104,7 +137,7 @@
             <!-- Connector Line -->
             <div class="w-0.5 h-12 bg-slate-300 my-2"></div>
 
-            <!-- LEVEL 4: 5 BIDANG UTAMA LENGKAP DENGAN KETUA BIDANG & STAF -->
+            <!-- LEVEL 4: 5 BIDANG UTAMA (FOTO KETUA & STAF SEMUA UKURAN SAMA BESAR) -->
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6 sm:gap-7 w-full mt-2">
                 
                 <!-- 1. BIDANG MARKAS -->
@@ -117,12 +150,15 @@
                     </div>
                     <!-- Ketua Bidang -->
                     <div class="p-6 flex flex-col items-center text-center border-b border-slate-100 bg-white">
-                        <div class="relative">
-                            <img src="https://images.unsplash.com/photo-1522075469751-3a6694fb2f61?w=256&auto=format&fit=crop&q=80" class="w-24 h-24 sm:w-28 sm:h-28 rounded-3xl object-cover border-4 border-red-100 ring-2 ring-pmr-primary/40 shadow-lg flex-shrink-0 cursor-pointer hover:scale-105 transition duration-300">
-                            <span class="absolute -bottom-2 -right-2 bg-pmr-primary text-white text-[10px] font-black px-2 py-0.5 rounded-full shadow border-2 border-white">Ketua</span>
+                        <div class="relative cursor-pointer group/photo" onclick="openBio('Indra Gunawan', 'Ketua Bidang Markas', 'Kelas XI-MIPA 3', 'https://images.unsplash.com/photo-1522075469751-3a6694fb2f61?w=400&auto=format&fit=crop&q=80', '242510005', 'Laki-laki', 'Bogor, 05 November 2008', 'Kp. Tipar RT 02/RW 04, Ciawi, Bogor', '081277889900', 'indra.gunawan@pmrwirasman1c.sch.id', 'Markas yang siap dan siaga adalah garda terdepan keselamatan sekolah.')">
+                            <img src="https://images.unsplash.com/photo-1522075469751-3a6694fb2f61?w=400&auto=format&fit=crop&q=80" class="w-28 h-28 sm:w-32 sm:h-32 rounded-3xl object-cover border-4 border-red-100 ring-2 ring-pmr-primary/40 shadow-lg flex-shrink-0 group-hover/photo:scale-105 transition-transform duration-300">
+                            <span class="absolute -bottom-2 -right-2 bg-pmr-primary text-white text-[10px] font-black px-2.5 py-0.5 rounded-full shadow border-2 border-white">Ketua</span>
+                            <div class="absolute inset-0 rounded-3xl bg-black/40 opacity-0 group-hover/photo:opacity-100 flex items-center justify-center transition text-white text-xs font-bold gap-1 backdrop-blur-xs">
+                                <i class="fa-solid fa-id-card"></i> Biodata
+                            </div>
                         </div>
                         <div class="mt-4">
-                            <div class="font-extrabold text-slate-900 text-base sm:text-lg leading-snug">Indra Gunawan</div>
+                            <div class="font-extrabold text-slate-900 text-base sm:text-lg leading-snug cursor-pointer hover:text-pmr-primary transition" onclick="openBio('Indra Gunawan', 'Ketua Bidang Markas', 'Kelas XI-MIPA 3', 'https://images.unsplash.com/photo-1522075469751-3a6694fb2f61?w=400&auto=format&fit=crop&q=80', '242510005', 'Laki-laki', 'Bogor, 05 November 2008', 'Kp. Tipar RT 02/RW 04, Ciawi, Bogor', '081277889900', 'indra.gunawan@pmrwirasman1c.sch.id', 'Markas yang siap dan siaga adalah garda terdepan keselamatan sekolah.')">Indra Gunawan</div>
                             <div class="text-xs text-pmr-primary font-bold mt-1 inline-block bg-red-50 px-2.5 py-0.5 rounded-full border border-red-100">Ketua Bidang Markas</div>
                         </div>
                     </div>
@@ -134,29 +170,53 @@
                             </span>
                             <span class="text-xs font-extrabold px-2.5 py-0.5 rounded-full bg-slate-200 text-slate-700">3 Orang</span>
                         </div>
-                        <div class="space-y-3">
-                            <div class="bg-white p-3 sm:p-3.5 rounded-2xl border border-slate-200/90 shadow-sm flex items-center gap-3.5 hover:border-pmr-primary hover:shadow-md transition">
-                                <img src="https://images.unsplash.com/photo-1492562080023-ab3db95bfbce?w=128&auto=format&fit=crop&q=80" class="w-16 h-16 sm:w-18 sm:h-18 rounded-2xl object-cover border-2 border-slate-200 shadow-sm flex-shrink-0 cursor-pointer hover:scale-105 transition">
-                                <div class="min-w-0 text-left">
-                                    <div class="text-sm font-extrabold text-slate-900 leading-snug">Rian Ardiansyah</div>
-                                    <div class="text-xs text-pmr-primary font-bold mt-0.5">Staf</div>
+                        <div class="space-y-4">
+                            <div class="bg-white p-3.5 rounded-2xl border border-slate-200/90 shadow-sm flex flex-col items-center text-center sm:flex-row sm:text-left gap-4 hover:border-pmr-primary hover:shadow-md transition group/staf">
+                                <div class="relative cursor-pointer group/photo flex-shrink-0" onclick="openBio('Rian Ardiansyah', 'Staf Bidang Markas', 'Kelas X-1', 'https://images.unsplash.com/photo-1492562080023-ab3db95bfbce?w=400&auto=format&fit=crop&q=80', '242510010', 'Laki-laki', 'Bogor, 14 Mei 2009', 'Jl. Pertanian No. 8, Ciawi, Bogor', '081388776655', 'rian.ardiansyah@pmrwirasman1c.sch.id', 'Siap sedia menjaga kelengkapan dan kebersihan markas relawan.')">
+                                    <img src="https://images.unsplash.com/photo-1492562080023-ab3db95bfbce?w=400&auto=format&fit=crop&q=80" class="w-24 h-24 sm:w-28 sm:h-28 rounded-2xl object-cover border-2 border-slate-200 shadow-sm group-hover/photo:scale-105 transition-transform duration-300">
+                                    <div class="absolute inset-0 rounded-2xl bg-black/40 opacity-0 group-hover/photo:opacity-100 flex items-center justify-center transition text-white text-[10px] font-bold gap-1 backdrop-blur-xs">
+                                        <i class="fa-solid fa-id-card"></i> Biodata
+                                    </div>
+                                </div>
+                                <div class="min-w-0">
+                                    <div class="text-sm font-extrabold text-slate-900 leading-snug cursor-pointer hover:text-pmr-primary transition" onclick="openBio('Rian Ardiansyah', 'Staf Bidang Markas', 'Kelas X-1', 'https://images.unsplash.com/photo-1492562080023-ab3db95bfbce?w=400&auto=format&fit=crop&q=80', '242510010', 'Laki-laki', 'Bogor, 14 Mei 2009', 'Jl. Pertanian No. 8, Ciawi, Bogor', '081388776655', 'rian.ardiansyah@pmrwirasman1c.sch.id', 'Siap sedia menjaga kelengkapan dan kebersihan markas relawan.')">Rian Ardiansyah</div>
+                                    <div class="text-xs text-pmr-primary font-bold mt-0.5">Staf Bidang Markas</div>
                                     <div class="text-xs text-slate-500 font-medium truncate mt-0.5">Kelas X-1</div>
+                                    <button type="button" onclick="openBio('Rian Ardiansyah', 'Staf Bidang Markas', 'Kelas X-1', 'https://images.unsplash.com/photo-1492562080023-ab3db95bfbce?w=400&auto=format&fit=crop&q=80', '242510010', 'Laki-laki', 'Bogor, 14 Mei 2009', 'Jl. Pertanian No. 8, Ciawi, Bogor', '081388776655', 'rian.ardiansyah@pmrwirasman1c.sch.id', 'Siap sedia menjaga kelengkapan dan kebersihan markas relawan.')" class="mt-2 text-[11px] font-bold text-slate-600 hover:text-pmr-primary inline-flex items-center gap-1 transition">
+                                        <i class="fa-solid fa-user-circle text-xs text-pmr-primary"></i> Biodata Lengkap &rarr;
+                                    </button>
                                 </div>
                             </div>
-                            <div class="bg-white p-3 sm:p-3.5 rounded-2xl border border-slate-200/90 shadow-sm flex items-center gap-3.5 hover:border-pmr-primary hover:shadow-md transition">
-                                <img src="https://images.unsplash.com/photo-1524504388940-b1c1722653e1?w=128&auto=format&fit=crop&q=80" class="w-16 h-16 sm:w-18 sm:h-18 rounded-2xl object-cover border-2 border-slate-200 shadow-sm flex-shrink-0 cursor-pointer hover:scale-105 transition">
-                                <div class="min-w-0 text-left">
-                                    <div class="text-sm font-extrabold text-slate-900 leading-snug">Siti Fatimah</div>
-                                    <div class="text-xs text-pmr-primary font-bold mt-0.5">Staf</div>
+                            <div class="bg-white p-3.5 rounded-2xl border border-slate-200/90 shadow-sm flex flex-col items-center text-center sm:flex-row sm:text-left gap-4 hover:border-pmr-primary hover:shadow-md transition group/staf">
+                                <div class="relative cursor-pointer group/photo flex-shrink-0" onclick="openBio('Siti Fatimah', 'Staf Bidang Markas', 'Kelas X-3', 'https://images.unsplash.com/photo-1524504388940-b1c1722653e1?w=400&auto=format&fit=crop&q=80', '242510011', 'Perempuan', 'Bogor, 09 Agustus 2009', 'Kp. Babakan RT 03/RW 02, Ciawi, Bogor', '081299881122', 'siti.fatimah@pmrwirasman1c.sch.id', 'Teliti dan tanggap dalam pengelolaan inventaris medis sekolah.')">
+                                    <img src="https://images.unsplash.com/photo-1524504388940-b1c1722653e1?w=400&auto=format&fit=crop&q=80" class="w-24 h-24 sm:w-28 sm:h-28 rounded-2xl object-cover border-2 border-slate-200 shadow-sm group-hover/photo:scale-105 transition-transform duration-300">
+                                    <div class="absolute inset-0 rounded-2xl bg-black/40 opacity-0 group-hover/photo:opacity-100 flex items-center justify-center transition text-white text-[10px] font-bold gap-1 backdrop-blur-xs">
+                                        <i class="fa-solid fa-id-card"></i> Biodata
+                                    </div>
+                                </div>
+                                <div class="min-w-0">
+                                    <div class="text-sm font-extrabold text-slate-900 leading-snug cursor-pointer hover:text-pmr-primary transition" onclick="openBio('Siti Fatimah', 'Staf Bidang Markas', 'Kelas X-3', 'https://images.unsplash.com/photo-1524504388940-b1c1722653e1?w=400&auto=format&fit=crop&q=80', '242510011', 'Perempuan', 'Bogor, 09 Agustus 2009', 'Kp. Babakan RT 03/RW 02, Ciawi, Bogor', '081299881122', 'siti.fatimah@pmrwirasman1c.sch.id', 'Teliti dan tanggap dalam pengelolaan inventaris medis sekolah.')">Siti Fatimah</div>
+                                    <div class="text-xs text-pmr-primary font-bold mt-0.5">Staf Bidang Markas</div>
                                     <div class="text-xs text-slate-500 font-medium truncate mt-0.5">Kelas X-3</div>
+                                    <button type="button" onclick="openBio('Siti Fatimah', 'Staf Bidang Markas', 'Kelas X-3', 'https://images.unsplash.com/photo-1524504388940-b1c1722653e1?w=400&auto=format&fit=crop&q=80', '242510011', 'Perempuan', 'Bogor, 09 Agustus 2009', 'Kp. Babakan RT 03/RW 02, Ciawi, Bogor', '081299881122', 'siti.fatimah@pmrwirasman1c.sch.id', 'Teliti dan tanggap dalam pengelolaan inventaris medis sekolah.')" class="mt-2 text-[11px] font-bold text-slate-600 hover:text-pmr-primary inline-flex items-center gap-1 transition">
+                                        <i class="fa-solid fa-user-circle text-xs text-pmr-primary"></i> Biodata Lengkap &rarr;
+                                    </button>
                                 </div>
                             </div>
-                            <div class="bg-white p-3 sm:p-3.5 rounded-2xl border border-slate-200/90 shadow-sm flex items-center gap-3.5 hover:border-pmr-primary hover:shadow-md transition">
-                                <img src="https://images.unsplash.com/photo-1513956589380-bad6acb9b9d4?w=128&auto=format&fit=crop&q=80" class="w-16 h-16 sm:w-18 sm:h-18 rounded-2xl object-cover border-2 border-slate-200 shadow-sm flex-shrink-0 cursor-pointer hover:scale-105 transition">
-                                <div class="min-w-0 text-left">
-                                    <div class="text-sm font-extrabold text-slate-900 leading-snug">Deni Prasetyo</div>
-                                    <div class="text-xs text-pmr-primary font-bold mt-0.5">Staf</div>
+                            <div class="bg-white p-3.5 rounded-2xl border border-slate-200/90 shadow-sm flex flex-col items-center text-center sm:flex-row sm:text-left gap-4 hover:border-pmr-primary hover:shadow-md transition group/staf">
+                                <div class="relative cursor-pointer group/photo flex-shrink-0" onclick="openBio('Deni Prasetyo', 'Staf Bidang Markas', 'Kelas XI-2', 'https://images.unsplash.com/photo-1513956589380-bad6acb9b9d4?w=400&auto=format&fit=crop&q=80', '242510012', 'Laki-laki', 'Depok, 30 Oktober 2008', 'Jl. Gadog No. 14, Ciawi, Bogor', '081311447788', 'deni.prasetyo@pmrwirasman1c.sch.id', 'Kerja nyata untuk keselamatan dan kenyamanan bersama.')">
+                                    <img src="https://images.unsplash.com/photo-1513956589380-bad6acb9b9d4?w=400&auto=format&fit=crop&q=80" class="w-24 h-24 sm:w-28 sm:h-28 rounded-2xl object-cover border-2 border-slate-200 shadow-sm group-hover/photo:scale-105 transition-transform duration-300">
+                                    <div class="absolute inset-0 rounded-2xl bg-black/40 opacity-0 group-hover/photo:opacity-100 flex items-center justify-center transition text-white text-[10px] font-bold gap-1 backdrop-blur-xs">
+                                        <i class="fa-solid fa-id-card"></i> Biodata
+                                    </div>
+                                </div>
+                                <div class="min-w-0">
+                                    <div class="text-sm font-extrabold text-slate-900 leading-snug cursor-pointer hover:text-pmr-primary transition" onclick="openBio('Deni Prasetyo', 'Staf Bidang Markas', 'Kelas XI-2', 'https://images.unsplash.com/photo-1513956589380-bad6acb9b9d4?w=400&auto=format&fit=crop&q=80', '242510012', 'Laki-laki', 'Depok, 30 Oktober 2008', 'Jl. Gadog No. 14, Ciawi, Bogor', '081311447788', 'deni.prasetyo@pmrwirasman1c.sch.id', 'Kerja nyata untuk keselamatan dan kenyamanan bersama.')">Deni Prasetyo</div>
+                                    <div class="text-xs text-pmr-primary font-bold mt-0.5">Staf Bidang Markas</div>
                                     <div class="text-xs text-slate-500 font-medium truncate mt-0.5">Kelas XI-2</div>
+                                    <button type="button" onclick="openBio('Deni Prasetyo', 'Staf Bidang Markas', 'Kelas XI-2', 'https://images.unsplash.com/photo-1513956589380-bad6acb9b9d4?w=400&auto=format&fit=crop&q=80', '242510012', 'Laki-laki', 'Depok, 30 Oktober 2008', 'Jl. Gadog No. 14, Ciawi, Bogor', '081311447788', 'deni.prasetyo@pmrwirasman1c.sch.id', 'Kerja nyata untuk keselamatan dan kenyamanan bersama.')" class="mt-2 text-[11px] font-bold text-slate-600 hover:text-pmr-primary inline-flex items-center gap-1 transition">
+                                        <i class="fa-solid fa-user-circle text-xs text-pmr-primary"></i> Biodata Lengkap &rarr;
+                                    </button>
                                 </div>
                             </div>
                         </div>
@@ -180,12 +240,15 @@
                     </div>
                     <!-- Ketua Bidang -->
                     <div class="p-6 flex flex-col items-center text-center border-b border-slate-100 bg-white">
-                        <div class="relative">
-                            <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=256&auto=format&fit=crop&q=80" class="w-24 h-24 sm:w-28 sm:h-28 rounded-3xl object-cover border-4 border-red-100 ring-2 ring-pmr-primary/40 shadow-lg flex-shrink-0 cursor-pointer hover:scale-105 transition duration-300">
-                            <span class="absolute -bottom-2 -right-2 bg-pmr-primary text-white text-[10px] font-black px-2 py-0.5 rounded-full shadow border-2 border-white">Ketua</span>
+                        <div class="relative cursor-pointer group/photo" onclick="openBio('Sarah Azhari', 'Ketua Bidang Pelayanan', 'Kelas XI-MIPA 1', 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=400&auto=format&fit=crop&q=80', '242510006', 'Perempuan', 'Bogor, 15 Maret 2008', 'Jl. Mayjen HE Sukma No. 28, Harjasari, Bogor', '081344556677', 'sarah.azhari@pmrwirasman1c.sch.id', 'Menebar senyum dan kepedulian melalui pelayanan medis penuh kasih sayang.')">
+                            <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=400&auto=format&fit=crop&q=80" class="w-28 h-28 sm:w-32 sm:h-32 rounded-3xl object-cover border-4 border-red-100 ring-2 ring-pmr-primary/40 shadow-lg flex-shrink-0 group-hover/photo:scale-105 transition-transform duration-300">
+                            <span class="absolute -bottom-2 -right-2 bg-pmr-primary text-white text-[10px] font-black px-2.5 py-0.5 rounded-full shadow border-2 border-white">Ketua</span>
+                            <div class="absolute inset-0 rounded-3xl bg-black/40 opacity-0 group-hover/photo:opacity-100 flex items-center justify-center transition text-white text-xs font-bold gap-1 backdrop-blur-xs">
+                                <i class="fa-solid fa-id-card"></i> Biodata
+                            </div>
                         </div>
                         <div class="mt-4">
-                            <div class="font-extrabold text-slate-900 text-base sm:text-lg leading-snug">Sarah Azhari</div>
+                            <div class="font-extrabold text-slate-900 text-base sm:text-lg leading-snug cursor-pointer hover:text-pmr-primary transition" onclick="openBio('Sarah Azhari', 'Ketua Bidang Pelayanan', 'Kelas XI-MIPA 1', 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=400&auto=format&fit=crop&q=80', '242510006', 'Perempuan', 'Bogor, 15 Maret 2008', 'Jl. Mayjen HE Sukma No. 28, Harjasari, Bogor', '081344556677', 'sarah.azhari@pmrwirasman1c.sch.id', 'Menebar senyum dan kepedulian melalui pelayanan medis penuh kasih sayang.')">Sarah Azhari</div>
                             <div class="text-xs text-pmr-primary font-bold mt-1 inline-block bg-red-50 px-2.5 py-0.5 rounded-full border border-red-100">Ketua Bidang Pelayanan</div>
                         </div>
                     </div>
@@ -197,29 +260,53 @@
                             </span>
                             <span class="text-xs font-extrabold px-2.5 py-0.5 rounded-full bg-slate-200 text-slate-700">3 Orang</span>
                         </div>
-                        <div class="space-y-3">
-                            <div class="bg-white p-3 sm:p-3.5 rounded-2xl border border-slate-200/90 shadow-sm flex items-center gap-3.5 hover:border-pmr-primary hover:shadow-md transition">
-                                <img src="https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=128&auto=format&fit=crop&q=80" class="w-16 h-16 sm:w-18 sm:h-18 rounded-2xl object-cover border-2 border-slate-200 shadow-sm flex-shrink-0 cursor-pointer hover:scale-105 transition">
-                                <div class="min-w-0 text-left">
-                                    <div class="text-sm font-extrabold text-slate-900 leading-snug">Anisa Rahma</div>
-                                    <div class="text-xs text-pmr-primary font-bold mt-0.5">Staf</div>
+                        <div class="space-y-4">
+                            <div class="bg-white p-3.5 rounded-2xl border border-slate-200/90 shadow-sm flex flex-col items-center text-center sm:flex-row sm:text-left gap-4 hover:border-pmr-primary hover:shadow-md transition group/staf">
+                                <div class="relative cursor-pointer group/photo flex-shrink-0" onclick="openBio('Anisa Rahma', 'Staf Bidang Pelayanan', 'Kelas X-2', 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=400&auto=format&fit=crop&q=80', '242510013', 'Perempuan', 'Bogor, 22 Maret 2009', 'Kp. Cibolang RT 01/RW 05, Ciawi, Bogor', '081233445566', 'anisa.rahma@pmrwirasman1c.sch.id', 'Memberikan pertolongan pertama dengan tulus dan cepat.')">
+                                    <img src="https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=400&auto=format&fit=crop&q=80" class="w-24 h-24 sm:w-28 sm:h-28 rounded-2xl object-cover border-2 border-slate-200 shadow-sm group-hover/photo:scale-105 transition-transform duration-300">
+                                    <div class="absolute inset-0 rounded-2xl bg-black/40 opacity-0 group-hover/photo:opacity-100 flex items-center justify-center transition text-white text-[10px] font-bold gap-1 backdrop-blur-xs">
+                                        <i class="fa-solid fa-id-card"></i> Biodata
+                                    </div>
+                                </div>
+                                <div class="min-w-0">
+                                    <div class="text-sm font-extrabold text-slate-900 leading-snug cursor-pointer hover:text-pmr-primary transition" onclick="openBio('Anisa Rahma', 'Staf Bidang Pelayanan', 'Kelas X-2', 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=400&auto=format&fit=crop&q=80', '242510013', 'Perempuan', 'Bogor, 22 Maret 2009', 'Kp. Cibolang RT 01/RW 05, Ciawi, Bogor', '081233445566', 'anisa.rahma@pmrwirasman1c.sch.id', 'Memberikan pertolongan pertama dengan tulus dan cepat.')">Anisa Rahma</div>
+                                    <div class="text-xs text-pmr-primary font-bold mt-0.5">Staf Bidang Pelayanan</div>
                                     <div class="text-xs text-slate-500 font-medium truncate mt-0.5">Kelas X-2</div>
+                                    <button type="button" onclick="openBio('Anisa Rahma', 'Staf Bidang Pelayanan', 'Kelas X-2', 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=400&auto=format&fit=crop&q=80', '242510013', 'Perempuan', 'Bogor, 22 Maret 2009', 'Kp. Cibolang RT 01/RW 05, Ciawi, Bogor', '081233445566', 'anisa.rahma@pmrwirasman1c.sch.id', 'Memberikan pertolongan pertama dengan tulus dan cepat.')" class="mt-2 text-[11px] font-bold text-slate-600 hover:text-pmr-primary inline-flex items-center gap-1 transition">
+                                        <i class="fa-solid fa-user-circle text-xs text-pmr-primary"></i> Biodata Lengkap &rarr;
+                                    </button>
                                 </div>
                             </div>
-                            <div class="bg-white p-3 sm:p-3.5 rounded-2xl border border-slate-200/90 shadow-sm flex items-center gap-3.5 hover:border-pmr-primary hover:shadow-md transition">
-                                <img src="https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=128&auto=format&fit=crop&q=80" class="w-16 h-16 sm:w-18 sm:h-18 rounded-2xl object-cover border-2 border-slate-200 shadow-sm flex-shrink-0 cursor-pointer hover:scale-105 transition">
-                                <div class="min-w-0 text-left">
-                                    <div class="text-sm font-extrabold text-slate-900 leading-snug">Budi Santoso</div>
-                                    <div class="text-xs text-pmr-primary font-bold mt-0.5">Staf</div>
+                            <div class="bg-white p-3.5 rounded-2xl border border-slate-200/90 shadow-sm flex flex-col items-center text-center sm:flex-row sm:text-left gap-4 hover:border-pmr-primary hover:shadow-md transition group/staf">
+                                <div class="relative cursor-pointer group/photo flex-shrink-0" onclick="openBio('Budi Santoso', 'Staf Bidang Pelayanan', 'Kelas XI-1', 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=400&auto=format&fit=crop&q=80', '242510014', 'Laki-laki', 'Bogor, 10 Desember 2008', 'Jl. Sindangsari No. 50, Bogor', '081377881199', 'budi.santoso@pmrwirasman1c.sch.id', 'Siap siaga dalam setiap posko darurat dan kegiatan donor darah.')">
+                                    <img src="https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=400&auto=format&fit=crop&q=80" class="w-24 h-24 sm:w-28 sm:h-28 rounded-2xl object-cover border-2 border-slate-200 shadow-sm group-hover/photo:scale-105 transition-transform duration-300">
+                                    <div class="absolute inset-0 rounded-2xl bg-black/40 opacity-0 group-hover/photo:opacity-100 flex items-center justify-center transition text-white text-[10px] font-bold gap-1 backdrop-blur-xs">
+                                        <i class="fa-solid fa-id-card"></i> Biodata
+                                    </div>
+                                </div>
+                                <div class="min-w-0">
+                                    <div class="text-sm font-extrabold text-slate-900 leading-snug cursor-pointer hover:text-pmr-primary transition" onclick="openBio('Budi Santoso', 'Staf Bidang Pelayanan', 'Kelas XI-1', 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=400&auto=format&fit=crop&q=80', '242510014', 'Laki-laki', 'Bogor, 10 Desember 2008', 'Jl. Sindangsari No. 50, Bogor', '081377881199', 'budi.santoso@pmrwirasman1c.sch.id', 'Siap siaga dalam setiap posko darurat dan kegiatan donor darah.')">Budi Santoso</div>
+                                    <div class="text-xs text-pmr-primary font-bold mt-0.5">Staf Bidang Pelayanan</div>
                                     <div class="text-xs text-slate-500 font-medium truncate mt-0.5">Kelas XI-1</div>
+                                    <button type="button" onclick="openBio('Budi Santoso', 'Staf Bidang Pelayanan', 'Kelas XI-1', 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=400&auto=format&fit=crop&q=80', '242510014', 'Laki-laki', 'Bogor, 10 Desember 2008', 'Jl. Sindangsari No. 50, Bogor', '081377881199', 'budi.santoso@pmrwirasman1c.sch.id', 'Siap siaga dalam setiap posko darurat dan kegiatan donor darah.')" class="mt-2 text-[11px] font-bold text-slate-600 hover:text-pmr-primary inline-flex items-center gap-1 transition">
+                                        <i class="fa-solid fa-user-circle text-xs text-pmr-primary"></i> Biodata Lengkap &rarr;
+                                    </button>
                                 </div>
                             </div>
-                            <div class="bg-white p-3 sm:p-3.5 rounded-2xl border border-slate-200/90 shadow-sm flex items-center gap-3.5 hover:border-pmr-primary hover:shadow-md transition">
-                                <img src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=128&auto=format&fit=crop&q=80" class="w-16 h-16 sm:w-18 sm:h-18 rounded-2xl object-cover border-2 border-slate-200 shadow-sm flex-shrink-0 cursor-pointer hover:scale-105 transition">
-                                <div class="min-w-0 text-left">
-                                    <div class="text-sm font-extrabold text-slate-900 leading-snug">Dewi Sartika</div>
-                                    <div class="text-xs text-pmr-primary font-bold mt-0.5">Staf</div>
+                            <div class="bg-white p-3.5 rounded-2xl border border-slate-200/90 shadow-sm flex flex-col items-center text-center sm:flex-row sm:text-left gap-4 hover:border-pmr-primary hover:shadow-md transition group/staf">
+                                <div class="relative cursor-pointer group/photo flex-shrink-0" onclick="openBio('Dewi Sartika', 'Staf Bidang Pelayanan', 'Kelas X-5', 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=400&auto=format&fit=crop&q=80', '242510015', 'Perempuan', 'Bogor, 19 Juli 2009', 'Jl. Sukaraja No. 33, Bogor', '081288334455', 'dewi.sartika@pmrwirasman1c.sch.id', 'Menjadi pelopor gaya hidup sehat di lingkungan sekolah.')">
+                                    <img src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=400&auto=format&fit=crop&q=80" class="w-24 h-24 sm:w-28 sm:h-28 rounded-2xl object-cover border-2 border-slate-200 shadow-sm group-hover/photo:scale-105 transition-transform duration-300">
+                                    <div class="absolute inset-0 rounded-2xl bg-black/40 opacity-0 group-hover/photo:opacity-100 flex items-center justify-center transition text-white text-[10px] font-bold gap-1 backdrop-blur-xs">
+                                        <i class="fa-solid fa-id-card"></i> Biodata
+                                    </div>
+                                </div>
+                                <div class="min-w-0">
+                                    <div class="text-sm font-extrabold text-slate-900 leading-snug cursor-pointer hover:text-pmr-primary transition" onclick="openBio('Dewi Sartika', 'Staf Bidang Pelayanan', 'Kelas X-5', 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=400&auto=format&fit=crop&q=80', '242510015', 'Perempuan', 'Bogor, 19 Juli 2009', 'Jl. Sukaraja No. 33, Bogor', '081288334455', 'dewi.sartika@pmrwirasman1c.sch.id', 'Menjadi pelopor gaya hidup sehat di lingkungan sekolah.')">Dewi Sartika</div>
+                                    <div class="text-xs text-pmr-primary font-bold mt-0.5">Staf Bidang Pelayanan</div>
                                     <div class="text-xs text-slate-500 font-medium truncate mt-0.5">Kelas X-5</div>
+                                    <button type="button" onclick="openBio('Dewi Sartika', 'Staf Bidang Pelayanan', 'Kelas X-5', 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=400&auto=format&fit=crop&q=80', '242510015', 'Perempuan', 'Bogor, 19 Juli 2009', 'Jl. Sukaraja No. 33, Bogor', '081288334455', 'dewi.sartika@pmrwirasman1c.sch.id', 'Menjadi pelopor gaya hidup sehat di lingkungan sekolah.')" class="mt-2 text-[11px] font-bold text-slate-600 hover:text-pmr-primary inline-flex items-center gap-1 transition">
+                                        <i class="fa-solid fa-user-circle text-xs text-pmr-primary"></i> Biodata Lengkap &rarr;
+                                    </button>
                                 </div>
                             </div>
                         </div>
@@ -243,12 +330,15 @@
                     </div>
                     <!-- Ketua Bidang -->
                     <div class="p-6 flex flex-col items-center text-center border-b border-slate-100 bg-white">
-                        <div class="relative">
-                            <img src="https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?w=256&auto=format&fit=crop&q=80" class="w-24 h-24 sm:w-28 sm:h-28 rounded-3xl object-cover border-4 border-red-100 ring-2 ring-pmr-primary/40 shadow-lg flex-shrink-0 cursor-pointer hover:scale-105 transition duration-300">
-                            <span class="absolute -bottom-2 -right-2 bg-pmr-primary text-white text-[10px] font-black px-2 py-0.5 rounded-full shadow border-2 border-white">Ketua</span>
+                        <div class="relative cursor-pointer group/photo" onclick="openBio('Reza Rahadian', 'Ketua Bidang Diklat', 'Kelas XI-IPS 2', 'https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?w=400&auto=format&fit=crop&q=80', '242510007', 'Laki-laki', 'Sukabumi, 25 Januari 2008', 'Jl. Caringin No. 19, Bogor', '081266778899', 'reza.rahadian@pmrwirasman1c.sch.id', 'Latihan keras melahirkan relawan tangkas dan bermental juara.')">
+                            <img src="https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?w=400&auto=format&fit=crop&q=80" class="w-28 h-28 sm:w-32 sm:h-32 rounded-3xl object-cover border-4 border-red-100 ring-2 ring-pmr-primary/40 shadow-lg flex-shrink-0 group-hover/photo:scale-105 transition-transform duration-300">
+                            <span class="absolute -bottom-2 -right-2 bg-pmr-primary text-white text-[10px] font-black px-2.5 py-0.5 rounded-full shadow border-2 border-white">Ketua</span>
+                            <div class="absolute inset-0 rounded-3xl bg-black/40 opacity-0 group-hover/photo:opacity-100 flex items-center justify-center transition text-white text-xs font-bold gap-1 backdrop-blur-xs">
+                                <i class="fa-solid fa-id-card"></i> Biodata
+                            </div>
                         </div>
                         <div class="mt-4">
-                            <div class="font-extrabold text-slate-900 text-base sm:text-lg leading-snug">Reza Rahadian</div>
+                            <div class="font-extrabold text-slate-900 text-base sm:text-lg leading-snug cursor-pointer hover:text-pmr-primary transition" onclick="openBio('Reza Rahadian', 'Ketua Bidang Diklat', 'Kelas XI-IPS 2', 'https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?w=400&auto=format&fit=crop&q=80', '242510007', 'Laki-laki', 'Sukabumi, 25 Januari 2008', 'Jl. Caringin No. 19, Bogor', '081266778899', 'reza.rahadian@pmrwirasman1c.sch.id', 'Latihan keras melahirkan relawan tangkas dan bermental juara.')">Reza Rahadian</div>
                             <div class="text-xs text-pmr-primary font-bold mt-1 inline-block bg-red-50 px-2.5 py-0.5 rounded-full border border-red-100">Ketua Bidang Diklat</div>
                         </div>
                     </div>
@@ -260,21 +350,37 @@
                             </span>
                             <span class="text-xs font-extrabold px-2.5 py-0.5 rounded-full bg-slate-200 text-slate-700">2 Orang</span>
                         </div>
-                        <div class="space-y-3">
-                            <div class="bg-white p-3 sm:p-3.5 rounded-2xl border border-slate-200/90 shadow-sm flex items-center gap-3.5 hover:border-pmr-primary hover:shadow-md transition">
-                                <img src="https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=128&auto=format&fit=crop&q=80" class="w-16 h-16 sm:w-18 sm:h-18 rounded-2xl object-cover border-2 border-slate-200 shadow-sm flex-shrink-0 cursor-pointer hover:scale-105 transition">
-                                <div class="min-w-0 text-left">
-                                    <div class="text-sm font-extrabold text-slate-900 leading-snug">Fajar Pratama</div>
-                                    <div class="text-xs text-pmr-primary font-bold mt-0.5">Staf</div>
+                        <div class="space-y-4">
+                            <div class="bg-white p-3.5 rounded-2xl border border-slate-200/90 shadow-sm flex flex-col items-center text-center sm:flex-row sm:text-left gap-4 hover:border-pmr-primary hover:shadow-md transition group/staf">
+                                <div class="relative cursor-pointer group/photo flex-shrink-0" onclick="openBio('Fajar Pratama', 'Staf Bidang Diklat', 'Kelas X-4', 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=400&auto=format&fit=crop&q=80', '242510016', 'Laki-laki', 'Bogor, 11 Januari 2009', 'Jl. Puncak No. 88, Ciawi, Bogor', '081322556677', 'fajar.pratama@pmrwirasman1c.sch.id', 'Semangat belajar materi medis demi menyelamatkan nyawa sesama.')">
+                                    <img src="https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=400&auto=format&fit=crop&q=80" class="w-24 h-24 sm:w-28 sm:h-28 rounded-2xl object-cover border-2 border-slate-200 shadow-sm group-hover/photo:scale-105 transition-transform duration-300">
+                                    <div class="absolute inset-0 rounded-2xl bg-black/40 opacity-0 group-hover/photo:opacity-100 flex items-center justify-center transition text-white text-[10px] font-bold gap-1 backdrop-blur-xs">
+                                        <i class="fa-solid fa-id-card"></i> Biodata
+                                    </div>
+                                </div>
+                                <div class="min-w-0">
+                                    <div class="text-sm font-extrabold text-slate-900 leading-snug cursor-pointer hover:text-pmr-primary transition" onclick="openBio('Fajar Pratama', 'Staf Bidang Diklat', 'Kelas X-4', 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=400&auto=format&fit=crop&q=80', '242510016', 'Laki-laki', 'Bogor, 11 Januari 2009', 'Jl. Puncak No. 88, Ciawi, Bogor', '081322556677', 'fajar.pratama@pmrwirasman1c.sch.id', 'Semangat belajar materi medis demi menyelamatkan nyawa sesama.')">Fajar Pratama</div>
+                                    <div class="text-xs text-pmr-primary font-bold mt-0.5">Staf Bidang Diklat</div>
                                     <div class="text-xs text-slate-500 font-medium truncate mt-0.5">Kelas X-4</div>
+                                    <button type="button" onclick="openBio('Fajar Pratama', 'Staf Bidang Diklat', 'Kelas X-4', 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=400&auto=format&fit=crop&q=80', '242510016', 'Laki-laki', 'Bogor, 11 Januari 2009', 'Jl. Puncak No. 88, Ciawi, Bogor', '081322556677', 'fajar.pratama@pmrwirasman1c.sch.id', 'Semangat belajar materi medis demi menyelamatkan nyawa sesama.')" class="mt-2 text-[11px] font-bold text-slate-600 hover:text-pmr-primary inline-flex items-center gap-1 transition">
+                                        <i class="fa-solid fa-user-circle text-xs text-pmr-primary"></i> Biodata Lengkap &rarr;
+                                    </button>
                                 </div>
                             </div>
-                            <div class="bg-white p-3 sm:p-3.5 rounded-2xl border border-slate-200/90 shadow-sm flex items-center gap-3.5 hover:border-pmr-primary hover:shadow-md transition">
-                                <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=128&auto=format&fit=crop&q=80" class="w-16 h-16 sm:w-18 sm:h-18 rounded-2xl object-cover border-2 border-slate-200 shadow-sm flex-shrink-0 cursor-pointer hover:scale-105 transition">
-                                <div class="min-w-0 text-left">
-                                    <div class="text-sm font-extrabold text-slate-900 leading-snug">Maya Anggraini</div>
-                                    <div class="text-xs text-pmr-primary font-bold mt-0.5">Staf</div>
+                            <div class="bg-white p-3.5 rounded-2xl border border-slate-200/90 shadow-sm flex flex-col items-center text-center sm:flex-row sm:text-left gap-4 hover:border-pmr-primary hover:shadow-md transition group/staf">
+                                <div class="relative cursor-pointer group/photo flex-shrink-0" onclick="openBio('Maya Anggraini', 'Staf Bidang Diklat', 'Kelas XI-3', 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=400&auto=format&fit=crop&q=80', '242510017', 'Perempuan', 'Bogor, 04 Agustus 2008', 'Jl. Pandu Raya No. 12, Bogor', '081244778899', 'maya.anggraini@pmrwirasman1c.sch.id', 'Berbagi ilmu pertolongan pertama kepada seluruh siswa sekolah.')">
+                                    <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=400&auto=format&fit=crop&q=80" class="w-24 h-24 sm:w-28 sm:h-28 rounded-2xl object-cover border-2 border-slate-200 shadow-sm group-hover/photo:scale-105 transition-transform duration-300">
+                                    <div class="absolute inset-0 rounded-2xl bg-black/40 opacity-0 group-hover/photo:opacity-100 flex items-center justify-center transition text-white text-[10px] font-bold gap-1 backdrop-blur-xs">
+                                        <i class="fa-solid fa-id-card"></i> Biodata
+                                    </div>
+                                </div>
+                                <div class="min-w-0">
+                                    <div class="text-sm font-extrabold text-slate-900 leading-snug cursor-pointer hover:text-pmr-primary transition" onclick="openBio('Maya Anggraini', 'Staf Bidang Diklat', 'Kelas XI-3', 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=400&auto=format&fit=crop&q=80', '242510017', 'Perempuan', 'Bogor, 04 Agustus 2008', 'Jl. Pandu Raya No. 12, Bogor', '081244778899', 'maya.anggraini@pmrwirasman1c.sch.id', 'Berbagi ilmu pertolongan pertama kepada seluruh siswa sekolah.')">Maya Anggraini</div>
+                                    <div class="text-xs text-pmr-primary font-bold mt-0.5">Staf Bidang Diklat</div>
                                     <div class="text-xs text-slate-500 font-medium truncate mt-0.5">Kelas XI-3</div>
+                                    <button type="button" onclick="openBio('Maya Anggraini', 'Staf Bidang Diklat', 'Kelas XI-3', 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=400&auto=format&fit=crop&q=80', '242510017', 'Perempuan', 'Bogor, 04 Agustus 2008', 'Jl. Pandu Raya No. 12, Bogor', '081244778899', 'maya.anggraini@pmrwirasman1c.sch.id', 'Berbagi ilmu pertolongan pertama kepada seluruh siswa sekolah.')" class="mt-2 text-[11px] font-bold text-slate-600 hover:text-pmr-primary inline-flex items-center gap-1 transition">
+                                        <i class="fa-solid fa-user-circle text-xs text-pmr-primary"></i> Biodata Lengkap &rarr;
+                                    </button>
                                 </div>
                             </div>
                         </div>
@@ -298,12 +404,15 @@
                     </div>
                     <!-- Ketua Bidang -->
                     <div class="p-6 flex flex-col items-center text-center border-b border-slate-100 bg-white">
-                        <div class="relative">
-                            <img src="https://images.unsplash.com/photo-1517841905240-472988babdf9?w=256&auto=format&fit=crop&q=80" class="w-24 h-24 sm:w-28 sm:h-28 rounded-3xl object-cover border-4 border-red-100 ring-2 ring-pmr-primary/40 shadow-lg flex-shrink-0 cursor-pointer hover:scale-105 transition duration-300">
-                            <span class="absolute -bottom-2 -right-2 bg-pmr-primary text-white text-[10px] font-black px-2 py-0.5 rounded-full shadow border-2 border-white">Ketua</span>
+                        <div class="relative cursor-pointer group/photo" onclick="openBio('Dian Sastrowardoyo', 'Ketua Bidang Humas', 'Kelas XI-MIPA 2', 'https://images.unsplash.com/photo-1517841905240-472988babdf9?w=400&auto=format&fit=crop&q=80', '242510008', 'Perempuan', 'Bogor, 18 Juni 2008', 'Perum Banjarwangi Indah Blok C No. 5, Ciawi', '081322334455', 'dian.sastro@pmrwirasman1c.sch.id', 'Menghubungkan hati, menyuarakan pesan kemanusiaan ke penjuru dunia.')">
+                            <img src="https://images.unsplash.com/photo-1517841905240-472988babdf9?w=400&auto=format&fit=crop&q=80" class="w-28 h-28 sm:w-32 sm:h-32 rounded-3xl object-cover border-4 border-red-100 ring-2 ring-pmr-primary/40 shadow-lg flex-shrink-0 group-hover/photo:scale-105 transition-transform duration-300">
+                            <span class="absolute -bottom-2 -right-2 bg-pmr-primary text-white text-[10px] font-black px-2.5 py-0.5 rounded-full shadow border-2 border-white">Ketua</span>
+                            <div class="absolute inset-0 rounded-3xl bg-black/40 opacity-0 group-hover/photo:opacity-100 flex items-center justify-center transition text-white text-xs font-bold gap-1 backdrop-blur-xs">
+                                <i class="fa-solid fa-id-card"></i> Biodata
+                            </div>
                         </div>
                         <div class="mt-4">
-                            <div class="font-extrabold text-slate-900 text-base sm:text-lg leading-snug">Dian Sastrowardoyo</div>
+                            <div class="font-extrabold text-slate-900 text-base sm:text-lg leading-snug cursor-pointer hover:text-pmr-primary transition" onclick="openBio('Dian Sastrowardoyo', 'Ketua Bidang Humas', 'Kelas XI-MIPA 2', 'https://images.unsplash.com/photo-1517841905240-472988babdf9?w=400&auto=format&fit=crop&q=80', '242510008', 'Perempuan', 'Bogor, 18 Juni 2008', 'Perum Banjarwangi Indah Blok C No. 5, Ciawi', '081322334455', 'dian.sastro@pmrwirasman1c.sch.id', 'Menghubungkan hati, menyuarakan pesan kemanusiaan ke penjuru dunia.')">Dian Sastrowardoyo</div>
                             <div class="text-xs text-pmr-primary font-bold mt-1 inline-block bg-red-50 px-2.5 py-0.5 rounded-full border border-red-100">Ketua Bidang Humas</div>
                         </div>
                     </div>
@@ -315,29 +424,53 @@
                             </span>
                             <span class="text-xs font-extrabold px-2.5 py-0.5 rounded-full bg-slate-200 text-slate-700">3 Orang</span>
                         </div>
-                        <div class="space-y-3">
-                            <div class="bg-white p-3 sm:p-3.5 rounded-2xl border border-slate-200/90 shadow-sm flex items-center gap-3.5 hover:border-pmr-primary hover:shadow-md transition">
-                                <img src="https://images.unsplash.com/photo-1522075469751-3a6694fb2f61?w=128&auto=format&fit=crop&q=80" class="w-16 h-16 sm:w-18 sm:h-18 rounded-2xl object-cover border-2 border-slate-200 shadow-sm flex-shrink-0 cursor-pointer hover:scale-105 transition">
-                                <div class="min-w-0 text-left">
-                                    <div class="text-sm font-extrabold text-slate-900 leading-snug">Gilang Ramadhan</div>
-                                    <div class="text-xs text-pmr-primary font-bold mt-0.5">Staf</div>
+                        <div class="space-y-4">
+                            <div class="bg-white p-3.5 rounded-2xl border border-slate-200/90 shadow-sm flex flex-col items-center text-center sm:flex-row sm:text-left gap-4 hover:border-pmr-primary hover:shadow-md transition group/staf">
+                                <div class="relative cursor-pointer group/photo flex-shrink-0" onclick="openBio('Gilang Ramadhan', 'Staf Bidang Humas', 'Kelas X-1', 'https://images.unsplash.com/photo-1522075469751-3a6694fb2f61?w=400&auto=format&fit=crop&q=80', '242510018', 'Laki-laki', 'Bogor, 09 September 2009', 'Jl. Raya Tajur Gang Melati No. 4, Bogor', '081366998811', 'gilang.ramadhan@pmrwirasman1c.sch.id', 'Mendokumentasikan setiap aksi kemanusiaan dengan sepenuh hati.')">
+                                    <img src="https://images.unsplash.com/photo-1522075469751-3a6694fb2f61?w=400&auto=format&fit=crop&q=80" class="w-24 h-24 sm:w-28 sm:h-28 rounded-2xl object-cover border-2 border-slate-200 shadow-sm group-hover/photo:scale-105 transition-transform duration-300">
+                                    <div class="absolute inset-0 rounded-2xl bg-black/40 opacity-0 group-hover/photo:opacity-100 flex items-center justify-center transition text-white text-[10px] font-bold gap-1 backdrop-blur-xs">
+                                        <i class="fa-solid fa-id-card"></i> Biodata
+                                    </div>
+                                </div>
+                                <div class="min-w-0">
+                                    <div class="text-sm font-extrabold text-slate-900 leading-snug cursor-pointer hover:text-pmr-primary transition" onclick="openBio('Gilang Ramadhan', 'Staf Bidang Humas', 'Kelas X-1', 'https://images.unsplash.com/photo-1522075469751-3a6694fb2f61?w=400&auto=format&fit=crop&q=80', '242510018', 'Laki-laki', 'Bogor, 09 September 2009', 'Jl. Raya Tajur Gang Melati No. 4, Bogor', '081366998811', 'gilang.ramadhan@pmrwirasman1c.sch.id', 'Mendokumentasikan setiap aksi kemanusiaan dengan sepenuh hati.')">Gilang Ramadhan</div>
+                                    <div class="text-xs text-pmr-primary font-bold mt-0.5">Staf Bidang Humas</div>
                                     <div class="text-xs text-slate-500 font-medium truncate mt-0.5">Kelas X-1</div>
+                                    <button type="button" onclick="openBio('Gilang Ramadhan', 'Staf Bidang Humas', 'Kelas X-1', 'https://images.unsplash.com/photo-1522075469751-3a6694fb2f61?w=400&auto=format&fit=crop&q=80', '242510018', 'Laki-laki', 'Bogor, 09 September 2009', 'Jl. Raya Tajur Gang Melati No. 4, Bogor', '081366998811', 'gilang.ramadhan@pmrwirasman1c.sch.id', 'Mendokumentasikan setiap aksi kemanusiaan dengan sepenuh hati.')" class="mt-2 text-[11px] font-bold text-slate-600 hover:text-pmr-primary inline-flex items-center gap-1 transition">
+                                        <i class="fa-solid fa-user-circle text-xs text-pmr-primary"></i> Biodata Lengkap &rarr;
+                                    </button>
                                 </div>
                             </div>
-                            <div class="bg-white p-3 sm:p-3.5 rounded-2xl border border-slate-200/90 shadow-sm flex items-center gap-3.5 hover:border-pmr-primary hover:shadow-md transition">
-                                <img src="https://images.unsplash.com/photo-1517841905240-472988babdf9?w=128&auto=format&fit=crop&q=80" class="w-16 h-16 sm:w-18 sm:h-18 rounded-2xl object-cover border-2 border-slate-200 shadow-sm flex-shrink-0 cursor-pointer hover:scale-105 transition">
-                                <div class="min-w-0 text-left">
-                                    <div class="text-sm font-extrabold text-slate-900 leading-snug">Tiara Andini</div>
-                                    <div class="text-xs text-pmr-primary font-bold mt-0.5">Staf</div>
+                            <div class="bg-white p-3.5 rounded-2xl border border-slate-200/90 shadow-sm flex flex-col items-center text-center sm:flex-row sm:text-left gap-4 hover:border-pmr-primary hover:shadow-md transition group/staf">
+                                <div class="relative cursor-pointer group/photo flex-shrink-0" onclick="openBio('Tiara Andini', 'Staf Bidang Humas', 'Kelas XI-4', 'https://images.unsplash.com/photo-1517841905240-472988babdf9?w=400&auto=format&fit=crop&q=80', '242510019', 'Perempuan', 'Bogor, 17 Mei 2008', 'Jl. Pajajaran Indah No. 7, Bogor', '081255887744', 'tiara.andini@pmrwirasman1c.sch.id', 'Menyebarkan energi positif dan kepedulian sosial melalui media digital.')">
+                                    <img src="https://images.unsplash.com/photo-1517841905240-472988babdf9?w=400&auto=format&fit=crop&q=80" class="w-24 h-24 sm:w-28 sm:h-28 rounded-2xl object-cover border-2 border-slate-200 shadow-sm group-hover/photo:scale-105 transition-transform duration-300">
+                                    <div class="absolute inset-0 rounded-2xl bg-black/40 opacity-0 group-hover/photo:opacity-100 flex items-center justify-center transition text-white text-[10px] font-bold gap-1 backdrop-blur-xs">
+                                        <i class="fa-solid fa-id-card"></i> Biodata
+                                    </div>
+                                </div>
+                                <div class="min-w-0">
+                                    <div class="text-sm font-extrabold text-slate-900 leading-snug cursor-pointer hover:text-pmr-primary transition" onclick="openBio('Tiara Andini', 'Staf Bidang Humas', 'Kelas XI-4', 'https://images.unsplash.com/photo-1517841905240-472988babdf9?w=400&auto=format&fit=crop&q=80', '242510019', 'Perempuan', 'Bogor, 17 Mei 2008', 'Jl. Pajajaran Indah No. 7, Bogor', '081255887744', 'tiara.andini@pmrwirasman1c.sch.id', 'Menyebarkan energi positif dan kepedulian sosial melalui media digital.')">Tiara Andini</div>
+                                    <div class="text-xs text-pmr-primary font-bold mt-0.5">Staf Bidang Humas</div>
                                     <div class="text-xs text-slate-500 font-medium truncate mt-0.5">Kelas XI-4</div>
+                                    <button type="button" onclick="openBio('Tiara Andini', 'Staf Bidang Humas', 'Kelas XI-4', 'https://images.unsplash.com/photo-1517841905240-472988babdf9?w=400&auto=format&fit=crop&q=80', '242510019', 'Perempuan', 'Bogor, 17 Mei 2008', 'Jl. Pajajaran Indah No. 7, Bogor', '081255887744', 'tiara.andini@pmrwirasman1c.sch.id', 'Menyebarkan energi positif dan kepedulian sosial melalui media digital.')" class="mt-2 text-[11px] font-bold text-slate-600 hover:text-pmr-primary inline-flex items-center gap-1 transition">
+                                        <i class="fa-solid fa-user-circle text-xs text-pmr-primary"></i> Biodata Lengkap &rarr;
+                                    </button>
                                 </div>
                             </div>
-                            <div class="bg-white p-3 sm:p-3.5 rounded-2xl border border-slate-200/90 shadow-sm flex items-center gap-3.5 hover:border-pmr-primary hover:shadow-md transition">
-                                <img src="https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?w=128&auto=format&fit=crop&q=80" class="w-16 h-16 sm:w-18 sm:h-18 rounded-2xl object-cover border-2 border-slate-200 shadow-sm flex-shrink-0 cursor-pointer hover:scale-105 transition">
-                                <div class="min-w-0 text-left">
-                                    <div class="text-sm font-extrabold text-slate-900 leading-snug">Kevin Julio</div>
-                                    <div class="text-xs text-pmr-primary font-bold mt-0.5">Staf</div>
+                            <div class="bg-white p-3.5 rounded-2xl border border-slate-200/90 shadow-sm flex flex-col items-center text-center sm:flex-row sm:text-left gap-4 hover:border-pmr-primary hover:shadow-md transition group/staf">
+                                <div class="relative cursor-pointer group/photo flex-shrink-0" onclick="openBio('Kevin Julio', 'Staf Bidang Humas', 'Kelas X-3', 'https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?w=400&auto=format&fit=crop&q=80', '242510020', 'Laki-laki', 'Jakarta, 28 Juni 2009', 'Kp. Muara RT 02/RW 03, Ciawi, Bogor', '081388112233', 'kevin.julio@pmrwirasman1c.sch.id', 'Membangun relasi kemanusiaan yang erat antar organisasi sekolah.')">
+                                    <img src="https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?w=400&auto=format&fit=crop&q=80" class="w-24 h-24 sm:w-28 sm:h-28 rounded-2xl object-cover border-2 border-slate-200 shadow-sm group-hover/photo:scale-105 transition-transform duration-300">
+                                    <div class="absolute inset-0 rounded-2xl bg-black/40 opacity-0 group-hover/photo:opacity-100 flex items-center justify-center transition text-white text-[10px] font-bold gap-1 backdrop-blur-xs">
+                                        <i class="fa-solid fa-id-card"></i> Biodata
+                                    </div>
+                                </div>
+                                <div class="min-w-0">
+                                    <div class="text-sm font-extrabold text-slate-900 leading-snug cursor-pointer hover:text-pmr-primary transition" onclick="openBio('Kevin Julio', 'Staf Bidang Humas', 'Kelas X-3', 'https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?w=400&auto=format&fit=crop&q=80', '242510020', 'Laki-laki', 'Jakarta, 28 Juni 2009', 'Kp. Muara RT 02/RW 03, Ciawi, Bogor', '081388112233', 'kevin.julio@pmrwirasman1c.sch.id', 'Membangun relasi kemanusiaan yang erat antar organisasi sekolah.')">Kevin Julio</div>
+                                    <div class="text-xs text-pmr-primary font-bold mt-0.5">Staf Bidang Humas</div>
                                     <div class="text-xs text-slate-500 font-medium truncate mt-0.5">Kelas X-3</div>
+                                    <button type="button" onclick="openBio('Kevin Julio', 'Staf Bidang Humas', 'Kelas X-3', 'https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?w=400&auto=format&fit=crop&q=80', '242510020', 'Laki-laki', 'Jakarta, 28 Juni 2009', 'Kp. Muara RT 02/RW 03, Ciawi, Bogor', '081388112233', 'kevin.julio@pmrwirasman1c.sch.id', 'Membangun relasi kemanusiaan yang erat antar organisasi sekolah.')" class="mt-2 text-[11px] font-bold text-slate-600 hover:text-pmr-primary inline-flex items-center gap-1 transition">
+                                        <i class="fa-solid fa-user-circle text-xs text-pmr-primary"></i> Biodata Lengkap &rarr;
+                                    </button>
                                 </div>
                             </div>
                         </div>
@@ -361,12 +494,15 @@
                     </div>
                     <!-- Ketua Bidang -->
                     <div class="p-6 flex flex-col items-center text-center border-b border-slate-100 bg-white">
-                        <div class="relative">
-                            <img src="https://images.unsplash.com/photo-1501196354995-cbb51c65aaea?w=256&auto=format&fit=crop&q=80" class="w-24 h-24 sm:w-28 sm:h-28 rounded-3xl object-cover border-4 border-red-100 ring-2 ring-pmr-primary/40 shadow-lg flex-shrink-0 cursor-pointer hover:scale-105 transition duration-300">
-                            <span class="absolute -bottom-2 -right-2 bg-pmr-primary text-white text-[10px] font-black px-2 py-0.5 rounded-full shadow border-2 border-white">Ketua</span>
+                        <div class="relative cursor-pointer group/photo" onclick="openBio('Nicholas Saputra', 'Ketua Bidang Kreasi', 'Kelas XI-IPS 1', 'https://images.unsplash.com/photo-1501196354995-cbb51c65aaea?w=400&auto=format&fit=crop&q=80', '242510009', 'Laki-laki', 'Jakarta, 24 Februari 2008', 'Jl. Raya Tajur No. 102, Bogor', '081299001122', 'nicholas.saputra@pmrwirasman1c.sch.id', 'Kreativitas tanpa batas untuk menginspirasi kepedulian sesama generasi muda.')">
+                            <img src="https://images.unsplash.com/photo-1501196354995-cbb51c65aaea?w=400&auto=format&fit=crop&q=80" class="w-28 h-28 sm:w-32 sm:h-32 rounded-3xl object-cover border-4 border-red-100 ring-2 ring-pmr-primary/40 shadow-lg flex-shrink-0 group-hover/photo:scale-105 transition-transform duration-300">
+                            <span class="absolute -bottom-2 -right-2 bg-pmr-primary text-white text-[10px] font-black px-2.5 py-0.5 rounded-full shadow border-2 border-white">Ketua</span>
+                            <div class="absolute inset-0 rounded-3xl bg-black/40 opacity-0 group-hover/photo:opacity-100 flex items-center justify-center transition text-white text-xs font-bold gap-1 backdrop-blur-xs">
+                                <i class="fa-solid fa-id-card"></i> Biodata
+                            </div>
                         </div>
                         <div class="mt-4">
-                            <div class="font-extrabold text-slate-900 text-base sm:text-lg leading-snug">Nicholas Saputra</div>
+                            <div class="font-extrabold text-slate-900 text-base sm:text-lg leading-snug cursor-pointer hover:text-pmr-primary transition" onclick="openBio('Nicholas Saputra', 'Ketua Bidang Kreasi', 'Kelas XI-IPS 1', 'https://images.unsplash.com/photo-1501196354995-cbb51c65aaea?w=400&auto=format&fit=crop&q=80', '242510009', 'Laki-laki', 'Jakarta, 24 Februari 2008', 'Jl. Raya Tajur No. 102, Bogor', '081299001122', 'nicholas.saputra@pmrwirasman1c.sch.id', 'Kreativitas tanpa batas untuk menginspirasi kepedulian sesama generasi muda.')">Nicholas Saputra</div>
                             <div class="text-xs text-pmr-primary font-bold mt-1 inline-block bg-red-50 px-2.5 py-0.5 rounded-full border border-red-100">Ketua Bidang Kreasi</div>
                         </div>
                     </div>
@@ -378,21 +514,37 @@
                             </span>
                             <span class="text-xs font-extrabold px-2.5 py-0.5 rounded-full bg-slate-200 text-slate-700">2 Orang</span>
                         </div>
-                        <div class="space-y-3">
-                            <div class="bg-white p-3 sm:p-3.5 rounded-2xl border border-slate-200/90 shadow-sm flex items-center gap-3.5 hover:border-pmr-primary hover:shadow-md transition">
-                                <img src="https://images.unsplash.com/photo-1524504388940-b1c1722653e1?w=128&auto=format&fit=crop&q=80" class="w-16 h-16 sm:w-18 sm:h-18 rounded-2xl object-cover border-2 border-slate-200 shadow-sm flex-shrink-0 cursor-pointer hover:scale-105 transition">
-                                <div class="min-w-0 text-left">
-                                    <div class="text-sm font-extrabold text-slate-900 leading-snug">Putri Marino</div>
-                                    <div class="text-xs text-pmr-primary font-bold mt-0.5">Staf</div>
+                        <div class="space-y-4">
+                            <div class="bg-white p-3.5 rounded-2xl border border-slate-200/90 shadow-sm flex flex-col items-center text-center sm:flex-row sm:text-left gap-4 hover:border-pmr-primary hover:shadow-md transition group/staf">
+                                <div class="relative cursor-pointer group/photo flex-shrink-0" onclick="openBio('Putri Marino', 'Staf Bidang Kreasi', 'Kelas X-2', 'https://images.unsplash.com/photo-1524504388940-b1c1722653e1?w=400&auto=format&fit=crop&q=80', '242510021', 'Perempuan', 'Bogor, 15 Oktober 2009', 'Jl. Ciawi Sejahtera Blok A No. 3, Bogor', '081299334411', 'putri.marino@pmrwirasman1c.sch.id', 'Kreatif berkarya demi syiar palang merah yang bersahabat.')">
+                                    <img src="https://images.unsplash.com/photo-1524504388940-b1c1722653e1?w=400&auto=format&fit=crop&q=80" class="w-24 h-24 sm:w-28 sm:h-28 rounded-2xl object-cover border-2 border-slate-200 shadow-sm group-hover/photo:scale-105 transition-transform duration-300">
+                                    <div class="absolute inset-0 rounded-2xl bg-black/40 opacity-0 group-hover/photo:opacity-100 flex items-center justify-center transition text-white text-[10px] font-bold gap-1 backdrop-blur-xs">
+                                        <i class="fa-solid fa-id-card"></i> Biodata
+                                    </div>
+                                </div>
+                                <div class="min-w-0">
+                                    <div class="text-sm font-extrabold text-slate-900 leading-snug cursor-pointer hover:text-pmr-primary transition" onclick="openBio('Putri Marino', 'Staf Bidang Kreasi', 'Kelas X-2', 'https://images.unsplash.com/photo-1524504388940-b1c1722653e1?w=400&auto=format&fit=crop&q=80', '242510021', 'Perempuan', 'Bogor, 15 Oktober 2009', 'Jl. Ciawi Sejahtera Blok A No. 3, Bogor', '081299334411', 'putri.marino@pmrwirasman1c.sch.id', 'Kreatif berkarya demi syiar palang merah yang bersahabat.')">Putri Marino</div>
+                                    <div class="text-xs text-pmr-primary font-bold mt-0.5">Staf Bidang Kreasi</div>
                                     <div class="text-xs text-slate-500 font-medium truncate mt-0.5">Kelas X-2</div>
+                                    <button type="button" onclick="openBio('Putri Marino', 'Staf Bidang Kreasi', 'Kelas X-2', 'https://images.unsplash.com/photo-1524504388940-b1c1722653e1?w=400&auto=format&fit=crop&q=80', '242510021', 'Perempuan', 'Bogor, 15 Oktober 2009', 'Jl. Ciawi Sejahtera Blok A No. 3, Bogor', '081299334411', 'putri.marino@pmrwirasman1c.sch.id', 'Kreatif berkarya demi syiar palang merah yang bersahabat.')" class="mt-2 text-[11px] font-bold text-slate-600 hover:text-pmr-primary inline-flex items-center gap-1 transition">
+                                        <i class="fa-solid fa-user-circle text-xs text-pmr-primary"></i> Biodata Lengkap &rarr;
+                                    </button>
                                 </div>
                             </div>
-                            <div class="bg-white p-3 sm:p-3.5 rounded-2xl border border-slate-200/90 shadow-sm flex items-center gap-3.5 hover:border-pmr-primary hover:shadow-md transition">
-                                <img src="https://images.unsplash.com/photo-1501196354995-cbb51c65aaea?w=128&auto=format&fit=crop&q=80" class="w-16 h-16 sm:w-18 sm:h-18 rounded-2xl object-cover border-2 border-slate-200 shadow-sm flex-shrink-0 cursor-pointer hover:scale-105 transition">
-                                <div class="min-w-0 text-left">
-                                    <div class="text-sm font-extrabold text-slate-900 leading-snug">Aldi Taher</div>
-                                    <div class="text-xs text-pmr-primary font-bold mt-0.5">Staf</div>
+                            <div class="bg-white p-3.5 rounded-2xl border border-slate-200/90 shadow-sm flex flex-col items-center text-center sm:flex-row sm:text-left gap-4 hover:border-pmr-primary hover:shadow-md transition group/staf">
+                                <div class="relative cursor-pointer group/photo flex-shrink-0" onclick="openBio('Aldi Taher', 'Staf Bidang Kreasi', 'Kelas XI-5', 'https://images.unsplash.com/photo-1501196354995-cbb51c65aaea?w=400&auto=format&fit=crop&q=80', '242510022', 'Laki-laki', 'Bogor, 20 November 2008', 'Jl. Sukajadi No. 18, Ciawi, Bogor', '081377441122', 'aldi.taher@pmrwirasman1c.sch.id', 'Inovasi alat medis dan poster edukasi untuk kesehatan siswa.')">
+                                    <img src="https://images.unsplash.com/photo-1501196354995-cbb51c65aaea?w=400&auto=format&fit=crop&q=80" class="w-24 h-24 sm:w-28 sm:h-28 rounded-2xl object-cover border-2 border-slate-200 shadow-sm group-hover/photo:scale-105 transition-transform duration-300">
+                                    <div class="absolute inset-0 rounded-2xl bg-black/40 opacity-0 group-hover/photo:opacity-100 flex items-center justify-center transition text-white text-[10px] font-bold gap-1 backdrop-blur-xs">
+                                        <i class="fa-solid fa-id-card"></i> Biodata
+                                    </div>
+                                </div>
+                                <div class="min-w-0">
+                                    <div class="text-sm font-extrabold text-slate-900 leading-snug cursor-pointer hover:text-pmr-primary transition" onclick="openBio('Aldi Taher', 'Staf Bidang Kreasi', 'Kelas XI-5', 'https://images.unsplash.com/photo-1501196354995-cbb51c65aaea?w=400&auto=format&fit=crop&q=80', '242510022', 'Laki-laki', 'Bogor, 20 November 2008', 'Jl. Sukajadi No. 18, Ciawi, Bogor', '081377441122', 'aldi.taher@pmrwirasman1c.sch.id', 'Inovasi alat medis dan poster edukasi untuk kesehatan siswa.')">Aldi Taher</div>
+                                    <div class="text-xs text-pmr-primary font-bold mt-0.5">Staf Bidang Kreasi</div>
                                     <div class="text-xs text-slate-500 font-medium truncate mt-0.5">Kelas XI-5</div>
+                                    <button type="button" onclick="openBio('Aldi Taher', 'Staf Bidang Kreasi', 'Kelas XI-5', 'https://images.unsplash.com/photo-1501196354995-cbb51c65aaea?w=400&auto=format&fit=crop&q=80', '242510022', 'Laki-laki', 'Bogor, 20 November 2008', 'Jl. Sukajadi No. 18, Ciawi, Bogor', '081377441122', 'aldi.taher@pmrwirasman1c.sch.id', 'Inovasi alat medis dan poster edukasi untuk kesehatan siswa.')" class="mt-2 text-[11px] font-bold text-slate-600 hover:text-pmr-primary inline-flex items-center gap-1 transition">
+                                        <i class="fa-solid fa-user-circle text-xs text-pmr-primary"></i> Biodata Lengkap &rarr;
+                                    </button>
                                 </div>
                             </div>
                         </div>
@@ -409,6 +561,171 @@
             </div>
         </div>
     </div>
+
+    <!-- POPUP MODAL BIODATA ANGGOTA LENGKAP -->
+    <div id="biodata-modal" class="fixed inset-0 z-50 bg-stone-950/80 backdrop-blur-sm hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-3xl max-w-xl w-full max-h-[90vh] shadow-2xl flex flex-col overflow-hidden animate-in fade-in zoom-in-95 duration-200 border border-red-100">
+            
+            <!-- Modal Top Header Banner -->
+            <div class="relative bg-gradient-to-r from-pmr-primary via-red-700 to-pmr-dark text-white p-6 sm:p-7 flex items-center justify-between">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-2xl bg-white/20 backdrop-blur-xs text-white flex items-center justify-center text-lg shadow-inner">
+                        <i class="fa-solid fa-id-card-clip"></i>
+                    </div>
+                    <div>
+                        <span class="text-[10px] uppercase font-black tracking-widest text-red-200 bg-red-900/40 px-2 py-0.5 rounded-full">Biodata Anggota</span>
+                        <h3 class="text-base sm:text-lg font-black leading-tight text-white mt-0.5">PMR Wira SMAN 1 Ciawi</h3>
+                    </div>
+                </div>
+                <button type="button" onclick="closeBio()" class="w-9 h-9 rounded-xl bg-white/10 hover:bg-white/30 text-white flex items-center justify-center transition">
+                    <i class="fa-solid fa-xmark text-lg"></i>
+                </button>
+            </div>
+
+            <!-- Modal Body Content -->
+            <div class="p-6 sm:p-7 overflow-y-auto flex-grow space-y-6">
+                
+                <!-- Hero Profile Card -->
+                <div class="flex flex-col sm:flex-row items-center gap-5 sm:gap-6 bg-slate-50 p-5 rounded-3xl border border-slate-200/80">
+                    <img id="bio-photo" src="" alt="Foto Anggota" class="w-28 h-28 sm:w-32 sm:h-32 rounded-3xl object-cover border-4 border-white shadow-xl flex-shrink-0">
+                    <div class="text-center sm:text-left min-w-0">
+                        <div class="inline-flex items-center gap-1.5 bg-red-100 text-pmr-primary px-3 py-0.5 rounded-full text-xs font-black uppercase tracking-wider mb-1.5" id="bio-badge-pos">
+                            <!-- Position Badge -->
+                        </div>
+                        <h2 class="text-xl sm:text-2xl font-black text-slate-900 leading-tight" id="bio-name"></h2>
+                        <p class="text-xs sm:text-sm text-slate-600 font-semibold mt-1" id="bio-class"></p>
+                    </div>
+                </div>
+
+                <!-- Detailed Grid Information -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+                    
+                    <!-- NIS -->
+                    <div class="bg-white p-3.5 rounded-2xl border border-slate-200/90 shadow-xs flex items-center gap-3.5">
+                        <div class="w-10 h-10 rounded-xl bg-red-50 text-pmr-primary flex items-center justify-center text-base flex-shrink-0 font-bold">
+                            <i class="fa-solid fa-address-card"></i>
+                        </div>
+                        <div class="min-w-0">
+                            <div class="text-[11px] font-bold text-slate-400 uppercase tracking-wider">NIS / ID Anggota</div>
+                            <div class="text-xs sm:text-sm font-extrabold text-slate-800 truncate mt-0.5" id="bio-nis">-</div>
+                        </div>
+                    </div>
+
+                    <!-- Jenis Kelamin -->
+                    <div class="bg-white p-3.5 rounded-2xl border border-slate-200/90 shadow-xs flex items-center gap-3.5">
+                        <div class="w-10 h-10 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center text-base flex-shrink-0 font-bold">
+                            <i class="fa-solid fa-venus-mars"></i>
+                        </div>
+                        <div class="min-w-0">
+                            <div class="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Jenis Kelamin</div>
+                            <div class="text-xs sm:text-sm font-extrabold text-slate-800 truncate mt-0.5" id="bio-gender">-</div>
+                        </div>
+                    </div>
+
+                    <!-- Tempat, Tanggal Lahir -->
+                    <div class="bg-white p-3.5 rounded-2xl border border-slate-200/90 shadow-xs flex items-center gap-3.5 sm:col-span-2">
+                        <div class="w-10 h-10 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center text-base flex-shrink-0 font-bold">
+                            <i class="fa-solid fa-cake-candles"></i>
+                        </div>
+                        <div class="min-w-0">
+                            <div class="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Tempat, Tanggal Lahir</div>
+                            <div class="text-xs sm:text-sm font-extrabold text-slate-800 truncate mt-0.5" id="bio-ttl">-</div>
+                        </div>
+                    </div>
+
+                    <!-- Alamat Domisili -->
+                    <div class="bg-white p-3.5 rounded-2xl border border-slate-200/90 shadow-xs flex items-center gap-3.5 sm:col-span-2">
+                        <div class="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center text-base flex-shrink-0 font-bold">
+                            <i class="fa-solid fa-location-dot"></i>
+                        </div>
+                        <div class="min-w-0">
+                            <div class="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Alamat Domisili</div>
+                            <div class="text-xs sm:text-sm font-extrabold text-slate-800 mt-0.5 leading-snug" id="bio-address">-</div>
+                        </div>
+                    </div>
+
+                    <!-- No. WhatsApp / HP -->
+                    <div class="bg-white p-3.5 rounded-2xl border border-slate-200/90 shadow-xs flex items-center gap-3.5">
+                        <div class="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center text-base flex-shrink-0 font-bold">
+                            <i class="fa-brands fa-whatsapp"></i>
+                        </div>
+                        <div class="min-w-0">
+                            <div class="text-[11px] font-bold text-slate-400 uppercase tracking-wider">No. Telepon / WA</div>
+                            <div class="text-xs sm:text-sm font-extrabold text-slate-800 truncate mt-0.5" id="bio-phone">-</div>
+                        </div>
+                    </div>
+
+                    <!-- Email -->
+                    <div class="bg-white p-3.5 rounded-2xl border border-slate-200/90 shadow-xs flex items-center gap-3.5">
+                        <div class="w-10 h-10 rounded-xl bg-purple-50 text-purple-600 flex items-center justify-center text-base flex-shrink-0 font-bold">
+                            <i class="fa-solid fa-envelope"></i>
+                        </div>
+                        <div class="min-w-0">
+                            <div class="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Email</div>
+                            <div class="text-xs sm:text-sm font-extrabold text-slate-800 truncate mt-0.5" id="bio-email">-</div>
+                        </div>
+                    </div>
+
+                </div>
+
+                <!-- Motto Box -->
+                <div id="bio-motto-container" class="p-4 rounded-2xl bg-gradient-to-r from-red-50 to-rose-50 border border-red-100 flex items-start gap-3">
+                    <i class="fa-solid fa-quote-left text-pmr-primary text-xl flex-shrink-0 mt-0.5"></i>
+                    <div>
+                        <div class="text-[11px] font-extrabold uppercase tracking-wider text-pmr-primary">Motto Hidup Relawan</div>
+                        <p class="text-xs sm:text-sm font-medium italic text-slate-700 mt-1 leading-relaxed" id="bio-motto"></p>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- Modal Footer -->
+            <div class="px-6 py-4 bg-slate-50 border-t border-slate-100 flex items-center justify-between">
+                <span class="text-xs text-slate-500 font-medium">Masa Bakti Ragana Dwi Pantara 2026/2027</span>
+                <button type="button" onclick="closeBio()" class="px-6 py-2.5 rounded-xl bg-pmr-primary hover:bg-pmr-dark text-white text-xs font-extrabold shadow-md transition">
+                    Tutup
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function openBio(name, pos, cls, photo, nis, gender, ttl, addr, phone, email, motto) {
+            document.getElementById('bio-name').textContent = name;
+            document.getElementById('bio-badge-pos').textContent = pos;
+            document.getElementById('bio-class').textContent = 'Tingkat / Kelas: ' + cls;
+            document.getElementById('bio-photo').src = photo;
+            document.getElementById('bio-nis').textContent = nis || '-';
+            document.getElementById('bio-gender').textContent = gender || '-';
+            document.getElementById('bio-ttl').textContent = ttl || '-';
+            document.getElementById('bio-address').textContent = addr || '-';
+            document.getElementById('bio-phone').textContent = phone || '-';
+            document.getElementById('bio-email').textContent = email || '-';
+            
+            const mottoEl = document.getElementById('bio-motto');
+            const mottoContainer = document.getElementById('bio-motto-container');
+            if (motto && motto.trim() !== '') {
+                mottoEl.textContent = `"${motto}"`;
+                mottoContainer.classList.remove('hidden');
+            } else {
+                mottoContainer.classList.add('hidden');
+            }
+
+            document.getElementById('biodata-modal').classList.remove('hidden');
+        }
+
+        function closeBio() {
+            document.getElementById('biodata-modal').classList.add('hidden');
+        }
+
+        document.getElementById('biodata-modal').addEventListener('click', function(e) {
+            if (e.target === this) closeBio();
+        });
+
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') closeBio();
+        });
+    </script>
 
 </body>
 </html>
