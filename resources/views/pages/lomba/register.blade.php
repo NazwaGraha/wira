@@ -3,13 +3,13 @@
 @section('title', 'Form Pendaftaran Lomba PMR - ' . ($event->title ?? ''))
 
 @section('content')
-<div class="bg-slate-900 text-white pt-32 pb-12">
+<div class="bg-slate-900 text-white pt-24 sm:pt-32 pb-8 sm:pb-12">
     <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
         <span class="bg-red-500/20 text-red-400 border border-red-500/30 px-3.5 py-1 rounded-full text-xs font-bold uppercase tracking-wider">
             Formulir Resmi
         </span>
-        <h1 class="text-3xl sm:text-4xl font-extrabold mt-3">Pendaftaran Kontingen Lomba</h1>
-        <p class="text-slate-400 text-sm mt-2 max-w-xl mx-auto">
+        <h1 class="text-2xl sm:text-4xl font-extrabold mt-3">Pendaftaran Kontingen Lomba</h1>
+        <p class="text-slate-400 text-xs sm:text-sm mt-2 max-w-xl mx-auto">
             Isi data sekolah, pilih cabang lomba yang diikuti, dan lampirkan bukti pembayaran untuk mendapatkan e-Kwitansi & Kartu Peserta.
         </p>
     </div>

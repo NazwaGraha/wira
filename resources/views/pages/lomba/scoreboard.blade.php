@@ -15,15 +15,15 @@
             </div>
 
             <!-- Level Selector Tabs -->
-            <div class="bg-slate-800 p-1.5 rounded-2xl border border-slate-700 flex gap-1">
-                <a href="{{ route('lomba.scoreboard', ['level' => 'Mula']) }}" class="px-5 py-2.5 rounded-xl font-bold text-xs transition {{ $level == 'Mula' ? 'bg-red-600 text-white shadow-lg shadow-red-900/40' : 'text-slate-400 hover:text-white' }}">
-                    PMR Mula (SD)
+            <div class="bg-slate-800 p-1.5 rounded-2xl border border-slate-700 flex w-full sm:w-auto gap-1">
+                <a href="{{ route('lomba.scoreboard', ['level' => 'Mula']) }}" class="flex-1 sm:flex-initial text-center px-3 sm:px-5 py-2.5 rounded-xl font-bold text-xs transition {{ $level == 'Mula' ? 'bg-red-600 text-white shadow-lg shadow-red-900/40' : 'text-slate-400 hover:text-white' }}">
+                    Mula (SD)
                 </a>
-                <a href="{{ route('lomba.scoreboard', ['level' => 'Madya']) }}" class="px-5 py-2.5 rounded-xl font-bold text-xs transition {{ $level == 'Madya' ? 'bg-red-600 text-white shadow-lg shadow-red-900/40' : 'text-slate-400 hover:text-white' }}">
-                    PMR Madya (SMP)
+                <a href="{{ route('lomba.scoreboard', ['level' => 'Madya']) }}" class="flex-1 sm:flex-initial text-center px-3 sm:px-5 py-2.5 rounded-xl font-bold text-xs transition {{ $level == 'Madya' ? 'bg-red-600 text-white shadow-lg shadow-red-900/40' : 'text-slate-400 hover:text-white' }}">
+                    Madya (SMP)
                 </a>
-                <a href="{{ route('lomba.scoreboard', ['level' => 'Wira']) }}" class="px-5 py-2.5 rounded-xl font-bold text-xs transition {{ $level == 'Wira' ? 'bg-red-600 text-white shadow-lg shadow-red-900/40' : 'text-slate-400 hover:text-white' }}">
-                    PMR Wira (SMA)
+                <a href="{{ route('lomba.scoreboard', ['level' => 'Wira']) }}" class="flex-1 sm:flex-initial text-center px-3 sm:px-5 py-2.5 rounded-xl font-bold text-xs transition {{ $level == 'Wira' ? 'bg-red-600 text-white shadow-lg shadow-red-900/40' : 'text-slate-400 hover:text-white' }}">
+                    Wira (SMA)
                 </a>
             </div>
         </div>
