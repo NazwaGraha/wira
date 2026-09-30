@@ -277,8 +277,8 @@
 </section>
 
 <!-- Struktur Organisasi Dinamis dari Database / Backoffice -->
-<section class="py-16 sm:py-24 bg-slate-100/80 border-t border-slate-200/80">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+<section class="py-16 sm:py-24 bg-slate-100/90 border-t border-slate-200/80">
+    <div class="max-w-[1500px] mx-auto px-4 sm:px-6 lg:px-8">
         <div class="text-center max-w-3xl mx-auto mb-16 sm:mb-20">
             <div class="text-pmr-primary font-bold text-xs sm:text-sm uppercase tracking-widest mb-2">{{ $organizationSetting->badge ?? 'Bagan Kepengurusan' }}</div>
             <h2 class="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-slate-900 tracking-tight">{{ $organizationSetting->title ?? 'Struktur Organisasi 2026/2027' }}</h2>
@@ -305,15 +305,15 @@
                             $photoUrl = $m->photo_url ?: ('https://ui-avatars.com/api/?name=' . urlencode($m->name) . '&background=dc2626&color=ffffff&bold=true');
                             $initials = strtoupper(substr($m->name, 0, 2));
                         @endphp
-                        <div class="bg-stone-900 text-white p-5 sm:p-6 rounded-3xl shadow-xl flex items-center gap-5 min-w-[320px] max-w-md border-t-4 border-pmr-primary hover:shadow-2xl hover:scale-[1.01] transition duration-300">
-                            <img src="{{ $photoUrl }}" alt="{{ $m->name }}" class="w-16 h-16 sm:w-18 sm:h-18 rounded-full object-cover border-2 border-red-500 shadow-lg flex-shrink-0">
-                            <div class="text-left">
-                                <div class="text-xs uppercase tracking-wider text-red-400 font-extrabold flex items-center gap-1.5">
+                        <div class="bg-stone-900 text-white p-6 sm:p-7 rounded-3xl shadow-xl flex flex-col sm:flex-row items-center gap-6 min-w-[320px] max-w-lg border-t-4 border-pmr-primary hover:shadow-2xl hover:scale-[1.01] transition duration-300">
+                            <img src="{{ $photoUrl }}" alt="{{ $m->name }}" class="w-24 h-24 sm:w-28 sm:h-28 rounded-2xl object-cover border-4 border-red-500 shadow-xl flex-shrink-0 cursor-pointer hover:opacity-90 transition" onclick="previewImage('{{ $photoUrl }}', '{{ addslashes($m->name) }}', '{{ addslashes($m->position) }}')">
+                            <div class="text-center sm:text-left">
+                                <div class="text-xs uppercase tracking-wider text-red-400 font-extrabold flex items-center justify-center sm:justify-start gap-1.5">
                                     <i class="fa-solid fa-shield-halved text-xs"></i> {{ $m->position }}
                                 </div>
-                                <div class="text-lg sm:text-xl font-extrabold mt-1 text-white leading-snug">{{ $m->name }}</div>
+                                <div class="text-xl sm:text-2xl font-black mt-1 text-white leading-snug">{{ $m->name }}</div>
                                 @if($m->subtitle)
-                                    <div class="text-xs sm:text-sm text-stone-400 mt-0.5">{{ $m->subtitle }}</div>
+                                    <div class="text-xs sm:text-sm text-stone-400 mt-1">{{ $m->subtitle }}</div>
                                 @endif
                             </div>
                         </div>
@@ -322,10 +322,10 @@
             @endif
 
             @if($pembina->isNotEmpty() && ($ketua->isNotEmpty() || $bph->isNotEmpty() || $seksi->isNotEmpty()))
-                <div class="w-0.5 h-10 bg-slate-300 my-2"></div>
+                <div class="w-0.5 h-12 bg-slate-300 my-2"></div>
             @endif
 
-            <!-- Level 2: Ketua Umum / Pimpinan -->
+            <!-- Level 2: Ketua Umum / Pimpinan (Hero Card) -->
             @if($ketua->isNotEmpty())
                 <div class="flex flex-wrap justify-center gap-6">
                     @foreach($ketua as $m)
@@ -333,15 +333,15 @@
                             $photoUrl = $m->photo_url ?: ('https://ui-avatars.com/api/?name=' . urlencode($m->name) . '&background=dc2626&color=ffffff&bold=true');
                             $initials = strtoupper(substr($m->name, 0, 2));
                         @endphp
-                        <div class="bg-gradient-to-br from-pmr-primary via-red-700 to-pmr-dark text-white p-6 sm:p-7 rounded-3xl shadow-2xl flex items-center gap-5 min-w-[340px] max-w-lg border border-red-400/30 hover:shadow-red-950/30 hover:scale-[1.02] transition duration-300">
-                            <img src="{{ $photoUrl }}" alt="{{ $m->name }}" class="w-20 h-20 sm:w-22 sm:h-22 rounded-full object-cover border-4 border-white/90 shadow-2xl flex-shrink-0">
-                            <div class="text-left">
-                                <div class="text-xs uppercase tracking-wider text-red-100 font-black flex items-center gap-1.5">
+                        <div class="bg-gradient-to-br from-pmr-primary via-red-700 to-pmr-dark text-white p-7 sm:p-9 rounded-3xl shadow-2xl flex flex-col sm:flex-row items-center gap-7 min-w-[340px] max-w-2xl border border-red-400/30 hover:shadow-red-950/30 hover:scale-[1.01] transition duration-300">
+                            <img src="{{ $photoUrl }}" alt="{{ $m->name }}" class="w-28 h-28 sm:w-36 sm:h-36 rounded-3xl object-cover border-4 border-white/90 shadow-2xl flex-shrink-0 cursor-pointer hover:scale-105 transition duration-300" onclick="previewImage('{{ $photoUrl }}', '{{ addslashes($m->name) }}', '{{ addslashes($m->position) }}')">
+                            <div class="text-center sm:text-left">
+                                <div class="inline-flex items-center gap-2 bg-white/20 backdrop-blur-xs px-3.5 py-1 rounded-full text-xs uppercase tracking-wider text-red-100 font-black mb-1">
                                     <i class="fa-solid fa-crown text-amber-300 text-sm"></i> {{ $m->position }}
                                 </div>
-                                <div class="text-xl sm:text-2xl font-black mt-1 text-white leading-snug">{{ $m->name }}</div>
+                                <div class="text-2xl sm:text-3xl font-black mt-1 text-white leading-tight">{{ $m->name }}</div>
                                 @if($m->subtitle)
-                                    <div class="text-xs sm:text-sm text-red-100/90 mt-1 font-medium">{{ $m->subtitle }}</div>
+                                    <div class="text-sm sm:text-base text-red-100/90 mt-1 font-medium">{{ $m->subtitle }}</div>
                                 @endif
                             </div>
                         </div>
@@ -350,26 +350,26 @@
             @endif
 
             @if($ketua->isNotEmpty() && ($bph->isNotEmpty() || $seksi->isNotEmpty()))
-                <div class="w-0.5 h-10 bg-slate-300 my-2"></div>
+                <div class="w-0.5 h-12 bg-slate-300 my-2"></div>
             @endif
 
             <!-- Level 3: Pengurus Harian / BPH (Sekretaris & Bendahara) -->
             @if($bph->isNotEmpty())
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-6 w-full max-w-3xl">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 w-full max-w-4xl">
                     @foreach($bph as $m)
                         @php
                             $photoUrl = $m->photo_url ?: ('https://ui-avatars.com/api/?name=' . urlencode($m->name) . '&background=dc2626&color=ffffff&bold=true');
                             $initials = strtoupper(substr($m->name, 0, 2));
                         @endphp
-                        <div class="bg-white p-5 sm:p-6 rounded-3xl shadow-md border border-slate-200/90 flex items-center gap-4 hover:shadow-xl hover:border-pmr-primary transition duration-300">
-                            <img src="{{ $photoUrl }}" alt="{{ $m->name }}" class="w-16 h-16 rounded-full object-cover border-2 border-slate-200 shadow-sm flex-shrink-0">
-                            <div class="text-left">
-                                <div class="text-xs font-black text-pmr-primary uppercase tracking-wide flex items-center gap-1.5">
+                        <div class="bg-white p-6 sm:p-7 rounded-3xl shadow-lg border border-slate-200/90 flex flex-col sm:flex-row items-center gap-5 hover:shadow-2xl hover:border-pmr-primary transition duration-300">
+                            <img src="{{ $photoUrl }}" alt="{{ $m->name }}" class="w-24 h-24 sm:w-28 sm:h-28 rounded-2xl object-cover border-4 border-slate-100 shadow-md flex-shrink-0 cursor-pointer hover:opacity-90 transition" onclick="previewImage('{{ $photoUrl }}', '{{ addslashes($m->name) }}', '{{ addslashes($m->position) }}')">
+                            <div class="text-center sm:text-left">
+                                <div class="text-xs font-black text-pmr-primary uppercase tracking-wide flex items-center justify-center sm:justify-start gap-1.5">
                                     <i class="{{ $m->icon ?: 'fa-solid fa-user' }} text-xs"></i> {{ $m->position }}
                                 </div>
-                                <div class="font-extrabold text-slate-900 text-base sm:text-lg mt-0.5 leading-snug">{{ $m->name }}</div>
+                                <div class="font-extrabold text-slate-900 text-lg sm:text-xl mt-1 leading-snug">{{ $m->name }}</div>
                                 @if($m->subtitle)
-                                    <div class="text-xs sm:text-sm text-slate-500 mt-0.5">{{ $m->subtitle }}</div>
+                                    <div class="text-xs sm:text-sm text-slate-500 mt-1 font-medium">{{ $m->subtitle }}</div>
                                 @endif
                             </div>
                         </div>
@@ -378,12 +378,12 @@
             @endif
 
             @if($bph->isNotEmpty() && ($seksi->isNotEmpty() || $others->isNotEmpty()))
-                <div class="w-0.5 h-10 bg-slate-300 my-2"></div>
+                <div class="w-0.5 h-12 bg-slate-300 my-2"></div>
             @endif
 
             <!-- Level 4: 5 Bidang Utama (Markas, Pelayanan, Diklat, Humas, Kreasi) -->
             @if($seksi->isNotEmpty())
-                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-5 sm:gap-6 w-full mt-2">
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6 sm:gap-7 w-full mt-2">
                     @foreach($seksi as $m)
                         @php
                             $photoUrl = $m->photo_url ?: ('https://ui-avatars.com/api/?name=' . urlencode($m->name) . '&background=dc2626&color=ffffff&bold=true');
@@ -391,57 +391,63 @@
                             $staffList = is_array($m->staff_members) ? $m->staff_members : [];
                             $workProg = trim($m->work_program ?? '');
                         @endphp
-                        <div class="bg-white rounded-3xl shadow-md border border-slate-200 overflow-hidden flex flex-col hover:shadow-2xl hover:border-pmr-primary transition-all duration-300 group">
+                        <div class="bg-white rounded-3xl shadow-lg border border-slate-200 overflow-hidden flex flex-col hover:shadow-2xl hover:border-pmr-primary transition-all duration-300 group">
                             
                             <!-- Header Bidang -->
                             <div class="bg-gradient-to-r from-red-50 via-rose-50 to-white px-5 py-4 border-b border-red-100 flex items-center gap-3">
-                                <div class="w-9 h-9 rounded-xl bg-pmr-primary text-white flex items-center justify-center text-sm font-bold flex-shrink-0 shadow-sm">
+                                <div class="w-10 h-10 rounded-2xl bg-pmr-primary text-white flex items-center justify-center text-base font-bold flex-shrink-0 shadow-md">
                                     <i class="{{ $m->icon ?: 'fa-solid fa-shapes' }}"></i>
                                 </div>
-                                <h3 class="font-black text-sm text-slate-900 uppercase tracking-tight group-hover:text-pmr-primary transition">
+                                <h3 class="font-black text-sm sm:text-base text-slate-900 uppercase tracking-tight group-hover:text-pmr-primary transition">
                                     {{ $m->position }}
                                 </h3>
                             </div>
 
-                            <!-- Ketua Bidang -->
-                            <div class="p-5 flex items-center gap-3.5 border-b border-slate-100 bg-white">
-                                <img src="{{ $photoUrl }}" alt="{{ $m->name }}" class="w-14 h-14 sm:w-15 sm:h-15 rounded-full object-cover border-2 border-pmr-primary/40 shadow-md flex-shrink-0">
-                                <div class="min-w-0">
-                                    <div class="font-extrabold text-slate-900 text-sm sm:text-base leading-snug truncate" title="{{ $m->name }}">{{ $m->name }}</div>
-                                    <div class="text-xs text-slate-500 font-semibold truncate mt-0.5">
+                            <!-- Ketua Bidang (Foto Besar & Jelas) -->
+                            <div class="p-6 flex flex-col items-center text-center border-b border-slate-100 bg-white">
+                                <div class="relative group/avatar">
+                                    <img src="{{ $photoUrl }}" alt="{{ $m->name }}" class="w-24 h-24 sm:w-28 sm:h-28 rounded-3xl object-cover border-4 border-red-100 ring-2 ring-pmr-primary/40 shadow-lg flex-shrink-0 cursor-pointer hover:scale-105 transition duration-300" onclick="previewImage('{{ $photoUrl }}', '{{ addslashes($m->name) }}', '{{ addslashes($m->position) }}')">
+                                    <span class="absolute -bottom-2 -right-2 bg-pmr-primary text-white text-[10px] font-black px-2 py-0.5 rounded-full shadow border-2 border-white">Ketua</span>
+                                </div>
+                                <div class="mt-4">
+                                    <div class="font-extrabold text-slate-900 text-base sm:text-lg leading-snug" title="{{ $m->name }}">{{ $m->name }}</div>
+                                    <div class="text-xs text-pmr-primary font-bold mt-1 inline-block bg-red-50 px-2.5 py-0.5 rounded-full border border-red-100">
                                         {{ $m->subtitle ?: 'Ketua ' . $m->position }}
                                     </div>
                                 </div>
                             </div>
 
-                            <!-- Bagian Staf (FOTO STAF DIPERBESAR) -->
-                            <div class="p-4 sm:p-5 bg-slate-50/70 flex-grow space-y-3">
-                                <div class="flex items-center justify-between pb-1">
-                                    <span class="text-xs font-black uppercase tracking-wider text-slate-600">Staf</span>
-                                    <span class="text-xs font-extrabold px-2 py-0.5 rounded-full bg-slate-200 text-slate-700">{{ count($staffList) }} Orang</span>
+                            <!-- Bagian Staf (FOTO STAF BESAR & SANGAT JELAS) -->
+                            <div class="p-5 bg-slate-50/80 flex-grow space-y-4">
+                                <div class="flex items-center justify-between pb-1 border-b border-slate-200/60">
+                                    <span class="text-xs font-black uppercase tracking-wider text-slate-700 flex items-center gap-1.5">
+                                        <i class="fa-solid fa-users text-slate-400"></i> Staf Bidang
+                                    </span>
+                                    <span class="text-xs font-extrabold px-2.5 py-0.5 rounded-full bg-slate-200 text-slate-700">{{ count($staffList) }} Orang</span>
                                 </div>
 
                                 @if(!empty($staffList) && count($staffList) > 0)
-                                    <div class="space-y-2.5">
+                                    <div class="space-y-3">
                                         @foreach($staffList as $st)
                                             @php
                                                 $stName = $st['name'] ?? '';
                                                 $stClass = $st['class_grade'] ?? '';
                                                 $stPhoto = $st['photo'] ?? ('https://ui-avatars.com/api/?name=' . urlencode($stName) . '&background=dc2626&color=ffffff&bold=true');
                                             @endphp
-                                            <div class="bg-white p-2.5 sm:p-3 rounded-2xl border border-slate-200/80 shadow-xs flex items-center gap-3 hover:border-pmr-primary/40 hover:shadow-sm transition">
-                                                <img src="{{ $stPhoto }}" alt="{{ $stName }}" class="w-11 h-11 sm:w-12 sm:h-12 rounded-full object-cover border-2 border-slate-200 shadow-sm flex-shrink-0">
+                                            <div class="bg-white p-3 sm:p-3.5 rounded-2xl border border-slate-200/90 shadow-sm flex items-center gap-3.5 hover:border-pmr-primary hover:shadow-md transition">
+                                                <img src="{{ $stPhoto }}" alt="{{ $stName }}" class="w-16 h-16 sm:w-18 sm:h-18 rounded-2xl object-cover border-2 border-slate-200 shadow-sm flex-shrink-0 cursor-pointer hover:scale-105 transition duration-200" onclick="previewImage('{{ $stPhoto }}', '{{ addslashes($stName) }}', 'Staf {{ addslashes($m->position) }}')">
                                                 <div class="min-w-0 text-left">
-                                                    <div class="text-xs sm:text-sm font-bold text-slate-900 truncate leading-snug" title="{{ $stName }}">{{ $stName }}</div>
+                                                    <div class="text-sm font-extrabold text-slate-900 leading-snug" title="{{ $stName }}">{{ $stName }}</div>
+                                                    <div class="text-xs text-pmr-primary font-bold mt-0.5">Staf</div>
                                                     @if($stClass)
-                                                        <div class="text-[11px] text-slate-500 font-medium truncate mt-0.5">{{ $stClass }}</div>
+                                                        <div class="text-xs text-slate-500 font-medium truncate mt-0.5">{{ $stClass }}</div>
                                                     @endif
                                                 </div>
                                             </div>
                                         @endforeach
                                     </div>
                                 @else
-                                    <div class="text-xs text-slate-400 italic py-2">Staf operasional bidang</div>
+                                    <div class="text-xs text-slate-400 italic py-4 text-center">Staf operasional bidang</div>
                                 @endif
                             </div>
 
@@ -449,7 +455,7 @@
                             <div class="p-4 bg-white border-t border-slate-100 mt-auto">
                                 <button type="button" 
                                     onclick="openProgramModal('{{ addslashes($m->position) }}', '{{ addslashes($m->name) }}', '{{ addslashes($m->subtitle ?: 'Ketua ' . $m->position) }}', '{{ addslashes($photoUrl ?? '') }}', '{{ addslashes($m->icon ?: 'fa-solid fa-shapes') }}', {!! htmlspecialchars(json_encode($workProg), ENT_QUOTES, 'UTF-8') !!})"
-                                    class="w-full text-center py-3 px-3 rounded-2xl bg-red-50 hover:bg-pmr-primary text-pmr-primary hover:text-white font-black text-xs sm:text-sm transition-all duration-200 flex items-center justify-center gap-2 shadow-xs group/btn">
+                                    class="w-full text-center py-3.5 px-3 rounded-2xl bg-red-50 hover:bg-pmr-primary text-pmr-primary hover:text-white font-black text-xs sm:text-sm transition-all duration-200 flex items-center justify-center gap-2 shadow-xs group/btn">
                                     <i class="fa-solid fa-clipboard-list text-sm group-hover/btn:scale-110 transition"></i>
                                     <span>Program Kerja</span>
                                     <i class="fa-solid fa-arrow-right text-xs"></i>
@@ -463,12 +469,12 @@
 
             <!-- Level 5: Divisi / Anggota Tambahan (jika ada) -->
             @if($others->isNotEmpty())
-                <div class="w-0.5 h-10 bg-slate-300 my-2"></div>
-                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 w-full">
+                <div class="w-0.5 h-12 bg-slate-300 my-2"></div>
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 w-full max-w-5xl">
                     @foreach($others as $m)
-                        <div class="bg-white p-5 rounded-3xl shadow-sm border border-slate-200 text-center hover:shadow-md transition">
+                        <div class="bg-white p-6 rounded-3xl shadow-md border border-slate-200 text-center hover:shadow-lg transition">
                             <div class="text-xs font-bold text-slate-500 uppercase">{{ $m->position }}</div>
-                            <div class="font-extrabold text-slate-800 text-base mt-1">{{ $m->name }}</div>
+                            <div class="font-extrabold text-slate-800 text-lg mt-1">{{ $m->name }}</div>
                             @if($m->subtitle)
                                 <div class="text-xs text-slate-500 mt-0.5">{{ $m->subtitle }}</div>
                             @endif
@@ -593,7 +599,45 @@
             closeProgramModal();
         }
     });
+
+    function previewImage(url, name, role) {
+        const modal = document.getElementById('image-preview-modal');
+        const img = document.getElementById('image-preview-img');
+        const title = document.getElementById('image-preview-title');
+        const subtitle = document.getElementById('image-preview-subtitle');
+        if (img) img.src = url;
+        if (title) title.textContent = name || '';
+        if (subtitle) subtitle.textContent = role || '';
+        if (modal) modal.classList.remove('hidden');
+    }
+
+    function closeImageModal() {
+        const modal = document.getElementById('image-preview-modal');
+        if (modal) modal.classList.add('hidden');
+    }
+
+    document.getElementById('image-preview-modal')?.addEventListener('click', function(e) {
+        if (e.target === this) {
+            closeImageModal();
+        }
+    });
 </script>
 @endpush
+
+<!-- LIGHTBOX MODAL PREVIEW FOTO ANGGOTA -->
+<div id="image-preview-modal" class="fixed inset-0 z-50 bg-stone-950/85 backdrop-blur-md hidden flex items-center justify-center p-4">
+    <div class="relative bg-white rounded-3xl max-w-md w-full overflow-hidden shadow-2xl animate-in fade-in zoom-in-95 duration-200 text-center border border-white/20">
+        <button type="button" onclick="closeImageModal()" class="absolute top-4 right-4 z-10 w-10 h-10 rounded-full bg-stone-900/60 hover:bg-stone-900 text-white flex items-center justify-center backdrop-blur-xs transition">
+            <i class="fa-solid fa-xmark text-lg"></i>
+        </button>
+        <div class="p-3 bg-stone-100 flex items-center justify-center">
+            <img id="image-preview-img" src="" alt="Preview Foto" class="max-h-[70vh] w-auto max-w-full rounded-2xl object-cover shadow-md">
+        </div>
+        <div class="p-5 bg-white border-t border-slate-100">
+            <h4 id="image-preview-title" class="font-extrabold text-slate-900 text-lg sm:text-xl"></h4>
+            <p id="image-preview-subtitle" class="text-xs sm:text-sm font-semibold text-pmr-primary mt-0.5"></p>
+        </div>
+    </div>
+</div>
 @endsection
 
