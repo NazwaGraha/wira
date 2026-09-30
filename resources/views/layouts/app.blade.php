@@ -102,9 +102,9 @@
                         Tentang Kami
                     </a>
 
-                    <!-- Dropdown Menu: Info (Kegiatan, Galeri, Donor Darah) -->
+                    <!-- Dropdown Menu: Info (Kegiatan, Galeri, Donor Darah, Artikel) -->
                     @php
-                        $isInfoActive = request()->routeIs('kegiatan') || request()->routeIs('galeri') || request()->routeIs('donor-darah');
+                        $isInfoActive = request()->routeIs('kegiatan') || request()->routeIs('galeri') || request()->routeIs('donor-darah') || request()->routeIs('artikel.*');
                     @endphp
                     <div class="relative group">
                         <button type="button" class="px-4 py-2.5 rounded-xl transition flex items-center gap-2 {{ $isInfoActive ? 'bg-black/30 text-white font-bold shadow-inner' : 'hover:bg-white/10 text-white/90' }}">
@@ -144,6 +144,16 @@
                                         <div class="text-[11px] text-slate-400 font-normal">Jadwal & live stok darah</div>
                                     </div>
                                 </a>
+
+                                <a href="{{ route('artikel.index') }}" class="flex items-center gap-3 px-3.5 py-3 rounded-xl hover:bg-red-50 text-slate-700 hover:text-pmr-primary transition {{ request()->routeIs('artikel.*') ? 'bg-red-50 text-pmr-primary font-bold' : '' }}">
+                                    <div class="w-8 h-8 rounded-lg bg-emerald-100 text-emerald-700 flex items-center justify-center flex-shrink-0">
+                                        <i class="fa-solid fa-newspaper text-sm text-emerald-600"></i>
+                                    </div>
+                                    <div>
+                                        <div class="text-sm font-bold leading-tight">Artikel & Edukasi</div>
+                                        <div class="text-[11px] text-slate-400 font-normal">Berita & wawasan P3K</div>
+                                    </div>
+                                </a>
                             </div>
                         </div>
                     </div>
@@ -153,9 +163,6 @@
                         <span>Lomba PMR</span>
                     </a>
 
-                    <a href="{{ route('artikel.index') }}" class="px-4 py-2.5 rounded-xl transition {{ request()->routeIs('artikel.*') ? 'bg-black/30 text-white font-bold shadow-inner' : 'hover:bg-white/10 text-white/90' }}">
-                        Artikel & Edukasi
-                    </a>
                     <a href="{{ route('kontak') }}" class="px-4 py-2.5 rounded-xl transition {{ request()->routeIs('kontak') ? 'bg-black/30 text-white font-bold shadow-inner' : 'hover:bg-white/10 text-white/90' }}">
                         Kontak
                     </a>
@@ -194,12 +201,14 @@
                 <a href="{{ route('donor-darah') }}" class="block px-3 py-2 rounded-md font-semibold text-white hover:bg-white/10 flex items-center gap-2.5">
                     <i class="fa-solid fa-droplet text-xs text-red-400"></i> Donor Darah
                 </a>
+                <a href="{{ route('artikel.index') }}" class="block px-3 py-2 rounded-md font-semibold text-white hover:bg-white/10 flex items-center gap-2.5">
+                    <i class="fa-solid fa-newspaper text-xs text-emerald-300"></i> Artikel & Edukasi
+                </a>
             </div>
 
             <a href="{{ route('lomba.index') }}" class="block px-3 py-2 rounded-md font-bold text-amber-300 hover:bg-white/10 flex items-center gap-2">
                 <i class="fa-solid fa-trophy text-amber-400"></i> Lomba PMR (SBB III)
             </a>
-            <a href="{{ route('artikel.index') }}" class="block px-3 py-2 rounded-md font-semibold text-white hover:bg-white/10">Artikel & Edukasi</a>
             <a href="{{ route('kontak') }}" class="block px-3 py-2 rounded-md font-semibold text-white hover:bg-white/10">Kontak</a>
             <div class="pt-3">
                 <a href="{{ route('kontak') }}#daftar" class="block text-center w-full bg-white text-pmr-primary font-bold py-2.5 rounded-full">
