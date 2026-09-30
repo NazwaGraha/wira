@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>@yield('title', 'Admin Dashboard') | Backoffice PMR Wira SMAN 1 Ciawi</title>
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <!-- FontAwesome & Tailwind -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        pmr: {
+                            50: '#fef2f2',
+                            100: '#fee2e2',
+                            primary: '#980000',
+                            dark: '#6e0000',
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    @stack('styles')
+</head>
+<body class="bg-slate-100 text-slate-800 font-sans antialiased flex h-screen overflow-hidden">
+
+    <!-- Sidebar -->
+    <aside class="w-64 bg-slate-900 text-slate-300 flex flex-col flex-shrink-0 border-r border-slate-800">
+        <!-- Brand Header -->
+        <div class="h-24 bg-slate-950 px-4 flex items-center gap-3 border-b border-slate-800">
+            <div class="bg-white rounded-xl p-2 flex items-center justify-center shadow-md">
+                <img src="{{ asset('images/logo.png') }}" alt="Logo PMR Wira SMAN 1 Ciawi" class="h-11 w-auto object-contain">
+            </div>
+            <div class="overflow-hidden">
+                <div class="font-extrabold text-white text-xs tracking-wide truncate">PMR WIRA CIAWI</div>
+                <div class="text-[10px] text-red-400 font-semibold tracking-wider uppercase">Backoffice CMS</div>
+            </div>
+        </div>
+
+        <!-- Navigation Links -->
+        <div class="flex-grow overflow-y-auto px-4 py-6 space-y-1">
+            <div class="text-[11px] font-bold uppercase text-slate-500 tracking-wider px-3 mb-2">Menu Utama</div>
+            
+            <a href="{{ route('admin.dashboard') }}" class="flex items-center gap-3 px-3 py-2.5 rounded-xl font-medium text-sm transition {{ request()->routeIs('admin.dashboard') ? 'bg-pmr-primary text-white shadow-md shadow-red-950/40' : 'hover:bg-slate-800 text-slate-300' }}">
+                <i class="fa-solid fa-chart-pie w-5 text-center"></i>
+                <span>Dashboard</span>
+            </a>
+
+            <a href="{{ route('admin.articles.index') }}" class="flex items-center gap-3 px-3 py-2.5 rounded-xl font-medium text-sm transition {{ request()->routeIs('admin.articles.*') ? 'bg-pmr-primary text-white shadow-md shadow-red-950/40' : 'hover:bg-slate-800 text-slate-300' }}">
+                <i class="fa-solid fa-newspaper w-5 text-center"></i>
+                <span>Kelola Artikel</span>
+                <span class="ml-auto bg-slate-800 text-slate-300 text-[10px] font-bold px-2 py-0.5 rounded-full">Active</span>
+            </a>
+
+            <a href="{{ route('admin.hero-slides.index') }}" class="flex items-center gap-3 px-3 py-2.5 rounded-xl font-medium text-sm transition {{ request()->routeIs('admin.hero-slides.*') ? 'bg-pmr-primary text-white shadow-md shadow-red-950/40' : 'hover:bg-slate-800 text-slate-300' }}">
+                <i class="fa-solid fa-sliders w-5 text-center"></i>
+                <span>Slider Hero Banner</span>
+            </a>
+
+            <a href="{{ route('admin.activities.index') }}" class="flex items-center gap-3 px-3 py-2.5 rounded-xl font-medium text-sm transition {{ request()->routeIs('admin.activities.*') ? 'bg-pmr-primary text-white shadow-md shadow-red-950/40' : 'hover:bg-slate-800 text-slate-300' }}">
+                <i class="fa-solid fa-calendar-check w-5 text-center"></i>
+                <span>Kelola Kegiatan</span>
+            </a>
+
+            <a href="{{ route('admin.gallery.index') }}" class="flex items-center gap-3 px-3 py-2.5 rounded-xl font-medium text-sm transition {{ request()->routeIs('admin.gallery.*') ? 'bg-pmr-primary text-white shadow-md shadow-red-950/40' : 'hover:bg-slate-800 text-slate-300' }}">
+                <i class="fa-solid fa-images w-5 text-center"></i>
+                <span>Kelola Galeri</span>
+            </a>
+
+            <a href="{{ route('admin.organization.index') }}" class="flex items-center gap-3 px-3 py-2.5 rounded-xl font-medium text-sm transition {{ request()->routeIs('admin.organization.*') ? 'bg-pmr-primary text-white shadow-md shadow-red-950/40' : 'hover:bg-slate-800 text-slate-300' }}">
+                <i class="fa-solid fa-sitemap w-5 text-center"></i>
+                <span>Bagan Kepengurusan</span>
+            </a>
+
+            <!-- Submenu Data Anggota -->
+            <div class="pt-4 pb-1 text-[11px] font-bold uppercase text-slate-500 tracking-wider px-3">Data Anggota</div>
+            <a href="{{ route('admin.members.create') }}" class="flex items-center gap-3 px-3 py-2.5 rounded-xl font-medium text-sm transition {{ request()->routeIs('admin.members.create') ? 'bg-pmr-primary text-white shadow-md shadow-red-950/40' : 'hover:bg-slate-800 text-slate-300' }}">
+                <i class="fa-solid fa-user-plus w-5 text-center text-emerald-400"></i>
+                <span>Input Data Anggota</span>
+            </a>
+            <a href="{{ route('admin.members.index') }}" class="flex items-center gap-3 px-3 py-2.5 rounded-xl font-medium text-sm transition {{ request()->routeIs('admin.members.index') || request()->routeIs('admin.members.edit') ? 'bg-pmr-primary text-white shadow-md shadow-red-950/40' : 'hover:bg-slate-800 text-slate-300' }}">
+                <i class="fa-solid fa-users-rectangle w-5 text-center text-blue-400"></i>
+                <span>Daftar Anggota</span>
+            </a>
+
+            <!-- Submenu Manajemen Lomba -->
+            <div class="pt-4 pb-1 text-[11px] font-bold uppercase text-slate-500 tracking-wider px-3">SUA BHAKTI BERKARYA</div>
+            <a href="{{ route('admin.competition-registrations.index') }}" class="flex items-center gap-3 px-3 py-2.5 rounded-xl font-medium text-sm transition {{ request()->routeIs('admin.competition-registrations.*') ? 'bg-pmr-primary text-white shadow-md shadow-red-950/40' : 'hover:bg-slate-800 text-slate-300' }}">
+                <i class="fa-solid fa-clipboard-check w-5 text-center text-amber-400"></i>
+                <span>Verifikasi Pendaftar</span>
+            </a>
+            <a href="{{ route('admin.competition-scores.index') }}" class="flex items-center gap-3 px-3 py-2.5 rounded-xl font-medium text-sm transition {{ request()->routeIs('admin.competition-scores.*') ? 'bg-pmr-primary text-white shadow-md shadow-red-950/40' : 'hover:bg-slate-800 text-slate-300' }}">
+                <i class="fa-solid fa-calculator w-5 text-center text-teal-400"></i>
+                <span>Input Nilai Lomba</span>
+            </a>
+            <a href="{{ route('admin.competition-leaderboard.index') }}" class="flex items-center gap-3 px-3 py-2.5 rounded-xl font-medium text-sm transition {{ request()->routeIs('admin.competition-leaderboard.*') ? 'bg-pmr-primary text-white shadow-md shadow-red-950/40' : 'hover:bg-slate-800 text-slate-300' }}">
+                <i class="fa-solid fa-trophy w-5 text-center text-yellow-400"></i>
+                <span>Rekap Juara Umum</span>
+            </a>
+
+            <!-- Submenu Donor Darah -->
+            <div class="pt-4 pb-1 text-[11px] font-bold uppercase text-slate-500 tracking-wider px-3">Kelola Donor Darah</div>
+            <a href="{{ route('admin.blood-stocks.index') }}" class="flex items-center gap-3 px-3 py-2.5 rounded-xl font-medium text-sm transition {{ request()->routeIs('admin.blood-stocks.*') ? 'bg-pmr-primary text-white shadow-md shadow-red-950/40' : 'hover:bg-slate-800 text-slate-300' }}">
+                <i class="fa-solid fa-droplet w-5 text-center text-red-400"></i>
+                <span>Stok Darah</span>
+            </a>
+            <a href="{{ route('admin.blood-donation-events.index') }}" class="flex items-center gap-3 px-3 py-2.5 rounded-xl font-medium text-sm transition {{ request()->routeIs('admin.blood-donation-events.*') ? 'bg-pmr-primary text-white shadow-md shadow-red-950/40' : 'hover:bg-slate-800 text-slate-300' }}">
+                <i class="fa-solid fa-calendar-plus w-5 text-center text-rose-400"></i>
+                <span>Jadwal & Event</span>
+            </a>
+            <a href="{{ route('admin.blood-donor-registrations.index') }}" class="flex items-center gap-3 px-3 py-2.5 rounded-xl font-medium text-sm transition {{ request()->routeIs('admin.blood-donor-registrations.*') ? 'bg-pmr-primary text-white shadow-md shadow-red-950/40' : 'hover:bg-slate-800 text-slate-300' }}">
+                <i class="fa-solid fa-users w-5 text-center text-orange-400"></i>
+                <span>Pendaftar Donor</span>
+            </a>
+
+            <div class="pt-6 text-[11px] font-bold uppercase text-slate-500 tracking-wider px-3 mb-2">Layanan Kemanusiaan</div>
+
+            <a href="{{ route('donor-darah') }}" target="_blank" class="flex items-center gap-3 px-3 py-2.5 rounded-xl font-medium text-sm transition hover:bg-slate-800 text-slate-300">
+                <i class="fa-solid fa-droplet w-5 text-center text-red-400"></i>
+                <span>Donor Darah (Live)</span>
+            </a>
+
+            <a href="{{ route('kegiatan') }}" target="_blank" class="flex items-center gap-3 px-3 py-2.5 rounded-xl font-medium text-sm transition hover:bg-slate-800 text-slate-300">
+                <i class="fa-solid fa-calendar-check w-5 text-center text-amber-400"></i>
+                <span>Agenda Kegiatan</span>
+            </a>
+
+            <a href="{{ route('galeri') }}" target="_blank" class="flex items-center gap-3 px-3 py-2.5 rounded-xl font-medium text-sm transition hover:bg-slate-800 text-slate-300">
+                <i class="fa-solid fa-images w-5 text-center text-blue-400"></i>
+                <span>Galeri Foto</span>
+            </a>
+
+            <div class="pt-6 text-[11px] font-bold uppercase text-slate-500 tracking-wider px-3 mb-2">Akses Cepat</div>
+
+            <a href="{{ route('home') }}" target="_blank" class="flex items-center gap-3 px-3 py-2.5 rounded-xl font-medium text-sm transition hover:bg-slate-800 text-emerald-400">
+                <i class="fa-solid fa-arrow-up-right-from-square w-5 text-center"></i>
+                <span>Lihat Web Publik</span>
+            </a>
+
+            <a href="/mockups/preview.html" target="_blank" class="flex items-center gap-3 px-3 py-2.5 rounded-xl font-medium text-sm transition hover:bg-slate-800 text-amber-300">
+                <i class="fa-solid fa-palette w-5 text-center"></i>
+                <span>Preview Mockup</span>
+            </a>
+        </div>
+
+        <!-- User Info & Logout -->
+        <div class="p-4 border-t border-slate-800 bg-slate-950">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center gap-3 overflow-hidden">
+                    <div class="w-9 h-9 rounded-full bg-slate-800 border border-slate-700 flex items-center justify-center text-slate-300 font-bold text-xs flex-shrink-0">
+                        <i class="fa-solid fa-user-shield"></i>
+                    </div>
+                    <div class="overflow-hidden">
+                        <div class="text-xs font-bold text-white truncate">{{ auth()->user()->name ?? 'Admin PMR' }}</div>
+                        <div class="text-[10px] text-slate-400 truncate">{{ auth()->user()->email ?? 'admin@pmr.sch.id' }}</div>
+                    </div>
+                </div>
+                <form action="{{ route('admin.logout') }}" method="POST">
+                    @csrf
+                    <button type="submit" title="Logout" class="p-2 text-slate-400 hover:text-red-400 hover:bg-slate-800 rounded-lg transition">
+                        <i class="fa-solid fa-right-from-bracket"></i>
+                    </button>
+                </form>
+            </div>
+        </div>
+    </aside>
+
+    <!-- Main Content Area -->
+    <div class="flex-grow flex flex-col h-full overflow-hidden">
+        <!-- Top Navbar -->
+        <header class="h-20 bg-white border-b border-slate-200 px-8 flex items-center justify-between flex-shrink-0">
+            <div>
+                <h1 class="text-xl font-extrabold text-slate-800">@yield('page_title', 'Manajemen Artikel')</h1>
+                <p class="text-xs text-slate-500">PMR Wira SMAN 1 Ciawi &bull; Periode Ragana Dwi Pantara 2026/2027</p>
+            </div>
+
+            <div class="flex items-center gap-4">
+                <div class="hidden md:flex items-center text-xs bg-slate-100 px-3.5 py-2 rounded-xl text-slate-600 gap-2 border border-slate-200">
+                    <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                    <span>Database Status: <strong>Terkoneksi</strong></span>
+                </div>
+
+                @yield('top_actions')
+            </div>
+        </header>
+
+        <!-- Body Scrollable Content -->
+        <main class="flex-grow overflow-y-auto p-8">
+            @if (session('success'))
+                <div class="mb-6 bg-emerald-50 border border-emerald-200 text-emerald-800 px-5 py-4 rounded-xl flex items-center gap-3 shadow-sm">
+                    <i class="fa-solid fa-circle-check text-emerald-500 text-xl"></i>
+                    <div class="text-sm font-semibold">{{ session('success') }}</div>
+                </div>
+            @endif
+
+            @if ($errors->any())
+                <div class="mb-6 bg-rose-50 border border-rose-200 text-rose-800 px-5 py-4 rounded-xl shadow-sm">
+                    <div class="font-bold text-sm mb-1 flex items-center gap-2">
+                        <i class="fa-solid fa-circle-exclamation text-rose-500"></i> Perhatian:
+                    </div>
+                    <ul class="list-disc pl-5 text-xs space-y-1">
+                        @foreach ($errors->all() as $err)
+                            <li>{{ $err }}</li>
+                        @endforeach
+                    </ul>
+                </div>
+            @endif
+
+            @yield('content')
+        </main>
+    </div>
+
+    @stack('scripts')
+</body>
+</html>

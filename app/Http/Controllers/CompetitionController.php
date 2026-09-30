@@ -1,0 +1,233 @@
+<?php
+
+namespace App\Http\Controllers;
+
+use App\Models\CompetitionCategory;
+use App\Models\CompetitionEvent;
+use App\Models\CompetitionParticipantTeam;
+use App\Models\CompetitionRegistration;
+use App\Models\CompetitionScore;
+use Illuminate\Http\Request;
+use Illuminate\Support\Str;
+
+class CompetitionController extends Controller
+{
+    public function index()
+    {
+        $event = CompetitionEvent::where('is_active', true)->with(['categories' => function($q) {
+            $q->where('is_active', true)->orderBy('order_position');
+        }])->first();
+
+        if (!$event) {
+            $event = CompetitionEvent::first();
+        }
+
+        $categoriesByLevel = $event ? $event->categories->groupBy('level') : collect();
+
+        return view('pages.lomba.index', compact('event', 'categoriesByLevel'));
+    }
+
+    public function register()
+    {
+        $event = CompetitionEvent::where('is_active', true)->with(['categories' => function($q) {
+            $q->where('is_active', true)->orderBy('order_position');
+        }])->first();
+
+        if (!$event || !$event->is_registration_open) {
+            return redirect()->route('lomba.index')->with('error', 'Pendaftaran lomba saat ini sedang ditutup.');
+        }
+
+        $categoriesByLevel = $event->categories->groupBy('level');
+
+        return view('pages.lomba.register', compact('event', 'categoriesByLevel'));
+    }
+
+    public function store(Request $request)
+    {
+        $event = CompetitionEvent::where('is_active', true)->firstOrFail();
+
+        $validated = $request->validate([
+            'school_name' => 'required|string|max:255',
+            'level' => 'required|in:Mula,Madya,Wira',
+            'advisor_name' => 'required|string|max:255',
+            'advisor_phone' => 'required|string|max:20',
+            'advisor_email' => 'nullable|email|max:255',
+            'school_address' => 'nullable|string',
+            'categories' => 'required|array|min:1',
+            'categories.*' => 'exists:competition_categories,id',
+            'team_labels' => 'nullable|array',
+            'team_members' => 'nullable|array',
+            'payment_proof' => 'required|image|mimes:jpeg,png,jpg,pdf|max:5120',
+        ]);
+
+        $code = 'SBB-' . strtoupper(Str::random(6));
+        while (CompetitionRegistration::where('registration_code', $code)->exists()) {
+            $code = 'SBB-' . strtoupper(Str::random(6));
+        }
+
+        $proofPath = null;
+        if ($request->hasFile('payment_proof')) {
+            $file = $request->file('payment_proof');
+            $filename = 'proof_' . time() . '_' . Str::random(6) . '.' . $file->getClientOriginalExtension();
+            $proofPath = $file->storeAs('competition_payments', $filename, 'public');
+        }
+
+        $totalCategories = count($validated['categories']);
+        $totalPayment = $event->registration_fee * $totalCategories;
+
+        $registration = CompetitionRegistration::create([
+            'competition_event_id' => $event->id,
+            'registration_code' => $code,
+            'school_name' => strtoupper(trim($validated['school_name'])),
+            'level' => $validated['level'],
+            'advisor_name' => $validated['advisor_name'],
+            'advisor_phone' => $validated['advisor_phone'],
+            'advisor_email' => $validated['advisor_email'] ?? null,
+            'school_address' => $validated['school_address'] ?? null,
+            'payment_proof' => $proofPath,
+            'total_payment' => $totalPayment,
+            'status' => 'pending',
+        ]);
+
+        foreach ($validated['categories'] as $catId) {
+            $label = $request->input("team_labels.{$catId}") ?? '';
+            $teamName = $registration->school_name . ($label ? " {$label}" : '');
+            $members = $request->input("team_members.{$catId}") ? explode(',', $request->input("team_members.{$catId}")) : [];
+
+            CompetitionParticipantTeam::create([
+                'competition_registration_id' => $registration->id,
+                'competition_category_id' => $catId,
+                'team_name' => $teamName,
+                'team_label' => $label,
+                'members_list' => array_map('trim', $members),
+            ]);
+        }
+
+        return redirect()->route('lomba.status', ['code' => $code])->with('success', "Pendaftaran berhasil dikirim! Kode Pendaftaran Anda: {$code}. Silakan simpan kode ini untuk mengecek status verifikasi panitia.");
+    }
+
+    public function status(Request $request)
+    {
+        $code = trim($request->query('code', ''));
+        $registration = null;
+
+        if ($code) {
+            $registration = CompetitionRegistration::where('registration_code', $code)
+                ->with(['event', 'teams.category'])
+                ->first();
+        }
+
+        return view('pages.lomba.status', compact('registration', 'code'));
+    }
+
+    public function receipt($code)
+    {
+        $registration = CompetitionRegistration::where('registration_code', $code)
+            ->orWhere('id', $code)
+            ->with(['event', 'teams.category'])
+            ->firstOrFail();
+
+        return view('pages.lomba.receipt', compact('registration'));
+    }
+
+    public function participantCards($code)
+    {
+        $registration = CompetitionRegistration::where('registration_code', $code)
+            ->orWhere('id', $code)
+            ->with(['event', 'teams.category'])
+            ->firstOrFail();
+
+        return view('pages.lomba.cards', compact('registration'));
+    }
+
+    public function liveScoreboard(Request $request)
+    {
+        $event = CompetitionEvent::where('is_active', true)->first();
+        if (!$event) {
+            $event = CompetitionEvent::first();
+        }
+
+        $level = $request->query('level', 'Madya');
+        $categoryId = $request->query('category_id');
+
+        $categories = CompetitionCategory::where('competition_event_id', $event?->id)
+            ->where('level', $level)
+            ->where('is_active', true)
+            ->orderBy('order_position')
+            ->get();
+
+        $selectedCategory = null;
+        $scores = collect();
+
+        if ($categoryId) {
+            $selectedCategory = CompetitionCategory::find($categoryId);
+        } elseif ($categories->isNotEmpty()) {
+            $selectedCategory = $categories->first();
+        }
+
+        if ($selectedCategory) {
+            $scores = CompetitionScore::where('competition_category_id', $selectedCategory->id)
+                ->with('team')
+                ->orderBy('is_disqualified', 'asc')
+                ->orderByRaw('`rank` IS NULL, `rank` ASC')
+                ->orderBy('final_score', 'desc')
+                ->get();
+        }
+
+        // Juara Umum Calculation per level
+        $overallStandings = $this->calculateOverallStandings($event?->id, $level);
+
+        return view('pages.lomba.scoreboard', compact('event', 'level', 'categories', 'selectedCategory', 'scores', 'overallStandings'));
+    }
+
+    private function calculateOverallStandings($eventId, $level)
+    {
+        if (!$eventId) return collect();
+
+        $categories = CompetitionCategory::where('competition_event_id', $eventId)
+            ->where('level', $level)
+            ->where('is_active', true)
+            ->get();
+
+        $schoolPoints = [];
+
+        foreach ($categories as $cat) {
+            $topScores = CompetitionScore::where('competition_category_id', $cat->id)
+                ->where('is_disqualified', false)
+                ->whereIn('rank', [1, 2, 3])
+                ->with('team.registration')
+                ->get();
+
+            foreach ($topScores as $score) {
+                $schoolName = $score->team?->registration?->school_name ?? $score->team?->team_name;
+                // Remove team suffix (A), (B) for overall school accumulation
+                $schoolNameClean = preg_replace('/\s*\([A-Za-z0-9\s]+\)$/', '', $schoolName);
+
+                if (!isset($schoolPoints[$schoolNameClean])) {
+                    $schoolPoints[$schoolNameClean] = [
+                        'school_name' => $schoolNameClean,
+                        'details' => [],
+                        'total_points' => 0,
+                    ];
+                }
+
+                $points = 0;
+                if ($cat->point_tier === 'tier_1') {
+                    $points = match ($score->rank) { 1 => 10, 2 => 8, 3 => 6, default => 0 };
+                } elseif ($cat->point_tier === 'tier_2') {
+                    $points = match ($score->rank) { 1 => 8, 2 => 6, 3 => 4, default => 0 };
+                } elseif ($cat->point_tier === 'tier_3') {
+                    $points = match ($score->rank) { 1 => 3, 2 => 2, 3 => 1, default => 0 };
+                }
+
+                $schoolPoints[$schoolNameClean]['details'][$cat->name . ($cat->gender_category !== 'Umum' ? " {$cat->gender_category}" : '')] = $points;
+                $schoolPoints[$schoolNameClean]['total_points'] += $points;
+            }
+        }
+
+        return collect($schoolPoints)->sortByDesc('total_points')->values()->map(function ($item, $index) {
+            $item['overall_rank'] = $index + 1;
+            return $item;
+        });
+    }
+}

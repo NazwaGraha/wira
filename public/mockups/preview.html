@@ -1,0 +1,437 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Preview Mockup Website & Backoffice - PMR WIRA SMAN 1 CIAWI</title>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #980000;
+            --primary-dark: #6e0000;
+            --primary-light: #fef2f2;
+            --text-dark: #0f172a;
+            --text-muted: #64748b;
+            --bg-light: #f8fafc;
+            --white: #ffffff;
+            --border: #e2e8f0;
+            --accent: #10b981;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background: var(--bg-light);
+            color: var(--text-dark);
+            line-height: 1.6;
+        }
+        header {
+            background: linear-gradient(135deg, #7f0000 0%, #980000 50%, #4a0000 100%);
+            color: var(--white);
+            padding: 36px 24px;
+            box-shadow: 0 10px 30px rgba(152, 0, 0, 0.25);
+            text-align: center;
+            position: relative;
+        }
+        .header-content {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        .badge {
+            display: inline-block;
+            background: rgba(255, 255, 255, 0.18);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            backdrop-filter: blur(10px);
+            padding: 6px 18px;
+            border-radius: 999px;
+            font-size: 13px;
+            font-weight: 700;
+            letter-spacing: 0.8px;
+            margin-bottom: 12px;
+            text-transform: uppercase;
+        }
+        h1 {
+            font-size: 34px;
+            font-weight: 800;
+            margin-bottom: 10px;
+            letter-spacing: -0.5px;
+        }
+        p.subtitle {
+            font-size: 16px;
+            opacity: 0.92;
+            max-width: 760px;
+            margin: 0 auto;
+        }
+        nav.tabs {
+            max-width: 1240px;
+            margin: -26px auto 30px;
+            background: var(--white);
+            border-radius: 18px;
+            padding: 8px;
+            box-shadow: 0 12px 35px rgba(0,0,0,0.08);
+            display: flex;
+            gap: 6px;
+            overflow-x: auto;
+            border: 1px solid var(--border);
+            scrollbar-width: thin;
+        }
+        .tab-btn {
+            flex: 1;
+            min-width: 130px;
+            padding: 12px 14px;
+            border: none;
+            background: transparent;
+            font-family: inherit;
+            font-weight: 600;
+            font-size: 13.5px;
+            color: var(--text-muted);
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            white-space: nowrap;
+            text-align: center;
+        }
+        .tab-btn:hover {
+            background: var(--primary-light);
+            color: var(--primary);
+        }
+        .tab-btn.active {
+            background: var(--primary);
+            color: var(--white);
+            box-shadow: 0 4px 14px rgba(152, 0, 0, 0.3);
+        }
+        .container {
+            max-width: 1240px;
+            margin: 0 auto 60px;
+            padding: 0 20px;
+        }
+        .page-panel {
+            display: none;
+            background: var(--white);
+            border-radius: 20px;
+            padding: 32px;
+            border: 1px solid var(--border);
+            box-shadow: 0 6px 25px rgba(0,0,0,0.04);
+            animation: fadeIn 0.3s ease;
+        }
+        .page-panel.active {
+            display: block;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .panel-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+            padding-bottom: 18px;
+            border-bottom: 1px solid var(--border);
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+        .panel-header h2 {
+            font-size: 24px;
+            font-weight: 800;
+            color: var(--primary);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .tag-pill {
+            font-size: 12px;
+            font-weight: 700;
+            padding: 4px 12px;
+            border-radius: 999px;
+            background: #dbeafe;
+            color: #1e40af;
+        }
+        .tag-pill.admin {
+            background: #fef3c7;
+            color: #92400e;
+        }
+        .btn-open {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: var(--primary);
+            color: var(--white);
+            text-decoration: none;
+            padding: 10px 22px;
+            border-radius: 12px;
+            font-size: 14px;
+            font-weight: 600;
+            transition: 0.2s ease;
+        }
+        .btn-open:hover {
+            background: var(--primary-dark);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 18px rgba(152, 0, 0, 0.3);
+        }
+        .mockup-frame {
+            border-radius: 14px;
+            overflow: hidden;
+            box-shadow: 0 12px 45px rgba(0,0,0,0.12);
+            border: 1px solid var(--border);
+            background: #0f172a;
+        }
+        .mockup-frame img {
+            width: 100%;
+            height: auto;
+            display: block;
+        }
+        .description-card {
+            margin-top: 26px;
+            background: var(--bg-light);
+            border-radius: 16px;
+            padding: 22px;
+            border: 1px solid var(--border);
+        }
+        .description-card h3 {
+            font-size: 16px;
+            font-weight: 700;
+            margin-bottom: 10px;
+            color: var(--text-dark);
+        }
+        .description-card ul {
+            padding-left: 20px;
+            color: var(--text-muted);
+            font-size: 14.5px;
+        }
+        .description-card ul li {
+            margin-bottom: 7px;
+        }
+        footer {
+            text-align: center;
+            padding: 36px 20px;
+            color: var(--text-muted);
+            font-size: 14px;
+            border-top: 1px solid var(--border);
+            background: var(--white);
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="header-content">
+            <div style="background: white; border-radius: 18px; padding: 8px 18px; display: inline-block; margin-bottom: 16px; box-shadow: 0 6px 20px rgba(0,0,0,0.25);">
+                <img src="logo.png" alt="Logo PMR Wira SMAN 1 Ciawi & PMI" style="height: 68px; width: auto; display: block;">
+            </div>
+            <br>
+            <span class="badge">Masa Bakti Ragana Dwi Pantara 2026/2027</span>
+            <h1>PMR WIRA SMAN 1 CIAWI</h1>
+            <p class="subtitle">Koleksi Desain Mockup Halaman Publik & Backoffice Admin (Inspirasi PMI.or.id & Konsep Modern SMAN 1 Ciawi)</p>
+        </div>
+    </header>
+
+    <nav class="tabs">
+        <button class="tab-btn active" onclick="switchTab(0)">01. Beranda</button>
+        <button class="tab-btn" onclick="switchTab(1)">02. Tentang Kami</button>
+        <button class="tab-btn" onclick="switchTab(2)">03. [Info] Kegiatan</button>
+        <button class="tab-btn" onclick="switchTab(3)">04. [Info] Galeri</button>
+        <button class="tab-btn" onclick="switchTab(4)">05. [Info] Donor Darah</button>
+        <button class="tab-btn" onclick="switchTab(5)">06. Kontak & Gabung</button>
+        <button class="tab-btn" onclick="switchTab(6)">07. Artikel & Edukasi</button>
+        <button class="tab-btn" onclick="switchTab(7)">08. Backoffice Admin</button>
+    </nav>
+
+    <div class="container">
+        <!-- Tab 1: Home -->
+        <div class="page-panel active">
+            <div class="panel-header">
+                <div>
+                    <h2>01. Halaman Beranda (Home) <span class="tag-pill">Front-Office</span></h2>
+                    <p style="color: var(--text-muted); font-size: 14px;">Halaman utama portal dengan identitas organisasi, statistik, pilar layanan, dan berita.</p>
+                </div>
+                <a class="btn-open" href="01_home.jpg" target="_blank">Buka Ukuran Penuh ↗</a>
+            </div>
+            <div class="mockup-frame">
+                <img src="01_home.jpg" alt="Mockup Beranda PMR SMAN 1 Ciawi">
+            </div>
+            <div class="description-card">
+                <h3>Fitur & Konsep Halaman:</h3>
+                <ul>
+                    <li><strong>Top Navbar:</strong> Logo PMR, menu navigasi terstruktur rapi, dan tombol aksi "Gabung".</li>
+                    <li><strong>Hero Section:</strong> Identitas tema kepengurusan "Ragana Dwi Pantara 2026/2027" berlatar foto relawan siswa.</li>
+                    <li><strong>Statistik Organisasi:</strong> Kartu counter (150+ Anggota Aktif, 25+ Kegiatan/Tahun, 10+ Prestasi, 5000+ Jiwa Terbantu).</li>
+                    <li><strong>3 Program Pilar:</strong> Donor Darah Sukarela, Pertolongan Pertama (PP), dan Siaga Bencana.</li>
+                    <li><strong>Highlight Kegiatan:</strong> Tampilan berita dan aktivitas kepalangmerahan terkini.</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Tab 2: Tentang Kami -->
+        <div class="page-panel">
+            <div class="panel-header">
+                <div>
+                    <h2>02. Halaman Tentang Kami (About) <span class="tag-pill">Front-Office</span></h2>
+                    <p style="color: var(--text-muted); font-size: 14px;">Profil lengkap, sejarah, visi misi, struktur organisasi, dan 7 prinsip dasar PMI.</p>
+                </div>
+                <a class="btn-open" href="02_tentang_kami.jpg" target="_blank">Buka Ukuran Penuh ↗</a>
+            </div>
+            <div class="mockup-frame">
+                <img src="02_tentang_kami.jpg" alt="Mockup Tentang Kami">
+            </div>
+            <div class="description-card">
+                <h3>Fitur & Konsep Halaman:</h3>
+                <ul>
+                    <li><strong>Sejarah Unit:</strong> Kilas balik berdirinya PMR Wira di SMAN 1 Ciawi sejak dekade awal beserta arsip foto.</li>
+                    <li><strong>Visi & Misi:</strong> Komitmen pembinaan karakter kemanusiaan berlandaskan Pancasila & Tri Bakti PMR.</li>
+                    <li><strong>Struktur Organisasi 2026/2027:</strong> Hierarki kepengurusan piramida modern dari Pembina, Ketua Umum, hingga divisi teknis.</li>
+                    <li><strong>7 Prinsip Dasar Gerakan:</strong> Kemanusiaan, Kesamaan, Kenetralan, Kemandirian, Kesukarelaan, Kesatuan, Kesemestaan dengan kartu ikon interaktif.</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Tab 3: Kegiatan -->
+        <div class="page-panel">
+            <div class="panel-header">
+                <div>
+                    <h2>03. Halaman Kegiatan (Activities & Events) <span class="tag-pill">Front-Office</span></h2>
+                    <p style="color: var(--text-muted); font-size: 14px;">Daftar program kerja, pelatihan pertolongan pertama, simulasi bencana, dan bakti sosial.</p>
+                </div>
+                <a class="btn-open" href="03_kegiatan.jpg" target="_blank">Buka Ukuran Penuh ↗</a>
+            </div>
+            <div class="mockup-frame">
+                <img src="03_kegiatan.jpg" alt="Mockup Kegiatan">
+            </div>
+            <div class="description-card">
+                <h3>Fitur & Konsep Halaman:</h3>
+                <ul>
+                    <li><strong>Filter Kategori Interaktif:</strong> Tombol tab dinamis (Semua, Pertolongan Pertama, Donor Darah, Sosial, Pendidikan).</li>
+                    <li><strong>Featured Event Card:</strong> Banner program prioritas dengan tanggal, deskripsi, dan tombol selengkapnya.</li>
+                    <li><strong>Grid Agenda Kegiatan:</strong> Kartu visual dilengkapi tanggal, ringkasan materi kegiatan, dan pagination.</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Tab 4: Galeri -->
+        <div class="page-panel">
+            <div class="panel-header">
+                <div>
+                    <h2>04. Halaman Galeri Foto & Video <span class="tag-pill">Front-Office</span></h2>
+                    <p style="color: var(--text-muted); font-size: 14px;">Dokumentasi visual upacara, latihan gabungan, lomba, dan bakti kemanusiaan.</p>
+                </div>
+                <a class="btn-open" href="04_galeri.jpg" target="_blank">Buka Ukuran Penuh ↗</a>
+            </div>
+            <div class="mockup-frame">
+                <img src="04_galeri.jpg" alt="Mockup Galeri">
+            </div>
+            <div class="description-card">
+                <h3>Fitur & Konsep Halaman:</h3>
+                <ul>
+                    <li><strong>Masonry Photo Grid:</strong> Tata letak galeri dinamis modern dengan hover zoom & icon overlay.</li>
+                    <li><strong>Filter Kategori:</strong> Memilah galeri berdasarkan kategori (Perlombaan, Bakti Sosial, Latihan Lapangan).</li>
+                    <li><strong>Section Video Kegiatan:</strong> Integrasi dokumentasi video dengan player thumbnail modern.</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Tab 5: Donor Darah -->
+        <div class="page-panel">
+            <div class="panel-header">
+                <div>
+                    <h2>05. Halaman Layanan Donor Darah (Ayo Donor) <span class="tag-pill">Front-Office</span></h2>
+                    <p style="color: var(--text-muted); font-size: 14px;">Portal donor darah sukarela sekolah bekerja sama dengan PMI Kabupaten Bogor.</p>
+                </div>
+                <a class="btn-open" href="05_donor_darah.jpg" target="_blank">Buka Ukuran Penuh ↗</a>
+            </div>
+            <div class="mockup-frame">
+                <img src="05_donor_darah.jpg" alt="Mockup Donor Darah">
+            </div>
+            <div class="description-card">
+                <h3>Fitur & Konsep Halaman:</h3>
+                <ul>
+                    <li><strong>Countdown Jadwal Donor Darah:</strong> Waktu hitung mundur aksi donor darah terdekat di aula sekolah.</li>
+                    <li><strong>Live Status Stok/Kebutuhan Darah:</strong> Indikator status golongan darah A, B, AB, O (Aman vs Menipis).</li>
+                    <li><strong>Syarat & Ketentuan Infografis:</strong> Informasi mudah dipahami bagi siswa dan guru calon pendonor.</li>
+                    <li><strong>Formulir Pendaftaran Donor Online:</strong> Form pendataan calon pendonor secara digital.</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Tab 6: Kontak -->
+        <div class="page-panel">
+            <div class="panel-header">
+                <div>
+                    <h2>06. Halaman Kontak & Rekrutmen Calon Anggota <span class="tag-pill">Front-Office</span></h2>
+                    <p style="color: var(--text-muted); font-size: 14px;">Saluran komunikasi resmi, peta lokasi sekolah, dan form online pendaftaran relawan baru.</p>
+                </div>
+                <a class="btn-open" href="06_kontak.jpg" target="_blank">Buka Ukuran Penuh ↗</a>
+            </div>
+            <div class="mockup-frame">
+                <img src="06_kontak.jpg" alt="Mockup Kontak dan Rekrutmen">
+            </div>
+            <div class="description-card">
+                <h3>Fitur & Konsep Halaman:</h3>
+                <ul>
+                    <li><strong>Direktori Kontak Cepat:</strong> WhatsApp Hotline, Instagram resmi (@pmrwirasman1c), Email, dan Ruang Sekretariat.</li>
+                    <li><strong>Peta Interaktif:</strong> Lokasi SMAN 1 Ciawi dan jam operasional piket UKS/PMR.</li>
+                    <li><strong>Formulir Pendaftaran Relawan Baru:</strong> Form terintegrasi untuk siswa baru masa bakti 2026/2027.</li>
+                    <li><strong>FAQ Interaktif:</strong> Tanya jawab umum seputar kegiatan PMR Wira.</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Tab 7: Artikel Publik -->
+        <div class="page-panel">
+            <div class="panel-header">
+                <div>
+                    <h2>07. Halaman Artikel & Edukasi Kemanusiaan <span class="tag-pill">Front-Office (Baru)</span></h2>
+                    <p style="color: var(--text-muted); font-size: 14px;">Pusat artikel tips pertolongan pertama (P3K), kesiapsiagaan bencana, edukasi kesehatan, dan kisah relawan.</p>
+                </div>
+                <a class="btn-open" href="07_artikel.jpg" target="_blank">Buka Ukuran Penuh ↗</a>
+            </div>
+            <div class="mockup-frame">
+                <img src="07_artikel.jpg" alt="Mockup Halaman Artikel PMR SMAN 1 Ciawi">
+            </div>
+            <div class="description-card">
+                <h3>Fitur & Konsep Halaman Artikel:</h3>
+                <ul>
+                    <li><strong>Search Bar & Tag Pills:</strong> Kolom pencarian pintar dengan filter tag populer (*tips P3K, kepalangmerahan, donor darah*).</li>
+                    <li><strong>Hero Featured Article:</strong> Sorotan artikel utama dengan cover foto tajam, badge kategori, estimasi waktu baca, dan nama penulis.</li>
+                    <li><strong>Grid Artikel Modern (70/30 Layout):</strong> Kolom kiri menampilkan daftar artikel dengan gambar, kategori, dan tombol "Baca Selengkapnya".</li>
+                    <li><strong>Sidebar Edukatif:</strong> Kategori dengan jumlah artikel, daftar "Artikel Populer & Trending", serta banner ajakan mengirim tulisan relawan.</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Tab 8: Backoffice Admin Dashboard -->
+        <div class="page-panel">
+            <div class="panel-header">
+                <div>
+                    <h2>08. Backoffice / Admin Panel Kelola Artikel <span class="tag-pill admin">Back-Office (Baru)</span></h2>
+                    <p style="color: var(--text-muted); font-size: 14px;">Dashboard admin khusus pengurus PMR untuk mengelola konten artikel, upload gambar, moderasi draf, dan melihat statistik pembaca.</p>
+                </div>
+                <a class="btn-open" href="08_admin_dashboard.jpg" target="_blank">Buka Ukuran Penuh ↗</a>
+            </div>
+            <div class="mockup-frame">
+                <img src="08_admin_dashboard.jpg" alt="Mockup Admin Backoffice PMR SMAN 1 Ciawi">
+            </div>
+            <div class="description-card">
+                <h3>Fitur & Konsep Backoffice Admin:</h3>
+                <ul>
+                    <li><strong>Sidebar Navigasi Gelap:</strong> Menu terorganisir (Dashboard, Kelola Artikel, Kelola Kegiatan, Donor Darah, Galeri, Anggota/Relawan, Pengaturan).</li>
+                    <li><strong>4 Kartu KPI Artikel:</strong> Total Artikel (48), Draft Menunggu Review (3), Total Pembaca (12.4K), dan Kategori Aktif (6).</li>
+                    <li><strong>Tabel Data Interaktif:</strong> Kolom Thumbnail, Judul, Kategori, Penulis, Status (badge hijau Published / kuning Draft), Tanggal, Jumlah Views, dan Tombol Aksi (Edit, Delete, Preview).</li>
+                    <li><strong>Quick Article Editor:</strong> Drawer/modal editor dengan tombol rich text formatting, pemilihan kategori, upload thumbnail gambar, dan tombol toggle status Publish.</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        <p>&copy; 2026 PMR WIRA SMAN 1 CIAWI | Ragana Dwi Pantara | Didesain untuk Implementasi Laravel</p>
+    </footer>
+
+    <script>
+        function switchTab(index) {
+            const buttons = document.querySelectorAll('.tab-btn');
+            const panels = document.querySelectorAll('.page-panel');
+            buttons.forEach((btn, i) => btn.classList.toggle('active', i === index));
+            panels.forEach((panel, i) => panel.classList.toggle('active', i === index));
+        }
+    </script>
+</body>
+</html>

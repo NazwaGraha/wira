@@ -1,0 +1,22 @@
+<?php
+
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
+
+class MemberRegistration extends Model
+{
+    use HasFactory;
+
+    protected $fillable = [
+        'full_name',
+        'class_grade',
+        'nisn',
+        'phone',
+        'email',
+        'interest_field',
+        'motivation',
+        'status',
+    ];
+}

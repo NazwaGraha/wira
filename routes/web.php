@@ -1,0 +1,122 @@
+<?php
+
+use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\PageController;
+use App\Http\Controllers\ArticleController;
+use App\Http\Controllers\Admin\AuthController;
+use App\Http\Controllers\Admin\DashboardController;
+use App\Http\Controllers\Admin\ArticleController as AdminArticleController;
+
+/*
+|--------------------------------------------------------------------------
+| Public Routes (Front-Office PMR WIRA SMAN 1 CIAWI)
+|--------------------------------------------------------------------------
+*/
+Route::get('/', [PageController::class, 'home'])->name('home');
+Route::get('/tentang-kami', [PageController::class, 'tentangKami'])->name('tentang-kami');
+Route::get('/kegiatan', [PageController::class, 'kegiatan'])->name('kegiatan');
+Route::get('/kegiatan/{slug}', [PageController::class, 'kegiatanShow'])->name('kegiatan.show');
+Route::get('/galeri', [PageController::class, 'galeri'])->name('galeri');
+Route::get('/donor-darah', [PageController::class, 'donorDarah'])->name('donor-darah');
+Route::get('/kontak', [PageController::class, 'kontak'])->name('kontak');
+Route::post('/daftar-anggota', [PageController::class, 'storeRegistration'])->name('daftar-anggota.store');
+Route::post('/donor-darah/daftar', [PageController::class, 'storeDonorRegistration'])->name('donor-darah.store');
+
+// Artikel Publik
+Route::get('/artikel', [ArticleController::class, 'index'])->name('artikel.index');
+Route::get('/artikel/{slug}', [ArticleController::class, 'show'])->name('artikel.show');
+
+
+/*
+|--------------------------------------------------------------------------
+| Backoffice / Admin Routes (CMS Pengelola Artikel & Konten)
+|--------------------------------------------------------------------------
+*/
+Route::prefix('admin')->name('admin.')->group(function () {
+    // Auth
+    Route::get('/login', [AuthController::class, 'showLogin'])->name('login');
+    Route::post('/login', [AuthController::class, 'login'])->name('login.submit');
+    Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
+
+    // Protected Admin Routes
+    Route::middleware('auth')->group(function () {
+        Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+
+        // Manajemen Artikel
+        Route::resource('artikel', AdminArticleController::class)->names([
+            'index' => 'articles.index',
+            'create' => 'articles.create',
+            'store' => 'articles.store',
+            'edit' => 'articles.edit',
+            'update' => 'articles.update',
+            'destroy' => 'articles.destroy',
+        ]);
+
+        // Pengaturan Slider Hero Banner
+        Route::resource('hero-slides', \App\Http\Controllers\Admin\HeroSlideController::class)->names([
+            'index' => 'hero-slides.index',
+            'create' => 'hero-slides.create',
+            'store' => 'hero-slides.store',
+            'edit' => 'hero-slides.edit',
+            'update' => 'hero-slides.update',
+            'destroy' => 'hero-slides.destroy',
+        ]);
+
+        // Kelola Kegiatan & Agenda
+        Route::resource('kegiatan', \App\Http\Controllers\Admin\ActivityController::class)->names([
+            'index' => 'activities.index',
+            'create' => 'activities.create',
+            'store' => 'activities.store',
+            'edit' => 'activities.edit',
+            'update' => 'activities.update',
+            'destroy' => 'activities.destroy',
+        ]);
+
+        // Bagan Kepengurusan (Struktur Organisasi)
+        Route::get('/bagan-kepengurusan', [\App\Http\Controllers\Admin\OrganizationController::class, 'index'])->name('organization.index');
+        Route::put('/bagan-kepengurusan/setting', [\App\Http\Controllers\Admin\OrganizationController::class, 'updateSetting'])->name('organization.setting.update');
+        Route::get('/bagan-kepengurusan/create', [\App\Http\Controllers\Admin\OrganizationController::class, 'create'])->name('organization.create');
+        Route::post('/bagan-kepengurusan', [\App\Http\Controllers\Admin\OrganizationController::class, 'store'])->name('organization.store');
+        Route::get('/bagan-kepengurusan/{member}/edit', [\App\Http\Controllers\Admin\OrganizationController::class, 'edit'])->name('organization.edit');
+        Route::put('/bagan-kepengurusan/{member}', [\App\Http\Controllers\Admin\OrganizationController::class, 'update'])->name('organization.update');
+        Route::delete('/bagan-kepengurusan/{member}', [\App\Http\Controllers\Admin\OrganizationController::class, 'destroy'])->name('organization.destroy');
+        
+        // Data Anggota
+        Route::resource('members', \App\Http\Controllers\Admin\MemberController::class);
+
+        // Donor Darah
+        Route::resource('blood-stocks', \App\Http\Controllers\Admin\BloodStockController::class);
+        Route::resource('blood-donation-events', \App\Http\Controllers\Admin\BloodDonationEventController::class);
+        Route::resource('blood-donor-registrations', \App\Http\Controllers\Admin\BloodDonorRegistrationController::class);
+
+        // Galeri
+        Route::resource('gallery', \App\Http\Controllers\Admin\GalleryController::class);
+
+        // Manajemen Lomba (SUA BHAKTI BERKARYA)
+        Route::resource('competition-registrations', \App\Http\Controllers\Admin\CompetitionRegistrationController::class)->parameters([
+            'competition-registrations' => 'registration'
+        ]);
+        Route::post('/competition-registrations/{registration}/verify', [\App\Http\Controllers\Admin\CompetitionRegistrationController::class, 'verify'])->name('competition-registrations.verify');
+        Route::post('/competition-registrations/{registration}/reject', [\App\Http\Controllers\Admin\CompetitionRegistrationController::class, 'reject'])->name('competition-registrations.reject');
+        
+        // Penilaian Lomba (Input Nilai Juri / Panitia)
+        Route::get('/competition-scores', [\App\Http\Controllers\Admin\CompetitionScoreController::class, 'index'])->name('competition-scores.index');
+        Route::get('/competition-scores/{category}/input', [\App\Http\Controllers\Admin\CompetitionScoreController::class, 'input'])->name('competition-scores.input');
+        Route::post('/competition-scores/{category}/save', [\App\Http\Controllers\Admin\CompetitionScoreController::class, 'saveScores'])->name('competition-scores.save');
+        Route::post('/competition-scores/{category}/quick-add-team', [\App\Http\Controllers\Admin\CompetitionScoreController::class, 'quickAddTeam'])->name('competition-scores.quick-add-team');
+
+        // Rekap Juara Umum & Klasemen
+        Route::get('/competition-leaderboard', [\App\Http\Controllers\Admin\CompetitionLeaderboardController::class, 'index'])->name('competition-leaderboard.index');
+    });
+});
+
+// Rute Publik Lomba PMR
+Route::prefix('lomba')->name('lomba.')->group(function () {
+    Route::get('/', [\App\Http\Controllers\CompetitionController::class, 'index'])->name('index');
+    Route::get('/daftar', [\App\Http\Controllers\CompetitionController::class, 'register'])->name('register');
+    Route::post('/daftar', [\App\Http\Controllers\CompetitionController::class, 'store'])->name('store');
+    Route::get('/status', [\App\Http\Controllers\CompetitionController::class, 'status'])->name('status');
+    Route::get('/kwitansi/{code}', [\App\Http\Controllers\CompetitionController::class, 'receipt'])->name('receipt');
+    Route::get('/kartu-peserta/{code}', [\App\Http\Controllers\CompetitionController::class, 'participantCards'])->name('cards');
+    Route::get('/live-scoreboard', [\App\Http\Controllers\CompetitionController::class, 'liveScoreboard'])->name('scoreboard');
+});
