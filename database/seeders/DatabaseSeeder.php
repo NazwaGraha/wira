@@ -267,6 +267,8 @@ class DatabaseSeeder extends Seeder
             ]
         );
 
+        \App\Models\OrganizationMember::truncate();
+
         $orgMembers = [
             [
                 'position' => 'Pembina PMR',
@@ -275,62 +277,112 @@ class DatabaseSeeder extends Seeder
                 'level' => 1,
                 'order_position' => 1,
                 'icon' => 'fa-solid fa-user-tie',
+                'is_active' => true,
             ],
             [
                 'position' => 'Ketua Umum 2026/2027',
-                'name' => 'Muhammad Rizky Pratama',
-                'subtitle' => 'Kelas XI-MIPA 1',
+                'name' => 'Tom Cruz',
+                'subtitle' => 'Masa Bakti Ragana Dwi Pantara',
                 'level' => 2,
                 'order_position' => 1,
-                'icon' => 'fa-solid fa-user-shield',
+                'icon' => 'fa-solid fa-crown',
+                'is_active' => true,
             ],
             [
                 'position' => 'Sekretaris',
                 'name' => 'Siti Nurhaliza',
-                'subtitle' => 'Administrasi & Surat',
+                'subtitle' => 'Administrasi & Kesekretariatan',
                 'level' => 3,
                 'order_position' => 1,
                 'icon' => 'fa-solid fa-file-signature',
+                'is_active' => true,
             ],
             [
                 'position' => 'Bendahara',
                 'name' => 'Farhan Ramadhan',
-                'subtitle' => 'Keuangan & Kas',
+                'subtitle' => 'Keuangan & Kas Organisasi',
                 'level' => 3,
                 'order_position' => 2,
                 'icon' => 'fa-solid fa-wallet',
+                'is_active' => true,
             ],
             [
-                'position' => 'Sie Kesehatan & P3K',
-                'name' => 'Ahmad Zulfikar',
-                'subtitle' => 'Piket UKS & Tim Medis',
+                'position' => 'Bidang Markas',
+                'name' => 'Indra Gunawan',
+                'subtitle' => 'Ketua Bidang Markas',
                 'level' => 4,
                 'order_position' => 1,
-                'icon' => 'fa-solid fa-notes-medical',
+                'icon' => 'fa-solid fa-boxes-stacked',
+                'is_active' => true,
+                'staff_members' => [
+                    ['name' => 'Rian Ardiansyah', 'class_grade' => 'X-1', 'photo' => null],
+                    ['name' => 'Siti Fatimah', 'class_grade' => 'X-3', 'photo' => null],
+                    ['name' => 'Deni Prasetyo', 'class_grade' => 'XI-2', 'photo' => null],
+                ],
+                'work_program' => "1. Pengelolaan dan inventarisasi obat-obatan serta tandu darurat UKS\n2. Pemeliharaan kebersihan, kenyamanan, dan kesiapan ruang markas PMR\n3. Pengadaan logistik medis darurat dan perawatan peralatan medis\n4. Pengaturan jadwal piket harian markas dan siaga operasional sekolah",
             ],
             [
-                'position' => 'Sie Kegiatan & Diklat',
-                'name' => 'Nabila Zahra',
-                'subtitle' => 'Pelatihan & Latihan Gabungan',
+                'position' => 'Bidang Pelayanan',
+                'name' => 'Sarah Azhari',
+                'subtitle' => 'Ketua Bidang Pelayanan',
                 'level' => 4,
                 'order_position' => 2,
-                'icon' => 'fa-solid fa-calendar-days',
+                'icon' => 'fa-solid fa-hand-holding-heart',
+                'is_active' => true,
+                'staff_members' => [
+                    ['name' => 'Anisa Rahma', 'class_grade' => 'X-2', 'photo' => null],
+                    ['name' => 'Budi Santoso', 'class_grade' => 'XI-1', 'photo' => null],
+                    ['name' => 'Dewi Sartika', 'class_grade' => 'X-5', 'photo' => null],
+                ],
+                'work_program' => "1. Penyiagaan posko medis darurat pada upacara bendera dan event olahraga sekolah\n2. Pelaksanaan aksi donor darah sukarela bersama UDD PMI Kab. Bogor\n3. Pelayanan kesehatan remaja, posyandu remaja, dan pembagian Tablet Tambah Darah (TTD)\n4. Bakti sosial kemanusiaan dan kepedulian lingkungan warga sekitar sekolah",
             ],
             [
-                'position' => 'Sie Humas & Publikasi',
-                'name' => 'Dimas Arya',
-                'subtitle' => 'Media Sosial & Dokumentasi',
+                'position' => 'Bidang Diklat',
+                'name' => 'Reza Rahadian',
+                'subtitle' => 'Ketua Bidang Diklat',
                 'level' => 4,
                 'order_position' => 3,
+                'icon' => 'fa-solid fa-graduation-cap',
+                'is_active' => true,
+                'staff_members' => [
+                    ['name' => 'Fajar Pratama', 'class_grade' => 'X-4', 'photo' => null],
+                    ['name' => 'Maya Anggraini', 'class_grade' => 'XI-3', 'photo' => null],
+                ],
+                'work_program' => "1. Latihan rutin mingguan pertolongan pertama (PP), pembidaian, dan evakuasi\n2. Pembekalan materi 7 Prinsip Dasar Palang Merah & Hukum Humaniter Internasional\n3. Simulasi mitigasi kesiapsiagaan bencana gempa & evakuasi kebakaran sekolah\n4. Pemusatan latihan kontingen lomba Jumpa Bakti Gembira (JUMBARA)",
+            ],
+            [
+                'position' => 'Bidang Humas',
+                'name' => 'Dian Sastrowardoyo',
+                'subtitle' => 'Ketua Bidang Humas',
+                'level' => 4,
+                'order_position' => 4,
                 'icon' => 'fa-solid fa-bullhorn',
+                'is_active' => true,
+                'staff_members' => [
+                    ['name' => 'Gilang Ramadhan', 'class_grade' => 'X-1', 'photo' => null],
+                    ['name' => 'Tiara Andini', 'class_grade' => 'XI-4', 'photo' => null],
+                    ['name' => 'Kevin Julio', 'class_grade' => 'X-3', 'photo' => null],
+                ],
+                'work_program' => "1. Pengelolaan akun media sosial resmi dan dokumentasi seluruh agenda PMR\n2. Penerbitan buletin berkala, infografis kesehatan, dan konten edukasi medis\n3. Membangun kemitraan strategis dengan PMI Cabang, Puskesmas, dan organisasi intra sekolah\n4. Sosialisasi kepalangmerahan dan rekrutmen anggota baru PMR Wira",
+            ],
+            [
+                'position' => 'Bidang Kreasi',
+                'name' => 'Nicholas Saputra',
+                'subtitle' => 'Ketua Bidang Kreasi',
+                'level' => 4,
+                'order_position' => 5,
+                'icon' => 'fa-solid fa-wand-magic-sparkles',
+                'is_active' => true,
+                'staff_members' => [
+                    ['name' => 'Putri Marino', 'class_grade' => 'X-2', 'photo' => null],
+                    ['name' => 'Aldi Taher', 'class_grade' => 'XI-5', 'photo' => null],
+                ],
+                'work_program' => "1. Produksi media kreatif visual, video edukasi pertolongan pertama, dan podcast kesehatan\n2. Pameran karya kreasi relawan dan gelar aksi seni peringatan Hari Palang Merah Sedunia\n3. Inovasi pembuatan alat peraga simulasi medis dari bahan daur ulang ramah lingkungan\n4. Perancangan merchandise resmi, id card, dan atribut kontingen PMR Wira SMAN 1 Ciawi",
             ],
         ];
 
         foreach ($orgMembers as $member) {
-            \App\Models\OrganizationMember::updateOrCreate(
-                ['position' => $member['position'], 'name' => $member['name']],
-                $member
-            );
+            \App\Models\OrganizationMember::create($member);
         }
     }
 }

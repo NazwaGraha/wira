@@ -44,7 +44,8 @@ class PageController extends Controller
             ]
         );
 
-        $organizationMembers = \App\Models\OrganizationMember::where('is_active', true)
+        $organizationMembers = \App\Models\OrganizationMember::with('member')
+            ->where('is_active', true)
             ->orderBy('level')
             ->orderBy('order_position')
             ->get()

@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Preview Desain Bagan Kepengurusan PMR Wira SMAN 1 Ciawi</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        pmr: {
+                            50: '#fef2f2',
+                            100: '#fee2e2',
+                            primary: '#980000',
+                            dark: '#6e0000',
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-slate-100 text-slate-800 font-sans p-4 sm:p-8 min-h-screen">
+
+    <div class="max-w-7xl mx-auto space-y-12">
+        <!-- Header Section -->
+        <div class="text-center max-w-3xl mx-auto">
+            <div class="inline-flex items-center gap-2 bg-red-100 text-pmr-primary font-extrabold text-xs px-3.5 py-1.5 rounded-full uppercase tracking-wider mb-3">
+                <i class="fa-solid fa-sitemap"></i> Bagan Kepengurusan 2026/2027
+            </div>
+            <h1 class="text-3xl sm:text-4xl font-extrabold text-slate-900 tracking-tight">Struktur Organisasi PMR Wira</h1>
+            <p class="text-slate-600 text-sm mt-2">Masa Bakti Ragana Dwi Pantara &mdash; SMAN 1 Ciawi, Kabupaten Bogor</p>
+        </div>
+
+        <!-- Organizational Tree Chart -->
+        <div class="flex flex-col items-center">
+            
+            <!-- LEVEL 1: PEMBINA PMR -->
+            <div class="bg-stone-900 text-white p-4 sm:p-5 rounded-2xl shadow-xl flex items-center gap-4 w-full max-w-sm border-t-4 border-pmr-primary transform hover:scale-105 transition duration-200">
+                <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80" alt="Foto Pembina" class="w-14 h-14 rounded-full object-cover border-2 border-white/40 flex-shrink-0 shadow-md">
+                <div>
+                    <div class="text-[11px] font-bold text-red-400 uppercase tracking-wider">Pembina PMR</div>
+                    <div class="font-extrabold text-base sm:text-lg leading-tight text-white mt-0.5">Drs. Supriatna, M.Pd</div>
+                    <div class="text-xs text-stone-400 mt-0.5">Pembina PMR Wira</div>
+                </div>
+            </div>
+
+            <!-- Connector Line -->
+            <div class="w-0.5 h-8 bg-slate-300"></div>
+
+            <!-- LEVEL 2: KETUA UMUM -->
+            <div class="bg-gradient-to-r from-pmr-dark via-pmr-primary to-pmr-dark text-white p-5 sm:p-6 rounded-2xl shadow-2xl flex items-center gap-4 w-full max-w-md border-2 border-red-400/30 transform hover:scale-105 transition duration-200">
+                <img src="https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?w=150&auto=format&fit=crop&q=80" alt="Foto Ketua Umum" class="w-16 h-16 rounded-full object-cover border-2 border-white flex-shrink-0 shadow-lg ring-2 ring-red-400">
+                <div>
+                    <div class="text-[11px] font-bold text-red-200 uppercase tracking-widest flex items-center gap-1.5">
+                        <i class="fa-solid fa-crown text-amber-300"></i> Ketua Umum
+                    </div>
+                    <div class="font-black text-xl leading-tight text-white mt-0.5">Tom Cruz</div>
+                    <div class="text-xs text-red-100 font-medium mt-0.5">Ketua Umum 2026/2027 &bull; Kelas XI-MIPA 1</div>
+                </div>
+            </div>
+
+            <!-- Connector Line -->
+            <div class="w-0.5 h-8 bg-slate-300"></div>
+
+            <!-- LEVEL 3: BPH (SEKRETARIS & BENDAHARA) -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6 w-full max-w-2xl">
+                <!-- Sekretaris -->
+                <div class="bg-white p-4 sm:p-5 rounded-2xl shadow-md border border-slate-200 flex items-center gap-3.5 hover:shadow-xl transition">
+                    <img src="https://images.unsplash.com/photo-1517841905240-472988babdf9?w=150&auto=format&fit=crop&q=80" alt="Foto Sekretaris" class="w-12 h-12 rounded-full object-cover border border-slate-200 flex-shrink-0">
+                    <div>
+                        <div class="text-[11px] font-bold text-pmr-primary uppercase tracking-wider">Sekretaris</div>
+                        <div class="font-extrabold text-sm sm:text-base text-slate-900 leading-tight">Siti Nuraini</div>
+                        <div class="text-[11px] text-slate-500 mt-0.5">Sekretaris Umum &bull; Kelas XI-MIPA 2</div>
+                    </div>
+                </div>
+
+                <!-- Bendahara -->
+                <div class="bg-white p-4 sm:p-5 rounded-2xl shadow-md border border-slate-200 flex items-center gap-3.5 hover:shadow-xl transition">
+                    <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&auto=format&fit=crop&q=80" alt="Foto Bendahara" class="w-12 h-12 rounded-full object-cover border border-slate-200 flex-shrink-0">
+                    <div>
+                        <div class="text-[11px] font-bold text-pmr-primary uppercase tracking-wider">Bendahara</div>
+                        <div class="font-extrabold text-sm sm:text-base text-slate-900 leading-tight">Andi Pratama</div>
+                        <div class="text-[11px] text-slate-500 mt-0.5">Bendahara Umum &bull; Kelas XI-IPS 1</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Connector Line -->
+            <div class="w-0.5 h-8 bg-slate-300"></div>
+
+            <!-- LEVEL 4: 5 BIDANG UTAMA LENGKAP DENGAN KETUA BIDANG & STAF -->
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 w-full">
+                
+                <!-- 1. BIDANG MARKAS -->
+                <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden flex flex-col hover:shadow-lg transition">
+                    <div class="p-4 border-b border-slate-100 flex-grow">
+                        <div class="text-xs font-black text-pmr-primary uppercase tracking-wider mb-2.5 flex items-center gap-1.5">
+                            <i class="fa-solid fa-house-chimney-medical text-pmr-primary"></i>
+                            <span>Bidang Markas</span>
+                        </div>
+                        <div class="flex items-center gap-3">
+                            <img src="https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=120&auto=format&fit=crop&q=80" class="w-11 h-11 rounded-full object-cover border border-slate-200 flex-shrink-0 shadow-sm">
+                            <div class="min-w-0">
+                                <div class="font-black text-sm text-slate-900 truncate">Bayu Setiawan</div>
+                                <div class="text-[11px] font-semibold text-slate-500 truncate">Ketua Bidang Markas</div>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Staf Section -->
+                    <div class="bg-slate-50/80 p-3.5 border-t border-slate-100">
+                        <div class="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider mb-2">Staf (3 Orang)</div>
+                        <div class="grid grid-cols-3 gap-2 text-center">
+                            <div class="flex flex-col items-center">
+                                <img src="https://images.unsplash.com/photo-1522075469751-3a6694fb2f61?w=100&auto=format&fit=crop&q=80" class="w-8 h-8 rounded-full object-cover border border-slate-200 mb-1">
+                                <span class="text-[10px] font-bold text-slate-700 truncate w-full">Indra J.</span>
+                            </div>
+                            <div class="flex flex-col items-center">
+                                <img src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100&auto=format&fit=crop&q=80" class="w-8 h-8 rounded-full object-cover border border-slate-200 mb-1">
+                                <span class="text-[10px] font-bold text-slate-700 truncate w-full">Lina M.</span>
+                            </div>
+                            <div class="flex flex-col items-center">
+                                <img src="https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?w=100&auto=format&fit=crop&q=80" class="w-8 h-8 rounded-full object-cover border border-slate-200 mb-1">
+                                <span class="text-[10px] font-bold text-slate-700 truncate w-full">Rizky F.</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 2. BIDANG PELAYANAN -->
+                <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden flex flex-col hover:shadow-lg transition">
+                    <div class="p-4 border-b border-slate-100 flex-grow">
+                        <div class="text-xs font-black text-pmr-primary uppercase tracking-wider mb-2.5 flex items-center gap-1.5">
+                            <i class="fa-solid fa-hand-holding-medical text-pmr-primary"></i>
+                            <span>Bidang Pelayanan</span>
+                        </div>
+                        <div class="flex items-center gap-3">
+                            <img src="https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=120&auto=format&fit=crop&q=80" class="w-11 h-11 rounded-full object-cover border border-slate-200 flex-shrink-0 shadow-sm">
+                            <div class="min-w-0">
+                                <div class="font-black text-sm text-slate-900 truncate">Dewi Lestari</div>
+                                <div class="text-[11px] font-semibold text-slate-500 truncate">Ketua Bidang Pelayanan</div>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Staf Section -->
+                    <div class="bg-slate-50/80 p-3.5 border-t border-slate-100">
+                        <div class="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider mb-2">Staf (3 Orang)</div>
+                        <div class="grid grid-cols-3 gap-2 text-center">
+                            <div class="flex flex-col items-center">
+                                <img src="https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=100&auto=format&fit=crop&q=80" class="w-8 h-8 rounded-full object-cover border border-slate-200 mb-1">
+                                <span class="text-[10px] font-bold text-slate-700 truncate w-full">Ahmad S.</span>
+                            </div>
+                            <div class="flex flex-col items-center">
+                                <img src="https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=100&auto=format&fit=crop&q=80" class="w-8 h-8 rounded-full object-cover border border-slate-200 mb-1">
+                                <span class="text-[10px] font-bold text-slate-700 truncate w-full">Nisa A.</span>
+                            </div>
+                            <div class="flex flex-col items-center">
+                                <img src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&auto=format&fit=crop&q=80" class="w-8 h-8 rounded-full object-cover border border-slate-200 mb-1">
+                                <span class="text-[10px] font-bold text-slate-700 truncate w-full">Budi U.</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 3. BIDANG DIKLAT -->
+                <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden flex flex-col hover:shadow-lg transition">
+                    <div class="p-4 border-b border-slate-100 flex-grow">
+                        <div class="text-xs font-black text-pmr-primary uppercase tracking-wider mb-2.5 flex items-center gap-1.5">
+                            <i class="fa-solid fa-graduation-cap text-pmr-primary"></i>
+                            <span>Bidang Diklat</span>
+                        </div>
+                        <div class="flex items-center gap-3">
+                            <img src="https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?w=120&auto=format&fit=crop&q=80" class="w-11 h-11 rounded-full object-cover border border-slate-200 flex-shrink-0 shadow-sm">
+                            <div class="min-w-0">
+                                <div class="font-black text-sm text-slate-900 truncate">Cahyo Nugroho</div>
+                                <div class="text-[11px] font-semibold text-slate-500 truncate">Ketua Bidang Diklat</div>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Staf Section -->
+                    <div class="bg-slate-50/80 p-3.5 border-t border-slate-100">
+                        <div class="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider mb-2">Staf (3 Orang)</div>
+                        <div class="grid grid-cols-3 gap-2 text-center">
+                            <div class="flex flex-col items-center">
+                                <img src="https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=100&auto=format&fit=crop&q=80" class="w-8 h-8 rounded-full object-cover border border-slate-200 mb-1">
+                                <span class="text-[10px] font-bold text-slate-700 truncate w-full">Eka P.</span>
+                            </div>
+                            <div class="flex flex-col items-center">
+                                <img src="https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=100&auto=format&fit=crop&q=80" class="w-8 h-8 rounded-full object-cover border border-slate-200 mb-1">
+                                <span class="text-[10px] font-bold text-slate-700 truncate w-full">Feri H.</span>
+                            </div>
+                            <div class="flex flex-col items-center">
+                                <img src="https://images.unsplash.com/photo-1517841905240-472988babdf9?w=100&auto=format&fit=crop&q=80" class="w-8 h-8 rounded-full object-cover border border-slate-200 mb-1">
+                                <span class="text-[10px] font-bold text-slate-700 truncate w-full">Gita K.</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 4. BIDANG HUMAS -->
+                <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden flex flex-col hover:shadow-lg transition">
+                    <div class="p-4 border-b border-slate-100 flex-grow">
+                        <div class="text-xs font-black text-pmr-primary uppercase tracking-wider mb-2.5 flex items-center gap-1.5">
+                            <i class="fa-solid fa-bullhorn text-pmr-primary"></i>
+                            <span>Bidang Humas</span>
+                        </div>
+                        <div class="flex items-center gap-3">
+                            <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=120&auto=format&fit=crop&q=80" class="w-11 h-11 rounded-full object-cover border border-slate-200 flex-shrink-0 shadow-sm">
+                            <div class="min-w-0">
+                                <div class="font-black text-sm text-slate-900 truncate">Hana Fitria</div>
+                                <div class="text-[11px] font-semibold text-slate-500 truncate">Ketua Bidang Humas</div>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Staf Section -->
+                    <div class="bg-slate-50/80 p-3.5 border-t border-slate-100">
+                        <div class="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider mb-2">Staf (3 Orang)</div>
+                        <div class="grid grid-cols-3 gap-2 text-center">
+                            <div class="flex flex-col items-center">
+                                <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&auto=format&fit=crop&q=80" class="w-8 h-8 rounded-full object-cover border border-slate-200 mb-1">
+                                <span class="text-[10px] font-bold text-slate-700 truncate w-full">Irfan M.</span>
+                            </div>
+                            <div class="flex flex-col items-center">
+                                <img src="https://images.unsplash.com/photo-1522075469751-3a6694fb2f61?w=100&auto=format&fit=crop&q=80" class="w-8 h-8 rounded-full object-cover border border-slate-200 mb-1">
+                                <span class="text-[10px] font-bold text-slate-700 truncate w-full">Joko W.</span>
+                            </div>
+                            <div class="flex flex-col items-center">
+                                <img src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100&auto=format&fit=crop&q=80" class="w-8 h-8 rounded-full object-cover border border-slate-200 mb-1">
+                                <span class="text-[10px] font-bold text-slate-700 truncate w-full">Kiki R.</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 5. BIDANG KREASI -->
+                <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden flex flex-col hover:shadow-lg transition">
+                    <div class="p-4 border-b border-slate-100 flex-grow">
+                        <div class="text-xs font-black text-pmr-primary uppercase tracking-wider mb-2.5 flex items-center gap-1.5">
+                            <i class="fa-solid fa-wand-magic-sparkles text-pmr-primary"></i>
+                            <span>Bidang Kreasi</span>
+                        </div>
+                        <div class="flex items-center gap-3">
+                            <img src="https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?w=120&auto=format&fit=crop&q=80" class="w-11 h-11 rounded-full object-cover border border-slate-200 flex-shrink-0 shadow-sm">
+                            <div class="min-w-0">
+                                <div class="font-black text-sm text-slate-900 truncate">Lutfi Hakim</div>
+                                <div class="text-[11px] font-semibold text-slate-500 truncate">Ketua Bidang Kreasi</div>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Staf Section -->
+                    <div class="bg-slate-50/80 p-3.5 border-t border-slate-100">
+                        <div class="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider mb-2">Staf (3 Orang)</div>
+                        <div class="grid grid-cols-3 gap-2 text-center">
+                            <div class="flex flex-col items-center">
+                                <img src="https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=100&auto=format&fit=crop&q=80" class="w-8 h-8 rounded-full object-cover border border-slate-200 mb-1">
+                                <span class="text-[10px] font-bold text-slate-700 truncate w-full">Maya S.</span>
+                            </div>
+                            <div class="flex flex-col items-center">
+                                <img src="https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=100&auto=format&fit=crop&q=80" class="w-8 h-8 rounded-full object-cover border border-slate-200 mb-1">
+                                <span class="text-[10px] font-bold text-slate-700 truncate w-full">Novi A.</span>
+                            </div>
+                            <div class="flex flex-col items-center">
+                                <img src="https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=100&auto=format&fit=crop&q=80" class="w-8 h-8 rounded-full object-cover border border-slate-200 mb-1">
+                                <span class="text-[10px] font-bold text-slate-700 truncate w-full">Oki P.</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+</body>
+</html>

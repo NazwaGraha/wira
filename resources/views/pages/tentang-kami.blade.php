@@ -277,18 +277,18 @@
 </section>
 
 <!-- Struktur Organisasi Dinamis dari Database / Backoffice -->
-<section class="py-16 sm:py-20 bg-slate-100/70 border-t border-slate-200/80">
+<section class="py-16 sm:py-20 bg-slate-100/80 border-t border-slate-200/80">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="text-center max-w-3xl mx-auto mb-16">
             <div class="text-pmr-primary font-bold text-xs uppercase tracking-widest mb-2">{{ $organizationSetting->badge ?? 'Bagan Kepengurusan' }}</div>
-            <h2 class="text-3xl font-extrabold text-slate-900 tracking-tight">{{ $organizationSetting->title ?? 'Struktur Organisasi' }}</h2>
+            <h2 class="text-3xl sm:text-4xl font-extrabold text-slate-900 tracking-tight">{{ $organizationSetting->title ?? 'Struktur Organisasi 2026/2027' }}</h2>
             @if(!empty($organizationSetting->subtitle))
-                <p class="text-slate-600 text-sm mt-3">{{ $organizationSetting->subtitle }}</p>
+                <p class="text-slate-600 text-sm mt-3 leading-relaxed">{{ $organizationSetting->subtitle }}</p>
             @endif
         </div>
 
         <!-- Organizational Chart Flow -->
-        <div class="max-w-4xl mx-auto flex flex-col items-center">
+        <div class="max-w-6xl mx-auto flex flex-col items-center">
             @php
                 $pembina = $organizationMembers->get(1, collect());
                 $ketua = $organizationMembers->get(2, collect());
@@ -297,76 +297,196 @@
                 $others = $organizationMembers->get(5, collect());
             @endphp
 
-            <!-- Level 1: Pembina -->
+            <!-- Level 1: Pembina PMR -->
             @if($pembina->isNotEmpty())
                 <div class="flex flex-wrap justify-center gap-6">
                     @foreach($pembina as $m)
-                        <div class="bg-stone-900 text-white p-5 rounded-2xl shadow-lg text-center w-64 border-t-4 border-pmr-primary">
-                            <div class="text-xs uppercase tracking-widest text-red-400 font-bold">{{ $m->position }}</div>
-                            <div class="text-base font-extrabold mt-1">{{ $m->name }}</div>
-                            @if($m->subtitle)
-                                <div class="text-xs text-stone-400 mt-0.5">{{ $m->subtitle }}</div>
+                        @php
+                            $photoUrl = $m->photo_url;
+                            $initials = strtoupper(substr($m->name, 0, 2));
+                        @endphp
+                        <div class="bg-stone-900 text-white p-4 sm:p-5 rounded-2xl shadow-xl flex items-center gap-4 min-w-[280px] max-w-sm border-t-4 border-pmr-primary hover:shadow-2xl transition duration-300">
+                            @if($photoUrl)
+                                <img src="{{ $photoUrl }}" alt="{{ $m->name }}" class="w-14 h-14 rounded-full object-cover border-2 border-red-500/80 shadow-md flex-shrink-0">
+                            @else
+                                <div class="w-14 h-14 rounded-full bg-stone-800 border-2 border-red-500/80 text-red-300 font-black text-base flex items-center justify-center flex-shrink-0 shadow-inner">
+                                    {{ $initials }}
+                                </div>
                             @endif
+                            <div class="text-left">
+                                <div class="text-[11px] uppercase tracking-wider text-red-400 font-bold flex items-center gap-1.5">
+                                    <i class="fa-solid fa-shield-halved text-[10px]"></i> {{ $m->position }}
+                                </div>
+                                <div class="text-base font-extrabold mt-0.5 text-white leading-tight">{{ $m->name }}</div>
+                                @if($m->subtitle)
+                                    <div class="text-xs text-stone-400 mt-0.5">{{ $m->subtitle }}</div>
+                                @endif
+                            </div>
                         </div>
                     @endforeach
                 </div>
             @endif
 
             @if($pembina->isNotEmpty() && ($ketua->isNotEmpty() || $bph->isNotEmpty() || $seksi->isNotEmpty()))
-                <div class="w-0.5 h-8 bg-slate-300"></div>
+                <div class="w-0.5 h-8 bg-slate-300 my-1"></div>
             @endif
 
             <!-- Level 2: Ketua Umum / Pimpinan -->
             @if($ketua->isNotEmpty())
                 <div class="flex flex-wrap justify-center gap-6">
                     @foreach($ketua as $m)
-                        <div class="bg-pmr-primary text-white p-6 rounded-2xl shadow-xl text-center w-72">
-                            <div class="text-xs uppercase tracking-widest text-red-200 font-bold">{{ $m->position }}</div>
-                            <div class="text-lg font-extrabold mt-1">{{ $m->name }}</div>
-                            @if($m->subtitle)
-                                <div class="text-xs text-red-200 mt-0.5">{{ $m->subtitle }}</div>
+                        @php
+                            $photoUrl = $m->photo_url;
+                            $initials = strtoupper(substr($m->name, 0, 2));
+                        @endphp
+                        <div class="bg-gradient-to-br from-pmr-primary to-pmr-dark text-white p-5 sm:p-6 rounded-2xl shadow-2xl flex items-center gap-4 min-w-[300px] max-w-md border border-red-400/30 hover:shadow-red-950/20 hover:scale-[1.02] transition duration-300">
+                            @if($photoUrl)
+                                <img src="{{ $photoUrl }}" alt="{{ $m->name }}" class="w-16 h-16 rounded-full object-cover border-2 border-white/80 shadow-lg flex-shrink-0">
+                            @else
+                                <div class="w-16 h-16 rounded-full bg-white/20 border-2 border-white/80 text-white font-black text-lg flex items-center justify-center flex-shrink-0 shadow-inner">
+                                    {{ $initials }}
+                                </div>
                             @endif
+                            <div class="text-left">
+                                <div class="text-xs uppercase tracking-wider text-red-100 font-bold flex items-center gap-1.5">
+                                    <i class="fa-solid fa-crown text-amber-300 text-xs"></i> {{ $m->position }}
+                                </div>
+                                <div class="text-lg sm:text-xl font-extrabold mt-0.5 text-white leading-tight">{{ $m->name }}</div>
+                                @if($m->subtitle)
+                                    <div class="text-xs text-red-100/90 mt-0.5">{{ $m->subtitle }}</div>
+                                @endif
+                            </div>
                         </div>
                     @endforeach
                 </div>
             @endif
 
             @if($ketua->isNotEmpty() && ($bph->isNotEmpty() || $seksi->isNotEmpty()))
-                <div class="w-0.5 h-8 bg-slate-300"></div>
+                <div class="w-0.5 h-8 bg-slate-300 my-1"></div>
             @endif
 
             <!-- Level 3: Pengurus Harian / BPH (Sekretaris & Bendahara) -->
             @if($bph->isNotEmpty())
-                <div class="grid grid-cols-1 sm:grid-cols-{{ min(max($bph->count(), 1), 3) }} gap-6 w-full max-w-2xl">
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-6 w-full max-w-2xl">
                     @foreach($bph as $m)
-                        <div class="bg-white p-5 rounded-2xl shadow-md border border-slate-200 text-center hover:shadow-lg transition">
-                            <div class="text-xs font-bold text-pmr-primary uppercase">{{ $m->position }}</div>
-                            <div class="font-bold text-slate-800 text-sm mt-1">{{ $m->name }}</div>
-                            @if($m->subtitle)
-                                <div class="text-xs text-slate-500 mt-0.5">{{ $m->subtitle }}</div>
+                        @php
+                            $photoUrl = $m->photo_url;
+                            $initials = strtoupper(substr($m->name, 0, 2));
+                        @endphp
+                        <div class="bg-white p-4 sm:p-5 rounded-2xl shadow-md border border-slate-200/90 flex items-center gap-3.5 hover:shadow-lg hover:border-pmr-primary transition duration-300">
+                            @if($photoUrl)
+                                <img src="{{ $photoUrl }}" alt="{{ $m->name }}" class="w-12 h-12 rounded-full object-cover border border-slate-200 shadow-sm flex-shrink-0">
+                            @else
+                                <div class="w-12 h-12 rounded-full bg-red-50 text-pmr-primary font-extrabold text-sm flex items-center justify-center border border-red-100 flex-shrink-0">
+                                    {{ $initials }}
+                                </div>
                             @endif
+                            <div class="text-left">
+                                <div class="text-xs font-extrabold text-pmr-primary uppercase tracking-wide flex items-center gap-1.5">
+                                    <i class="{{ $m->icon ?: 'fa-solid fa-user' }} text-xs"></i> {{ $m->position }}
+                                </div>
+                                <div class="font-extrabold text-slate-900 text-sm mt-0.5 leading-tight">{{ $m->name }}</div>
+                                @if($m->subtitle)
+                                    <div class="text-xs text-slate-500 mt-0.5">{{ $m->subtitle }}</div>
+                                @endif
+                            </div>
                         </div>
                     @endforeach
                 </div>
             @endif
 
             @if($bph->isNotEmpty() && ($seksi->isNotEmpty() || $others->isNotEmpty()))
-                <div class="w-0.5 h-8 bg-slate-300"></div>
+                <div class="w-0.5 h-8 bg-slate-300 my-1"></div>
             @endif
 
-            <!-- Level 4: Koordinator Seksi / Divisi -->
+            <!-- Level 4: 5 Bidang Utama (Markas, Pelayanan, Diklat, Humas, Kreasi) -->
             @if($seksi->isNotEmpty())
-                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-{{ min(max($seksi->count(), 1), 4) }} gap-4 w-full">
+                <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 w-full">
                     @foreach($seksi as $m)
-                        <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200 text-center hover:shadow-md transition">
-                            <div class="w-10 h-10 rounded-xl bg-red-50 text-pmr-primary mx-auto flex items-center justify-center mb-2">
-                                <i class="{{ $m->icon ?: 'fa-solid fa-shapes' }}"></i>
+                        @php
+                            $photoUrl = $m->photo_url;
+                            $initials = strtoupper(substr($m->name, 0, 2));
+                            $staffList = is_array($m->staff_members) ? $m->staff_members : [];
+                            $workProg = trim($m->work_program ?? '');
+                        @endphp
+                        <div class="bg-white rounded-2xl shadow-sm border border-slate-200/90 overflow-hidden flex flex-col hover:shadow-xl hover:border-pmr-primary transition-all duration-300 group">
+                            
+                            <!-- Header Bidang -->
+                            <div class="bg-gradient-to-r from-red-50 via-rose-50 to-white px-4 py-3 border-b border-red-100/80 flex items-center gap-2">
+                                <div class="w-7 h-7 rounded-lg bg-red-100 text-pmr-primary flex items-center justify-center text-xs font-bold flex-shrink-0 shadow-xs">
+                                    <i class="{{ $m->icon ?: 'fa-solid fa-shapes' }}"></i>
+                                </div>
+                                <h3 class="font-extrabold text-xs text-slate-900 uppercase tracking-tight group-hover:text-pmr-primary transition">
+                                    {{ $m->position }}
+                                </h3>
                             </div>
-                            <div class="text-xs font-bold text-pmr-primary uppercase">{{ $m->position }}</div>
-                            <div class="font-semibold text-slate-800 text-sm mt-1">{{ $m->name }}</div>
-                            @if($m->subtitle)
-                                <div class="text-xs text-slate-500 mt-0.5">{{ $m->subtitle }}</div>
-                            @endif
+
+                            <!-- Ketua Bidang -->
+                            <div class="p-4 flex items-center gap-3 border-b border-slate-100 bg-white">
+                                @if($photoUrl)
+                                    <img src="{{ $photoUrl }}" alt="{{ $m->name }}" class="w-11 h-11 rounded-full object-cover border-2 border-slate-200 shadow-sm flex-shrink-0">
+                                @else
+                                    <div class="w-11 h-11 rounded-full bg-red-50 text-pmr-primary font-black text-xs flex items-center justify-center border border-red-200 flex-shrink-0">
+                                        {{ $initials }}
+                                    </div>
+                                @endif
+                                <div class="min-w-0">
+                                    <div class="font-extrabold text-slate-900 text-xs sm:text-sm truncate" title="{{ $m->name }}">{{ $m->name }}</div>
+                                    <div class="text-[11px] text-slate-500 truncate mt-0.5">
+                                        {{ $m->subtitle ?: 'Ketua ' . $m->position }}
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Bagian Staf (Bisa Lebih dari 2 Orang) -->
+                            <div class="p-3.5 bg-slate-50/60 flex-grow">
+                                <div class="flex items-center justify-between mb-2">
+                                    <span class="text-[10px] font-extrabold uppercase tracking-wider text-slate-500">Staf</span>
+                                    <span class="text-[10px] font-bold px-1.5 py-0.2 rounded-full bg-slate-200/80 text-slate-600">{{ count($staffList) }} Orang</span>
+                                </div>
+
+                                @if(!empty($staffList) && count($staffList) > 0)
+                                    <div class="space-y-2">
+                                        @foreach($staffList as $st)
+                                            @php
+                                                $stName = $st['name'] ?? '';
+                                                $stClass = $st['class_grade'] ?? '';
+                                                $stPhoto = $st['photo'] ?? '';
+                                                $stInitials = strtoupper(substr($stName ?: 'ST', 0, 2));
+                                            @endphp
+                                            <div class="flex items-center gap-2">
+                                                @if($stPhoto)
+                                                    <img src="{{ $stPhoto }}" alt="{{ $stName }}" class="w-6 h-6 rounded-full object-cover border border-slate-200 flex-shrink-0">
+                                                @else
+                                                    <div class="w-6 h-6 rounded-full bg-red-100 text-pmr-primary font-bold text-[9px] flex items-center justify-center flex-shrink-0">
+                                                        {{ $stInitials }}
+                                                    </div>
+                                                @endif
+                                                <div class="min-w-0 text-left">
+                                                    <div class="text-xs font-semibold text-slate-800 truncate" title="{{ $stName }}">{{ $stName }}</div>
+                                                    @if($stClass)
+                                                        <div class="text-[10px] text-slate-400 truncate">{{ $stClass }}</div>
+                                                    @endif
+                                                </div>
+                                            </div>
+                                        @endforeach
+                                    </div>
+                                @else
+                                    <div class="text-[11px] text-slate-400 italic py-1">Staf operasional bidang</div>
+                                @endif
+                            </div>
+
+                            <!-- Tombol Klik Disini Untuk Melihat Program Kerja -->
+                            <div class="p-3 bg-white border-t border-slate-100 mt-auto">
+                                <button type="button" 
+                                    onclick="openProgramModal('{{ addslashes($m->position) }}', '{{ addslashes($m->name) }}', '{{ addslashes($m->subtitle ?: 'Ketua ' . $m->position) }}', '{{ addslashes($photoUrl ?? '') }}', '{{ addslashes($m->icon ?: 'fa-solid fa-shapes') }}', {!! htmlspecialchars(json_encode($workProg), ENT_QUOTES, 'UTF-8') !!})"
+                                    class="w-full text-center py-2 px-2.5 rounded-xl bg-red-50 hover:bg-pmr-primary text-pmr-primary hover:text-white font-bold text-[11px] transition duration-200 flex items-center justify-center gap-1.5 group/btn">
+                                    <i class="fa-solid fa-clipboard-list text-xs group-hover/btn:scale-110 transition"></i>
+                                    <span>Program Kerja</span>
+                                    <i class="fa-solid fa-arrow-right text-[9px]"></i>
+                                </button>
+                            </div>
+
                         </div>
                     @endforeach
                 </div>
@@ -374,7 +494,7 @@
 
             <!-- Level 5: Divisi / Anggota Tambahan (jika ada) -->
             @if($others->isNotEmpty())
-                <div class="w-0.5 h-8 bg-slate-300"></div>
+                <div class="w-0.5 h-8 bg-slate-300 my-1"></div>
                 <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 w-full">
                     @foreach($others as $m)
                         <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-200 text-center hover:shadow-md transition">
@@ -396,4 +516,115 @@
         </div>
     </div>
 </section>
+
+<!-- POPUP MODAL PROGRAM KERJA BIDANG -->
+<div id="program-kerja-modal" class="fixed inset-0 z-50 bg-stone-900/80 backdrop-blur-sm hidden flex items-center justify-center p-4">
+    <div class="bg-white rounded-3xl max-w-xl w-full max-h-[85vh] shadow-2xl flex flex-col overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+        
+        <!-- Modal Header -->
+        <div class="p-6 bg-gradient-to-r from-red-50 via-rose-50 to-white border-b border-red-100 flex items-start justify-between">
+            <div class="flex items-center gap-3.5">
+                <div id="modal-prog-icon-box" class="w-12 h-12 rounded-2xl bg-pmr-primary text-white flex items-center justify-center text-xl flex-shrink-0 shadow-md shadow-red-900/20">
+                    <i id="modal-prog-icon" class="fa-solid fa-shapes"></i>
+                </div>
+                <div>
+                    <div class="inline-flex items-center gap-1.5 bg-red-100 text-pmr-primary px-2.5 py-0.5 rounded-full text-[10px] font-extrabold uppercase tracking-wider mb-1">
+                        <i class="fa-solid fa-clipboard-check"></i> Program Kerja Resmi
+                    </div>
+                    <h3 id="modal-prog-title" class="text-lg font-extrabold text-slate-900 leading-tight">Program Kerja</h3>
+                    <p id="modal-prog-leader" class="text-xs text-slate-500 mt-0.5"></p>
+                </div>
+            </div>
+            <button type="button" onclick="closeProgramModal()" class="w-9 h-9 rounded-xl text-slate-400 hover:text-slate-700 hover:bg-slate-200/80 flex items-center justify-center transition">
+                <i class="fa-solid fa-xmark text-lg"></i>
+            </button>
+        </div>
+
+        <!-- Modal Body: Work Program Items -->
+        <div class="p-6 overflow-y-auto flex-grow space-y-3" id="modal-prog-body">
+            <!-- Populated by JS -->
+        </div>
+
+        <!-- Modal Footer -->
+        <div class="px-6 py-4 bg-slate-50 border-t border-slate-100 flex items-center justify-between">
+            <span class="text-xs text-slate-500">PMR Wira SMAN 1 Ciawi 2026/2027</span>
+            <button type="button" onclick="closeProgramModal()" class="px-5 py-2 rounded-xl bg-pmr-primary hover:bg-pmr-dark text-white text-xs font-bold shadow transition">
+                Tutup
+            </button>
+        </div>
+    </div>
+</div>
+
+@push('scripts')
+<script>
+    function openProgramModal(position, leaderName, subtitle, photoUrl, iconClass, workProgramText) {
+        const modal = document.getElementById('program-kerja-modal');
+        const titleEl = document.getElementById('modal-prog-title');
+        const leaderEl = document.getElementById('modal-prog-leader');
+        const iconEl = document.getElementById('modal-prog-icon');
+        const bodyEl = document.getElementById('modal-prog-body');
+
+        if (titleEl) titleEl.textContent = 'Program Kerja ' + position;
+        if (leaderEl) leaderEl.textContent = subtitle ? `${leaderName} (${subtitle})` : leaderName;
+        if (iconEl) iconEl.className = iconClass || 'fa-solid fa-shapes';
+
+        if (bodyEl) {
+            bodyEl.innerHTML = '';
+
+            if (!workProgramText || workProgramText.trim() === '') {
+                bodyEl.innerHTML = `
+                    <div class="text-center py-8 text-slate-400">
+                        <i class="fa-solid fa-calendar-xmark text-4xl mb-2 text-slate-300 block"></i>
+                        <p class="text-sm font-semibold text-slate-600">Belum ada program kerja yang diinput.</p>
+                        <p class="text-xs text-slate-400 mt-1">Pengurus dapat menambahkan program kerja melalui panel admin.</p>
+                    </div>
+                `;
+            } else {
+                // Split by newlines
+                const lines = workProgramText.split('\n').map(l => l.trim()).filter(l => l.length > 0);
+                
+                let html = '<div class="space-y-2.5">';
+                lines.forEach((line, index) => {
+                    // Clean leading number or bullet
+                    const cleanText = line.replace(/^[\d+\.\-\*\•]\s*/, '');
+                    html += `
+                        <div class="p-3.5 rounded-2xl bg-slate-50 border border-slate-200/80 flex items-start gap-3 hover:border-pmr-primary/50 transition">
+                            <div class="w-6 h-6 rounded-full bg-red-100 text-pmr-primary flex items-center justify-center text-xs font-black flex-shrink-0 mt-0.5">
+                                ${index + 1}
+                            </div>
+                            <div class="text-xs sm:text-sm font-semibold text-slate-800 leading-relaxed">
+                                ${cleanText}
+                            </div>
+                        </div>
+                    `;
+                });
+                html += '</div>';
+                bodyEl.innerHTML = html;
+            }
+        }
+
+        if (modal) {
+            modal.classList.remove('hidden');
+        }
+    }
+
+    function closeProgramModal() {
+        const modal = document.getElementById('program-kerja-modal');
+        if (modal) modal.classList.add('hidden');
+    }
+
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') {
+            closeProgramModal();
+        }
+    });
+
+    document.getElementById('program-kerja-modal')?.addEventListener('click', function(e) {
+        if (e.target === this) {
+            closeProgramModal();
+        }
+    });
+</script>
+@endpush
 @endsection
+
