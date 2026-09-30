@@ -47,6 +47,20 @@ class OrganizationMember extends Model
                 : asset('storage/' . $this->member->photo);
         }
 
+        // Automatic lookup in Member by name if member_id is not explicitly set
+        if (!empty($this->name)) {
+            $matchedMember = Member::where('name', $this->name)->first();
+            if ($matchedMember && !empty($matchedMember->photo)) {
+                return str_starts_with($matchedMember->photo, 'http') || str_starts_with($matchedMember->photo, '/')
+                    ? $matchedMember->photo
+                    : asset('storage/' . $matchedMember->photo);
+            }
+        }
+
+        if (!empty($this->name)) {
+            return 'https://ui-avatars.com/api/?name=' . urlencode($this->name) . '&background=dc2626&color=ffffff&bold=true&size=256';
+        }
+
         return null;
     }
 

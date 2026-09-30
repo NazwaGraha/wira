@@ -31,4 +31,15 @@ class Member extends Model
         'birth_date' => 'date',
         'is_active' => 'boolean',
     ];
+
+    public function getPhotoUrlAttribute(): string
+    {
+        if (!empty($this->photo)) {
+            return str_starts_with($this->photo, 'http') || str_starts_with($this->photo, '/')
+                ? $this->photo
+                : asset('storage/' . $this->photo);
+        }
+
+        return 'https://ui-avatars.com/api/?name=' . urlencode($this->name) . '&background=dc2626&color=ffffff&bold=true&size=256';
+    }
 }
