@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\OrganizationMember;
 use App\Models\OrganizationSetting;
+use App\Models\Member;
 use Illuminate\Http\Request;
 
 class OrganizationController extends Controller
@@ -42,7 +43,8 @@ class OrganizationController extends Controller
 
     public function create()
     {
-        return view('admin.organization.create');
+        $members = Member::orderBy('name')->get();
+        return view('admin.organization.create', compact('members'));
     }
 
     public function store(Request $request)
@@ -67,7 +69,8 @@ class OrganizationController extends Controller
 
     public function edit(OrganizationMember $member)
     {
-        return view('admin.organization.edit', compact('member'));
+        $members = Member::orderBy('name')->get();
+        return view('admin.organization.edit', compact('member', 'members'));
     }
 
     public function update(Request $request, OrganizationMember $member)
