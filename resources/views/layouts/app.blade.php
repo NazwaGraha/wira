@@ -304,10 +304,10 @@
             <!-- Bottom Copyright -->
             <div class="pt-8 border-t border-stone-800 flex flex-col sm:flex-row items-center justify-between text-xs text-stone-500 gap-3">
                 <p>&copy; {{ date('Y') }} PMR WIRA SMAN 1 CIAWI. Menyatu untuk Kemanusiaan.</p>
-                <div class="flex items-center gap-4">
-                    <a href="{{ route('admin.login') }}" class="hover:text-stone-300">Login Administrator</a>
-                    <span>&bull;</span>
-                    <a href="/mockups/preview.html" target="_blank" class="hover:text-red-400 font-semibold text-red-500">Koleksi Desain Mockup</a>
+                <div>
+                    <a href="https://nazwagraha.com" target="_blank" class="hover:text-stone-300 font-medium transition flex items-center gap-1">
+                        By. <span class="font-bold text-amber-400 hover:text-amber-300 hover:underline">Nazwagraha</span>
+                    </a>
                 </div>
             </div>
         </div>
