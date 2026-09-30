@@ -74,36 +74,61 @@ class OrganizationController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'member_id' => 'nullable|integer',
+            'member_id' => 'nullable|integer|exists:members,id',
             'position' => 'required|string|max:255',
-            'name' => 'required|string|max:255',
+            'name' => 'nullable|string|max:255',
             'subtitle' => 'nullable|string|max:255',
             'level' => 'required|integer|in:1,2,3,4,5',
             'order_position' => 'nullable|integer',
             'icon' => 'nullable|string|max:100',
-            'photo' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:3072',
+            'photo' => 'nullable|string',
             'work_program' => 'nullable|string',
             'staff_members' => 'nullable|array',
             'is_active' => 'nullable|boolean',
         ]);
 
+        // Auto-populate from Member if member_id is selected
+        if (!empty($validated['member_id'])) {
+            $memberObj = Member::find($validated['member_id']);
+            if ($memberObj) {
+                $validated['name'] = $memberObj->name;
+                if (empty($validated['photo']) && !empty($memberObj->photo)) {
+                    $validated['photo'] = $memberObj->photo;
+                }
+            }
+        }
+
+        if (empty($validated['name'])) {
+            $validated['name'] = 'Pejabat ' . $validated['position'];
+        }
+
         $validated['order_position'] = $validated['order_position'] ?? 0;
         $validated['is_active'] = $request->has('is_active');
 
-        if ($request->hasFile('photo')) {
-            $validated['photo'] = $request->file('photo')->store('organization', 'public');
-        }
-
-        // Clean staff_members array
+        // Clean and auto-populate staff_members from Member
         if (!empty($validated['staff_members'])) {
             $cleanedStaff = [];
             foreach ($validated['staff_members'] as $staff) {
-                if (!empty($staff['name'])) {
+                $stMemberId = $staff['member_id'] ?? null;
+                $stName = trim($staff['name'] ?? '');
+                $stClass = $staff['class_grade'] ?? '';
+                $stPhoto = $staff['photo'] ?? null;
+
+                if ($stMemberId) {
+                    $stMemberObj = Member::find($stMemberId);
+                    if ($stMemberObj) {
+                        $stName = $stMemberObj->name;
+                        $stClass = $stClass ?: ($stMemberObj->class_grade ?? '');
+                        $stPhoto = $stPhoto ?: $stMemberObj->photo;
+                    }
+                }
+
+                if (!empty($stName)) {
                     $cleanedStaff[] = [
-                        'member_id' => $staff['member_id'] ?? null,
-                        'name' => trim($staff['name']),
-                        'class_grade' => $staff['class_grade'] ?? '',
-                        'photo' => $staff['photo'] ?? null,
+                        'member_id' => $stMemberId,
+                        'name' => $stName,
+                        'class_grade' => $stClass,
+                        'photo' => $stPhoto,
                     ];
                 }
             }
@@ -149,39 +174,61 @@ class OrganizationController extends Controller
     public function update(Request $request, OrganizationMember $member)
     {
         $validated = $request->validate([
-            'member_id' => 'nullable|integer',
+            'member_id' => 'nullable|integer|exists:members,id',
             'position' => 'required|string|max:255',
-            'name' => 'required|string|max:255',
+            'name' => 'nullable|string|max:255',
             'subtitle' => 'nullable|string|max:255',
             'level' => 'required|integer|in:1,2,3,4,5',
             'order_position' => 'nullable|integer',
             'icon' => 'nullable|string|max:100',
-            'photo' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:3072',
+            'photo' => 'nullable|string',
             'work_program' => 'nullable|string',
             'staff_members' => 'nullable|array',
             'is_active' => 'nullable|boolean',
         ]);
 
+        // Auto-populate from Member if member_id is selected
+        if (!empty($validated['member_id'])) {
+            $memberObj = Member::find($validated['member_id']);
+            if ($memberObj) {
+                $validated['name'] = $memberObj->name;
+                if (!empty($memberObj->photo)) {
+                    $validated['photo'] = $memberObj->photo;
+                }
+            }
+        }
+
+        if (empty($validated['name'])) {
+            $validated['name'] = $member->name ?: ('Pejabat ' . $validated['position']);
+        }
+
         $validated['order_position'] = $validated['order_position'] ?? 0;
         $validated['is_active'] = $request->has('is_active');
 
-        if ($request->hasFile('photo')) {
-            if ($member->photo && Storage::disk('public')->exists($member->photo)) {
-                Storage::disk('public')->delete($member->photo);
-            }
-            $validated['photo'] = $request->file('photo')->store('organization', 'public');
-        }
-
-        // Clean staff_members array
+        // Clean and auto-populate staff_members from Member
         if (!empty($validated['staff_members'])) {
             $cleanedStaff = [];
             foreach ($validated['staff_members'] as $staff) {
-                if (!empty($staff['name'])) {
+                $stMemberId = $staff['member_id'] ?? null;
+                $stName = trim($staff['name'] ?? '');
+                $stClass = $staff['class_grade'] ?? '';
+                $stPhoto = $staff['photo'] ?? null;
+
+                if ($stMemberId) {
+                    $stMemberObj = Member::find($stMemberId);
+                    if ($stMemberObj) {
+                        $stName = $stMemberObj->name;
+                        $stClass = $stClass ?: ($stMemberObj->class_grade ?? '');
+                        $stPhoto = $stPhoto ?: $stMemberObj->photo;
+                    }
+                }
+
+                if (!empty($stName)) {
                     $cleanedStaff[] = [
-                        'member_id' => $staff['member_id'] ?? null,
-                        'name' => trim($staff['name']),
-                        'class_grade' => $staff['class_grade'] ?? '',
-                        'photo' => $staff['photo'] ?? null,
+                        'member_id' => $stMemberId,
+                        'name' => $stName,
+                        'class_grade' => $stClass,
+                        'photo' => $stPhoto,
                     ];
                 }
             }

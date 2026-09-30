@@ -1,7 +1,7 @@
 @extends('layouts.admin')
 
 @section('title', 'Tambah Pengurus / Jabatan')
-@section('page_title', 'Tambah Pengurus / Bidang Baru')
+@section('page_title', 'Tambah Pengurus / Bidang Bagan')
 
 @section('top_actions')
 <a href="{{ route('admin.organization.index') }}" class="bg-slate-200 hover:bg-slate-300 text-slate-700 px-4 py-2.5 rounded-xl font-bold text-xs flex items-center gap-2 transition">
@@ -11,28 +11,78 @@
 @endsection
 
 @section('content')
-<div class="max-w-4xl mx-auto">
+<div class="max-w-3xl mx-auto">
     <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+        
+        <!-- Header Card -->
         <div class="px-6 py-4 bg-slate-50 border-b border-slate-200 flex items-center justify-between">
             <div>
-                <h2 class="font-extrabold text-slate-800 text-sm">Formulir Pengurus / Bidang Baru</h2>
-                <p class="text-xs text-slate-500">Kelola ketua bidang, staf anggota, dan program kerja.</p>
+                <h2 class="font-extrabold text-slate-800 text-sm">Formulir Bagan Kepengurusan</h2>
+                <p class="text-xs text-slate-500">Nama, foto, dan profil otomatis diambil langsung dari Data Anggota.</p>
             </div>
             <span class="text-xs text-slate-500 font-semibold">* Wajib diisi</span>
         </div>
 
-        <form action="{{ route('admin.organization.store') }}" method="POST" enctype="multipart/form-data" class="p-6 sm:p-8 space-y-8">
+        <form action="{{ route('admin.organization.store') }}" method="POST" class="p-6 sm:p-8 space-y-8">
             @csrf
             <input type="hidden" name="member_id" id="member_id" value="{{ old('member_id') }}">
+            <input type="hidden" name="name" id="name" value="{{ old('name') }}">
+            <input type="hidden" name="photo" id="photo" value="{{ old('photo') }}">
 
-            <!-- 1. TINGKAT HIRARKI & JABATAN -->
-            <div class="space-y-4">
+            <!-- 1. PILIH ANGGOTA SEBAGAI PEJABAT / KETUA -->
+            <div class="space-y-3">
+                <div class="flex items-center justify-between pb-2 border-b border-slate-100">
+                    <label class="text-xs font-black uppercase tracking-wider text-pmr-primary flex items-center gap-2">
+                        <i class="fa-solid fa-id-card"></i> 1. Pilih Pejabat / Ketua dari Data Anggota <span class="text-red-500">*</span>
+                    </label>
+                    <a href="{{ route('admin.members.create') }}" target="_blank" class="text-[11px] font-bold text-slate-500 hover:text-pmr-primary transition flex items-center gap-1">
+                        <i class="fa-solid fa-user-plus"></i> + Tambah Anggota Baru
+                    </a>
+                </div>
+
+                <!-- Live Selection Card -->
+                <div id="member-selected-card" class="hidden bg-gradient-to-r from-red-50/80 via-white to-slate-50 p-4 rounded-2xl border-2 border-red-200 flex items-center justify-between gap-4 animate-in fade-in duration-200">
+                    <div class="flex items-center gap-3.5 min-w-0">
+                        <img id="card-member-photo" src="" alt="" class="w-14 h-14 rounded-full object-cover border-2 border-pmr-primary shadow-sm flex-shrink-0">
+                        <div class="min-w-0">
+                            <div class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-800 mb-1">
+                                <i class="fa-solid fa-circle-check text-emerald-600"></i> Terpilih dari Data Anggota
+                            </div>
+                            <div id="card-member-name" class="font-extrabold text-slate-900 text-sm sm:text-base truncate"></div>
+                            <div id="card-member-meta" class="text-xs text-slate-500 truncate"></div>
+                        </div>
+                    </div>
+
+                    <button type="button" onclick="openMemberModal('leader')" class="px-3.5 py-2 rounded-xl bg-white hover:bg-red-50 text-pmr-primary border border-red-200 font-bold text-xs flex items-center gap-1.5 shadow-sm transition flex-shrink-0">
+                        <i class="fa-solid fa-arrows-rotate"></i>
+                        <span>Ganti</span>
+                    </button>
+                </div>
+
+                <!-- Empty State: Button To Select -->
+                <div id="member-empty-card" class="p-6 bg-slate-50 border-2 border-dashed border-slate-300 rounded-2xl text-center space-y-3">
+                    <div class="w-12 h-12 rounded-full bg-red-100 text-pmr-primary flex items-center justify-center text-xl mx-auto shadow-inner">
+                        <i class="fa-solid fa-user-check"></i>
+                    </div>
+                    <div>
+                        <div class="font-bold text-slate-800 text-sm">Belum Ada Anggota Dipilih</div>
+                        <p class="text-xs text-slate-500 mt-0.5">Pilih nama pejabat/ketua dari database anggota agar foto dan data profil otomatis terisi.</p>
+                    </div>
+                    <button type="button" onclick="openMemberModal('leader')" class="bg-pmr-primary hover:bg-pmr-dark text-white px-5 py-2.5 rounded-xl font-bold text-xs inline-flex items-center gap-2 shadow-md shadow-red-950/20 transition">
+                        <i class="fa-solid fa-magnifying-glass"></i>
+                        <span>Cari & Pilih Anggota PMR</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- 2. JABATAN & TINGKAT HIRARKI -->
+            <div class="space-y-4 pt-2">
                 <h3 class="text-xs font-black uppercase tracking-wider text-pmr-primary flex items-center gap-2 pb-2 border-b border-slate-100">
-                    <i class="fa-solid fa-sitemap"></i> 1. Tingkat Hirarki & Nama Jabatan
+                    <i class="fa-solid fa-sitemap"></i> 2. Jabatan & Tingkat Bagan
                 </h3>
 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <!-- Tingkat Hirarki Level -->
+                    <!-- Tingkat Hirarki -->
                     <div>
                         <label for="level" class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">
                             Tingkat Hirarki Bagan <span class="text-red-500">*</span>
@@ -53,179 +103,110 @@
                         </label>
                         <input type="text" name="position" id="position" value="{{ old('position') }}" required
                             class="w-full px-4 py-2.5 rounded-xl border border-slate-300 text-sm font-bold focus:ring-2 focus:ring-pmr-primary focus:border-pmr-primary transition"
-                            placeholder="Contoh: Bidang Markas, Ketua Umum, Sekretaris">
+                            placeholder="Contoh: Bidang Markas">
+                        
+                        <!-- Quick Presets -->
+                        <div class="flex flex-wrap gap-1.5 mt-2">
+                            <button type="button" onclick="setPresetPosition('Bidang Markas', 4, 'fa-solid fa-boxes-stacked')" class="text-[10px] bg-slate-100 hover:bg-red-50 hover:text-pmr-primary font-bold px-2 py-0.5 rounded-md text-slate-600 transition">Bidang Markas</button>
+                            <button type="button" onclick="setPresetPosition('Bidang Pelayanan', 4, 'fa-solid fa-hand-holding-heart')" class="text-[10px] bg-slate-100 hover:bg-red-50 hover:text-pmr-primary font-bold px-2 py-0.5 rounded-md text-slate-600 transition">Bidang Pelayanan</button>
+                            <button type="button" onclick="setPresetPosition('Bidang Diklat', 4, 'fa-solid fa-graduation-cap')" class="text-[10px] bg-slate-100 hover:bg-red-50 hover:text-pmr-primary font-bold px-2 py-0.5 rounded-md text-slate-600 transition">Bidang Diklat</button>
+                            <button type="button" onclick="setPresetPosition('Bidang Humas', 4, 'fa-solid fa-bullhorn')" class="text-[10px] bg-slate-100 hover:bg-red-50 hover:text-pmr-primary font-bold px-2 py-0.5 rounded-md text-slate-600 transition">Bidang Humas</button>
+                            <button type="button" onclick="setPresetPosition('Bidang Kreasi', 4, 'fa-solid fa-wand-magic-sparkles')" class="text-[10px] bg-slate-100 hover:bg-red-50 hover:text-pmr-primary font-bold px-2 py-0.5 rounded-md text-slate-600 transition">Bidang Kreasi</button>
+                            <button type="button" onclick="setPresetPosition('Ketua Umum 2026/2027', 2, 'fa-solid fa-crown')" class="text-[10px] bg-slate-100 hover:bg-red-50 hover:text-pmr-primary font-bold px-2 py-0.5 rounded-md text-slate-600 transition">Ketua Umum</button>
+                            <button type="button" onclick="setPresetPosition('Sekretaris', 3, 'fa-solid fa-file-signature')" class="text-[10px] bg-slate-100 hover:bg-red-50 hover:text-pmr-primary font-bold px-2 py-0.5 rounded-md text-slate-600 transition">Sekretaris</button>
+                            <button type="button" onclick="setPresetPosition('Bendahara', 3, 'fa-solid fa-wallet')" class="text-[10px] bg-slate-100 hover:bg-red-50 hover:text-pmr-primary font-bold px-2 py-0.5 rounded-md text-slate-600 transition">Bendahara</button>
+                        </div>
                     </div>
                 </div>
-            </div>
 
-            <!-- 2. DATA KETUA / PEJABAT -->
-            <div class="space-y-4">
-                <h3 class="text-xs font-black uppercase tracking-wider text-pmr-primary flex items-center gap-2 pb-2 border-b border-slate-100">
-                    <i class="fa-solid fa-user-tie"></i> 2. Data Pejabat / Ketua
-                </h3>
-
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <!-- Nama Pejabat / Siswa (Bisa Input Manual atau Cari Database) -->
-                    <div class="relative">
-                        <div class="flex items-center justify-between mb-2">
-                            <label for="name" class="block text-xs font-bold text-slate-700 uppercase tracking-wider">
-                                Nama Pejabat / Siswa <span class="text-red-500">*</span>
-                            </label>
-                            <button type="button" onclick="openMemberModal('leader')" class="text-[11px] font-bold text-pmr-primary hover:text-pmr-dark hover:underline flex items-center gap-1">
-                                <i class="fa-solid fa-magnifying-glass"></i> Cari Data Anggota
-                            </button>
-                        </div>
-
-                        <div class="relative">
-                            <input type="text" name="name" id="name" value="{{ old('name') }}" required autocomplete="off"
-                                class="w-full px-4 py-2.5 rounded-xl border border-slate-300 text-sm font-bold text-pmr-primary focus:ring-2 focus:ring-pmr-primary focus:border-pmr-primary transition pr-10"
-                                placeholder="Ketik nama langsung atau cari..."
-                                oninput="handleNameInput(this.value)">
-                            
-                            <button type="button" onclick="openMemberModal('leader')" class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-pmr-primary transition" title="Pilih dari Data Anggota">
-                                <i class="fa-solid fa-address-book text-base"></i>
-                            </button>
-                        </div>
-
-                        <!-- Live Autocomplete Dropdown List -->
-                        <div id="autocomplete-list" class="absolute z-50 left-0 right-0 top-full mt-1 bg-white rounded-xl shadow-2xl border border-slate-200 divide-y divide-slate-100 max-h-60 overflow-y-auto hidden">
-                            <!-- Populated by JS -->
-                        </div>
-
-                        <div id="selected-member-badge" class="hidden mt-2 p-2.5 bg-emerald-50 border border-emerald-200 rounded-xl flex items-center justify-between text-xs text-emerald-800 font-semibold">
-                            <div class="flex items-center gap-2">
-                                <div id="leader-preview-avatar" class="w-7 h-7 rounded-full bg-emerald-200 text-emerald-900 font-bold flex items-center justify-center overflow-hidden flex-shrink-0 text-xs">
-                                    <i class="fa-solid fa-user"></i>
-                                </div>
-                                <span id="selected-member-text">
-                                    Terhubung ke: <strong id="badge-name"></strong> (<span id="badge-class"></span>)
-                                </span>
-                            </div>
-                            <button type="button" onclick="clearSelectedMember()" class="text-slate-400 hover:text-rose-600 text-xs font-bold px-1.5 py-0.5 rounded hover:bg-white transition" title="Hapus tautan">
-                                <i class="fa-solid fa-xmark"></i>
-                            </button>
-                        </div>
-
-                        <p class="text-[11px] text-slate-400 mt-1">Bisa diketik bebas atau dipilih langsung dari database anggota.</p>
-                    </div>
-
-                    <!-- Subtitle / Peran / Keterangan -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 pt-1">
+                    <!-- Subtitle / Peran -->
                     <div>
                         <label for="subtitle" class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">
                             Keterangan / Subtitle Peran
                         </label>
                         <input type="text" name="subtitle" id="subtitle" value="{{ old('subtitle') }}"
                             class="w-full px-4 py-2.5 rounded-xl border border-slate-300 text-sm font-medium focus:ring-2 focus:ring-pmr-primary focus:border-pmr-primary transition"
-                            placeholder="Contoh: Ketua Bidang Markas / Kelas XI-MIPA 1">
-                        <p class="text-[11px] text-slate-400 mt-1">Muncul tepat di bawah nama pada kartu bagan.</p>
-                    </div>
-                </div>
-
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 pt-2">
-                    <!-- Foto Kustom Pejabat (Opsional) -->
-                    <div>
-                        <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">
-                            Foto Pejabat / Ketua (Opsional)
-                        </label>
-                        <div class="flex items-center gap-4">
-                            <div id="photo-preview-box" class="w-14 h-14 rounded-2xl bg-slate-100 border border-slate-200 flex items-center justify-center text-slate-400 text-xl overflow-hidden flex-shrink-0">
-                                <i class="fa-solid fa-image"></i>
-                            </div>
-                            <div class="flex-grow">
-                                <input type="file" name="photo" id="photo" accept="image/*" onchange="previewUploadedPhoto(event)"
-                                    class="block w-full text-xs text-slate-500 file:mr-3 file:py-2 file:px-3 file:rounded-xl file:border-0 file:text-xs file:font-bold file:bg-slate-100 file:text-slate-700 hover:file:bg-slate-200 cursor-pointer">
-                                <p class="text-[11px] text-slate-400 mt-1">Format: JPG, PNG, WEBP (Maks: 3MB). Otomatis mengambil dari profil anggota jika dikosongkan.</p>
-                            </div>
-                        </div>
+                            placeholder="Contoh: Ketua Bidang Markas">
                     </div>
 
                     <!-- Icon FontAwesome -->
                     <div>
                         <label for="icon" class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">
-                            Icon FontAwesome (Opsional)
+                            Icon FontAwesome
                         </label>
                         <div class="relative">
-                            <input type="text" name="icon" id="icon" value="{{ old('icon', 'fa-solid fa-boxes-stacked') }}"
-                                class="w-full pl-10 pr-4 py-2.5 rounded-xl border border-slate-300 text-sm font-medium focus:ring-2 focus:ring-pmr-primary focus:border-pmr-primary transition"
-                                placeholder="fa-solid fa-boxes-stacked">
-                            <div class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">
-                                <i id="icon-preview" class="fa-solid fa-boxes-stacked text-base"></i>
+                            <input type="text" name="icon" id="icon" value="{{ old('icon', 'fa-solid fa-shapes') }}"
+                                class="w-full pl-10 pr-4 py-2.5 rounded-xl border border-slate-300 text-sm font-medium focus:ring-2 focus:ring-pmr-primary focus:border-pmr-primary transition">
+                            <div class="absolute left-3.5 top-1/2 -translate-y-1/2 text-pmr-primary">
+                                <i id="icon-preview" class="fa-solid fa-shapes text-sm"></i>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
 
-            <!-- 3. DAFTAR STAF BIDANG (Bisa Lebih Dari 2 Orang) -->
-            <div id="section-staff" class="space-y-4">
+            <!-- 3. PILIH STAF BIDANG DARI DATA ANGGOTA -->
+            <div id="section-staff" class="space-y-4 pt-2">
                 <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-2 border-b border-slate-100">
                     <div>
                         <h3 class="text-xs font-black uppercase tracking-wider text-pmr-primary flex items-center gap-2">
-                            <i class="fa-solid fa-users-gear"></i> 3. Anggota Staf (Bisa Lebih Dari 2 Orang)
+                            <i class="fa-solid fa-users"></i> 3. Anggota Staf (Diambil dari Data Anggota)
                         </h3>
-                        <p class="text-xs text-slate-500 mt-0.5">Tambahkan staf pelaksana bidang dengan foto dan nama dari database anggota.</p>
+                        <p class="text-xs text-slate-500 mt-0.5">Tambahkan staf operasional bidang langsung dari database anggota.</p>
                     </div>
 
-                    <div class="flex items-center gap-2">
-                        <button type="button" onclick="openMemberModal('staff')" class="bg-red-50 hover:bg-red-100 text-pmr-primary px-3 py-1.5 rounded-xl font-bold text-xs flex items-center gap-1.5 transition">
-                            <i class="fa-solid fa-user-plus"></i>
-                            <span>Pilih dari Anggota</span>
-                        </button>
-                        <button type="button" onclick="addManualStaffRow()" class="bg-slate-100 hover:bg-slate-200 text-slate-700 px-3 py-1.5 rounded-xl font-bold text-xs flex items-center gap-1.5 transition">
-                            <i class="fa-solid fa-plus"></i>
-                            <span>Input Manual</span>
-                        </button>
-                    </div>
+                    <button type="button" onclick="openMemberModal('staff')" class="bg-red-50 hover:bg-pmr-primary hover:text-white text-pmr-primary px-3.5 py-1.5 rounded-xl font-bold text-xs flex items-center gap-1.5 transition self-start sm:self-auto border border-red-200">
+                        <i class="fa-solid fa-user-plus"></i>
+                        <span>+ Tambah Staf dari Anggota</span>
+                    </button>
                 </div>
 
                 <!-- Container Baris Staf -->
-                <div id="staff-container" class="space-y-3 min-h-[50px] p-4 bg-slate-50/75 rounded-2xl border border-dashed border-slate-300">
-                    <p id="staff-empty-state" class="text-center text-xs text-slate-400 py-4">
-                        Belum ada staf ditambahkan. Klik tombol <strong>"Pilih dari Anggota"</strong> atau <strong>"Input Manual"</strong> di atas.
+                <div id="staff-container" class="space-y-2.5 min-h-[50px] p-4 bg-slate-50/75 rounded-2xl border border-dashed border-slate-300">
+                    <p id="staff-empty-state" class="text-center text-xs text-slate-400 py-3">
+                        Belum ada staf ditambahkan. Klik tombol <strong>"+ Tambah Staf dari Anggota"</strong> di atas.
                     </p>
                 </div>
             </div>
 
-            <!-- 4. PROGRAM KERJA BIDANG -->
-            <div id="section-work-program" class="space-y-4">
+            <!-- 4. PROGRAM KERJA BIDANG (FORM SATU-SATUNYA YANG PERLU DIKETIK) -->
+            <div id="section-work-program" class="space-y-3 pt-2">
                 <div class="pb-2 border-b border-slate-100">
                     <h3 class="text-xs font-black uppercase tracking-wider text-pmr-primary flex items-center gap-2">
-                        <i class="fa-solid fa-list-check"></i> 4. Program Kerja Bidang (Popup Modal)
+                        <i class="fa-solid fa-list-check"></i> 4. Program Kerja Bidang (Form Input Program Kerja)
                     </h3>
-                    <p class="text-xs text-slate-500 mt-0.5">Program kerja yang akan tampil di popup modal saat pengunjung mengklik <em>"Klik disini untuk melihat program kerja"</em>.</p>
+                    <p class="text-xs text-slate-500 mt-0.5">Tuliskan butir-butir program kerja bidang ini (1 program kerja per baris). Program kerja akan muncul saat tombol <em>"Program Kerja"</em> diklik di halaman publik.</p>
                 </div>
 
                 <div>
                     <label for="work_program" class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">
-                        Daftar Butir Program Kerja (1 Program per Baris atau Deskripsi)
+                        Daftar Program Kerja
                     </label>
-                    <textarea name="work_program" id="work_program" rows="6"
-                        class="w-full p-4 rounded-xl border border-slate-300 text-sm font-medium focus:ring-2 focus:ring-pmr-primary focus:border-pmr-primary transition font-sans"
-                        placeholder="Contoh:&#10;1. Pengelolaan dan inventarisasi obat-obatan dan tandu UKS&#10;2. Pemeliharaan kebersihan dan kesiapan ruang markas PMR&#10;3. Piket harian siaga upacara dan operasional markas&#10;4. Pengadaan logistik medis darurat">{{ old('work_program') }}</textarea>
-                    <p class="text-[11px] text-slate-400 mt-1">Gunakan enter untuk baris baru. Setiap baris akan diformat rapi dalam popup modal program kerja.</p>
+                    <textarea name="work_program" id="work_program" rows="5"
+                        class="w-full p-4 rounded-xl border border-slate-300 text-sm font-medium focus:ring-2 focus:ring-pmr-primary focus:border-pmr-primary transition font-sans leading-relaxed"
+                        placeholder="Contoh:&#10;1. Pengelolaan dan inventarisasi obat-obatan serta tandu darurat UKS&#10;2. Pemeliharaan kebersihan dan kesiapan ruang markas PMR&#10;3. Pengadaan logistik medis darurat&#10;4. Jadwal piket harian siaga upacara">{{ old('work_program') }}</textarea>
                 </div>
             </div>
 
             <!-- 5. PENGATURAN TAMBAHAN -->
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6 items-center pt-4 border-t border-slate-100">
-                <!-- Urutan Tampil -->
                 <div>
                     <label for="order_position" class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">
-                        Urutan Tampil Kartu (Angka)
+                        Urutan Tampil (Angka)
                     </label>
                     <input type="number" name="order_position" id="order_position" value="{{ old('order_position', 1) }}"
                         class="w-full px-4 py-2.5 rounded-xl border border-slate-300 text-sm font-bold focus:ring-2 focus:ring-pmr-primary focus:border-pmr-primary transition"
                         min="0">
                 </div>
 
-                <!-- Status Aktif -->
                 <div class="pt-5">
                     <label class="flex items-center gap-3 cursor-pointer">
                         <input type="checkbox" name="is_active" value="1" {{ old('is_active', true) ? 'checked' : '' }}
                             class="w-5 h-5 rounded text-pmr-primary focus:ring-pmr-primary border-slate-300">
                         <div>
                             <span class="text-sm font-bold text-slate-800">Tampilkan di Bagan (Aktif)</span>
-                            <span class="block text-xs text-slate-500">Centang agar langsung muncul di web publik</span>
+                            <span class="block text-xs text-slate-500">Centang agar langsung muncul di web</span>
                         </div>
                     </label>
                 </div>
@@ -280,6 +261,8 @@
                     $mPhoto = null;
                     if (!empty($m->photo)) {
                         $mPhoto = str_starts_with($m->photo, 'http') || str_starts_with($m->photo, '/') ? $m->photo : asset('storage/' . $m->photo);
+                    } else {
+                        $mPhoto = 'https://ui-avatars.com/api/?name=' . urlencode($m->name) . '&background=dc2626&color=ffffff&bold=true&size=128';
                     }
                 @endphp
                 <div class="member-item p-3.5 rounded-xl border border-slate-200 hover:border-pmr-primary hover:bg-red-50/50 flex items-center justify-between cursor-pointer transition group"
@@ -288,16 +271,10 @@
                      data-name="{{ $m->name }}"
                      data-class="{{ $m->class_grade ?? '' }}"
                      data-nis="{{ $m->nis ?? '' }}"
-                     data-photo="{{ $mPhoto ?? '' }}"
+                     data-photo="{{ $mPhoto }}"
                      data-search="{{ strtolower($m->name . ' ' . ($m->class_grade ?? '') . ' ' . ($m->nis ?? '')) }}">
                     <div class="flex items-center gap-3">
-                        @if($mPhoto)
-                            <img src="{{ $mPhoto }}" alt="{{ $m->name }}" class="w-10 h-10 rounded-full object-cover border border-slate-200 flex-shrink-0">
-                        @else
-                            <div class="w-10 h-10 rounded-full bg-slate-100 border border-slate-200 text-pmr-primary flex items-center justify-center font-black text-sm flex-shrink-0 group-hover:bg-pmr-primary group-hover:text-white transition">
-                                {{ strtoupper(substr($m->name, 0, 2)) }}
-                            </div>
-                        @endif
+                        <img src="{{ $mPhoto }}" alt="{{ $m->name }}" class="w-10 h-10 rounded-full object-cover border border-slate-200 flex-shrink-0">
                         <div>
                             <div class="font-bold text-slate-900 text-sm group-hover:text-pmr-primary transition">{{ $m->name }}</div>
                             <div class="text-xs text-slate-500 flex items-center gap-2 mt-0.5">
@@ -324,7 +301,7 @@
 
         <!-- Modal Footer -->
         <div class="px-6 py-3 bg-slate-50 border-t border-slate-100 flex justify-between items-center text-xs text-slate-500">
-            <span>Klik pada anggota untuk memilih</span>
+            <span>Klik pada anggota untuk memilih secara instan</span>
             <button type="button" onclick="closeMemberModal()" class="px-4 py-2 rounded-lg bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold transition">
                 Tutup
             </button>
@@ -336,135 +313,8 @@
 @push('scripts')
 <script>
     const membersData = {!! json_encode($membersJson) !!};
-    let currentModalTarget = 'leader'; // 'leader' or 'staff'
+    let currentModalTarget = 'leader';
     let staffCount = 0;
-
-    function handleNameInput(query) {
-        const list = document.getElementById('autocomplete-list');
-        if (!query || query.trim().length < 1) {
-            list.classList.add('hidden');
-            list.innerHTML = '';
-            return;
-        }
-
-        const q = query.toLowerCase().trim();
-        const matches = membersData.filter(m => 
-            (m.name && m.name.toLowerCase().includes(q)) || 
-            (m.class_grade && m.class_grade.toLowerCase().includes(q)) ||
-            (m.nis && m.nis.toLowerCase().includes(q))
-        ).slice(0, 6);
-
-        if (matches.length === 0) {
-            list.classList.add('hidden');
-            list.innerHTML = '';
-            return;
-        }
-
-        let html = '';
-        matches.forEach((m) => {
-            const shortName = m.name ? m.name.substring(0, 2).toUpperCase() : 'PM';
-            const avatarHtml = m.photo_url 
-                ? `<img src="${m.photo_url}" class="w-8 h-8 rounded-full object-cover border border-slate-200">`
-                : `<div class="w-8 h-8 rounded-full bg-red-100 text-pmr-primary flex items-center justify-center font-bold text-xs">${shortName}</div>`;
-
-            html += `
-                <div class="p-3 hover:bg-red-50 cursor-pointer flex items-center justify-between transition"
-                     onclick="selectMemberById(${m.id})">
-                    <div class="flex items-center gap-2.5">
-                        ${avatarHtml}
-                        <div>
-                            <div class="font-bold text-xs text-slate-800">${m.name}</div>
-                            <div class="text-[11px] text-slate-400">${m.class_grade ? 'Kelas: ' + m.class_grade : ''} ${m.nis ? '&bull; NIS: ' + m.nis : ''}</div>
-                        </div>
-                    </div>
-                    <span class="text-[10px] bg-red-100 text-pmr-primary font-bold px-2 py-0.5 rounded">Pilih</span>
-                </div>
-            `;
-        });
-
-        list.innerHTML = html;
-        list.classList.remove('hidden');
-    }
-
-    function selectMemberFromEl(el) {
-        const member = {
-            id: el.getAttribute('data-id'),
-            name: el.getAttribute('data-name'),
-            class_grade: el.getAttribute('data-class'),
-            nis: el.getAttribute('data-nis'),
-            photo_url: el.getAttribute('data-photo')
-        };
-
-        if (currentModalTarget === 'leader') {
-            selectLeader(member);
-        } else if (currentModalTarget === 'staff') {
-            addStaffRow(member);
-        }
-    }
-
-    function selectMemberById(id) {
-        const m = membersData.find(item => item.id == id);
-        if (m) {
-            if (currentModalTarget === 'leader') {
-                selectLeader(m);
-            } else if (currentModalTarget === 'staff') {
-                addStaffRow(m);
-            }
-        }
-    }
-
-    function selectLeader(m) {
-        const nameInput = document.getElementById('name');
-        const memberIdInput = document.getElementById('member_id');
-        const subtitleInput = document.getElementById('subtitle');
-        const badge = document.getElementById('selected-member-badge');
-        const badgeName = document.getElementById('badge-name');
-        const badgeClass = document.getElementById('badge-class');
-        const list = document.getElementById('autocomplete-list');
-        const avatarPreview = document.getElementById('leader-preview-avatar');
-
-        if (nameInput && m.name) nameInput.value = m.name;
-        if (memberIdInput && m.id) memberIdInput.value = m.id;
-
-        const posInput = document.getElementById('position');
-        const currentPos = posInput ? posInput.value.trim() : '';
-
-        if (subtitleInput && (!subtitleInput.value || subtitleInput.value.trim() === '')) {
-            if (currentPos) {
-                subtitleInput.value = 'Ketua ' + currentPos;
-            } else if (m.class_grade) {
-                subtitleInput.value = 'Kelas ' + m.class_grade;
-            }
-        }
-
-        if (badge && badgeName && badgeClass) {
-            badgeName.textContent = m.name || '';
-            badgeClass.textContent = m.class_grade ? 'Kelas ' + m.class_grade : 'Anggota PMR';
-            badge.classList.remove('hidden');
-
-            if (avatarPreview) {
-                if (m.photo_url) {
-                    avatarPreview.innerHTML = `<img src="${m.photo_url}" class="w-full h-full object-cover">`;
-                } else {
-                    avatarPreview.innerHTML = `<span class="font-black">${(m.name || 'PM').substring(0,2).toUpperCase()}</span>`;
-                }
-            }
-        }
-
-        if (list) {
-            list.classList.add('hidden');
-            list.innerHTML = '';
-        }
-
-        closeMemberModal();
-    }
-
-    function clearSelectedMember() {
-        const badge = document.getElementById('selected-member-badge');
-        const memberIdInput = document.getElementById('member_id');
-        if (badge) badge.classList.add('hidden');
-        if (memberIdInput) memberIdInput.value = '';
-    }
 
     function openMemberModal(target = 'leader') {
         currentModalTarget = target;
@@ -473,7 +323,7 @@
         const searchInput = document.getElementById('modal-search-input');
 
         if (modalTitle) {
-            modalTitle.textContent = target === 'leader' ? 'Pilih Pejabat / Ketua dari Anggota' : 'Pilih Staf Bidang dari Anggota';
+            modalTitle.textContent = target === 'leader' ? 'Pilih Pejabat / Ketua dari Data Anggota' : 'Pilih Staf Bidang dari Data Anggota';
         }
 
         if (modal) {
@@ -504,49 +354,103 @@
         });
     }
 
-    // --- STAFF REPEATER FUNCTIONS ---
-    function addStaffRow(memberData = null) {
+    function selectMemberFromEl(el) {
+        const member = {
+            id: el.getAttribute('data-id'),
+            name: el.getAttribute('data-name'),
+            class_grade: el.getAttribute('data-class'),
+            nis: el.getAttribute('data-nis'),
+            photo_url: el.getAttribute('data-photo')
+        };
+
+        if (currentModalTarget === 'leader') {
+            selectLeader(member);
+        } else if (currentModalTarget === 'staff') {
+            addStaffRow(member);
+        }
+    }
+
+    function selectLeader(m) {
+        document.getElementById('member_id').value = m.id || '';
+        document.getElementById('name').value = m.name || '';
+        document.getElementById('photo').value = m.photo_url || '';
+
+        const card = document.getElementById('member-selected-card');
+        const emptyCard = document.getElementById('member-empty-card');
+        const cardPhoto = document.getElementById('card-member-photo');
+        const cardName = document.getElementById('card-member-name');
+        const cardMeta = document.getElementById('card-member-meta');
+        const subtitleInput = document.getElementById('subtitle');
+        const posInput = document.getElementById('position');
+
+        if (cardName) cardName.textContent = m.name;
+        if (cardPhoto) cardPhoto.src = m.photo_url || ('https://ui-avatars.com/api/?name=' + encodeURIComponent(m.name) + '&background=dc2626&color=ffffff&bold=true');
+        if (cardMeta) cardMeta.textContent = (m.class_grade ? 'Kelas ' + m.class_grade : 'Anggota PMR') + (m.nis ? ' • NIS: ' + m.nis : '');
+
+        if (subtitleInput && (!subtitleInput.value || subtitleInput.value.trim() === '')) {
+            const pos = posInput ? posInput.value.trim() : '';
+            if (pos) {
+                subtitleInput.value = 'Ketua ' + pos;
+            } else if (m.class_grade) {
+                subtitleInput.value = 'Kelas ' + m.class_grade;
+            }
+        }
+
+        if (card) card.classList.remove('hidden');
+        if (emptyCard) emptyCard.classList.add('hidden');
+
+        closeMemberModal();
+    }
+
+    function setPresetPosition(pos, level, icon) {
+        const posInput = document.getElementById('position');
+        const levelSelect = document.getElementById('level');
+        const iconInput = document.getElementById('icon');
+        const subtitleInput = document.getElementById('subtitle');
+        const iconPreview = document.getElementById('icon-preview');
+
+        if (posInput) posInput.value = pos;
+        if (levelSelect) levelSelect.value = level;
+        if (iconInput) iconInput.value = icon;
+        if (iconPreview) iconPreview.className = icon + ' text-sm';
+
+        if (subtitleInput && (!subtitleInput.value || subtitleInput.value.trim() === '' || subtitleInput.value.startsWith('Ketua '))) {
+            subtitleInput.value = 'Ketua ' + pos;
+        }
+    }
+
+    // --- STAFF REPEATER ---
+    function addStaffRow(m) {
         const container = document.getElementById('staff-container');
         const emptyState = document.getElementById('staff-empty-state');
         if (emptyState) emptyState.classList.add('hidden');
 
         const index = staffCount++;
-        const id = memberData ? (memberData.id || '') : '';
-        const name = memberData ? (memberData.name || '') : '';
-        const classGrade = memberData ? (memberData.class_grade || '') : '';
-        const photoUrl = memberData ? (memberData.photo_url || memberData.photo || '') : '';
-
-        const initials = name ? name.substring(0, 2).toUpperCase() : 'ST';
-        const avatarHtml = photoUrl 
-            ? `<img src="${photoUrl}" class="w-10 h-10 rounded-full object-cover border border-slate-200">`
-            : `<div class="w-10 h-10 rounded-full bg-red-100 text-pmr-primary flex items-center justify-center font-bold text-xs flex-shrink-0">${initials}</div>`;
+        const id = m ? (m.id || '') : '';
+        const name = m ? (m.name || '') : '';
+        const classGrade = m ? (m.class_grade || '') : '';
+        const photoUrl = m ? (m.photo_url || 'https://ui-avatars.com/api/?name=' + encodeURIComponent(name) + '&background=dc2626&color=ffffff&bold=true') : '';
 
         const row = document.createElement('div');
-        row.className = 'staff-row bg-white p-3.5 rounded-xl border border-slate-200 shadow-sm flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 animate-in fade-in duration-150';
+        row.className = 'staff-row bg-white p-3 rounded-xl border border-slate-200 shadow-xs flex items-center justify-between gap-3 animate-in fade-in duration-150';
         row.id = `staff-row-${index}`;
 
         row.innerHTML = `
             <input type="hidden" name="staff_members[${index}][member_id]" value="${id}">
+            <input type="hidden" name="staff_members[${index}][name]" value="${name}">
+            <input type="hidden" name="staff_members[${index}][class_grade]" value="${classGrade}">
             <input type="hidden" name="staff_members[${index}][photo]" value="${photoUrl}">
 
-            <div class="flex items-center gap-3 flex-grow w-full sm:w-auto">
-                ${avatarHtml}
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 flex-grow">
-                    <div>
-                        <input type="text" name="staff_members[${index}][name]" value="${name}" required
-                            placeholder="Nama Lengkap Staf"
-                            class="w-full px-3 py-1.5 rounded-lg border border-slate-200 text-xs font-bold text-slate-800 focus:ring-1 focus:ring-pmr-primary">
-                    </div>
-                    <div>
-                        <input type="text" name="staff_members[${index}][class_grade]" value="${classGrade}"
-                            placeholder="Kelas / Jabatan Staf (cth: X-1)"
-                            class="w-full px-3 py-1.5 rounded-lg border border-slate-200 text-xs font-medium text-slate-600 focus:ring-1 focus:ring-pmr-primary">
-                    </div>
+            <div class="flex items-center gap-3 min-w-0">
+                <img src="${photoUrl}" class="w-10 h-10 rounded-full object-cover border border-slate-200 flex-shrink-0">
+                <div class="min-w-0">
+                    <div class="font-bold text-xs text-slate-800 truncate">${name}</div>
+                    <div class="text-[11px] text-slate-400 truncate">${classGrade ? 'Kelas: ' + classGrade : 'Anggota PMR'}</div>
                 </div>
             </div>
 
-            <button type="button" onclick="removeStaffRow('${row.id}')" class="text-slate-400 hover:text-rose-600 p-2 rounded-lg hover:bg-red-50 transition self-end sm:self-center" title="Hapus Staf">
-                <i class="fa-solid fa-trash-can text-sm"></i>
+            <button type="button" onclick="removeStaffRow('${row.id}')" class="text-slate-400 hover:text-rose-600 p-2 rounded-lg hover:bg-red-50 transition" title="Hapus Staf">
+                <i class="fa-solid fa-trash-can text-xs"></i>
             </button>
         `;
 
@@ -554,15 +458,9 @@
         closeMemberModal();
     }
 
-    function addManualStaffRow() {
-        addStaffRow(null);
-    }
-
     function removeStaffRow(rowId) {
         const row = document.getElementById(rowId);
-        if (row) {
-            row.remove();
-        }
+        if (row) row.remove();
         const container = document.getElementById('staff-container');
         const rows = container.querySelectorAll('.staff-row');
         if (rows.length === 0) {
@@ -571,34 +469,14 @@
         }
     }
 
-    function previewUploadedPhoto(event) {
-        const file = event.target.files[0];
-        const previewBox = document.getElementById('photo-preview-box');
-        if (file && previewBox) {
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                previewBox.innerHTML = `<img src="${e.target.result}" class="w-full h-full object-cover">`;
-            };
-            reader.readAsDataURL(file);
-        }
-    }
-
     const iconInput = document.getElementById('icon');
     if (iconInput) {
         iconInput.addEventListener('input', function(e) {
             const iconPreview = document.getElementById('icon-preview');
             if (iconPreview) {
-                iconPreview.className = e.target.value.trim() || 'fa-solid fa-shapes';
+                iconPreview.className = (e.target.value.trim() || 'fa-solid fa-shapes') + ' text-sm';
             }
         });
     }
-
-    document.addEventListener('click', function(e) {
-        const autocomplete = document.getElementById('autocomplete-list');
-        const nameInput = document.getElementById('name');
-        if (autocomplete && !autocomplete.contains(e.target) && e.target !== nameInput) {
-            autocomplete.classList.add('hidden');
-        }
-    });
 </script>
 @endpush
