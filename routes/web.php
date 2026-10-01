@@ -99,6 +99,13 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::post('/competition-registrations/{registration}/verify', [\App\Http\Controllers\Admin\CompetitionRegistrationController::class, 'verify'])->name('competition-registrations.verify');
         Route::post('/competition-registrations/{registration}/reject', [\App\Http\Controllers\Admin\CompetitionRegistrationController::class, 'reject'])->name('competition-registrations.reject');
         
+        // Daftar Peserta & Regu Lomba Terverifikasi
+        Route::get('/competition-participants', [\App\Http\Controllers\Admin\CompetitionParticipantController::class, 'index'])->name('competition-participants.index');
+        Route::post('/competition-participants/{team}', [\App\Http\Controllers\Admin\CompetitionParticipantController::class, 'update'])->name('competition-participants.update');
+        Route::post('/competition-participants-bulk-orders', [\App\Http\Controllers\Admin\CompetitionParticipantController::class, 'bulkUpdateOrders'])->name('competition-participants.bulk-update-orders');
+        Route::post('/competition-participants-auto-orders', [\App\Http\Controllers\Admin\CompetitionParticipantController::class, 'autoAssignOrders'])->name('competition-participants.auto-assign-orders');
+        Route::get('/competition-participants-print', [\App\Http\Controllers\Admin\CompetitionParticipantController::class, 'printSheet'])->name('competition-participants.print');
+
         // Penilaian Lomba (Input Nilai Juri / Panitia)
         Route::get('/competition-scores', [\App\Http\Controllers\Admin\CompetitionScoreController::class, 'index'])->name('competition-scores.index');
         Route::get('/competition-scores/{category}/input', [\App\Http\Controllers\Admin\CompetitionScoreController::class, 'input'])->name('competition-scores.input');
