@@ -57,8 +57,21 @@
                         <span class="font-mono text-xs font-bold uppercase tracking-wider bg-slate-100 text-slate-600 px-2.5 py-1 rounded-md border border-slate-200">
                             {{ $cat->code ?? 'LOMBA' }}
                         </span>
-                        <span class="text-xs font-extrabold text-slate-400">PMR {{ $cat->level }}</span>
+                        <span class="text-xs font-extrabold text-slate-500 bg-slate-100 px-2.5 py-0.5 rounded-full border border-slate-200">
+                            PMR {{ $cat->level }}
+                        </span>
                     </div>
+
+                    <!-- Foto / Mockup Peserta PMR Mula (LPP-MULA-PA & LPP-MULA-PI) -->
+                    @if($cat->code === 'LPP-MULA-PA')
+                        <div class="mb-3 rounded-2xl overflow-hidden bg-slate-50 border border-slate-200 shadow-inner flex justify-center items-center group">
+                            <img src="{{ asset('images/mascot/pmr_mula_putra.jpg') }}" alt="PMR Mula Putra" class="w-full h-56 object-contain object-top group-hover:scale-105 transition duration-300">
+                        </div>
+                    @elseif($cat->code === 'LPP-MULA-PI')
+                        <div class="mb-3 rounded-2xl overflow-hidden bg-slate-50 border border-slate-200 shadow-inner flex justify-center items-center group">
+                            <img src="{{ asset('images/mascot/pmr_mula_putri.jpg') }}" alt="PMR Mula Putri" class="w-full h-56 object-contain object-top group-hover:scale-105 transition duration-300">
+                        </div>
+                    @endif
 
                     <!-- 3x Larger Blinking Gender Category Badge -->
                     <div class="mb-4">
