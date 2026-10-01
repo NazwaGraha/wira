@@ -193,7 +193,16 @@
                                     </td>
                                     <td class="px-6 py-4 text-xs">
                                         @if(!empty($sc->score_details))
-                                            @if(isset($sc->score_details['written_score']))
+                                            @if(isset($sc->score_details['technical_score']) && isset($sc->score_details['time_score']))
+                                                <div class="flex flex-wrap items-center gap-1.5">
+                                                    <span class="bg-slate-100 text-slate-700 px-2 py-0.5 rounded font-semibold">Teknis: <strong class="text-slate-900">{{ $sc->score_details['technical_score'] }}</strong></span>
+                                                    @if(($sc->score_details['time_penalty'] ?? 0) == 0)
+                                                        <span class="bg-emerald-50 text-emerald-700 border border-emerald-200 px-2 py-0.5 rounded font-bold">Poin Waktu: +{{ $sc->score_details['time_score'] }}</span>
+                                                    @else
+                                                        <span class="bg-rose-50 text-rose-700 border border-rose-200 px-2 py-0.5 rounded font-bold">Poin Waktu: +{{ $sc->score_details['time_score'] }} (Denda -{{ $sc->score_details['time_penalty'] }})</span>
+                                                    @endif
+                                                </div>
+                                            @elseif(isset($sc->score_details['written_score']))
                                                 <span>Tertulis: <strong>{{ $sc->score_details['written_score'] }}</strong> ({{ $sc->score_details['written_time'] ?? '-' }}) &bull; Praktik: <strong>{{ $sc->score_details['practical_score'] }}</strong> ({{ $sc->score_details['practical_time'] ?? '-' }})</span>
                                             @elseif(isset($sc->score_details['criteria_1']))
                                                 <span>Kriteria 1: <strong>{{ $sc->score_details['criteria_1'] }}</strong> &bull; Kriteria 2: <strong>{{ $sc->score_details['criteria_2'] }}</strong> @if(isset($sc->score_details['criteria_3'])) &bull; Kriteria 3: <strong>{{ $sc->score_details['criteria_3'] }}</strong> @endif</span>
