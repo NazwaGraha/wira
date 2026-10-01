@@ -28,13 +28,25 @@
             </div>
         </div>
 
-        <!-- Quick Add Participant OTS / Walk-in -->
-        <div>
-            <button onclick="document.getElementById('quick-add-modal').classList.toggle('hidden')" class="bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs px-4 py-2.5 rounded-xl transition flex items-center gap-1.5">
-                <i class="fa-solid fa-plus"></i> Tambah Tim Walk-in (OTS)
+        <!-- Quick Actions: Reset Form, Reset DB, Add OTS -->
+        <div class="flex flex-wrap items-center gap-2">
+            <button type="button" onclick="clearAllFormInputs()" class="bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs px-3.5 py-2.5 rounded-xl transition flex items-center gap-1.5 shadow-sm" title="Kosongkan seluruh isian form di layar">
+                <i class="fa-solid fa-arrows-rotate text-blue-600"></i> Kosongkan Form
+            </button>
+            <button type="button" onclick="confirmResetDatabase()" class="bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 font-bold text-xs px-3.5 py-2.5 rounded-xl transition flex items-center gap-1.5 shadow-sm" title="Hapus semua nilai cabang lomba ini yang tersimpan di database">
+                <i class="fa-solid fa-trash-can text-rose-600"></i> Reset Database
+            </button>
+            <button type="button" onclick="document.getElementById('quick-add-modal').classList.toggle('hidden')" class="bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs px-4 py-2.5 rounded-xl transition flex items-center gap-1.5 shadow-sm">
+                <i class="fa-solid fa-plus"></i> Tambah Tim (OTS)
             </button>
         </div>
     </div>
+
+    <!-- Hidden Form for Resetting Database Scores -->
+    <form id="reset-database-form" action="{{ route('admin.competition-scores.reset', $category->id) }}" method="POST" class="hidden">
+        @csrf
+        <input type="hidden" name="round_name" value="{{ $round }}">
+    </form>
 
     <!-- Quick Add Modal (Hidden by default) -->
     <div id="quick-add-modal" class="hidden bg-slate-900/40 fixed inset-0 z-50 flex items-center justify-center p-4 backdrop-blur-sm">
@@ -287,9 +299,14 @@
                     <i class="fa-solid fa-circle-info text-blue-500"></i>
                     <span>Klik <strong>Simpan & Hitung Peringkat</strong> untuk memperbarui skor dan peringkat juara secara permanen ke proyektor dan halaman publik.</span>
                 </div>
-                <button type="submit" class="w-full sm:w-auto bg-red-600 hover:bg-red-700 text-white font-extrabold text-xs px-8 py-3 rounded-xl shadow-lg shadow-red-900/20 transition flex items-center justify-center gap-2">
-                    <i class="fa-solid fa-floppy-disk"></i> Simpan & Hitung Peringkat Otomatis
-                </button>
+                <div class="flex flex-wrap items-center gap-2 w-full sm:w-auto">
+                    <button type="button" onclick="clearAllFormInputs()" class="w-full sm:w-auto bg-slate-200 hover:bg-slate-300 text-slate-700 font-extrabold text-xs px-5 py-3 rounded-xl transition flex items-center justify-center gap-1.5 shadow-sm">
+                        <i class="fa-solid fa-arrows-rotate text-blue-600"></i> Kosongkan Form (Refresh)
+                    </button>
+                    <button type="submit" class="w-full sm:w-auto bg-red-600 hover:bg-red-700 text-white font-extrabold text-xs px-8 py-3 rounded-xl shadow-lg shadow-red-900/20 transition flex items-center justify-center gap-2">
+                        <i class="fa-solid fa-floppy-disk"></i> Simpan & Hitung Peringkat Otomatis
+                    </button>
+                </div>
             </div>
         </div>
     </form>
@@ -298,6 +315,43 @@
 
 <!-- Client-Side Live Formula & Dynamic Real-Time Ranking Script -->
 <script>
+// Expose global helper for clearing all inputs
+window.clearAllFormInputs = function() {
+    if (!confirm('Kosongkan semua inputan nilai dan waktu pada form ini?')) {
+        return;
+    }
+
+    document.querySelectorAll('#scoring-tbody input').forEach(input => {
+        if (input.type === 'checkbox') {
+            input.checked = false;
+        } else {
+            input.value = '';
+        }
+    });
+
+    document.querySelectorAll('.tandu-time-badge').forEach(badge => {
+        badge.innerHTML = '<span class="text-slate-300 font-mono">-</span>';
+    });
+
+    document.querySelectorAll('.rank-cell').forEach(cell => {
+        cell.innerHTML = '<span class="text-slate-300 font-mono">-</span>';
+    });
+
+    document.querySelectorAll('.team-row').forEach(row => {
+        row.classList.remove('bg-purple-50/40', 'bg-slate-100', 'opacity-60');
+    });
+
+    if (typeof window.recalculateAllRanks === 'function') {
+        window.recalculateAllRanks();
+    }
+};
+
+window.confirmResetDatabase = function() {
+    if (confirm('PERINGATAN: Apakah Anda yakin ingin menghapus seluruh nilai & peringkat yang tersimpan di database untuk cabang lomba ini? Data yang dihapus tidak dapat dikembalikan.')) {
+        document.getElementById('reset-database-form').submit();
+    }
+};
+
 document.addEventListener('DOMContentLoaded', function() {
     const isTanduCategory = {{ $isTandu ? 'true' : 'false' }};
     const scoringType = "{{ $category->scoring_type }}";
@@ -376,7 +430,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     // Dynamic Rank Recalculation across all rows
-    function recalculateAllRanks() {
+    window.recalculateAllRanks = function() {
         const rows = Array.from(document.querySelectorAll('.team-row'));
         const rowData = rows.map(row => {
             const finalInput = row.querySelector('.input-final-score');
@@ -384,7 +438,7 @@ document.addEventListener('DOMContentLoaded', function() {
             const timeInput = row.querySelector('.input-tandu-time') || row.querySelector('input[name*="time_recorded"]');
             const timeStr = timeInput ? timeInput.value : '';
             const seconds = parseTimeToSeconds(timeStr) ?? 999999;
-            const hasScore = !isNaN(scoreVal) && finalInput.value.trim() !== '';
+            const hasScore = !isNaN(scoreVal) && finalInput.value.trim() !== '' && scoreVal > 0;
 
             return {
                 row: row,
@@ -431,7 +485,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 d.row.classList.remove('bg-purple-50/40');
             }
         });
-    }
+    };
 
     // Attach listeners to all team rows
     document.querySelectorAll('.team-row').forEach(row => {
@@ -449,7 +503,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 if (techVal === '' && timeVal === '') {
                     if (badgeContainer) badgeContainer.innerHTML = '<span class="text-slate-300 font-mono">-</span>';
                     if (finalInput) finalInput.value = '';
-                    recalculateAllRanks();
+                    window.recalculateAllRanks();
                     return;
                 }
 
@@ -477,7 +531,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     finalInput.value = res.finalScore;
                 }
 
-                recalculateAllRanks();
+                window.recalculateAllRanks();
             }
 
             if (techInput) techInput.addEventListener('input', updateTanduRow);
@@ -492,7 +546,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 const p = parseFloat(practicalInput?.value || 0);
                 const score = (w * 0.3) + ((p / 10) * 0.7);
                 if (finalInput) finalInput.value = score.toFixed(2);
-                recalculateAllRanks();
+                window.recalculateAllRanks();
             }
 
             if (writtenInput) writtenInput.addEventListener('input', updateLppRow);
@@ -507,7 +561,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     total += parseFloat(inp.value || 0);
                 });
                 if (finalInput) finalInput.value = total.toFixed(2);
-                recalculateAllRanks();
+                window.recalculateAllRanks();
             }
 
             critInputs.forEach(inp => inp.addEventListener('input', updateCritRow));
@@ -521,7 +575,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 const s = parseInt(stickersInput?.value || 0, 10);
                 const score = l + (s * 1.5);
                 if (finalInput) finalInput.value = score.toFixed(2);
-                recalculateAllRanks();
+                window.recalculateAllRanks();
             }
 
             if (likesInput) likesInput.addEventListener('input', updateSocialRow);
@@ -530,18 +584,18 @@ document.addEventListener('DOMContentLoaded', function() {
             const genericScore = row.querySelector('.input-generic-score');
             function updateGenericRow() {
                 if (finalInput && genericScore) finalInput.value = genericScore.value;
-                recalculateAllRanks();
+                window.recalculateAllRanks();
             }
             if (genericScore) genericScore.addEventListener('input', updateGenericRow);
         }
 
         if (finalInput) {
-            finalInput.addEventListener('input', recalculateAllRanks);
+            finalInput.addEventListener('input', window.recalculateAllRanks);
         }
     });
 
     // Run initial rank calculation on page load
-    recalculateAllRanks();
+    window.recalculateAllRanks();
 });
 </script>
 @endsection

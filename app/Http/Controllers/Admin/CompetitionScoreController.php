@@ -301,4 +301,15 @@ class CompetitionScoreController extends Controller
 
         return redirect()->back()->with('success', "Peserta '{$teamName}' berhasil ditambahkan ke lembar penilaian.");
     }
+
+    public function resetScores(CompetitionCategory $category, Request $request)
+    {
+        $round = $request->input('round_name', 'Utama');
+
+        CompetitionScore::where('competition_category_id', $category->id)
+            ->where('round_name', $round)
+            ->delete();
+
+        return redirect()->back()->with('success', "Seluruh nilai dan peringkat untuk mata lomba '{$category->display_name}' ({$round}) berhasil di-reset dan dikosongkan.");
+    }
 }

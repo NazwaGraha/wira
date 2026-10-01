@@ -103,6 +103,7 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::get('/competition-scores', [\App\Http\Controllers\Admin\CompetitionScoreController::class, 'index'])->name('competition-scores.index');
         Route::get('/competition-scores/{category}/input', [\App\Http\Controllers\Admin\CompetitionScoreController::class, 'input'])->name('competition-scores.input');
         Route::post('/competition-scores/{category}/save', [\App\Http\Controllers\Admin\CompetitionScoreController::class, 'saveScores'])->name('competition-scores.save');
+        Route::post('/competition-scores/{category}/reset', [\App\Http\Controllers\Admin\CompetitionScoreController::class, 'resetScores'])->name('competition-scores.reset');
         Route::post('/competition-scores/{category}/quick-add-team', [\App\Http\Controllers\Admin\CompetitionScoreController::class, 'quickAddTeam'])->name('competition-scores.quick-add-team');
 
         // Rekap Juara Umum & Klasemen
