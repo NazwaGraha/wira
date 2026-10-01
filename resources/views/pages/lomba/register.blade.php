@@ -25,7 +25,7 @@
             </div>
         @endif
 
-        @if ($errors->any())
+        @if (isset($errors) && $errors->any())
             <div class="mb-6 bg-rose-50 border border-rose-200 text-rose-800 px-5 py-4 rounded-xl shadow-sm">
                 <div class="font-bold text-sm mb-1 flex items-center gap-2">
                     <i class="fa-solid fa-triangle-exclamation text-rose-500"></i> Mohon periksa kembali isian form Anda:
