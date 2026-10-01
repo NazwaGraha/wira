@@ -90,6 +90,10 @@
                             <div class="shrink-0 w-24 h-28 sm:w-28 sm:h-32 -my-3 flex items-center justify-center">
                                 <img src="{{ asset('images/mascot/pmr_mula_putri.png') }}?v=5" alt="PMR Mula Putri" class="max-h-full max-w-full object-contain filter drop-shadow-md hover:scale-110 transition duration-300 scale-110">
                             </div>
+                        @elseif($cat->level === 'Mula' && in_array($cat->gender_category, ['Umum', 'Campuran']))
+                            <div class="shrink-0 w-28 h-28 sm:w-32 sm:h-32 -my-3 flex items-center justify-center">
+                                <img src="{{ asset('images/mascot/pmr_mula_umum.png') }}?v=5" alt="PMR Mula Putra & Putri" class="max-h-full max-w-full object-contain filter drop-shadow-md hover:scale-110 transition duration-300">
+                            </div>
                         @endif
                     </div>
 
