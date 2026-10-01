@@ -83,30 +83,33 @@
 
                         <!-- Right: Transparent Mascot Photo aligned with Badge -->
                         @php
-                            $mascotFile = null;
-                            if ($cat->level === 'Mula') {
-                                if ($cat->gender_category === 'Putra') {
-                                    $mascotFile = 'Kategori_Putra.png';
-                                } elseif ($cat->gender_category === 'Putri') {
-                                    $mascotFile = 'Kategori_Putri.png';
-                                } else {
-                                    $mascotFile = 'Kategori_Umum.png';
-                                }
-                            } else {
-                                $lvlKey = strtolower($cat->level); // madya, wira
-                                $genderKey = 'umum';
-                                if ($cat->gender_category === 'Putra') {
-                                    $genderKey = 'putra';
-                                } elseif ($cat->gender_category === 'Putri') {
-                                    $genderKey = 'putri';
-                                }
-                                $mascotFile = "pmr_{$lvlKey}_{$genderKey}.png";
+                            $lvlKey = strtolower($cat->level); // mula, madya, wira
+                            $genderKey = 'Umum';
+                            if ($cat->gender_category === 'Putra') {
+                                $genderKey = 'Putra';
+                            } elseif ($cat->gender_category === 'Putri') {
+                                $genderKey = 'Putri';
                             }
-                            $mascotPath = $mascotFile ? public_path("images/mascot/{$mascotFile}") : null;
+
+                            // Priority 1: Level subfolder (images/mascot/{level}/Kategori_{gender}.png)
+                            $subPath = "images/mascot/{$lvlKey}/Kategori_{$genderKey}.png";
+                            // Priority 2: Flat PMR path (images/mascot/pmr_{level}_{gender}.png)
+                            $flatPath = "images/mascot/pmr_{$lvlKey}_" . strtolower($genderKey) . ".png";
+                            // Priority 3: Root mascot path (images/mascot/Kategori_{gender}.png)
+                            $rootPath = "images/mascot/Kategori_{$genderKey}.png";
+
+                            $chosenFile = null;
+                            if (file_exists(public_path($subPath))) {
+                                $chosenFile = $subPath;
+                            } elseif (file_exists(public_path($flatPath))) {
+                                $chosenFile = $flatPath;
+                            } elseif ($cat->level === 'Mula' && file_exists(public_path($rootPath))) {
+                                $chosenFile = $rootPath;
+                            }
                         @endphp
-                        @if($mascotPath && file_exists($mascotPath))
+                        @if($chosenFile)
                             <div class="shrink-0 w-24 h-28 sm:w-28 sm:h-32 -my-3 flex items-center justify-center">
-                                <img src="{{ asset('images/mascot/' . $mascotFile) }}?v={{ filemtime($mascotPath) }}" alt="Maskot {{ $cat->gender_category }}" class="max-h-full max-w-full object-contain filter drop-shadow-md hover:scale-110 transition duration-300">
+                                <img src="{{ asset($chosenFile) }}?v={{ filemtime(public_path($chosenFile)) }}" alt="Maskot {{ $cat->level }} {{ $cat->gender_category }}" class="max-h-full max-w-full object-contain filter drop-shadow-md hover:scale-110 transition duration-300">
                             </div>
                         @endif
                     </div>
