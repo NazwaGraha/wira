@@ -49,8 +49,8 @@
             <button type="button" onclick="confirmResetDatabase()" class="bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 font-bold text-xs px-3.5 py-2.5 rounded-xl transition flex items-center gap-1.5 shadow-sm" title="Hapus semua nilai cabang lomba ini yang tersimpan di database">
                 <i class="fa-solid fa-trash-can text-rose-600"></i> Reset Database
             </button>
-            <button type="button" onclick="document.getElementById('quick-add-modal').classList.toggle('hidden')" class="bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs px-4 py-2.5 rounded-xl transition flex items-center gap-1.5 shadow-sm">
-                <i class="fa-solid fa-plus"></i> Tambah Tim (OTS)
+            <button type="button" onclick="document.getElementById('quick-add-modal').classList.remove('hidden')" class="bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs px-4 py-2.5 rounded-xl transition flex items-center gap-1.5 shadow-sm">
+                <i class="fa-solid fa-plus"></i> Tambah Tim
             </button>
         </div>
     </div>
@@ -61,33 +61,119 @@
         <input type="hidden" name="round_name" value="{{ $round }}">
     </form>
 
-    <!-- Quick Add Modal (Hidden by default) -->
-    <div id="quick-add-modal" class="hidden bg-slate-900/40 fixed inset-0 z-50 flex items-center justify-center p-4 backdrop-blur-sm">
-        <div class="bg-white rounded-2xl p-6 max-w-md w-full shadow-2xl border border-slate-200">
-            <h3 class="font-black text-base text-slate-900 mb-2">Tambah Peserta Baru (OTS)</h3>
-            <p class="text-xs text-slate-500 mb-4">Tambahkan peserta yang mendaftar langsung di lokasi lomba.</p>
-            
-            <form action="{{ route('admin.competition-scores.quick-add-team', $category->id) }}" method="POST" class="space-y-3">
-                @csrf
+    <!-- Hidden Form for Deleting a Team from Score Sheet -->
+    <form id="delete-team-form" action="" method="POST" class="hidden">
+        @csrf
+        @method('DELETE')
+    </form>
+
+    <!-- Quick Add Modal (Populated from Verified Registrations) -->
+    <div id="quick-add-modal" class="hidden bg-slate-900/60 fixed inset-0 z-50 flex items-center justify-center p-4 backdrop-blur-xs">
+        <div class="bg-white rounded-2xl max-w-xl w-full shadow-2xl border border-slate-200 overflow-hidden flex flex-col max-h-[90vh]">
+            <!-- Modal Header -->
+            <div class="p-5 bg-slate-900 text-white flex items-center justify-between">
                 <div>
-                    <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Nama Sekolah</label>
-                    <input type="text" name="school_name" required placeholder="Contoh: SMAN 1 CIAWI" class="w-full text-xs p-2.5 bg-slate-50 border border-slate-200 rounded-xl uppercase font-semibold">
+                    <span class="px-2 py-0.5 rounded text-[10px] font-black uppercase tracking-wider bg-emerald-500 text-slate-950">
+                        PMR {{ $category->level }} &bull; {{ $category->gender_category }}
+                    </span>
+                    <h3 class="font-black text-base text-white mt-1">Tambah Tim ke Lembar Penilaian</h3>
+                    <p class="text-xs text-slate-400">{{ $category->name }}</p>
                 </div>
-                <div class="grid grid-cols-2 gap-2">
-                    <div>
-                        <label class="block text-xs font-bold text-slate-700 uppercase mb-1">No. Urut (Opsional)</label>
-                        <input type="text" name="order_number" placeholder="Contoh: 1.1 atau 7" class="w-full text-xs p-2.5 bg-slate-50 border border-slate-200 rounded-xl">
-                    </div>
-                    <div>
-                        <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Label Regu</label>
-                        <input type="text" name="team_label" placeholder="Contoh: (A) atau (B)" class="w-full text-xs p-2.5 bg-slate-50 border border-slate-200 rounded-xl">
-                    </div>
+                <button type="button" onclick="document.getElementById('quick-add-modal').classList.add('hidden')" class="text-slate-400 hover:text-white p-1">
+                    <i class="fa-solid fa-xmark text-lg"></i>
+                </button>
+            </div>
+
+            <!-- Modal Tab Selector -->
+            <div class="flex border-b border-slate-200 bg-slate-50 px-5 pt-3 gap-3">
+                <button type="button" onclick="switchAddTab('verified')" id="tab-btn-verified" class="pb-2.5 text-xs font-black border-b-2 border-red-600 text-red-600 transition flex items-center gap-1.5">
+                    <i class="fa-solid fa-clipboard-check"></i> Dari Daftar Terverifikasi
+                </button>
+                <button type="button" onclick="switchAddTab('ots')" id="tab-btn-ots" class="pb-2.5 text-xs font-bold border-b-2 border-transparent text-slate-500 hover:text-slate-800 transition flex items-center gap-1.5">
+                    <i class="fa-solid fa-user-plus"></i> Input Manual (OTS)
+                </button>
+            </div>
+
+            <!-- Modal Body -->
+            <div class="p-6 overflow-y-auto flex-grow space-y-4">
+                <!-- Section 1: Verified Schools (Default) -->
+                <div id="section-verified" class="space-y-4">
+                    <form action="{{ route('admin.competition-scores.quick-add-team', $category->id) }}" method="POST" class="space-y-4">
+                        @csrf
+                        <div>
+                            <label class="block text-xs font-bold text-slate-700 uppercase mb-1">
+                                Pilih Sekolah / Kontingen Terverifikasi <span class="text-red-500">*</span>
+                            </label>
+                            <select name="registration_id" required class="w-full text-xs p-3 bg-slate-50 border border-slate-300 rounded-xl font-bold text-slate-900 focus:bg-white focus:outline-none focus:border-red-500">
+                                <option value="">-- Pilih Kontingen Sekolah Terverifikasi --</option>
+                                @foreach($availableRegistrations as $reg)
+                                    @php
+                                        $enrolledCount = $reg->teams->count();
+                                    @endphp
+                                    <option value="{{ $reg->id }}">
+                                        {{ $reg->school_name }} ({{ $reg->registration_code }}) - {{ $enrolledCount > 0 ? "Sudah ada {$enrolledCount} regu di cabang ini" : 'Belum ada regu di cabang ini' }}
+                                    </option>
+                                @endforeach
+                            </select>
+                            <p class="text-[11px] text-slate-400 mt-1">
+                                *Menampilkan seluruh sekolah tingkat <strong>PMR {{ $category->level }}</strong> yang telah diverifikasi oleh panitia.
+                            </p>
+                        </div>
+
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                            <div>
+                                <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Label / Nama Regu</label>
+                                <input type="text" id="verified_team_label" name="team_label" placeholder="Contoh: Regu A / Regu Putra 1" class="w-full text-xs p-2.5 bg-slate-50 border border-slate-300 rounded-xl focus:bg-white focus:outline-none focus:border-red-500">
+                                <div class="flex items-center gap-1 mt-1.5 flex-wrap">
+                                    <button type="button" onclick="setLabel('Regu A')" class="text-[10px] bg-slate-100 hover:bg-slate-200 px-2 py-0.5 rounded border border-slate-200 font-semibold text-slate-600">Regu A</button>
+                                    <button type="button" onclick="setLabel('Regu B')" class="text-[10px] bg-slate-100 hover:bg-slate-200 px-2 py-0.5 rounded border border-slate-200 font-semibold text-slate-600">Regu B</button>
+                                    <button type="button" onclick="setLabel('Regu Putra 1')" class="text-[10px] bg-slate-100 hover:bg-slate-200 px-2 py-0.5 rounded border border-slate-200 font-semibold text-slate-600">Putra 1</button>
+                                    <button type="button" onclick="setLabel('Regu Putri 1')" class="text-[10px] bg-slate-100 hover:bg-slate-200 px-2 py-0.5 rounded border border-slate-200 font-semibold text-slate-600">Putri 1</button>
+                                </div>
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Nomor Urut Tampil</label>
+                                <input type="text" name="order_number" value="{{ $nextOrderNumber }}" placeholder="{{ $nextOrderNumber }}" class="w-full text-xs p-2.5 bg-slate-50 border border-slate-300 rounded-xl font-mono font-bold focus:bg-white focus:outline-none focus:border-red-500">
+                                <p class="text-[10px] text-slate-400 mt-1">Otomatis urutan berikutnya.</p>
+                            </div>
+                        </div>
+
+                        <div class="pt-3 border-t border-slate-100 flex justify-end gap-2">
+                            <button type="button" onclick="document.getElementById('quick-add-modal').classList.add('hidden')" class="px-4 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs rounded-xl transition">Batal</button>
+                            <button type="submit" class="px-5 py-2.5 bg-red-600 hover:bg-red-700 text-white font-extrabold text-xs rounded-xl shadow-md shadow-red-950/20 transition flex items-center gap-1.5">
+                                <i class="fa-solid fa-plus"></i> Tambahkan ke Lembar Skor
+                            </button>
+                        </div>
+                    </form>
                 </div>
-                <div class="pt-3 flex justify-end gap-2">
-                    <button type="button" onclick="document.getElementById('quick-add-modal').classList.add('hidden')" class="px-4 py-2 bg-slate-100 text-slate-600 font-bold text-xs rounded-xl">Batal</button>
-                    <button type="submit" class="px-4 py-2 bg-red-600 text-white font-bold text-xs rounded-xl">Tambahkan</button>
+
+                <!-- Section 2: Manual OTS (Hidden by default) -->
+                <div id="section-ots" class="hidden space-y-4">
+                    <form action="{{ route('admin.competition-scores.quick-add-team', $category->id) }}" method="POST" class="space-y-4">
+                        @csrf
+                        <div>
+                            <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Nama Sekolah / Kontingen (OTS) <span class="text-red-500">*</span></label>
+                            <input type="text" name="school_name" required placeholder="Contoh: SMPN 2 CIAWI" class="w-full text-xs p-2.5 bg-slate-50 border border-slate-300 rounded-xl uppercase font-semibold focus:bg-white focus:outline-none focus:border-red-500">
+                        </div>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                            <div>
+                                <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Label Regu</label>
+                                <input type="text" name="team_label" placeholder="Contoh: Regu A" class="w-full text-xs p-2.5 bg-slate-50 border border-slate-300 rounded-xl focus:bg-white focus:outline-none focus:border-red-500">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Nomor Urut Tampil</label>
+                                <input type="text" name="order_number" value="{{ $nextOrderNumber }}" class="w-full text-xs p-2.5 bg-slate-50 border border-slate-300 rounded-xl font-mono font-bold focus:bg-white focus:outline-none focus:border-red-500">
+                            </div>
+                        </div>
+                        <div class="pt-3 border-t border-slate-100 flex justify-end gap-2">
+                            <button type="button" onclick="document.getElementById('quick-add-modal').classList.add('hidden')" class="px-4 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs rounded-xl transition">Batal</button>
+                            <button type="submit" class="px-5 py-2.5 bg-slate-900 hover:bg-slate-800 text-white font-extrabold text-xs rounded-xl transition flex items-center gap-1.5">
+                                <i class="fa-solid fa-plus"></i> Tambah Tim OTS
+                            </button>
+                        </div>
+                    </form>
                 </div>
-            </form>
+            </div>
         </div>
     </div>
 
@@ -185,7 +271,7 @@
 
                             <th class="px-4 py-3 w-32 text-right">Nilai Akhir (Total)</th>
                             <th class="px-4 py-3 w-24 text-center bg-slate-200/80 text-slate-900 border-l border-slate-200">Ranking</th>
-                            <th class="px-3 py-3 w-16 text-center text-slate-600 border-l border-slate-200">Reset</th>
+                            <th class="px-3 py-3 w-24 text-center text-slate-600 border-l border-slate-200">Aksi</th>
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-slate-100 font-medium" id="scoring-tbody">
@@ -302,11 +388,16 @@
                                     @endif
                                 </td>
 
-                                <!-- Action: Clear Specific Row -->
+                                <!-- Action: Clear Row & Remove Team -->
                                 <td class="px-3 py-3 text-center border-l border-slate-100">
-                                    <button type="button" onclick="clearRowInput(this)" class="w-8 h-8 rounded-lg bg-slate-100 hover:bg-rose-50 text-slate-400 hover:text-rose-600 hover:border-rose-200 border border-slate-200 inline-flex items-center justify-center transition shadow-xs" title="Kosongkan nilai no. urut ini saja">
-                                        <i class="fa-solid fa-rotate-left text-xs"></i>
-                                    </button>
+                                    <div class="flex items-center justify-center gap-1">
+                                        <button type="button" onclick="clearRowInput(this)" class="w-7 h-7 rounded-lg bg-slate-100 hover:bg-amber-50 text-slate-400 hover:text-amber-600 hover:border-amber-200 border border-slate-200 inline-flex items-center justify-center transition shadow-2xs" title="Kosongkan input nomor urut ini">
+                                            <i class="fa-solid fa-rotate-left text-[11px]"></i>
+                                        </button>
+                                        <button type="button" onclick="confirmDeleteTeam('{{ route('admin.competition-scores.remove-team', [$category->id, $team->id]) }}', '{{ addslashes($team->team_name) }}')" class="w-7 h-7 rounded-lg bg-slate-100 hover:bg-rose-50 text-slate-400 hover:text-rose-600 hover:border-rose-200 border border-slate-200 inline-flex items-center justify-center transition shadow-2xs" title="Hapus regu ini dari lembar penilaian">
+                                            <i class="fa-solid fa-trash-can text-[11px]"></i>
+                                        </button>
+                                    </div>
                                 </td>
                             </tr>
                         @empty
@@ -341,6 +432,38 @@
 
 <!-- Client-Side Live Formula & Dynamic Real-Time Ranking Script -->
 <script>
+window.switchAddTab = function(tab) {
+    const secVerified = document.getElementById('section-verified');
+    const secOts = document.getElementById('section-ots');
+    const btnVerified = document.getElementById('tab-btn-verified');
+    const btnOts = document.getElementById('tab-btn-ots');
+
+    if (tab === 'verified') {
+        secVerified.classList.remove('hidden');
+        secOts.classList.add('hidden');
+        btnVerified.className = 'pb-2.5 text-xs font-black border-b-2 border-red-600 text-red-600 transition flex items-center gap-1.5';
+        btnOts.className = 'pb-2.5 text-xs font-bold border-b-2 border-transparent text-slate-500 hover:text-slate-800 transition flex items-center gap-1.5';
+    } else {
+        secVerified.classList.add('hidden');
+        secOts.classList.remove('hidden');
+        btnOts.className = 'pb-2.5 text-xs font-black border-b-2 border-red-600 text-red-600 transition flex items-center gap-1.5';
+        btnVerified.className = 'pb-2.5 text-xs font-bold border-b-2 border-transparent text-slate-500 hover:text-slate-800 transition flex items-center gap-1.5';
+    }
+};
+
+window.setLabel = function(val) {
+    const input = document.getElementById('verified_team_label');
+    if (input) input.value = val;
+};
+
+window.confirmDeleteTeam = function(actionUrl, teamName) {
+    if (confirm(`Hapus regu "${teamName}" dari lembar penilaian cabang ini?`)) {
+        const form = document.getElementById('delete-team-form');
+        form.action = actionUrl;
+        form.submit();
+    }
+};
+
 // Expose global helper for clearing a single row
 window.clearRowInput = function(btn) {
     const row = btn.closest('.team-row');

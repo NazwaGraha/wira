@@ -52,12 +52,35 @@ class CompetitionScoreController extends Controller
             ->orderBy('order_number')
             ->get();
 
+        // Get all verified registrations for this event / level
+        $availableRegistrations = CompetitionRegistration::where('status', 'verified')
+            ->when($category->level, function($q) use ($category) {
+                $q->where('level', $category->level);
+            })
+            ->when($category->competition_event_id, function($q) use ($category) {
+                $q->where('competition_event_id', $category->competition_event_id);
+            })
+            ->with(['teams' => function($tq) use ($category) {
+                $tq->where('competition_category_id', $category->id)->where('is_active', true);
+            }])
+            ->orderBy('school_name')
+            ->get();
+
         $scores = CompetitionScore::where('competition_category_id', $category->id)
             ->where('round_name', $round)
             ->get()
             ->keyBy('competition_participant_team_id');
 
-        return view('admin.competition.scores.input', compact('category', 'round', 'teams', 'scores'));
+        $nextOrderNumber = $teams->count() + 1;
+
+        return view('admin.competition.scores.input', compact(
+            'category',
+            'round',
+            'teams',
+            'scores',
+            'availableRegistrations',
+            'nextOrderNumber'
+        ));
     }
 
     public function saveScores(CompetitionCategory $category, Request $request)
@@ -281,37 +304,83 @@ class CompetitionScoreController extends Controller
     public function quickAddTeam(CompetitionCategory $category, Request $request)
     {
         $validated = $request->validate([
-            'school_name' => 'required|string|max:255',
+            'registration_id' => 'nullable|exists:competition_registrations,id',
+            'school_name' => 'nullable|string|max:255',
             'order_number' => 'nullable|string|max:20',
             'team_label' => 'nullable|string|max:50',
         ]);
 
-        // Find or create dummy registration for walk-in
-        $registration = CompetitionRegistration::firstOrCreate(
-            [
-                'competition_event_id' => $category->competition_event_id,
-                'school_name' => strtoupper(trim($validated['school_name'])),
-            ],
-            [
-                'registration_code' => 'WALKIN-' . strtoupper(\Illuminate\Support\Str::random(5)),
-                'level' => $category->level,
-                'advisor_name' => 'Pembina OTS',
-                'advisor_phone' => '-',
-                'status' => 'verified',
-            ]
-        );
+        if (!empty($validated['registration_id'])) {
+            $registration = CompetitionRegistration::findOrFail($validated['registration_id']);
+            $label = trim($validated['team_label'] ?? '');
+            $teamName = $registration->school_name . ($label ? " {$label}" : '');
 
-        $teamName = $registration->school_name . ($validated['team_label'] ? " {$validated['team_label']}" : '');
+            // Check if exact team name already exists in this category
+            $existing = CompetitionParticipantTeam::where('competition_category_id', $category->id)
+                ->where('competition_registration_id', $registration->id)
+                ->where('team_name', $teamName)
+                ->first();
 
-        CompetitionParticipantTeam::create([
-            'competition_registration_id' => $registration->id,
-            'competition_category_id' => $category->id,
-            'order_number' => $validated['order_number'] ?? null,
-            'team_name' => $teamName,
-            'team_label' => $validated['team_label'] ?? null,
-        ]);
+            if ($existing) {
+                return redirect()->back()->with('error', "Regu '{$teamName}' dari {$registration->school_name} sudah ada di lembar penilaian ini.");
+            }
 
-        return redirect()->back()->with('success', "Peserta '{$teamName}' berhasil ditambahkan ke lembar penilaian.");
+            CompetitionParticipantTeam::create([
+                'competition_registration_id' => $registration->id,
+                'competition_category_id' => $category->id,
+                'order_number' => $validated['order_number'] ?: null,
+                'team_name' => $teamName,
+                'team_label' => $label ?: null,
+                'is_active' => true,
+            ]);
+
+            return redirect()->back()->with('success', "Regu '{$teamName}' ({$registration->school_name}) berhasil ditambahkan ke Lembar Penilaian Juri!");
+        } else {
+            // Walk-in OTS
+            $schoolName = strtoupper(trim($validated['school_name'] ?? ''));
+            if (!$schoolName) {
+                return redirect()->back()->with('error', "Silakan pilih sekolah dari daftar terverifikasi atau masukkan nama sekolah OTS.");
+            }
+
+            $registration = CompetitionRegistration::firstOrCreate(
+                [
+                    'competition_event_id' => $category->competition_event_id,
+                    'school_name' => $schoolName,
+                ],
+                [
+                    'registration_code' => 'WALKIN-' . strtoupper(\Illuminate\Support\Str::random(5)),
+                    'level' => $category->level,
+                    'advisor_name' => 'Pembina OTS',
+                    'advisor_phone' => '-',
+                    'status' => 'verified',
+                ]
+            );
+
+            $label = trim($validated['team_label'] ?? '');
+            $teamName = $registration->school_name . ($label ? " {$label}" : '');
+
+            CompetitionParticipantTeam::create([
+                'competition_registration_id' => $registration->id,
+                'competition_category_id' => $category->id,
+                'order_number' => $validated['order_number'] ?: null,
+                'team_name' => $teamName,
+                'team_label' => $label ?: null,
+                'is_active' => true,
+            ]);
+
+            return redirect()->back()->with('success', "Peserta OTS '{$teamName}' berhasil ditambahkan ke lembar penilaian.");
+        }
+    }
+
+    public function removeTeam(CompetitionCategory $category, CompetitionParticipantTeam $team)
+    {
+        $teamName = $team->team_name;
+
+        // Delete associated scores in this category
+        $team->scores()->where('competition_category_id', $category->id)->delete();
+        $team->delete();
+
+        return redirect()->back()->with('success', "Regu '{$teamName}' telah dihapus dari lembar penilaian cabang ini.");
     }
 
     public function resetScores(CompetitionCategory $category, Request $request)
