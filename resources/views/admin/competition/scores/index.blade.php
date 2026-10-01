@@ -83,19 +83,30 @@
 
                         <!-- Right: Transparent Mascot Photo aligned with Badge -->
                         @php
-                            $lvlKey = strtolower($cat->level); // mula, madya, wira
-                            $genderKey = 'umum';
-                            if ($cat->gender_category === 'Putra') {
-                                $genderKey = 'putra';
-                            } elseif ($cat->gender_category === 'Putri') {
-                                $genderKey = 'putri';
+                            $mascotFile = null;
+                            if ($cat->level === 'Mula') {
+                                if ($cat->gender_category === 'Putra') {
+                                    $mascotFile = 'Kategori_Putra.png';
+                                } elseif ($cat->gender_category === 'Putri') {
+                                    $mascotFile = 'Kategori_Putri.png';
+                                } else {
+                                    $mascotFile = 'Kategori_Umum.png';
+                                }
+                            } else {
+                                $lvlKey = strtolower($cat->level); // madya, wira
+                                $genderKey = 'umum';
+                                if ($cat->gender_category === 'Putra') {
+                                    $genderKey = 'putra';
+                                } elseif ($cat->gender_category === 'Putri') {
+                                    $genderKey = 'putri';
+                                }
+                                $mascotFile = "pmr_{$lvlKey}_{$genderKey}.png";
                             }
-                            $mascotFile = "pmr_{$lvlKey}_{$genderKey}.png";
-                            $mascotPath = public_path("images/mascot/{$mascotFile}");
+                            $mascotPath = $mascotFile ? public_path("images/mascot/{$mascotFile}") : null;
                         @endphp
-                        @if(file_exists($mascotPath))
+                        @if($mascotPath && file_exists($mascotPath))
                             <div class="shrink-0 w-24 h-28 sm:w-28 sm:h-32 -my-3 flex items-center justify-center">
-                                <img src="{{ asset('images/mascot/' . $mascotFile) }}?v={{ filemtime($mascotPath) }}" alt="Maskot PMR {{ $cat->level }} {{ $cat->gender_category }}" class="max-h-full max-w-full object-contain filter drop-shadow-md hover:scale-110 transition duration-300">
+                                <img src="{{ asset('images/mascot/' . $mascotFile) }}?v={{ filemtime($mascotPath) }}" alt="Maskot {{ $cat->gender_category }}" class="max-h-full max-w-full object-contain filter drop-shadow-md hover:scale-110 transition duration-300">
                             </div>
                         @endif
                     </div>
