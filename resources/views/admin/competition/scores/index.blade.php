@@ -12,6 +12,26 @@
     </a>
 @endsection
 
+@push('styles')
+<style>
+    @keyframes badgeBlink {
+        0%, 100% {
+            opacity: 1;
+            transform: scale(1);
+            filter: drop-shadow(0 4px 6px rgba(0,0,0,0.15));
+        }
+        50% {
+            opacity: 0.55;
+            transform: scale(1.03);
+            filter: drop-shadow(0 10px 15px rgba(0,0,0,0.25));
+        }
+    }
+    .animate-badge-blink {
+        animation: badgeBlink 1.4s ease-in-out infinite;
+    }
+</style>
+@endpush
+
 @section('content')
 <div class="space-y-6">
 
@@ -31,28 +51,33 @@
     <!-- Category Cards Grid -->
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         @foreach($categories as $cat)
-            <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-200 flex flex-col justify-between hover:border-red-400 transition">
+            <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-200 flex flex-col justify-between hover:border-red-400 transition hover:shadow-md">
                 <div>
                     <div class="flex items-center justify-between gap-2 mb-3">
-                        <span class="font-mono text-[10px] font-bold uppercase tracking-wider bg-slate-100 text-slate-600 px-2 py-0.5 rounded">
+                        <span class="font-mono text-xs font-bold uppercase tracking-wider bg-slate-100 text-slate-600 px-2.5 py-1 rounded-md border border-slate-200">
                             {{ $cat->code ?? 'LOMBA' }}
                         </span>
+                        <span class="text-xs font-extrabold text-slate-400">PMR {{ $cat->level }}</span>
+                    </div>
+
+                    <!-- 3x Larger Blinking Gender Category Badge -->
+                    <div class="mb-4">
                         @if($cat->gender_category === 'Putra')
-                            <span class="text-xs font-extrabold text-blue-700 bg-blue-50 border border-blue-200 px-2.5 py-0.5 rounded-md flex items-center gap-1">
-                                <i class="fa-solid fa-mars text-blue-600"></i> Putra
-                            </span>
+                            <div class="animate-badge-blink inline-flex items-center gap-2 px-4 py-2 rounded-xl font-black text-sm sm:text-base bg-blue-600 text-white shadow-lg shadow-blue-600/30 border-2 border-blue-300 uppercase tracking-wider">
+                                <i class="fa-solid fa-mars text-lg text-blue-200 animate-pulse"></i> KATEGORI PUTRA
+                            </div>
                         @elseif($cat->gender_category === 'Putri')
-                            <span class="text-xs font-extrabold text-rose-700 bg-rose-50 border border-rose-200 px-2.5 py-0.5 rounded-md flex items-center gap-1">
-                                <i class="fa-solid fa-venus text-rose-600"></i> Putri
-                            </span>
+                            <div class="animate-badge-blink inline-flex items-center gap-2 px-4 py-2 rounded-xl font-black text-sm sm:text-base bg-rose-600 text-white shadow-lg shadow-rose-600/30 border-2 border-rose-300 uppercase tracking-wider">
+                                <i class="fa-solid fa-venus text-lg text-rose-200 animate-pulse"></i> KATEGORI PUTRI
+                            </div>
                         @else
-                            <span class="text-xs font-bold text-slate-600 bg-slate-100 border border-slate-200 px-2.5 py-0.5 rounded-md flex items-center gap-1">
-                                <i class="fa-solid fa-users text-slate-500"></i> Umum
-                            </span>
+                            <div class="animate-badge-blink inline-flex items-center gap-2 px-4 py-2 rounded-xl font-black text-sm sm:text-base bg-slate-800 text-white shadow-lg shadow-slate-900/30 border-2 border-slate-600 uppercase tracking-wider">
+                                <i class="fa-solid fa-users text-lg text-slate-300 animate-pulse"></i> KATEGORI UMUM
+                            </div>
                         @endif
                     </div>
 
-                    <h3 class="text-lg font-black text-slate-900 leading-snug">
+                    <h3 class="text-xl font-black text-slate-900 leading-snug">
                         {{ $cat->name }}
                     </h3>
 
