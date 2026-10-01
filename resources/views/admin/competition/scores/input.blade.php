@@ -171,7 +171,8 @@
                             @endif
 
                             <th class="px-4 py-3 w-32 text-right">Nilai Akhir (Total)</th>
-                            <th class="px-4 py-3 w-28 text-center bg-slate-200/80 text-slate-900 border-l border-slate-200">Ranking</th>
+                            <th class="px-4 py-3 w-24 text-center bg-slate-200/80 text-slate-900 border-l border-slate-200">Ranking</th>
+                            <th class="px-3 py-3 w-16 text-center text-slate-600 border-l border-slate-200">Reset</th>
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-slate-100 font-medium" id="scoring-tbody">
@@ -268,7 +269,7 @@
                                     <input type="number" step="0.01" name="scores[{{ $team->id }}][manual_final_score]" value="{{ $score?->final_score ?? '' }}" placeholder="Auto" class="input-final-score w-28 p-2 bg-white border border-slate-300 font-mono font-black text-right text-xs rounded-lg text-red-600 focus:outline-none focus:border-red-500 shadow-sm">
                                 </td>
 
-                                <!-- Ranking Column (Replacing Diskualifikasi) -->
+                                <!-- Ranking Column -->
                                 <td class="px-4 py-3 text-center font-bold rank-cell border-l border-slate-100 bg-slate-50/50">
                                     @if($score?->rank == 1)
                                         <span class="inline-flex items-center justify-center w-7 h-7 rounded-full bg-purple-600 text-white font-black text-xs shadow-md">1</span>
@@ -282,10 +283,17 @@
                                         <span class="text-slate-300 font-mono">-</span>
                                     @endif
                                 </td>
+
+                                <!-- Action: Clear Specific Row -->
+                                <td class="px-3 py-3 text-center border-l border-slate-100">
+                                    <button type="button" onclick="clearRowInput(this)" class="w-8 h-8 rounded-lg bg-slate-100 hover:bg-rose-50 text-slate-400 hover:text-rose-600 hover:border-rose-200 border border-slate-200 inline-flex items-center justify-center transition shadow-xs" title="Kosongkan nilai no. urut ini saja">
+                                        <i class="fa-solid fa-rotate-left text-xs"></i>
+                                    </button>
+                                </td>
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="8" class="text-center py-10 text-slate-400">
+                                <td colspan="10" class="text-center py-10 text-slate-400">
                                     Belum ada peserta yang terdaftar di cabang lomba ini.
                                 </td>
                             </tr>
@@ -315,6 +323,37 @@
 
 <!-- Client-Side Live Formula & Dynamic Real-Time Ranking Script -->
 <script>
+// Expose global helper for clearing a single row
+window.clearRowInput = function(btn) {
+    const row = btn.closest('.team-row');
+    if (!row) return;
+
+    row.querySelectorAll('input').forEach(input => {
+        if (input.type === 'checkbox') {
+            input.checked = false;
+        } else {
+            input.value = '';
+        }
+    });
+
+    const timeBadge = row.querySelector('.tandu-time-badge');
+    if (timeBadge) {
+        timeBadge.innerHTML = '<span class="text-slate-300 font-mono">-</span>';
+    }
+
+    const rankCell = row.querySelector('.rank-cell');
+    if (rankCell) {
+        rankCell.innerHTML = '<span class="text-slate-300 font-mono">-</span>';
+    }
+
+    row.classList.remove('bg-purple-50/40', 'bg-purple-50/60', 'font-bold');
+
+    // Automatically recalculate remaining rows' ranks
+    if (typeof window.recalculateAllRanks === 'function') {
+        window.recalculateAllRanks();
+    }
+};
+
 // Expose global helper for clearing all inputs
 window.clearAllFormInputs = function() {
     if (!confirm('Kosongkan semua inputan nilai dan waktu pada form ini?')) {
@@ -338,7 +377,7 @@ window.clearAllFormInputs = function() {
     });
 
     document.querySelectorAll('.team-row').forEach(row => {
-        row.classList.remove('bg-purple-50/40', 'bg-slate-100', 'opacity-60');
+        row.classList.remove('bg-purple-50/40', 'bg-purple-50/60', 'font-bold', 'bg-slate-100', 'opacity-60');
     });
 
     if (typeof window.recalculateAllRanks === 'function') {
