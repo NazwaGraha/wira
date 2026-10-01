@@ -127,9 +127,8 @@
                 <table class="w-full text-left text-xs text-slate-700">
                     <thead class="bg-slate-100 text-slate-800 uppercase font-black border-b border-slate-200">
                         <tr>
-                            <th class="px-4 py-3 w-16 text-center">Rank</th>
-                            <th class="px-4 py-3 w-20 text-center">No. Urut</th>
-                            <th class="px-4 py-3 min-w-[200px]">Nama Sekolah / Regu</th>
+                            <th class="px-4 py-3 w-16 text-center">No. Urut</th>
+                            <th class="px-4 py-3 min-w-[220px]">Nama Sekolah / Regu</th>
 
                             @if($category->scoring_type == 'written_practical_time')
                                 <!-- LPP Madya/Wira -->
@@ -160,10 +159,10 @@
                             @endif
 
                             <th class="px-4 py-3 w-32 text-right">Nilai Akhir (Total)</th>
-                            <th class="px-4 py-3 w-24 text-center">Diskualifikasi</th>
+                            <th class="px-4 py-3 w-28 text-center bg-slate-200/80 text-slate-900 border-l border-slate-200">Ranking</th>
                         </tr>
                     </thead>
-                    <tbody class="divide-y divide-slate-100 font-medium">
+                    <tbody class="divide-y divide-slate-100 font-medium" id="scoring-tbody">
                         @forelse($teams as $index => $team)
                             @php 
                                 $score = $scores->get($team->id);
@@ -173,22 +172,7 @@
                                 $teamTimeScore = $details['time_score'] ?? null;
                                 $teamTimePenalty = $details['time_penalty'] ?? 0;
                             @endphp
-                            <tr class="team-row hover:bg-slate-50 transition {{ $score?->is_disqualified ? 'bg-slate-100 text-slate-400 opacity-60' : ($score?->rank == 1 ? 'bg-purple-50/60 font-bold' : '') }}" data-team-id="{{ $team->id }}">
-                                <!-- Rank Badge -->
-                                <td class="px-4 py-3 text-center font-bold">
-                                    @if($score?->is_disqualified)
-                                        <span class="text-rose-500 font-black text-[10px]">DSQ</span>
-                                    @elseif($score?->rank == 1)
-                                        <span class="inline-flex items-center justify-center w-6 h-6 rounded-full bg-purple-600 text-white font-black text-xs">1</span>
-                                    @elseif($score?->rank == 2)
-                                        <span class="inline-flex items-center justify-center w-6 h-6 rounded-full bg-amber-500 text-white font-black text-xs">2</span>
-                                    @elseif($score?->rank == 3)
-                                        <span class="inline-flex items-center justify-center w-6 h-6 rounded-full bg-orange-400 text-white font-black text-xs">3</span>
-                                    @else
-                                        <span class="text-slate-400">{{ $score?->rank ?: '-' }}</span>
-                                    @endif
-                                </td>
-
+                            <tr class="team-row hover:bg-slate-50 transition {{ $score?->rank == 1 ? 'bg-purple-50/60 font-bold' : '' }}" data-team-id="{{ $team->id }}">
                                 <!-- Order Number -->
                                 <td class="px-4 py-3 font-mono text-center font-bold text-slate-700">
                                     {{ $team->order_number ?: ($index + 1) }}
@@ -263,7 +247,7 @@
                                         <input type="number" step="0.01" name="scores[{{ $team->id }}][score]" value="{{ $details['score'] ?? '' }}" placeholder="Nilai Murni" class="input-generic-score w-full p-2 bg-slate-50 border border-slate-200 rounded-lg text-xs focus:bg-white focus:outline-none focus:border-red-500 font-semibold">
                                     </td>
                                     <td class="px-4 py-3">
-                                        <input type="text" name="scores[{{ $team->id }}][time_recorded]" value="{{ $score?->time_recorded ?? ($details['time_recorded'] ?? '') }}" placeholder="00:04:42" class="w-full p-2 bg-slate-50 border border-slate-200 rounded-lg text-xs focus:bg-white focus:outline-none focus:border-red-500">
+                                        <input type="text" name="scores[{{ $team->id }}][time_recorded]" value="{{ $score?->time_recorded ?? ($details['time_recorded'] ?? '') }}" placeholder="00:04:42" class="input-generic-time w-full p-2 bg-slate-50 border border-slate-200 rounded-lg text-xs focus:bg-white focus:outline-none focus:border-red-500">
                                     </td>
                                 @endif
 
@@ -272,14 +256,24 @@
                                     <input type="number" step="0.01" name="scores[{{ $team->id }}][manual_final_score]" value="{{ $score?->final_score ?? '' }}" placeholder="Auto" class="input-final-score w-28 p-2 bg-white border border-slate-300 font-mono font-black text-right text-xs rounded-lg text-red-600 focus:outline-none focus:border-red-500 shadow-sm">
                                 </td>
 
-                                <!-- Disqualification Checkbox -->
-                                <td class="px-4 py-3 text-center">
-                                    <input type="checkbox" name="scores[{{ $team->id }}][is_disqualified]" value="1" {{ $score?->is_disqualified ? 'checked' : '' }} class="input-dsq w-4 h-4 text-red-600 rounded border-slate-300 focus:ring-red-500 cursor-pointer">
+                                <!-- Ranking Column (Replacing Diskualifikasi) -->
+                                <td class="px-4 py-3 text-center font-bold rank-cell border-l border-slate-100 bg-slate-50/50">
+                                    @if($score?->rank == 1)
+                                        <span class="inline-flex items-center justify-center w-7 h-7 rounded-full bg-purple-600 text-white font-black text-xs shadow-md">1</span>
+                                    @elseif($score?->rank == 2)
+                                        <span class="inline-flex items-center justify-center w-7 h-7 rounded-full bg-amber-500 text-white font-black text-xs shadow-md">2</span>
+                                    @elseif($score?->rank == 3)
+                                        <span class="inline-flex items-center justify-center w-7 h-7 rounded-full bg-orange-400 text-white font-black text-xs shadow-md">3</span>
+                                    @elseif($score?->rank)
+                                        <span class="inline-flex items-center justify-center w-7 h-7 rounded-full bg-slate-200 text-slate-800 font-bold text-xs border border-slate-300">{{ $score->rank }}</span>
+                                    @else
+                                        <span class="text-slate-300 font-mono">-</span>
+                                    @endif
                                 </td>
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="9" class="text-center py-10 text-slate-400">
+                                <td colspan="8" class="text-center py-10 text-slate-400">
                                     Belum ada peserta yang terdaftar di cabang lomba ini.
                                 </td>
                             </tr>
@@ -291,7 +285,7 @@
             <div class="p-6 bg-slate-50 border-t border-slate-200 flex flex-col sm:flex-row justify-between items-center gap-4">
                 <div class="text-xs text-slate-500 flex items-center gap-2">
                     <i class="fa-solid fa-circle-info text-blue-500"></i>
-                    <span>Klik <strong>Simpan & Hitung Peringkat</strong> untuk memperbarui skor secara *real-time* ke proyektor dan halaman publik.</span>
+                    <span>Klik <strong>Simpan & Hitung Peringkat</strong> untuk memperbarui skor dan peringkat juara secara permanen ke proyektor dan halaman publik.</span>
                 </div>
                 <button type="submit" class="w-full sm:w-auto bg-red-600 hover:bg-red-700 text-white font-extrabold text-xs px-8 py-3 rounded-xl shadow-lg shadow-red-900/20 transition flex items-center justify-center gap-2">
                     <i class="fa-solid fa-floppy-disk"></i> Simpan & Hitung Peringkat Otomatis
@@ -302,7 +296,7 @@
 
 </div>
 
-<!-- Client-Side Live Formula Calculation Script -->
+<!-- Client-Side Live Formula & Dynamic Real-Time Ranking Script -->
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     const isTanduCategory = {{ $isTandu ? 'true' : 'false' }};
@@ -381,9 +375,66 @@ document.addEventListener('DOMContentLoaded', function() {
         };
     }
 
+    // Dynamic Rank Recalculation across all rows
+    function recalculateAllRanks() {
+        const rows = Array.from(document.querySelectorAll('.team-row'));
+        const rowData = rows.map(row => {
+            const finalInput = row.querySelector('.input-final-score');
+            const scoreVal = finalInput ? parseFloat(finalInput.value) : NaN;
+            const timeInput = row.querySelector('.input-tandu-time') || row.querySelector('input[name*="time_recorded"]');
+            const timeStr = timeInput ? timeInput.value : '';
+            const seconds = parseTimeToSeconds(timeStr) ?? 999999;
+            const hasScore = !isNaN(scoreVal) && finalInput.value.trim() !== '';
+
+            return {
+                row: row,
+                score: hasScore ? scoreVal : -999999,
+                seconds: seconds,
+                hasScore: hasScore
+            };
+        });
+
+        // Filter and sort active rows from highest score to lowest, tiebreak with lowest seconds
+        const scoredRows = rowData.filter(d => d.hasScore);
+        scoredRows.sort((a, b) => {
+            if (b.score !== a.score) {
+                return b.score - a.score;
+            }
+            return a.seconds - b.seconds;
+        });
+
+        // Assign rank badges
+        rowData.forEach(d => {
+            const rankIndex = scoredRows.indexOf(d);
+            const rankCell = d.row.querySelector('.rank-cell');
+            if (!rankCell) return;
+
+            if (rankIndex !== -1) {
+                const rank = rankIndex + 1;
+                let badgeHtml = '';
+                if (rank === 1) {
+                    badgeHtml = '<span class="inline-flex items-center justify-center w-7 h-7 rounded-full bg-purple-600 text-white font-black text-xs shadow-md">1</span>';
+                    d.row.classList.add('bg-purple-50/40');
+                } else if (rank === 2) {
+                    badgeHtml = '<span class="inline-flex items-center justify-center w-7 h-7 rounded-full bg-amber-500 text-white font-black text-xs shadow-md">2</span>';
+                    d.row.classList.remove('bg-purple-50/40');
+                } else if (rank === 3) {
+                    badgeHtml = '<span class="inline-flex items-center justify-center w-7 h-7 rounded-full bg-orange-400 text-white font-black text-xs shadow-md">3</span>';
+                    d.row.classList.remove('bg-purple-50/40');
+                } else {
+                    badgeHtml = `<span class="inline-flex items-center justify-center w-7 h-7 rounded-full bg-slate-200 text-slate-800 font-bold text-xs border border-slate-300">${rank}</span>`;
+                    d.row.classList.remove('bg-purple-50/40');
+                }
+                rankCell.innerHTML = badgeHtml;
+            } else {
+                rankCell.innerHTML = '<span class="text-slate-300 font-mono">-</span>';
+                d.row.classList.remove('bg-purple-50/40');
+            }
+        });
+    }
+
     // Attach listeners to all team rows
     document.querySelectorAll('.team-row').forEach(row => {
-        const dsqCheckbox = row.querySelector('.input-dsq');
         const finalInput = row.querySelector('.input-final-score');
 
         if (isTanduCategory) {
@@ -392,16 +443,13 @@ document.addEventListener('DOMContentLoaded', function() {
             const badgeContainer = row.querySelector('.tandu-time-badge');
 
             function updateTanduRow() {
-                if (dsqCheckbox && dsqCheckbox.checked) {
-                    finalInput.value = '0';
-                    return;
-                }
-
                 const techVal = techInput ? techInput.value : '';
                 const timeVal = timeInput ? timeInput.value : '';
 
                 if (techVal === '' && timeVal === '') {
                     if (badgeContainer) badgeContainer.innerHTML = '<span class="text-slate-300 font-mono">-</span>';
+                    if (finalInput) finalInput.value = '';
+                    recalculateAllRanks();
                     return;
                 }
 
@@ -428,6 +476,8 @@ document.addEventListener('DOMContentLoaded', function() {
                 if (finalInput) {
                     finalInput.value = res.finalScore;
                 }
+
+                recalculateAllRanks();
             }
 
             if (techInput) techInput.addEventListener('input', updateTanduRow);
@@ -438,14 +488,11 @@ document.addEventListener('DOMContentLoaded', function() {
             const practicalInput = row.querySelector('.input-practical-score');
 
             function updateLppRow() {
-                if (dsqCheckbox && dsqCheckbox.checked) {
-                    finalInput.value = '0';
-                    return;
-                }
                 const w = parseFloat(writtenInput?.value || 0);
                 const p = parseFloat(practicalInput?.value || 0);
                 const score = (w * 0.3) + ((p / 10) * 0.7);
                 if (finalInput) finalInput.value = score.toFixed(2);
+                recalculateAllRanks();
             }
 
             if (writtenInput) writtenInput.addEventListener('input', updateLppRow);
@@ -455,15 +502,12 @@ document.addEventListener('DOMContentLoaded', function() {
             const critInputs = row.querySelectorAll('.input-crit');
 
             function updateCritRow() {
-                if (dsqCheckbox && dsqCheckbox.checked) {
-                    finalInput.value = '0';
-                    return;
-                }
                 let total = 0;
                 critInputs.forEach(inp => {
                     total += parseFloat(inp.value || 0);
                 });
                 if (finalInput) finalInput.value = total.toFixed(2);
+                recalculateAllRanks();
             }
 
             critInputs.forEach(inp => inp.addEventListener('input', updateCritRow));
@@ -473,37 +517,31 @@ document.addEventListener('DOMContentLoaded', function() {
             const stickersInput = row.querySelector('.input-stickers');
 
             function updateSocialRow() {
-                if (dsqCheckbox && dsqCheckbox.checked) {
-                    finalInput.value = '0';
-                    return;
-                }
                 const l = parseInt(likesInput?.value || 0, 10);
                 const s = parseInt(stickersInput?.value || 0, 10);
                 const score = l + (s * 1.5);
                 if (finalInput) finalInput.value = score.toFixed(2);
+                recalculateAllRanks();
             }
 
             if (likesInput) likesInput.addEventListener('input', updateSocialRow);
             if (stickersInput) stickersInput.addEventListener('input', updateSocialRow);
+        } else {
+            const genericScore = row.querySelector('.input-generic-score');
+            function updateGenericRow() {
+                if (finalInput && genericScore) finalInput.value = genericScore.value;
+                recalculateAllRanks();
+            }
+            if (genericScore) genericScore.addEventListener('input', updateGenericRow);
         }
 
-        if (dsqCheckbox) {
-            dsqCheckbox.addEventListener('change', function() {
-                if (this.checked) {
-                    row.classList.add('bg-slate-100', 'opacity-60');
-                    if (finalInput) finalInput.value = '0';
-                } else {
-                    row.classList.remove('bg-slate-100', 'opacity-60');
-                    if (isTanduCategory) {
-                        const techInput = row.querySelector('.input-tandu-tech');
-                        const timeInput = row.querySelector('.input-tandu-time');
-                        const res = calculateTandu(techInput?.value, timeInput?.value);
-                        if (finalInput) finalInput.value = res.finalScore;
-                    }
-                }
-            });
+        if (finalInput) {
+            finalInput.addEventListener('input', recalculateAllRanks);
         }
     });
+
+    // Run initial rank calculation on page load
+    recalculateAllRanks();
 });
 </script>
 @endsection
