@@ -83,12 +83,12 @@
 
                         <!-- Right: Transparent Mascot Photo aligned with Badge -->
                         @if($cat->code === 'LPP-MULA-PA')
-                            <div class="shrink-0 w-20 h-24 sm:w-24 sm:h-28 -my-2 flex items-center justify-center">
-                                <img src="{{ asset('images/mascot/pmr_mula_putra.png') }}?v=3" alt="PMR Mula Putra" class="max-h-full max-w-full object-contain filter drop-shadow-md hover:scale-110 transition duration-300">
+                            <div class="shrink-0 w-24 h-28 sm:w-28 sm:h-32 -my-3 flex items-center justify-center">
+                                <img src="{{ asset('images/mascot/pmr_mula_putra.png') }}?v=5" alt="PMR Mula Putra" class="max-h-full max-w-full object-contain filter drop-shadow-md hover:scale-110 transition duration-300">
                             </div>
                         @elseif($cat->code === 'LPP-MULA-PI')
-                            <div class="shrink-0 w-20 h-24 sm:w-24 sm:h-28 -my-2 flex items-center justify-center">
-                                <img src="{{ asset('images/mascot/pmr_mula_putri.png') }}?v=3" alt="PMR Mula Putri" class="max-h-full max-w-full object-contain filter drop-shadow-md hover:scale-110 transition duration-300">
+                            <div class="shrink-0 w-24 h-28 sm:w-28 sm:h-32 -my-3 flex items-center justify-center">
+                                <img src="{{ asset('images/mascot/pmr_mula_putri.png') }}?v=5" alt="PMR Mula Putri" class="max-h-full max-w-full object-contain filter drop-shadow-md hover:scale-110 transition duration-300 scale-110">
                             </div>
                         @endif
                     </div>
