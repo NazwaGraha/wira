@@ -56,4 +56,9 @@ class CompetitionCategory extends Model
         $gender = ($this->gender_category && $this->gender_category !== 'Umum') ? " {$this->gender_category}" : '';
         return "{$this->name} - {$this->level}{$gender}";
     }
+
+    public function getRegistrationFeeAttribute($value)
+    {
+        return $value !== null ? $value : 150000;
+    }
 }

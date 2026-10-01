@@ -6,11 +6,24 @@ use App\Http\Controllers\Controller;
 use App\Models\CompetitionCategory;
 use App\Models\CompetitionEvent;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Schema;
+use Illuminate\Database\Schema\Blueprint;
 
 class CompetitionFeeController extends Controller
 {
     public function index(Request $request)
     {
+        // Safe auto-migration check: ensure registration_fee column exists in database
+        try {
+            if (!Schema::hasColumn('competition_categories', 'registration_fee')) {
+                Schema::table('competition_categories', function (Blueprint $table) {
+                    $table->decimal('registration_fee', 12, 2)->default(150000)->after('criteria_schema');
+                });
+            }
+        } catch (\Throwable $e) {
+            // Log or ignore if table locked/already exists
+        }
+
         $event = CompetitionEvent::where('is_active', true)->first();
         if (!$event) {
             $event = CompetitionEvent::first();
@@ -18,8 +31,13 @@ class CompetitionFeeController extends Controller
 
         $level = $request->query('level');
 
-        $query = CompetitionCategory::where('competition_event_id', $event?->id)
-            ->orderBy('order_position');
+        $query = CompetitionCategory::orderBy('order_position');
+        if ($event) {
+            $query->where(function($q) use ($event) {
+                $q->where('competition_event_id', $event->id)
+                  ->orWhereNull('competition_event_id');
+            });
+        }
 
         if ($level && in_array($level, ['Mula', 'Madya', 'Wira'])) {
             $query->where('level', $level);
