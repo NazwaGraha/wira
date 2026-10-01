@@ -72,8 +72,31 @@ class CompetitionController extends Controller
             $proofPath = $file->storeAs('competition_payments', $filename, 'public');
         }
 
-        $totalCategories = count($validated['categories']);
-        $totalPayment = $event->registration_fee * $totalCategories;
+        $teamsToCreate = [];
+        foreach ($validated['categories'] as $catId) {
+            $labels = $request->input("team_labels.{$catId}");
+            if (is_array($labels)) {
+                $filtered = array_values(array_filter($labels, fn($l) => $l !== null && trim($l) !== ''));
+                if (empty($filtered)) {
+                    $filtered = [''];
+                }
+                foreach ($filtered as $lbl) {
+                    $teamsToCreate[] = [
+                        'category_id' => $catId,
+                        'label' => trim($lbl),
+                    ];
+                }
+            } else {
+                $lbl = trim($labels ?? '');
+                $teamsToCreate[] = [
+                    'category_id' => $catId,
+                    'label' => $lbl,
+                ];
+            }
+        }
+
+        $totalTeams = count($teamsToCreate);
+        $totalPayment = $event->registration_fee * $totalTeams;
 
         $registration = CompetitionRegistration::create([
             'competition_event_id' => $event->id,
@@ -89,21 +112,21 @@ class CompetitionController extends Controller
             'status' => 'pending',
         ]);
 
-        foreach ($validated['categories'] as $catId) {
-            $label = $request->input("team_labels.{$catId}") ?? '';
+        foreach ($teamsToCreate as $teamData) {
+            $catId = $teamData['category_id'];
+            $label = $teamData['label'];
             $teamName = $registration->school_name . ($label ? " {$label}" : '');
-            $members = $request->input("team_members.{$catId}") ? explode(',', $request->input("team_members.{$catId}")) : [];
 
             CompetitionParticipantTeam::create([
                 'competition_registration_id' => $registration->id,
                 'competition_category_id' => $catId,
                 'team_name' => $teamName,
                 'team_label' => $label,
-                'members_list' => array_map('trim', $members),
+                'members_list' => [],
             ]);
         }
 
-        return redirect()->route('lomba.status', ['code' => $code])->with('success', "Pendaftaran berhasil dikirim! Kode Pendaftaran Anda: {$code}. Silakan simpan kode ini untuk mengecek status verifikasi panitia.");
+        return redirect()->route('lomba.status', ['code' => $code])->with('success', "Pendaftaran berhasil dikirim untuk {$totalTeams} regu! Kode Pendaftaran Anda: {$code}. Silakan simpan kode ini untuk mengecek status verifikasi panitia.");
     }
 
     public function status(Request $request)

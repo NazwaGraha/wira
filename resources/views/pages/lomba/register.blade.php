@@ -148,14 +148,19 @@
                 <div>
                     <h3 class="text-base font-extrabold text-slate-800 flex items-center gap-2 mb-2">
                         <span class="w-6 h-6 rounded-full bg-red-600 text-white text-xs flex items-center justify-center font-bold">3</span>
-                        Pilih Cabang Lomba yang Diikuti
+                        Pilih Cabang Lomba & Jumlah Regu
                     </h3>
-                    <p class="text-xs text-slate-500 mb-3">Centang cabang lomba dan kategori yang akan diikuti oleh kontingen sekolah Anda.</p>
+                    <p class="text-xs text-slate-500 mb-3">Centang cabang lomba yang ingin diikuti. Anda dapat mendaftarkan <strong>lebih dari 1 regu</strong> (Regu A, Regu B, dst.) untuk masing-masing cabang lomba baik putra maupun putri.</p>
 
-                    <div class="bg-blue-50 border border-blue-200 text-blue-900 p-3.5 rounded-xl text-xs flex items-start gap-2.5 mb-4">
-                        <i class="fa-solid fa-circle-info text-blue-600 text-sm mt-0.5 shrink-0"></i>
+                    <div class="bg-blue-50 border border-blue-200 text-blue-900 p-4 rounded-2xl text-xs flex items-start gap-3 mb-4 shadow-2xs">
+                        <i class="fa-solid fa-circle-info text-blue-600 text-base mt-0.5 shrink-0"></i>
                         <div class="leading-relaxed">
-                            <strong>Panduan Kategori Putra & Putri:</strong> Untuk cabang lomba yang memiliki kategori gender (seperti <strong>Ketangkasan Tandu Reguler</strong> dan <strong>Pertolongan Pertama</strong>), sekolah dapat mendaftarkan <strong>Kategori Putra</strong> saja, <strong>Kategori Putri</strong> saja, atau <strong>Kedua Kategori Tersebut (Putra & Putri)</strong> sekaligus dengan mencentang kedua kategori yang diinginkan.
+                            <strong>Informasi Pendaftaran Multi-Regu:</strong>
+                            <ul class="list-disc pl-4 mt-1 space-y-0.5 text-blue-800">
+                                <li>Sekolah diperbolehkan mendaftarkan <strong>lebih dari 1 regu</strong> untuk setiap cabang lomba (Putra, Putri, maupun Campuran).</li>
+                                <li>Klik tombol <strong class="text-red-700 bg-red-100/80 px-1.5 py-0.5 rounded">+ Tambah Regu</strong> pada cabang lomba yang ingin dikirimkan 2 regu atau lebih.</li>
+                                <li>Biaya registrasi dihitung secara otomatis berdasarkan total seluruh regu yang didaftarkan.</li>
+                            </ul>
                         </div>
                     </div>
 
@@ -165,35 +170,56 @@
                                 @php
                                     $isPa = $cat->gender_category === 'Putra';
                                     $isPi = $cat->gender_category === 'Putri';
+                                    $isChecked = in_array($cat->id, old('categories', []));
                                 @endphp
-                                <div class="border {{ $isPa ? 'border-blue-200 bg-blue-50/30' : ($isPi ? 'border-rose-200 bg-rose-50/30' : 'border-slate-200 bg-slate-50/50') }} rounded-xl p-3.5 hover:border-red-400 hover:shadow-sm transition flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                                    <label class="flex items-start sm:items-center gap-3 cursor-pointer flex-grow">
-                                        <input type="checkbox" name="categories[]" value="{{ $cat->id }}" class="cat-checkbox mt-1 sm:mt-0 w-4 h-4 text-red-600 rounded border-slate-300 focus:ring-red-500" {{ in_array($cat->id, old('categories', [])) ? 'checked' : '' }} onchange="calculateFee()">
-                                        <div>
-                                            <div class="flex items-center flex-wrap gap-2">
-                                                <span class="font-black text-slate-900 text-sm">{{ $cat->name }}</span>
-                                                @if($isPa)
-                                                    <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-black uppercase tracking-wider bg-blue-100 text-blue-700 border border-blue-200">
-                                                        <i class="fa-solid fa-mars text-blue-600"></i> Kategori Putra
-                                                    </span>
-                                                @elseif($isPi)
-                                                    <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-black uppercase tracking-wider bg-rose-100 text-rose-700 border border-rose-200">
-                                                        <i class="fa-solid fa-venus text-rose-600"></i> Kategori Putri
-                                                    </span>
-                                                @else
-                                                    <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-bold uppercase tracking-wider bg-slate-100 text-slate-600 border border-slate-200">
-                                                        <i class="fa-solid fa-users text-slate-500"></i> Umum / Campuran
-                                                    </span>
-                                                @endif
+                                <div class="border {{ $isPa ? 'border-blue-200 bg-blue-50/20' : ($isPi ? 'border-rose-200 bg-rose-50/20' : 'border-slate-200 bg-slate-50/40') }} rounded-2xl p-4 hover:border-red-400 hover:shadow-xs transition space-y-3" id="cat-card-{{ $cat->id }}">
+                                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                                        <label class="flex items-start sm:items-center gap-3 cursor-pointer flex-grow select-none">
+                                            <input type="checkbox" name="categories[]" value="{{ $cat->id }}" class="cat-checkbox mt-1 sm:mt-0 w-5 h-5 text-red-600 rounded border-slate-300 focus:ring-red-500" {{ $isChecked ? 'checked' : '' }} onchange="onCategoryToggle({{ $cat->id }})">
+                                            <div>
+                                                <div class="flex items-center flex-wrap gap-2">
+                                                    <span class="font-black text-slate-900 text-sm">{{ $cat->name }}</span>
+                                                    @if($isPa)
+                                                        <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-md text-[10px] font-black uppercase tracking-wider bg-blue-100 text-blue-700 border border-blue-200">
+                                                            <i class="fa-solid fa-mars text-blue-600"></i> Kategori Putra
+                                                        </span>
+                                                    @elseif($isPi)
+                                                        <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-md text-[10px] font-black uppercase tracking-wider bg-rose-100 text-rose-700 border border-rose-200">
+                                                            <i class="fa-solid fa-venus text-rose-600"></i> Kategori Putri
+                                                        </span>
+                                                    @else
+                                                        <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-md text-[10px] font-bold uppercase tracking-wider bg-slate-100 text-slate-600 border border-slate-200">
+                                                            <i class="fa-solid fa-users text-slate-500"></i> Umum / Campuran
+                                                        </span>
+                                                    @endif
+                                                </div>
+                                                <div class="text-xs text-slate-500 mt-1">
+                                                    Tingkat: <span class="font-bold text-slate-700">PMR {{ $cat->level }}</span> &bull; Biaya: <strong class="text-slate-800">Rp {{ number_format($event->registration_fee, 0, ',', '.') }} / Regu</strong>
+                                                </div>
                                             </div>
-                                            <div class="text-xs text-slate-500 mt-1">
-                                                Tingkat: <span class="font-bold text-slate-700">PMR {{ $cat->level }}</span> &bull; Biaya: <strong class="text-slate-800">Rp {{ number_format($event->registration_fee, 0, ',', '.') }}</strong>
+                                        </label>
+
+                                        <button type="button" onclick="addTeamRow({{ $cat->id }})" id="btn-add-team-{{ $cat->id }}" class="btn-add-team {{ $isChecked ? '' : 'hidden' }} shrink-0 text-xs font-bold text-red-600 hover:text-red-700 bg-red-50 hover:bg-red-100 border border-red-200 px-3.5 py-1.5 rounded-xl transition flex items-center gap-1.5 shadow-2xs">
+                                            <i class="fa-solid fa-plus-circle"></i> + Tambah Regu
+                                        </button>
+                                    </div>
+
+                                    <!-- Dynamic Team Inputs Container -->
+                                    <div id="teams-container-{{ $cat->id }}" class="teams-container space-y-2 pt-2.5 border-t border-slate-200/60 {{ $isChecked ? '' : 'hidden' }}">
+                                        @php
+                                            $oldLabels = old('team_labels.'.$cat->id, ['Regu A']);
+                                            if (!is_array($oldLabels)) $oldLabels = [$oldLabels];
+                                            if (empty($oldLabels)) $oldLabels = ['Regu A'];
+                                        @endphp
+                                        @foreach($oldLabels as $idx => $lbl)
+                                            <div class="team-input-row flex items-center gap-2">
+                                                <span class="text-[11px] font-bold text-slate-500 w-16 shrink-0 row-index-label">Regu {{ chr(65 + $idx) }}:</span>
+                                                <input type="text" name="team_labels[{{ $cat->id }}][]" value="{{ $lbl }}" placeholder="Label Regu, misal: Regu {{ chr(65 + $idx) }}" class="team-label-input flex-grow text-xs bg-white border border-slate-200 px-3 py-2 rounded-xl focus:outline-none focus:border-red-500 shadow-2xs font-semibold text-slate-800" oninput="calculateFee()">
+                                                <button type="button" onclick="removeTeamRow(this, {{ $cat->id }})" class="btn-remove-team {{ count($oldLabels) > 1 ? '' : 'hidden' }} text-slate-400 hover:text-rose-600 hover:bg-rose-50 p-2 rounded-lg transition" title="Hapus Regu Ini">
+                                                    <i class="fa-solid fa-trash-can text-xs"></i>
+                                                </button>
                                             </div>
-                                        </div>
-                                    </label>
-                                    
-                                    <div class="sm:w-52">
-                                        <input type="text" name="team_labels[{{ $cat->id }}]" value="{{ old('team_labels.'.$cat->id) }}" placeholder="Keterangan Regu, misal: (A)" class="w-full text-xs bg-white border border-slate-200 px-3 py-2 rounded-lg focus:outline-none focus:border-red-500 shadow-2xs">
+                                        @endforeach
                                     </div>
                                 </div>
                             @endforeach
@@ -219,7 +245,7 @@
                             <div class="text-xs text-slate-300 font-medium">a.n {{ $event->bank_account_holder ?? 'PMR WIRA SMAN 1 CIAWI' }}</div>
                             
                             <div class="mt-4 pt-4 border-t border-slate-700 flex justify-between items-center text-xs">
-                                <span class="text-slate-400">Biaya per Cabang:</span>
+                                <span class="text-slate-400">Biaya per Regu:</span>
                                 <span class="font-bold text-white">Rp {{ number_format($event->registration_fee, 0, ',', '.') }}</span>
                             </div>
                         </div>
@@ -228,8 +254,8 @@
                         <div class="space-y-4">
                             <div class="bg-red-50 border border-red-100 rounded-xl p-4 flex justify-between items-center">
                                 <div>
-                                    <div class="text-xs text-red-800 font-medium">Total Cabang Dipilih:</div>
-                                    <div class="text-sm font-bold text-red-900"><span id="selected-count">0</span> Cabang Lomba</div>
+                                    <div class="text-xs text-red-800 font-medium">Total Regu Didaftarkan:</div>
+                                    <div class="text-sm font-bold text-red-900"><span id="selected-count">0</span> Regu Lomba</div>
                                 </div>
                                 <div class="text-right">
                                     <div class="text-xs text-red-800 font-medium">Total Tagihan:</div>
@@ -308,22 +334,109 @@
             targetGroup.classList.remove('hidden');
         }
 
-        // Uncheck hidden group checkboxes
+        // Uncheck hidden group checkboxes and hide their team containers
         document.querySelectorAll('.category-level-group.hidden input[type="checkbox"]').forEach(cb => {
             cb.checked = false;
+            const cId = cb.value;
+            const cont = document.getElementById('teams-container-' + cId);
+            const btn = document.getElementById('btn-add-team-' + cId);
+            if (cont) cont.classList.add('hidden');
+            if (btn) btn.classList.add('hidden');
         });
 
         calculateFee();
     }
 
-    function calculateFee() {
-        const checked = document.querySelectorAll('.cat-checkbox:checked').length;
-        const total = checked * feePerCat;
+    function onCategoryToggle(catId) {
+        const cb = document.querySelector(`input[name="categories[]"][value="${catId}"]`);
+        const container = document.getElementById('teams-container-' + catId);
+        const btnAdd = document.getElementById('btn-add-team-' + catId);
 
-        document.getElementById('selected-count').innerText = checked;
-        document.getElementById('total-fee-display').innerText = 'Rp ' + total.toLocaleString('id-ID');
+        if (cb && cb.checked) {
+            container.classList.remove('hidden');
+            if (btnAdd) btnAdd.classList.remove('hidden');
+            if (container.querySelectorAll('.team-input-row').length === 0) {
+                addTeamRow(catId);
+            }
+        } else {
+            container.classList.add('hidden');
+            if (btnAdd) btnAdd.classList.add('hidden');
+        }
+        calculateFee();
     }
 
-    document.addEventListener('DOMContentLoaded', calculateFee);
+    function addTeamRow(catId) {
+        const cb = document.querySelector(`input[name="categories[]"][value="${catId}"]`);
+        if (cb && !cb.checked) {
+            cb.checked = true;
+            onCategoryToggle(catId);
+            return;
+        }
+
+        const container = document.getElementById('teams-container-' + catId);
+        const count = container.querySelectorAll('.team-input-row').length;
+        const letter = String.fromCharCode(65 + count);
+
+        const row = document.createElement('div');
+        row.className = 'team-input-row flex items-center gap-2';
+        row.innerHTML = `
+            <span class="text-[11px] font-bold text-slate-500 w-16 shrink-0 row-index-label">Regu ${letter}:</span>
+            <input type="text" name="team_labels[${catId}][]" value="Regu ${letter}" placeholder="Label Regu, misal: Regu ${letter}" class="team-label-input flex-grow text-xs bg-white border border-slate-200 px-3 py-2 rounded-xl focus:outline-none focus:border-red-500 shadow-2xs font-semibold text-slate-800" oninput="calculateFee()">
+            <button type="button" onclick="removeTeamRow(this, ${catId})" class="btn-remove-team text-slate-400 hover:text-rose-600 hover:bg-rose-50 p-2 rounded-lg transition" title="Hapus Regu Ini">
+                <i class="fa-solid fa-trash-can text-xs"></i>
+            </button>
+        `;
+        container.appendChild(row);
+        updateRemoveButtons(catId);
+        calculateFee();
+    }
+
+    function removeTeamRow(btn, catId) {
+        const row = btn.closest('.team-input-row');
+        row.remove();
+        updateRemoveButtons(catId);
+        calculateFee();
+    }
+
+    function updateRemoveButtons(catId) {
+        const container = document.getElementById('teams-container-' + catId);
+        const rows = container.querySelectorAll('.team-input-row');
+        rows.forEach((r, idx) => {
+            const removeBtn = r.querySelector('.btn-remove-team');
+            if (rows.length > 1) {
+                removeBtn.classList.remove('hidden');
+            } else {
+                removeBtn.classList.add('hidden');
+            }
+        });
+    }
+
+    function calculateFee() {
+        let totalTeams = 0;
+        document.querySelectorAll('.cat-checkbox:checked').forEach(cb => {
+            const catId = cb.value;
+            const container = document.getElementById('teams-container-' + catId);
+            if (container) {
+                const rows = container.querySelectorAll('.team-input-row');
+                totalTeams += Math.max(1, rows.length);
+            } else {
+                totalTeams += 1;
+            }
+        });
+
+        const total = totalTeams * feePerCat;
+
+        const countEl = document.getElementById('selected-count');
+        const totalEl = document.getElementById('total-fee-display');
+        if (countEl) countEl.innerText = totalTeams;
+        if (totalEl) totalEl.innerText = 'Rp ' + total.toLocaleString('id-ID');
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+        document.querySelectorAll('.cat-checkbox:checked').forEach(cb => {
+            updateRemoveButtons(cb.value);
+        });
+        calculateFee();
+    });
 </script>
 @endpush

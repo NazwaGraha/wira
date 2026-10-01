@@ -84,7 +84,7 @@
                                     PMR {{ $reg->level }}
                                 </span>
                                 <div class="text-xs text-slate-600 font-semibold mt-1">
-                                    {{ $reg->teams->count() }} Cabang Lomba
+                                    {{ $reg->teams->count() }} Regu Terdaftar
                                 </div>
                             </td>
                             <td class="px-6 py-4">
