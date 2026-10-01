@@ -20,6 +20,7 @@ class CompetitionCategory extends Model
         'scoring_type',
         'point_tier',
         'criteria_schema',
+        'registration_fee',
         'max_team_members',
         'has_rounds',
         'order_position',
@@ -28,6 +29,7 @@ class CompetitionCategory extends Model
 
     protected $casts = [
         'criteria_schema' => 'array',
+        'registration_fee' => 'decimal:2',
         'max_team_members' => 'integer',
         'has_rounds' => 'boolean',
         'order_position' => 'integer',

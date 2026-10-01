@@ -72,7 +72,7 @@
                                 <div class="text-xs text-slate-500 mt-0.5">Nama Regu: <strong>{{ $team->team_name }}</strong></div>
                             </div>
                             <span class="bg-white border border-slate-200 text-slate-700 font-mono text-xs font-bold px-3 py-1 rounded-lg">
-                                Rp {{ number_format($registration->event->registration_fee, 0, ',', '.') }}
+                                Rp {{ number_format($team->category->registration_fee ?: ($registration->event->registration_fee ?: 150000), 0, ',', '.') }}
                             </span>
                         </div>
                     @endforeach

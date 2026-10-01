@@ -95,7 +95,7 @@
                             <td class="p-2.5 border-r border-slate-200 text-center">{{ $index + 1 }}</td>
                             <td class="p-2.5 border-r border-slate-200 font-semibold">{{ $team->category->name }} ({{ $team->category->gender_category }})</td>
                             <td class="p-2.5 border-r border-slate-200 text-slate-500">{{ $team->team_name }}</td>
-                            <td class="p-2.5 text-right font-mono">Rp {{ number_format($registration->event->registration_fee, 0, ',', '.') }}</td>
+                            <td class="p-2.5 text-right font-mono">Rp {{ number_format($team->category->registration_fee ?: ($registration->event->registration_fee ?: 150000), 0, ',', '.') }}</td>
                         </tr>
                     @endforeach
                 </tbody>

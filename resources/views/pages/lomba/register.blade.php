@@ -175,7 +175,7 @@
                                 <div class="border {{ $isPa ? 'border-blue-200 bg-blue-50/20' : ($isPi ? 'border-rose-200 bg-rose-50/20' : 'border-slate-200 bg-slate-50/40') }} rounded-2xl p-4 hover:border-red-400 hover:shadow-xs transition space-y-3" id="cat-card-{{ $cat->id }}">
                                     <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                                         <label class="flex items-start sm:items-center gap-3 cursor-pointer flex-grow select-none">
-                                            <input type="checkbox" name="categories[]" value="{{ $cat->id }}" class="cat-checkbox mt-1 sm:mt-0 w-5 h-5 text-red-600 rounded border-slate-300 focus:ring-red-500" {{ $isChecked ? 'checked' : '' }} onchange="onCategoryToggle({{ $cat->id }})">
+                                            <input type="checkbox" name="categories[]" value="{{ $cat->id }}" data-fee="{{ intval($cat->registration_fee ?: ($event->registration_fee ?: 150000)) }}" class="cat-checkbox mt-1 sm:mt-0 w-5 h-5 text-red-600 rounded border-slate-300 focus:ring-red-500" {{ $isChecked ? 'checked' : '' }} onchange="onCategoryToggle({{ $cat->id }})">
                                             <div>
                                                 <div class="flex items-center flex-wrap gap-2">
                                                     <span class="font-black text-slate-900 text-sm">{{ $cat->name }}</span>
@@ -194,7 +194,7 @@
                                                     @endif
                                                 </div>
                                                 <div class="text-xs text-slate-500 mt-1">
-                                                    Tingkat: <span class="font-bold text-slate-700">PMR {{ $cat->level }}</span> &bull; Biaya: <strong class="text-slate-800">Rp {{ number_format($event->registration_fee, 0, ',', '.') }} / Regu</strong>
+                                                    Tingkat: <span class="font-bold text-slate-700">PMR {{ $cat->level }}</span> &bull; Biaya: <strong class="text-red-600 font-bold font-mono">Rp {{ number_format($cat->registration_fee ?: ($event->registration_fee ?: 150000), 0, ',', '.') }}</strong> <span class="text-[11px] text-slate-400">/ Regu</span>
                                                 </div>
                                             </div>
                                         </label>
@@ -413,23 +413,25 @@
 
     function calculateFee() {
         let totalTeams = 0;
+        let totalFee = 0;
+
         document.querySelectorAll('.cat-checkbox:checked').forEach(cb => {
             const catId = cb.value;
+            const fee = parseFloat(cb.getAttribute('data-fee')) || feePerCat;
             const container = document.getElementById('teams-container-' + catId);
+            let teamCount = 1;
             if (container) {
                 const rows = container.querySelectorAll('.team-input-row');
-                totalTeams += Math.max(1, rows.length);
-            } else {
-                totalTeams += 1;
+                teamCount = Math.max(1, rows.length);
             }
+            totalTeams += teamCount;
+            totalFee += (teamCount * fee);
         });
-
-        const total = totalTeams * feePerCat;
 
         const countEl = document.getElementById('selected-count');
         const totalEl = document.getElementById('total-fee-display');
         if (countEl) countEl.innerText = totalTeams;
-        if (totalEl) totalEl.innerText = 'Rp ' + total.toLocaleString('id-ID');
+        if (totalEl) totalEl.innerText = 'Rp ' + totalFee.toLocaleString('id-ID');
     }
 
     document.addEventListener('DOMContentLoaded', function() {

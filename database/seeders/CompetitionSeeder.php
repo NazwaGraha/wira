@@ -274,7 +274,9 @@ class CompetitionSeeder extends Seeder
                     'competition_event_id' => $event->id,
                     'code' => $cat['code']
                 ],
-                array_merge($cat, ['competition_event_id' => $event->id])
+                array_merge([
+                    'registration_fee' => 150000,
+                ], $cat, ['competition_event_id' => $event->id])
             );
         }
     }

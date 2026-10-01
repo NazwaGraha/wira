@@ -106,6 +106,10 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::post('/competition-scores/{category}/reset', [\App\Http\Controllers\Admin\CompetitionScoreController::class, 'resetScores'])->name('competition-scores.reset');
         Route::post('/competition-scores/{category}/quick-add-team', [\App\Http\Controllers\Admin\CompetitionScoreController::class, 'quickAddTeam'])->name('competition-scores.quick-add-team');
 
+        // Setup Biaya Pendaftaran Lomba
+        Route::get('/competition-fees', [\App\Http\Controllers\Admin\CompetitionFeeController::class, 'index'])->name('competition-fees.index');
+        Route::post('/competition-fees', [\App\Http\Controllers\Admin\CompetitionFeeController::class, 'update'])->name('competition-fees.update');
+
         // Rekap Juara Umum & Klasemen
         Route::get('/competition-leaderboard', [\App\Http\Controllers\Admin\CompetitionLeaderboardController::class, 'index'])->name('competition-leaderboard.index');
     });

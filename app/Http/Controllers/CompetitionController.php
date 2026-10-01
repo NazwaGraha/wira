@@ -95,8 +95,15 @@ class CompetitionController extends Controller
             }
         }
 
+        $categoriesMap = CompetitionCategory::whereIn('id', $validated['categories'])->get()->keyBy('id');
+
         $totalTeams = count($teamsToCreate);
-        $totalPayment = $event->registration_fee * $totalTeams;
+        $totalPayment = 0;
+        foreach ($teamsToCreate as $teamData) {
+            $cat = $categoriesMap->get($teamData['category_id']);
+            $fee = $cat ? floatval($cat->registration_fee ?: ($event->registration_fee ?: 150000)) : floatval($event->registration_fee ?: 150000);
+            $totalPayment += $fee;
+        }
 
         $registration = CompetitionRegistration::create([
             'competition_event_id' => $event->id,
