@@ -82,17 +82,19 @@
                         </div>
 
                         <!-- Right: Transparent Mascot Photo aligned with Badge -->
-                        @if($cat->code === 'LPP-MULA-PA')
+                        @php
+                            $lvlKey = strtolower($cat->level); // mula, madya, wira
+                            $genderKey = 'umum';
+                            if ($cat->gender_category === 'Putra') {
+                                $genderKey = 'putra';
+                            } elseif ($cat->gender_category === 'Putri') {
+                                $genderKey = 'putri';
+                            }
+                            $mascotFile = "pmr_{$lvlKey}_{$genderKey}.png";
+                        @endphp
+                        @if(file_exists(public_path("images/mascot/{$mascotFile}")))
                             <div class="shrink-0 w-24 h-28 sm:w-28 sm:h-32 -my-3 flex items-center justify-center">
-                                <img src="{{ asset('images/mascot/pmr_mula_putra.png') }}?v=5" alt="PMR Mula Putra" class="max-h-full max-w-full object-contain filter drop-shadow-md hover:scale-110 transition duration-300">
-                            </div>
-                        @elseif($cat->code === 'LPP-MULA-PI')
-                            <div class="shrink-0 w-24 h-28 sm:w-28 sm:h-32 -my-3 flex items-center justify-center">
-                                <img src="{{ asset('images/mascot/pmr_mula_putri.png') }}?v=5" alt="PMR Mula Putri" class="max-h-full max-w-full object-contain filter drop-shadow-md hover:scale-110 transition duration-300 scale-110">
-                            </div>
-                        @elseif($cat->level === 'Mula' && in_array($cat->gender_category, ['Umum', 'Campuran']))
-                            <div class="shrink-0 w-28 h-28 sm:w-32 sm:h-32 -my-3 flex items-center justify-center">
-                                <img src="{{ asset('images/mascot/pmr_mula_umum.png') }}?v=5" alt="PMR Mula Putra & Putri" class="max-h-full max-w-full object-contain filter drop-shadow-md hover:scale-110 transition duration-300">
+                                <img src="{{ asset('images/mascot/' . $mascotFile) }}?v=7" alt="Maskot PMR {{ $cat->level }} {{ $cat->gender_category }}" class="max-h-full max-w-full object-contain filter drop-shadow-md hover:scale-110 transition duration-300">
                             </div>
                         @endif
                     </div>
