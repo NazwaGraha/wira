@@ -150,24 +150,50 @@
                         <span class="w-6 h-6 rounded-full bg-red-600 text-white text-xs flex items-center justify-center font-bold">3</span>
                         Pilih Cabang Lomba yang Diikuti
                     </h3>
-                    <p class="text-xs text-slate-500 mb-4">Centang cabang lomba yang akan diikuti oleh kontingen sekolah Anda.</p>
+                    <p class="text-xs text-slate-500 mb-3">Centang cabang lomba dan kategori yang akan diikuti oleh kontingen sekolah Anda.</p>
+
+                    <div class="bg-blue-50 border border-blue-200 text-blue-900 p-3.5 rounded-xl text-xs flex items-start gap-2.5 mb-4">
+                        <i class="fa-solid fa-circle-info text-blue-600 text-sm mt-0.5 shrink-0"></i>
+                        <div class="leading-relaxed">
+                            <strong>Panduan Kategori Putra & Putri:</strong> Untuk cabang lomba yang memiliki kategori gender (seperti <strong>Ketangkasan Tandu Reguler</strong> dan <strong>Pertolongan Pertama</strong>), sekolah dapat mendaftarkan <strong>Kategori Putra</strong> saja, <strong>Kategori Putri</strong> saja, atau <strong>Kedua Kategori Tersebut (Putra & Putri)</strong> sekaligus dengan mencentang kedua kategori yang diinginkan.
+                        </div>
+                    </div>
 
                     @foreach(['Mula', 'Madya', 'Wira'] as $lvl)
                         <div id="category-group-{{ $lvl }}" class="category-level-group space-y-3 {{ $currentLevel == $lvl ? '' : 'hidden' }}">
                             @foreach($categoriesByLevel->get($lvl, []) as $cat)
-                                <div class="border border-slate-200 rounded-xl p-3.5 hover:border-red-400 transition bg-slate-50/50 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                                    <label class="flex items-center gap-3 cursor-pointer flex-grow">
-                                        <input type="checkbox" name="categories[]" value="{{ $cat->id }}" class="cat-checkbox w-4 h-4 text-red-600 rounded border-slate-300 focus:ring-red-500" {{ in_array($cat->id, old('categories', [])) ? 'checked' : '' }} onchange="calculateFee()">
+                                @php
+                                    $isPa = $cat->gender_category === 'Putra';
+                                    $isPi = $cat->gender_category === 'Putri';
+                                @endphp
+                                <div class="border {{ $isPa ? 'border-blue-200 bg-blue-50/30' : ($isPi ? 'border-rose-200 bg-rose-50/30' : 'border-slate-200 bg-slate-50/50') }} rounded-xl p-3.5 hover:border-red-400 hover:shadow-sm transition flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                                    <label class="flex items-start sm:items-center gap-3 cursor-pointer flex-grow">
+                                        <input type="checkbox" name="categories[]" value="{{ $cat->id }}" class="cat-checkbox mt-1 sm:mt-0 w-4 h-4 text-red-600 rounded border-slate-300 focus:ring-red-500" {{ in_array($cat->id, old('categories', [])) ? 'checked' : '' }} onchange="calculateFee()">
                                         <div>
-                                            <div class="font-bold text-slate-800 text-sm">{{ $cat->name }}</div>
-                                            <div class="text-xs text-slate-500">
-                                                Kategori: <span class="font-semibold text-slate-700">{{ $cat->gender_category }}</span> &bull; Biaya: Rp {{ number_format($event->registration_fee, 0, ',', '.') }}
+                                            <div class="flex items-center flex-wrap gap-2">
+                                                <span class="font-black text-slate-900 text-sm">{{ $cat->name }}</span>
+                                                @if($isPa)
+                                                    <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-black uppercase tracking-wider bg-blue-100 text-blue-700 border border-blue-200">
+                                                        <i class="fa-solid fa-mars text-blue-600"></i> Kategori Putra
+                                                    </span>
+                                                @elseif($isPi)
+                                                    <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-black uppercase tracking-wider bg-rose-100 text-rose-700 border border-rose-200">
+                                                        <i class="fa-solid fa-venus text-rose-600"></i> Kategori Putri
+                                                    </span>
+                                                @else
+                                                    <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-bold uppercase tracking-wider bg-slate-100 text-slate-600 border border-slate-200">
+                                                        <i class="fa-solid fa-users text-slate-500"></i> Umum / Campuran
+                                                    </span>
+                                                @endif
+                                            </div>
+                                            <div class="text-xs text-slate-500 mt-1">
+                                                Tingkat: <span class="font-bold text-slate-700">PMR {{ $cat->level }}</span> &bull; Biaya: <strong class="text-slate-800">Rp {{ number_format($event->registration_fee, 0, ',', '.') }}</strong>
                                             </div>
                                         </div>
                                     </label>
                                     
-                                    <div class="sm:w-48">
-                                        <input type="text" name="team_labels[{{ $cat->id }}]" value="{{ old('team_labels.'.$cat->id) }}" placeholder="Keterangan Regu, misal: (A)" class="w-full text-xs bg-white border border-slate-200 px-3 py-1.5 rounded-lg focus:outline-none focus:border-red-500">
+                                    <div class="sm:w-52">
+                                        <input type="text" name="team_labels[{{ $cat->id }}]" value="{{ old('team_labels.'.$cat->id) }}" placeholder="Keterangan Regu, misal: (A)" class="w-full text-xs bg-white border border-slate-200 px-3 py-2 rounded-lg focus:outline-none focus:border-red-500 shadow-2xs">
                                     </div>
                                 </div>
                             @endforeach

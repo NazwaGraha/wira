@@ -51,14 +51,24 @@ class CompetitionSeeder extends Seeder
                 'order_position' => 2,
             ],
             [
-                'code' => 'LKTR-MULA',
+                'code' => 'LKTR-MULA-PA',
                 'name' => 'Ketangkasan Tandu Reguler',
                 'level' => 'Mula',
-                'gender_category' => 'Umum',
+                'gender_category' => 'Putra',
                 'scoring_type' => 'standard_time',
                 'point_tier' => 'tier_2',
                 'criteria_schema' => ['Nilai Tandu', 'Waktu'],
                 'order_position' => 3,
+            ],
+            [
+                'code' => 'LKTR-MULA-PI',
+                'name' => 'Ketangkasan Tandu Reguler',
+                'level' => 'Mula',
+                'gender_category' => 'Putri',
+                'scoring_type' => 'standard_time',
+                'point_tier' => 'tier_2',
+                'criteria_schema' => ['Nilai Tandu', 'Waktu'],
+                'order_position' => 4,
             ],
             [
                 'code' => 'LKCT-MULA',
@@ -68,7 +78,7 @@ class CompetitionSeeder extends Seeder
                 'scoring_type' => 'standard_time',
                 'point_tier' => 'tier_2',
                 'criteria_schema' => ['Nilai'],
-                'order_position' => 4,
+                'order_position' => 5,
             ],
             [
                 'code' => 'MEWARNAI-MULA',
@@ -78,7 +88,7 @@ class CompetitionSeeder extends Seeder
                 'scoring_type' => 'multi_criteria',
                 'point_tier' => 'tier_2',
                 'criteria_schema' => ['Kerapihan dan Kebersihan', 'Kombinasi Warna dan Estetika', 'Kreativitas'],
-                'order_position' => 5,
+                'order_position' => 6,
             ],
             [
                 'code' => 'MADING-MULA',
@@ -88,7 +98,7 @@ class CompetitionSeeder extends Seeder
                 'scoring_type' => 'multi_criteria',
                 'point_tier' => 'tier_1',
                 'criteria_schema' => ['Kreativitas', 'Presentasi'],
-                'order_position' => 6,
+                'order_position' => 7,
             ],
 
             // === MADYA (SMP) ===

@@ -20,11 +20,24 @@
         <div>
             <div class="flex items-center gap-2">
                 <span class="font-mono text-xs font-bold text-red-600 bg-red-50 border border-red-200 px-2.5 py-0.5 rounded-md">{{ $category->code ?? 'LOMBA' }}</span>
-                <span class="text-xs font-bold text-slate-500">PMR {{ $category->level }} &bull; Kategori: {{ $category->gender_category }}</span>
+                <span class="text-xs font-bold text-slate-500">PMR {{ $category->level }}</span>
+                @if($category->gender_category === 'Putra')
+                    <span class="text-xs font-black text-blue-700 bg-blue-50 border border-blue-200 px-2.5 py-0.5 rounded-md inline-flex items-center gap-1">
+                        <i class="fa-solid fa-mars text-blue-600"></i> Kategori Putra
+                    </span>
+                @elseif($category->gender_category === 'Putri')
+                    <span class="text-xs font-black text-rose-700 bg-rose-50 border border-rose-200 px-2.5 py-0.5 rounded-md inline-flex items-center gap-1">
+                        <i class="fa-solid fa-venus text-rose-600"></i> Kategori Putri
+                    </span>
+                @else
+                    <span class="text-xs font-bold text-slate-600 bg-slate-100 border border-slate-200 px-2.5 py-0.5 rounded-md inline-flex items-center gap-1">
+                        <i class="fa-solid fa-users text-slate-500"></i> Kategori Umum
+                    </span>
+                @endif
             </div>
-            <h2 class="text-2xl font-black text-slate-900 mt-1">{{ $category->name }}</h2>
+            <h2 class="text-2xl font-black text-slate-900 mt-1">{{ $category->name }} ({{ $category->gender_category }})</h2>
             <div class="text-xs text-slate-500 mt-0.5">
-                Model Penilaian: <strong>{{ ucwords(str_replace('_', ' ', $category->scoring_type)) }}</strong> &bull; Total Peserta: <strong>{{ $teams->count() }} Tim</strong>
+                Model Penilaian: <strong>{{ ucwords(str_replace('_', ' ', $category->scoring_type)) }}</strong> &bull; Total Peserta Terverifikasi: <strong>{{ $teams->count() }} Tim</strong>
             </div>
         </div>
 
@@ -194,7 +207,12 @@
                                 <!-- Team Name -->
                                 <td class="px-4 py-3">
                                     <div class="font-extrabold text-slate-900 text-xs uppercase">{{ $team->team_name }}</div>
-                                    <div class="text-[10px] text-slate-400">{{ $team->registration?->advisor_name }}</div>
+                                    <div class="text-[10px] text-slate-400 mt-0.5 flex items-center gap-1.5 flex-wrap">
+                                        @if($team->registration)
+                                            <span class="font-mono font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 px-1.5 py-0.5 rounded text-[10px]">{{ $team->registration->registration_code }}</span>
+                                        @endif
+                                        <span>{{ $team->registration?->advisor_name }}</span>
+                                    </div>
                                 </td>
 
                                 <!-- Dynamic Inputs -->

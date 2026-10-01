@@ -37,9 +37,19 @@
                         <span class="font-mono text-[10px] font-bold uppercase tracking-wider bg-slate-100 text-slate-600 px-2 py-0.5 rounded">
                             {{ $cat->code ?? 'LOMBA' }}
                         </span>
-                        <span class="text-xs font-bold text-slate-400">
-                            {{ $cat->gender_category }}
-                        </span>
+                        @if($cat->gender_category === 'Putra')
+                            <span class="text-xs font-extrabold text-blue-700 bg-blue-50 border border-blue-200 px-2.5 py-0.5 rounded-md flex items-center gap-1">
+                                <i class="fa-solid fa-mars text-blue-600"></i> Putra
+                            </span>
+                        @elseif($cat->gender_category === 'Putri')
+                            <span class="text-xs font-extrabold text-rose-700 bg-rose-50 border border-rose-200 px-2.5 py-0.5 rounded-md flex items-center gap-1">
+                                <i class="fa-solid fa-venus text-rose-600"></i> Putri
+                            </span>
+                        @else
+                            <span class="text-xs font-bold text-slate-600 bg-slate-100 border border-slate-200 px-2.5 py-0.5 rounded-md flex items-center gap-1">
+                                <i class="fa-solid fa-users text-slate-500"></i> Umum
+                            </span>
+                        @endif
                     </div>
 
                     <h3 class="text-lg font-black text-slate-900 leading-snug">

@@ -23,7 +23,13 @@ class CompetitionScoreController extends Controller
 
         $categories = CompetitionCategory::where('competition_event_id', $event?->id)
             ->where('level', $level)
-            ->withCount('teams')
+            ->withCount(['teams' => function($q) {
+                $q->where('is_active', true)->where(function($sq) {
+                    $sq->whereHas('registration', function($rq) {
+                        $rq->where('status', 'verified');
+                    })->orWhereNull('competition_registration_id');
+                });
+            }])
             ->orderBy('order_position')
             ->get();
 
@@ -34,9 +40,15 @@ class CompetitionScoreController extends Controller
     {
         $round = $request->query('round', 'Utama');
 
-        // Fetch or create score rows for all active teams in this category
+        // Fetch verified participant teams for this specific competition category
         $teams = CompetitionParticipantTeam::where('competition_category_id', $category->id)
             ->where('is_active', true)
+            ->where(function($q) {
+                $q->whereHas('registration', function($rq) {
+                    $rq->where('status', 'verified');
+                })->orWhereNull('competition_registration_id');
+            })
+            ->with('registration')
             ->orderBy('order_number')
             ->get();
 
