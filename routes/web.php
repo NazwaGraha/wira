@@ -112,7 +112,45 @@ Route::prefix('admin')->name('admin.')->group(function () {
 
         // Rekap Juara Umum & Klasemen
         Route::get('/competition-leaderboard', [\App\Http\Controllers\Admin\CompetitionLeaderboardController::class, 'index'])->name('competition-leaderboard.index');
+
+        // System Utility: Bersihkan Cache & Sinkronisasi Server
+        Route::get('/clear-cache', function () {
+            try {
+                \Illuminate\Support\Facades\Artisan::call('optimize:clear');
+                \Illuminate\Support\Facades\Artisan::call('migrate', ['--force' => true]);
+                $output = \Illuminate\Support\Facades\Artisan::output();
+                return response("<div style='font-family:sans-serif;padding:30px;max-width:600px;margin:auto;'>
+                    <h2 style='color:#059669;'>✅ Cache Berhasil Dibersihkan & Migrasi Selesai!</h2>
+                    <pre style='background:#f1f5f9;padding:15px;border-radius:10px;font-size:12px;overflow:auto;'>" . htmlspecialchars($output) . "</pre>
+                    <p><a href='" . route('admin.competition-fees.index') . "' style='display:inline-block;padding:10px 20px;background:#dc2626;color:white;text-decoration:none;border-radius:8px;font-weight:bold;'>Buka Halaman Setup Biaya &rarr;</a></p>
+                </div>");
+            } catch (\Throwable $e) {
+                return response("<div style='font-family:sans-serif;padding:30px;max-width:600px;margin:auto;color:#dc2626;'>
+                    <h2>❌ Terjadi Kendala:</h2>
+                    <pre style='background:#fef2f2;padding:15px;border-radius:10px;font-size:12px;overflow:auto;'>" . htmlspecialchars($e->getMessage()) . "</pre>
+                </div>", 500);
+            }
+        })->name('clear-cache');
     });
+});
+
+// Endpoint Darurat Sinkronisasi Server (Bisa diakses langsung jika cache routing terkunci)
+Route::get('/server-sync-update-pmr', function () {
+    try {
+        \Illuminate\Support\Facades\Artisan::call('optimize:clear');
+        \Illuminate\Support\Facades\Artisan::call('migrate', ['--force' => true]);
+        $output = \Illuminate\Support\Facades\Artisan::output();
+        return response("<div style='font-family:sans-serif;padding:30px;max-width:600px;margin:auto;'>
+            <h2 style='color:#059669;'>✅ Cache Server Berhasil Dibersihkan & Database Dimigrasi!</h2>
+            <pre style='background:#f1f5f9;padding:15px;border-radius:10px;font-size:12px;overflow:auto;'>" . htmlspecialchars($output) . "</pre>
+            <p><a href='/admin/competition-fees' style='display:inline-block;padding:10px 20px;background:#dc2626;color:white;text-decoration:none;border-radius:8px;font-weight:bold;'>Buka Halaman Setup Biaya &rarr;</a></p>
+        </div>");
+    } catch (\Throwable $e) {
+        return response("<div style='font-family:sans-serif;padding:30px;max-width:600px;margin:auto;color:#dc2626;'>
+            <h2>❌ Terjadi Kendala:</h2>
+            <pre style='background:#fef2f2;padding:15px;border-radius:10px;font-size:12px;overflow:auto;'>" . htmlspecialchars($e->getMessage()) . "</pre>
+        </div>", 500);
+    }
 });
 
 // Rute Publik Lomba PMR
