@@ -62,30 +62,33 @@
                         </span>
                     </div>
 
-                    <!-- Foto / Mockup Peserta PMR Mula (LPP-MULA-PA & LPP-MULA-PI) -->
-                    @if($cat->code === 'LPP-MULA-PA')
-                        <div class="mb-3 rounded-2xl overflow-hidden bg-slate-50 border border-slate-200 shadow-inner flex justify-center items-center group">
-                            <img src="{{ asset('images/mascot/pmr_mula_putra.jpg') }}" alt="PMR Mula Putra" class="w-full h-56 object-contain object-top group-hover:scale-105 transition duration-300">
+                    <!-- Gender Category Badge & Mascot Side-by-Side -->
+                    <div class="mb-4 flex items-center justify-between gap-3 min-h-[76px] bg-slate-50/60 p-2.5 rounded-2xl border border-slate-100">
+                        <!-- Left: 3x Larger Blinking Gender Category Badge -->
+                        <div class="flex-grow">
+                            @if($cat->gender_category === 'Putra')
+                                <div class="animate-badge-blink inline-flex items-center gap-2 px-3.5 py-2 rounded-xl font-black text-xs sm:text-sm bg-blue-600 text-white shadow-lg shadow-blue-600/30 border-2 border-blue-300 uppercase tracking-wider">
+                                    <i class="fa-solid fa-mars text-base text-blue-200 animate-pulse"></i> KATEGORI PUTRA
+                                </div>
+                            @elseif($cat->gender_category === 'Putri')
+                                <div class="animate-badge-blink inline-flex items-center gap-2 px-3.5 py-2 rounded-xl font-black text-xs sm:text-sm bg-rose-600 text-white shadow-lg shadow-rose-600/30 border-2 border-rose-300 uppercase tracking-wider">
+                                    <i class="fa-solid fa-venus text-base text-rose-200 animate-pulse"></i> KATEGORI PUTRI
+                                </div>
+                            @else
+                                <div class="animate-badge-blink inline-flex items-center gap-2 px-3.5 py-2 rounded-xl font-black text-xs sm:text-sm bg-slate-800 text-white shadow-lg shadow-slate-900/30 border-2 border-slate-600 uppercase tracking-wider">
+                                    <i class="fa-solid fa-users text-base text-slate-300 animate-pulse"></i> KATEGORI UMUM
+                                </div>
+                            @endif
                         </div>
-                    @elseif($cat->code === 'LPP-MULA-PI')
-                        <div class="mb-3 rounded-2xl overflow-hidden bg-slate-50 border border-slate-200 shadow-inner flex justify-center items-center group">
-                            <img src="{{ asset('images/mascot/pmr_mula_putri.jpg') }}" alt="PMR Mula Putri" class="w-full h-56 object-contain object-top group-hover:scale-105 transition duration-300">
-                        </div>
-                    @endif
 
-                    <!-- 3x Larger Blinking Gender Category Badge -->
-                    <div class="mb-4">
-                        @if($cat->gender_category === 'Putra')
-                            <div class="animate-badge-blink inline-flex items-center gap-2 px-4 py-2 rounded-xl font-black text-sm sm:text-base bg-blue-600 text-white shadow-lg shadow-blue-600/30 border-2 border-blue-300 uppercase tracking-wider">
-                                <i class="fa-solid fa-mars text-lg text-blue-200 animate-pulse"></i> KATEGORI PUTRA
+                        <!-- Right: Transparent Mascot Photo aligned with Badge -->
+                        @if($cat->code === 'LPP-MULA-PA')
+                            <div class="shrink-0 w-20 h-24 sm:w-24 sm:h-28 -my-2 flex items-center justify-center">
+                                <img src="{{ asset('images/mascot/pmr_mula_putra.png') }}" alt="PMR Mula Putra" class="max-h-full max-w-full object-contain filter drop-shadow-md hover:scale-110 transition duration-300">
                             </div>
-                        @elseif($cat->gender_category === 'Putri')
-                            <div class="animate-badge-blink inline-flex items-center gap-2 px-4 py-2 rounded-xl font-black text-sm sm:text-base bg-rose-600 text-white shadow-lg shadow-rose-600/30 border-2 border-rose-300 uppercase tracking-wider">
-                                <i class="fa-solid fa-venus text-lg text-rose-200 animate-pulse"></i> KATEGORI PUTRI
-                            </div>
-                        @else
-                            <div class="animate-badge-blink inline-flex items-center gap-2 px-4 py-2 rounded-xl font-black text-sm sm:text-base bg-slate-800 text-white shadow-lg shadow-slate-900/30 border-2 border-slate-600 uppercase tracking-wider">
-                                <i class="fa-solid fa-users text-lg text-slate-300 animate-pulse"></i> KATEGORI UMUM
+                        @elseif($cat->code === 'LPP-MULA-PI')
+                            <div class="shrink-0 w-20 h-24 sm:w-24 sm:h-28 -my-2 flex items-center justify-center">
+                                <img src="{{ asset('images/mascot/pmr_mula_putri.png') }}" alt="PMR Mula Putri" class="max-h-full max-w-full object-contain filter drop-shadow-md hover:scale-110 transition duration-300">
                             </div>
                         @endif
                     </div>
