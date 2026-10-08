@@ -86,48 +86,78 @@
             </h3>
 
             <div class="bg-slate-100 p-4 sm:p-6 rounded-2xl border border-slate-200 flex justify-center">
-                <div class="w-full max-w-lg bg-white rounded-2xl shadow-sm overflow-hidden border border-slate-200">
-                    <!-- Header -->
-                    <div class="bg-gradient-to-r from-red-900 to-red-600 text-white p-6 text-center">
-                        <div class="text-[11px] font-black uppercase tracking-widest text-red-200">PALANG MERAH REMAJA &bull; PMI</div>
-                        <h4 class="text-xl font-black mt-1">{{ $broadcast->headline ?: 'SUA BHAKTI BERKARYA' }}</h4>
-                        <span class="inline-block px-3 py-0.5 bg-white/20 rounded-full text-[10px] font-bold mt-2">Official Announcement</span>
+                <div class="w-full max-w-xl bg-white rounded-2xl shadow-sm overflow-hidden border border-slate-200">
+                    <!-- Header Sesuai Mockup -->
+                    <div class="bg-gradient-to-r from-red-900 to-red-700 text-white p-6">
+                        <div class="flex items-center justify-between gap-4">
+                            <!-- Kiri: Logo Resmi Gabungan -->
+                            <div class="bg-white p-1.5 px-3 rounded-xl shadow-sm">
+                                <img src="{{ asset('images/logo_pmi_sman1ciawi.png') }}" alt="Logo PMI & SMAN 1 Ciawi" class="h-9 w-auto object-contain">
+                            </div>
+                            <!-- Kanan: Judul Kegiatan -->
+                            <div class="text-right">
+                                <div class="text-lg font-black tracking-tight uppercase leading-tight">
+                                    SUA BHAKTI<br>BERKARYA
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Baris Tengah: Badge Status & Subtitle -->
+                        <div class="text-center pt-4">
+                            <span class="inline-block px-4 py-1 bg-white text-red-700 rounded-full text-[10px] font-black tracking-wider uppercase shadow-xs">
+                                &#9432; INFORMASI RESMI KEGIATAN
+                            </span>
+                            <div class="text-xs font-bold text-white/95 mt-1.5">
+                                PMR Wira SMA Negeri 1 Ciawi
+                            </div>
+                        </div>
                     </div>
 
                     <!-- Body -->
                     <div class="p-6 space-y-4 text-xs leading-relaxed text-slate-800">
-                        <div class="font-bold text-slate-900 text-sm">
-                            Yth. Bapak/Ibu Pembina & Kontingen PMR<br>
-                            <span class="text-red-600">[Nama Sekolah Penerima]</span>
+                        <div class="text-slate-600">
+                            Kepada Yth.<br>
+                            <span class="font-extrabold text-slate-900 text-sm">Pembina PMR & Kontingen [Nama Sekolah Penerima]</span>
                         </div>
 
-                        <div class="prose max-w-none text-slate-700 font-normal leading-relaxed text-xs [&_img]:max-w-full [&_img]:rounded-lg [&_img]:my-2 [&_p]:mb-3 [&_.note-float-center]:mx-auto [&_.note-float-center]:block">{!! $broadcast->content !!}</div>
+                        <div class="prose max-w-none text-slate-700 font-normal leading-relaxed text-xs [&_img]:max-w-full [&_img]:rounded-lg [&_img]:my-3 [&_p]:mb-3 [&_.note-float-center]:mx-auto [&_.note-float-center]:block [&_table]:w-full [&_table]:border-collapse [&_table]:my-3 [&_th]:bg-slate-100 [&_th]:p-2 [&_th]:border [&_td]:p-2 [&_td]:border">{!! $broadcast->content !!}</div>
 
                         @if($broadcast->button_text && $broadcast->button_url)
-                            <div class="text-center pt-2 pb-2">
-                                <a href="{{ $broadcast->button_url }}" target="_blank" class="inline-block bg-red-600 text-white px-5 py-2.5 rounded-xl font-bold text-xs shadow-sm hover:bg-red-700">
-                                    {{ $broadcast->button_text }} &rarr;
+                            <div class="text-center pt-3 pb-2">
+                                <a href="{{ $broadcast->button_url }}" target="_blank" class="inline-block bg-red-600 text-white px-7 py-3 rounded-full font-black text-xs shadow-md hover:bg-red-700 transition">
+                                    {{ $broadcast->button_text }}
                                 </a>
                             </div>
                         @endif
 
                         @if($broadcast->notes)
-                            <div class="p-3 bg-slate-50 border border-slate-200 rounded-xl text-[11px] text-slate-600">
-                                <strong>Catatan Panitia:</strong><br>
+                            <div class="p-3.5 bg-slate-50 border border-slate-200 border-l-4 border-l-red-600 rounded-xl text-[11px] text-slate-700 leading-relaxed">
+                                <strong class="text-slate-900 font-black uppercase text-[10px] tracking-wider">NOTICE :</strong><br>
                                 {!! nl2br(e($broadcast->notes)) !!}
                             </div>
                         @endif
 
-                        <div class="pt-2 text-slate-500 text-[11px]">
+                        <div class="pt-3 text-slate-500 text-[11px] leading-relaxed">
                             Salam Kemanusiaan,<br>
-                            <strong class="text-slate-800">Panitia Pelaksana SUA BHAKTI BERKARYA</strong><br>
-                            PMR WIRA
+                            <strong class="text-slate-900 font-bold text-xs">Panitia Pelaksana SUA BHAKTI BERKARYA</strong><br>
+                            <span class="text-slate-500">PMR WIRA SMA Negeri 1 Ciawi</span>
                         </div>
                     </div>
 
-                    <!-- Footer -->
-                    <div class="bg-slate-50 p-4 border-t border-slate-200 text-center text-[11px] text-slate-400">
-                        PMR WIRA &bull; SUA BHAKTI BERKARYA
+                    <!-- Footer Sesuai Mockup -->
+                    <div class="bg-slate-50 p-5 border-t border-slate-200 text-center space-y-1.5 text-[11px] text-slate-500">
+                        <div class="font-black text-slate-800 uppercase text-xs">
+                            PMR WIRA SMA NEGERI 1 CIAWI &bull; SUA BHAKTI BERKARYA
+                        </div>
+                        <div>
+                            Email ini dikirimkan resmi kepada seluruh kontak sekolah dan pembina unit PMR yang terdaftar pada sistem kegiatan kami.
+                        </div>
+                        <div class="text-[10px] text-slate-400">
+                            WhatsApp Panitia: 0812-9214-3079 / 0857-1049-7412 &bull; wira.nazwagraha.com
+                        </div>
+                        <div class="text-[10px] text-slate-400 pt-1">
+                            &copy; {{ date('Y') }} PMR Wira SMA Negeri 1 Ciawi. Hak Cipta Dilindungi.
+                        </div>
                     </div>
                 </div>
             </div>

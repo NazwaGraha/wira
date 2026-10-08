@@ -14,78 +14,145 @@
             -webkit-text-size-adjust: 100%;
         }
         .container {
-            max-width: 600px;
+            max-width: 620px;
             margin: 0 auto;
             background-color: #ffffff;
-            border-radius: 16px;
+            border-radius: 20px;
             overflow: hidden;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -2px rgba(0, 0, 0, 0.05);
+            box-shadow: 0 4px 14px rgba(0, 0, 0, 0.06);
+            border: 1px solid #e2e8f0;
         }
         .header {
-            background: linear-gradient(135deg, #880808 0%, #dc2626 100%);
-            padding: 32px 24px;
-            text-align: center;
+            background: linear-gradient(135deg, #b91c1c 0%, #880808 100%);
+            background-color: #991b1b;
+            padding: 28px 24px 22px 24px;
+            text-align: left;
             color: #ffffff;
         }
-        .logo-text {
-            font-size: 14px;
-            font-weight: 800;
-            letter-spacing: 2px;
-            text-transform: uppercase;
-            color: #fecaca;
-            margin-bottom: 8px;
+        .header-table {
+            width: 100%;
+            border-collapse: collapse;
         }
-        .title {
-            font-size: 24px;
+        .logo-box {
+            background-color: #ffffff;
+            padding: 6px 14px;
+            border-radius: 12px;
+            display: inline-block;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.12);
+        }
+        .logo-img {
+            height: 38px;
+            max-height: 42px;
+            width: auto;
+            display: block;
+            border: 0;
+        }
+        .header-title {
+            font-size: 22px;
             font-weight: 900;
-            line-height: 1.3;
-            margin: 0;
             color: #ffffff;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            line-height: 1.15;
+            text-align: right;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        }
+        .badge-status {
+            display: inline-block;
+            background-color: #ffffff;
+            color: #991b1b;
+            font-weight: 800;
+            font-size: 11px;
+            padding: 5px 18px;
+            border-radius: 9999px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+        }
+        .header-subtitle {
+            color: #ffffff;
+            font-size: 13px;
+            font-weight: 700;
+            margin-top: 8px;
+            letter-spacing: 0.3px;
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
         }
         .content {
-            padding: 36px 32px;
+            padding: 34px 30px;
             line-height: 1.7;
-            font-size: 15px;
+            font-size: 14px;
             color: #1e293b;
         }
         .greeting {
+            font-size: 14px;
+            color: #64748b;
+            line-height: 1.5;
+            margin-bottom: 20px;
+        }
+        .greeting-name {
             font-size: 16px;
-            font-weight: 700;
+            font-weight: 800;
             color: #0f172a;
-            margin-bottom: 16px;
+            display: block;
+            margin-top: 2px;
         }
         .message-body {
             margin-bottom: 24px;
             color: #334155;
             line-height: 1.8;
-            font-size: 15px;
+            font-size: 14px;
         }
         .message-body p {
             margin: 0 0 14px 0;
         }
         .message-body img {
             max-width: 100% !important;
-            height: auto;
+            height: auto !important;
             border-radius: 8px;
-            display: inline-block;
-        }
-        .message-body img[style*="float: left"],
-        .message-body img[style*="float:left"] {
-            margin: 4px 16px 14px 0 !important;
-        }
-        .message-body img[style*="float: right"],
-        .message-body img[style*="float:right"] {
-            margin: 4px 0 14px 16px !important;
         }
         .message-body img.note-float-center,
         .message-body img[style*="margin-left: auto"],
         .message-body img[style*="margin-left:auto"],
         .message-body img[style*="margin: auto"],
-        .message-body img[style*="margin:auto"] {
+        .message-body img[style*="margin:auto"],
+        .message-body p[style*="text-align: center"] img,
+        .message-body p[style*="text-align:center"] img {
             display: block !important;
-            margin-left: auto !important;
-            margin-right: auto !important;
+            margin: 16px auto !important;
             float: none !important;
+            clear: both !important;
+        }
+        .message-body img[style*="float: left"],
+        .message-body img[style*="float:left"] {
+            float: left !important;
+            margin: 4px 16px 14px 0 !important;
+        }
+        .message-body img[style*="float: right"],
+        .message-body img[style*="float:right"] {
+            float: right !important;
+            margin: 4px 0 14px 16px !important;
+        }
+        .message-body table {
+            width: 100% !important;
+            border-collapse: collapse !important;
+            margin: 18px 0 !important;
+            font-size: 13px !important;
+            border: 1px solid #cbd5e1 !important;
+            border-radius: 8px !important;
+            overflow: hidden !important;
+        }
+        .message-body th {
+            background-color: #f1f5f9 !important;
+            color: #1e293b !important;
+            font-weight: 800 !important;
+            padding: 10px 14px !important;
+            border: 1px solid #cbd5e1 !important;
+            text-align: left !important;
+        }
+        .message-body td {
+            padding: 10px 14px !important;
+            border: 1px solid #cbd5e1 !important;
+            color: #334155 !important;
         }
         .cta-container {
             text-align: center;
@@ -93,102 +160,130 @@
         }
         .cta-button {
             display: inline-block;
-            background-color: #dc2626;
+            background-color: #b91c1c;
             color: #ffffff !important;
-            font-weight: 700;
-            font-size: 15px;
-            padding: 14px 28px;
+            font-weight: 800;
+            font-size: 14px;
+            padding: 14px 34px;
             text-decoration: none;
-            border-radius: 12px;
-            box-shadow: 0 4px 12px rgba(220, 38, 38, 0.3);
+            border-radius: 9999px;
+            box-shadow: 0 4px 14px rgba(185, 28, 28, 0.35);
+            text-transform: none;
+            letter-spacing: 0.3px;
         }
         .card-box {
             background-color: #f8fafc;
-            border: 1px solid #e2e8f0;
+            border: 1px solid #cbd5e1;
+            border-left: 4px solid #b91c1c;
             border-radius: 12px;
-            padding: 18px 20px;
-            margin: 24px 0;
+            padding: 16px 20px;
+            margin: 26px 0;
+            font-size: 13px;
+            color: #334155;
+            line-height: 1.6;
+        }
+        .closing-section {
+            margin-top: 32px;
             font-size: 13px;
             color: #475569;
+            line-height: 1.6;
         }
         .footer {
             background-color: #f8fafc;
             border-top: 1px solid #e2e8f0;
-            padding: 24px 32px;
+            padding: 24px 28px;
             text-align: center;
             font-size: 12px;
             color: #64748b;
             line-height: 1.6;
         }
-        .badge {
-            display: inline-block;
-            background-color: rgba(255, 255, 255, 0.2);
-            padding: 4px 12px;
-            border-radius: 9999px;
-            font-size: 11px;
-            font-weight: 700;
-            letter-spacing: 0.5px;
-            margin-top: 8px;
-        }
     </style>
 </head>
-<body style="padding: 24px 12px; background-color: #f1f5f9;">
+<body style="margin: 0; padding: 24px 12px; background-color: #f1f5f9;">
 
     <div class="container">
         <!-- Header -->
         <div class="header">
-            <div class="logo-text">PALANG MERAH REMAJA &bull; PMI</div>
-            <h1 class="title">{{ $headline ?: 'SUA BHAKTI BERKARYA' }}</h1>
-            <div class="badge">Official Announcement & Information</div>
+            <table class="header-table" width="100%" cellpadding="0" cellspacing="0" border="0">
+                <tr>
+                    <!-- Kiri: Logo Resmi Palang Merah Indonesia & SMA Negeri 1 Ciawi -->
+                    <td style="vertical-align: middle; text-align: left;">
+                        <div class="logo-box">
+                            <img src="{{ isset($message) ? $message->embed(public_path('images/logo_pmi_sman1ciawi.png')) : asset('images/logo_pmi_sman1ciawi.png') }}" 
+                                 alt="Palang Merah Indonesia | SMA Negeri 1 Ciawi" 
+                                 class="logo-img" />
+                        </div>
+                    </td>
+
+                    <!-- Kanan: Judul Kegiatan SUA BHAKTI BERKARYA -->
+                    <td style="vertical-align: middle; text-align: right;">
+                        <div class="header-title">
+                            SUA BHAKTI<br>BERKARYA
+                        </div>
+                    </td>
+                </tr>
+                <tr>
+                    <!-- Baris Tengah: Badge Status & Identitas PMR Wira SMAN 1 Ciawi -->
+                    <td colspan="2" style="text-align: center; padding-top: 18px;">
+                        <div class="badge-status">
+                            &#9432; INFORMASI RESMI KEGIATAN
+                        </div>
+                        <div class="header-subtitle">
+                            PMR Wira SMA Negeri 1 Ciawi
+                        </div>
+                    </td>
+                </tr>
+            </table>
         </div>
 
         <!-- Body -->
         <div class="content">
-            @if(!empty($recipientInfo['school_name']))
-                <div class="greeting">
-                    Yth. Bapak/Ibu Pembina & Kontingen PMR<br>
-                    <span style="color: #dc2626; font-size: 17px;">{{ $recipientInfo['school_name'] }}</span>
-                </div>
-            @else
-                <div class="greeting">
-                    Yth. Bapak/Ibu Pembina, Pelatih, & Pengurus Unit PMR
-                </div>
-            @endif
+            <div class="greeting">
+                Kepada Yth.<br>
+                <span class="greeting-name">
+                    Pembina PMR & Kontingen {{ !empty($recipientInfo['school_name']) ? $recipientInfo['school_name'] : 'Sekolah / Unit PMR' }}
+                </span>
+            </div>
 
-            <div class="message-body">{!! $contentBody !!}</div>
+            <div class="message-body">
+                {!! $contentBody !!}
+            </div>
 
             @if(!empty($buttonText) && !empty($buttonUrl))
                 <div class="cta-container">
                     <a href="{{ $buttonUrl }}" class="cta-button" target="_blank">
-                        {{ $buttonText }} &rarr;
+                        {{ $buttonText }}
                     </a>
                 </div>
             @endif
 
             @if(!empty($notes))
                 <div class="card-box">
-                    <strong>Catatan Panitia:</strong><br>
+                    <strong style="color: #0f172a; text-transform: uppercase; font-size: 12px; letter-spacing: 0.5px;">NOTICE :</strong><br>
                     {!! nl2br(e($notes)) !!}
                 </div>
             @endif
 
-            <p style="margin-top: 24px; font-size: 14px; color: #475569;">
+            <div class="closing-section">
                 Salam Kemanusiaan,<br>
-                <strong>Panitia Pelaksana SUA BHAKTI BERKARYA</strong><br>
-                <span style="color: #64748b; font-size: 13px;">Palang Merah Remaja (PMR) WIRA</span>
-            </p>
+                <strong style="color: #0f172a; font-size: 14px;">Panitia Pelaksana SUA BHAKTI BERKARYA</strong><br>
+                <span style="color: #64748b;">PMR WIRA SMA Negeri 1 Ciawi</span>
+            </div>
         </div>
 
         <!-- Footer -->
         <div class="footer">
-            <p style="margin: 0 0 6px 0; font-weight: 700; color: #334155;">
-                PMR WIRA &bull; SUA BHAKTI BERKARYA
+            <p style="margin: 0 0 6px 0; font-weight: 800; color: #1e293b; font-size: 13px;">
+                PMR WIRA SMA NEGERI 1 CIAWI &bull; SUA BHAKTI BERKARYA
             </p>
-            <p style="margin: 0 0 8px 0;">
-                Email ini dikirimkan resmi kepada seluruh kontak sekolah dan pembina unit PMR yang terdaftar pada database sistem kegiatan kami.
+            <p style="margin: 0 0 10px 0; font-size: 12px; color: #64748b;">
+                Email ini dikirimkan resmi kepada seluruh kontak sekolah dan pembina unit PMR yang terdaftar pada sistem kegiatan kami.
+            </p>
+            <p style="margin: 0 0 12px 0; font-size: 11px; color: #94a3b8;">
+                WhatsApp Panitia: <strong>0812-9214-3079 / 0857-1049-7412</strong> &bull; Portal: <a href="https://wira.nazwagraha.com" style="color: #b91c1c; text-decoration: none; font-weight: bold;">wira.nazwagraha.com</a>
             </p>
             <p style="margin: 0; font-size: 11px; color: #94a3b8;">
-                &copy; {{ date('Y') }} Panitia SUA BHAKTI BERKARYA. Hak cipta dilindungi undang-undang.
+                &copy; {{ date('Y') }} PMR Wira SMA Negeri 1 Ciawi. Hak Cipta Dilindungi.
             </p>
         </div>
     </div>

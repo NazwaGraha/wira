@@ -96,7 +96,7 @@
 @endsection
 
 @section('content')
-<div class="max-w-5xl mx-auto space-y-6">
+<div x-data="broadcastPreview()" class="max-w-5xl mx-auto space-y-6">
 
     @if(session('error'))
         <div class="p-4 rounded-xl bg-rose-50 border border-rose-200 text-rose-700 text-xs font-bold flex items-center gap-2">
@@ -364,13 +364,136 @@
                 <a href="{{ route('admin.competition-broadcast.index') }}" class="px-5 py-3 rounded-xl border border-slate-200 text-slate-600 hover:bg-slate-100 text-xs font-bold text-center transition">
                     &larr; Batal & Kembali
                 </a>
-                <button type="submit" onclick="return confirm('Kirimkan siaran email ini sekarang?');" class="bg-red-600 hover:bg-red-700 text-white font-black text-sm px-8 py-3.5 rounded-xl transition shadow-lg shadow-red-600/30 flex items-center justify-center gap-2">
-                    <i class="fa-solid fa-paper-plane"></i> Kirim Siaran Email Sekarang
-                </button>
+                <div class="flex flex-col sm:flex-row items-center gap-3">
+                    <button type="button" @click="openPreview()" class="w-full sm:w-auto px-6 py-3.5 rounded-xl border border-slate-300 bg-white hover:bg-slate-50 text-slate-700 text-xs font-black transition flex items-center justify-center gap-2 shadow-xs">
+                        <i class="fa-solid fa-eye text-red-600"></i> Pratinjau Tampilan Email
+                    </button>
+                    <button type="submit" onclick="return confirm('Kirimkan siaran email ini sekarang?');" class="w-full sm:w-auto bg-red-600 hover:bg-red-700 text-white font-black text-sm px-8 py-3.5 rounded-xl transition shadow-lg shadow-red-600/30 flex items-center justify-center gap-2">
+                        <i class="fa-solid fa-paper-plane"></i> Kirim Siaran Email Sekarang
+                    </button>
+                </div>
             </div>
         </div>
 
     </form>
+
+    <!-- Modal Pratinjau Tampilan Email (Sesuai Mockup Resmi) -->
+    <div x-show="showPreviewModal" 
+         x-transition.opacity
+         class="fixed inset-0 z-50 overflow-y-auto bg-slate-900/75 backdrop-blur-xs flex items-center justify-center p-3 sm:p-6"
+         style="display: none;">
+        <div @click.away="showPreviewModal = false" class="bg-white w-full max-w-2xl rounded-2xl shadow-2xl border border-slate-200 overflow-hidden flex flex-col max-h-[92vh]">
+            
+            <!-- Header Modal Bar -->
+            <div class="p-4 px-6 bg-slate-900 text-white flex items-center justify-between shrink-0">
+                <div class="flex items-center gap-2.5">
+                    <div class="w-7 h-7 rounded-lg bg-red-600 flex items-center justify-center text-white text-xs">
+                        <i class="fa-solid fa-envelope-open-text"></i>
+                    </div>
+                    <div>
+                        <span class="font-extrabold text-sm block leading-none">Pratinjau Tampilan Email Siaran</span>
+                        <span class="text-[10px] text-slate-400">Tampilan ini sama persis dengan yang diterima di inbox pembina / sekolah</span>
+                    </div>
+                </div>
+                <button type="button" @click="showPreviewModal = false" class="text-slate-400 hover:text-white text-lg p-1">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+
+            <!-- Scrollable Email Frame -->
+            <div class="p-4 sm:p-6 overflow-y-auto bg-slate-100 flex justify-center">
+                <div class="w-full bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+                    
+                    <!-- Header Sesuai Mockup Persis -->
+                    <div class="bg-gradient-to-r from-red-900 to-red-700 text-white p-6">
+                        <div class="flex items-center justify-between gap-4">
+                            <!-- Kiri: Logo Resmi Gabungan (PMI | SMAN 1 Ciawi) -->
+                            <div class="bg-white p-1.5 px-3 rounded-xl shadow-sm">
+                                <img src="{{ asset('images/logo_pmi_sman1ciawi.png') }}" alt="Logo PMI & SMAN 1 Ciawi" class="h-9 w-auto object-contain">
+                            </div>
+                            <!-- Kanan: Judul Kegiatan -->
+                            <div class="text-right">
+                                <div class="text-lg font-black tracking-tight uppercase leading-tight">
+                                    SUA BHAKTI<br>BERKARYA
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Baris Tengah: Badge Status & Subtitle -->
+                        <div class="text-center pt-4">
+                            <span class="inline-block px-4 py-1 bg-white text-red-700 rounded-full text-[10px] font-black tracking-wider uppercase shadow-xs">
+                                &#9432; INFORMASI RESMI KEGIATAN
+                            </span>
+                            <div class="text-xs font-bold text-white/95 mt-1.5">
+                                PMR Wira SMA Negeri 1 Ciawi
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Konten Email -->
+                    <div class="p-6 space-y-4 text-xs leading-relaxed text-slate-800">
+                        <div class="text-slate-600">
+                            Kepada Yth.<br>
+                            <span class="font-extrabold text-slate-900 text-sm">Pembina PMR & Kontingen [Nama Sekolah Penerima]</span>
+                        </div>
+
+                        <!-- Summernote Content Live -->
+                        <div class="prose max-w-none text-slate-700 font-normal leading-relaxed text-xs [&_img]:max-w-full [&_img]:rounded-lg [&_img]:my-3 [&_p]:mb-3 [&_.note-float-center]:mx-auto [&_.note-float-center]:block [&_table]:w-full [&_table]:border-collapse [&_table]:my-3 [&_th]:bg-slate-100 [&_th]:p-2 [&_th]:border [&_td]:p-2 [&_td]:border" x-html="previewContent || '<p class=\'text-slate-400 italic\'>Belum ada isi pesan.</p>'">
+                        </div>
+
+                        <!-- Tombol CTA -->
+                        <template x-if="previewBtnText">
+                            <div class="text-center pt-3 pb-2">
+                                <a :href="previewBtnUrl || '#'" target="_blank" class="inline-block bg-red-600 text-white px-7 py-3 rounded-full font-black text-xs shadow-md">
+                                    <span x-text="previewBtnText"></span>
+                                </a>
+                            </div>
+                        </template>
+
+                        <!-- Notice Box -->
+                        <template x-if="previewNotes">
+                            <div class="p-3.5 bg-slate-50 border border-slate-200 border-l-4 border-l-red-600 rounded-xl text-[11px] text-slate-700 leading-relaxed">
+                                <strong class="text-slate-900 font-black uppercase text-[10px] tracking-wider">NOTICE :</strong><br>
+                                <span class="whitespace-pre-line" x-text="previewNotes"></span>
+                            </div>
+                        </template>
+
+                        <div class="pt-3 text-slate-500 text-[11px] leading-relaxed">
+                            Salam Kemanusiaan,<br>
+                            <strong class="text-slate-900 font-bold text-xs">Panitia Pelaksana SUA BHAKTI BERKARYA</strong><br>
+                            <span class="text-slate-500">PMR WIRA SMA Negeri 1 Ciawi</span>
+                        </div>
+                    </div>
+
+                    <!-- Footer Sesuai Mockup -->
+                    <div class="bg-slate-50 p-5 border-t border-slate-200 text-center space-y-1.5 text-[11px] text-slate-500">
+                        <div class="font-black text-slate-800 uppercase text-xs">
+                            PMR WIRA SMA NEGERI 1 CIAWI &bull; SUA BHAKTI BERKARYA
+                        </div>
+                        <div>
+                            Email ini dikirimkan resmi kepada seluruh kontak sekolah dan pembina unit PMR yang terdaftar pada sistem kegiatan kami.
+                        </div>
+                        <div class="text-[10px] text-slate-400">
+                            WhatsApp Panitia: 0812-9214-3079 / 0857-1049-7412 &bull; wira.nazwagraha.com
+                        </div>
+                        <div class="text-[10px] text-slate-400 pt-1">
+                            &copy; {{ date('Y') }} PMR Wira SMA Negeri 1 Ciawi. Hak Cipta Dilindungi.
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Footer Modal Actions -->
+            <div class="p-4 px-6 bg-white border-t border-slate-200 flex items-center justify-between shrink-0">
+                <button type="button" @click="showPreviewModal = false" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs rounded-xl transition">
+                    Tutup Pratinjau
+                </button>
+                <button type="button" @click="showPreviewModal = false; submitBroadcastForm();" class="px-6 py-2.5 bg-red-600 hover:bg-red-700 text-white font-black text-xs rounded-xl shadow-md transition flex items-center gap-2">
+                    <i class="fa-solid fa-paper-plane"></i> Lanjutkan & Kirim Email Sekarang
+                </button>
+            </div>
+        </div>
+    </div>
 
 </div>
 @endsection
@@ -381,6 +504,29 @@
     <script src="https://cdn.jsdelivr.net/npm/summernote@0.8.20/dist/summernote-lite.min.js"></script>
 
     <script>
+        function broadcastPreview() {
+            return {
+                showPreviewModal: false,
+                previewContent: '',
+                previewBtnText: '',
+                previewBtnUrl: '',
+                previewNotes: '',
+                openPreview() {
+                    this.previewContent = $('#content-editor').summernote('code');
+                    this.previewBtnText = $('input[name="button_text"]').val() || '';
+                    this.previewBtnUrl = $('input[name="button_url"]').val() || '';
+                    this.previewNotes = $('textarea[name="notes"]').val() || '';
+                    this.showPreviewModal = true;
+                },
+                submitBroadcastForm() {
+                    const form = document.getElementById('broadcast-form');
+                    if (form) {
+                        form.submit();
+                    }
+                }
+            };
+        }
+
         const initialDbRecipientsCount = {{ count($recipients) }};
         const dbEmailsList = {!! json_encode(array_keys($recipients)) !!};
 
