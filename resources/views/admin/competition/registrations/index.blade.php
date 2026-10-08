@@ -12,24 +12,27 @@
 @section('content')
 <div class="space-y-6">
 
+    <!-- Event Selector & History Bar -->
+    @include('admin.competition.partials.event-selector')
+
     <!-- Metric Counts Cards -->
     <div class="grid grid-cols-1 sm:grid-cols-4 gap-4">
-        <a href="{{ route('admin.competition-registrations.index') }}" class="p-5 rounded-2xl border transition {{ !$status ? 'bg-slate-900 text-white border-slate-900 shadow-md' : 'bg-white text-slate-800 border-slate-200 hover:border-slate-300' }}">
+        <a href="{{ route('admin.competition-registrations.index', request()->except('status')) }}" class="p-5 rounded-2xl border transition {{ !$status ? 'bg-slate-900 text-white border-slate-900 shadow-md' : 'bg-white text-slate-800 border-slate-200 hover:border-slate-300' }}">
             <div class="text-xs font-semibold {{ !$status ? 'text-slate-400' : 'text-slate-500' }}">Total Pendaftar</div>
             <div class="text-2xl font-black mt-1">{{ $counts['all'] }}</div>
         </a>
 
-        <a href="{{ route('admin.competition-registrations.index', ['status' => 'pending']) }}" class="p-5 rounded-2xl border transition {{ $status == 'pending' ? 'bg-amber-500 text-white border-amber-500 shadow-md' : 'bg-white text-slate-800 border-slate-200 hover:border-slate-300' }}">
+        <a href="{{ route('admin.competition-registrations.index', array_merge(request()->query(), ['status' => 'pending'])) }}" class="p-5 rounded-2xl border transition {{ $status == 'pending' ? 'bg-amber-500 text-white border-amber-500 shadow-md' : 'bg-white text-slate-800 border-slate-200 hover:border-slate-300' }}">
             <div class="text-xs font-semibold {{ $status == 'pending' ? 'text-amber-100' : 'text-slate-500' }}">Perlu Verifikasi</div>
             <div class="text-2xl font-black mt-1">{{ $counts['pending'] }}</div>
         </a>
 
-        <a href="{{ route('admin.competition-registrations.index', ['status' => 'verified']) }}" class="p-5 rounded-2xl border transition {{ $status == 'verified' ? 'bg-emerald-600 text-white border-emerald-600 shadow-md' : 'bg-white text-slate-800 border-slate-200 hover:border-slate-300' }}">
+        <a href="{{ route('admin.competition-registrations.index', array_merge(request()->query(), ['status' => 'verified'])) }}" class="p-5 rounded-2xl border transition {{ $status == 'verified' ? 'bg-emerald-600 text-white border-emerald-600 shadow-md' : 'bg-white text-slate-800 border-slate-200 hover:border-slate-300' }}">
             <div class="text-xs font-semibold {{ $status == 'verified' ? 'text-emerald-100' : 'text-slate-500' }}">Terverifikasi (Lunas)</div>
             <div class="text-2xl font-black mt-1">{{ $counts['verified'] }}</div>
         </a>
 
-        <a href="{{ route('admin.competition-registrations.index', ['status' => 'rejected']) }}" class="p-5 rounded-2xl border transition {{ $status == 'rejected' ? 'bg-rose-600 text-white border-rose-600 shadow-md' : 'bg-white text-slate-800 border-slate-200 hover:border-slate-300' }}">
+        <a href="{{ route('admin.competition-registrations.index', array_merge(request()->query(), ['status' => 'rejected'])) }}" class="p-5 rounded-2xl border transition {{ $status == 'rejected' ? 'bg-rose-600 text-white border-rose-600 shadow-md' : 'bg-white text-slate-800 border-slate-200 hover:border-slate-300' }}">
             <div class="text-xs font-semibold {{ $status == 'rejected' ? 'text-rose-100' : 'text-slate-500' }}">Ditolak</div>
             <div class="text-2xl font-black mt-1">{{ $counts['rejected'] }}</div>
         </a>
@@ -48,6 +51,7 @@
             </div>
 
             <form action="{{ route('admin.competition-registrations.index') }}" method="GET" class="w-full md:w-auto flex gap-2">
+                @if(request('event_id')) <input type="hidden" name="event_id" value="{{ request('event_id') }}"> @endif
                 @if($status) <input type="hidden" name="status" value="{{ $status }}"> @endif
                 @if($level) <input type="hidden" name="level" value="{{ $level }}"> @endif
                 <div class="relative w-full md:w-64">

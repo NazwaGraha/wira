@@ -17,7 +17,20 @@ class CompetitionRegistrationController extends Controller
         $level = $request->query('level');
         $search = $request->query('q');
 
+        // Resolve Event
+        $allEvents = CompetitionEvent::orderByDesc('id')->get();
+        $selectedEventId = $request->query('event_id');
+        if ($selectedEventId) {
+            $event = CompetitionEvent::find($selectedEventId) ?: CompetitionEvent::where('is_active', true)->first();
+        } else {
+            $event = CompetitionEvent::where('is_active', true)->first() ?: $allEvents->first();
+        }
+
         $query = CompetitionRegistration::with(['event', 'teams.category'])->latest();
+
+        if ($event) {
+            $query->where('competition_event_id', $event->id);
+        }
 
         if ($status) {
             $query->where('status', $status);
@@ -38,14 +51,19 @@ class CompetitionRegistrationController extends Controller
 
         $registrations = $query->paginate(15)->withQueryString();
 
+        $countsQuery = CompetitionRegistration::query();
+        if ($event) {
+            $countsQuery->where('competition_event_id', $event->id);
+        }
+
         $counts = [
-            'all' => CompetitionRegistration::count(),
-            'pending' => CompetitionRegistration::where('status', 'pending')->count(),
-            'verified' => CompetitionRegistration::where('status', 'verified')->count(),
-            'rejected' => CompetitionRegistration::where('status', 'rejected')->count(),
+            'all' => (clone $countsQuery)->count(),
+            'pending' => (clone $countsQuery)->where('status', 'pending')->count(),
+            'verified' => (clone $countsQuery)->where('status', 'verified')->count(),
+            'rejected' => (clone $countsQuery)->where('status', 'rejected')->count(),
         ];
 
-        return view('admin.competition.registrations.index', compact('registrations', 'counts', 'status', 'level', 'search'));
+        return view('admin.competition.registrations.index', compact('registrations', 'counts', 'status', 'level', 'search', 'event', 'allEvents'));
     }
 
     public function show($id)

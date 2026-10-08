@@ -12,6 +12,9 @@
 @section('content')
 <div class="space-y-6">
 
+    <!-- Event Selector & History Bar -->
+    @include('admin.competition.partials.event-selector')
+
     @if(session('success'))
         <div class="bg-emerald-50 border border-emerald-200 text-emerald-800 px-5 py-4 rounded-xl flex items-center gap-3 shadow-xs">
             <i class="fa-solid fa-circle-check text-emerald-500 text-xl"></i>
@@ -48,16 +51,16 @@
 
     <!-- Level Filter Tabs -->
     <div class="flex flex-wrap gap-2">
-        <a href="{{ route('admin.competition-fees.index') }}" class="px-5 py-2.5 rounded-xl font-extrabold text-xs transition {{ !$level ? 'bg-slate-900 text-white shadow-md' : 'bg-white text-slate-700 hover:bg-slate-100 border border-slate-200' }}">
+        <a href="{{ route('admin.competition-fees.index', request()->except('level')) }}" class="px-5 py-2.5 rounded-xl font-extrabold text-xs transition {{ !$level ? 'bg-slate-900 text-white shadow-md' : 'bg-white text-slate-700 hover:bg-slate-100 border border-slate-200' }}">
             Semua Tingkatan
         </a>
-        <a href="{{ route('admin.competition-fees.index', ['level' => 'Mula']) }}" class="px-5 py-2.5 rounded-xl font-extrabold text-xs transition {{ $level == 'Mula' ? 'bg-emerald-600 text-white shadow-md' : 'bg-white text-slate-700 hover:bg-slate-100 border border-slate-200' }}">
+        <a href="{{ route('admin.competition-fees.index', array_merge(request()->query(), ['level' => 'Mula'])) }}" class="px-5 py-2.5 rounded-xl font-extrabold text-xs transition {{ $level == 'Mula' ? 'bg-emerald-600 text-white shadow-md' : 'bg-white text-slate-700 hover:bg-slate-100 border border-slate-200' }}">
             <i class="fa-solid fa-child-reaching mr-1"></i> PMR MULA (SD)
         </a>
-        <a href="{{ route('admin.competition-fees.index', ['level' => 'Madya']) }}" class="px-5 py-2.5 rounded-xl font-extrabold text-xs transition {{ $level == 'Madya' ? 'bg-blue-600 text-white shadow-md' : 'bg-white text-slate-700 hover:bg-slate-100 border border-slate-200' }}">
+        <a href="{{ route('admin.competition-fees.index', array_merge(request()->query(), ['level' => 'Madya'])) }}" class="px-5 py-2.5 rounded-xl font-extrabold text-xs transition {{ $level == 'Madya' ? 'bg-blue-600 text-white shadow-md' : 'bg-white text-slate-700 hover:bg-slate-100 border border-slate-200' }}">
             <i class="fa-solid fa-user-group mr-1"></i> PMR MADYA (SMP)
         </a>
-        <a href="{{ route('admin.competition-fees.index', ['level' => 'Wira']) }}" class="px-5 py-2.5 rounded-xl font-extrabold text-xs transition {{ $level == 'Wira' ? 'bg-amber-600 text-white shadow-md' : 'bg-white text-slate-700 hover:bg-slate-100 border border-slate-200' }}">
+        <a href="{{ route('admin.competition-fees.index', array_merge(request()->query(), ['level' => 'Wira'])) }}" class="px-5 py-2.5 rounded-xl font-extrabold text-xs transition {{ $level == 'Wira' ? 'bg-amber-600 text-white shadow-md' : 'bg-white text-slate-700 hover:bg-slate-100 border border-slate-200' }}">
             <i class="fa-solid fa-graduation-cap mr-1"></i> PMR WIRA (SMA)
         </a>
     </div>
@@ -65,6 +68,9 @@
     <!-- Main Setup Form -->
     <form action="{{ route('admin.competition-fees.update') }}" method="POST" id="fee-setup-form">
         @csrf
+        @if(isset($event))
+            <input type="hidden" name="event_id" value="{{ $event->id }}">
+        @endif
 
         @php
             $displayLevels = $level ? [$level] : ['Mula', 'Madya', 'Wira'];

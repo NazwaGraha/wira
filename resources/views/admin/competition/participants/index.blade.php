@@ -17,6 +17,9 @@
 @section('content')
 <div class="space-y-6">
 
+    <!-- Event Selector & History Bar -->
+    @include('admin.competition.partials.event-selector')
+
     @if(session('success'))
         <div class="bg-emerald-50 border border-emerald-200 text-emerald-800 px-5 py-4 rounded-xl flex items-center gap-3 shadow-xs">
             <i class="fa-solid fa-circle-check text-emerald-500 text-xl"></i>
@@ -104,6 +107,7 @@
 
             <!-- Search Form -->
             <form action="{{ route('admin.competition-participants.index') }}" method="GET" class="w-full lg:w-auto flex items-center gap-2">
+                @if(request('event_id')) <input type="hidden" name="event_id" value="{{ request('event_id') }}"> @endif
                 @if($level) <input type="hidden" name="level" value="{{ $level }}"> @endif
                 @if($gender) <input type="hidden" name="gender" value="{{ $gender }}"> @endif
                 @if($categoryId) <input type="hidden" name="category_id" value="{{ $categoryId }}"> @endif
@@ -114,7 +118,7 @@
                 </div>
                 <button type="submit" class="bg-slate-800 hover:bg-slate-900 text-white px-4 py-2 rounded-xl text-xs font-bold transition">Cari</button>
                 @if($search || $categoryId || $gender || $level)
-                    <a href="{{ route('admin.competition-participants.index') }}" class="text-xs text-slate-500 hover:text-red-600 px-2 font-semibold">Reset</a>
+                    <a href="{{ route('admin.competition-participants.index', request('event_id') ? ['event_id' => request('event_id')] : []) }}" class="text-xs text-slate-500 hover:text-red-600 px-2 font-semibold">Reset</a>
                 @endif
             </form>
         </div>

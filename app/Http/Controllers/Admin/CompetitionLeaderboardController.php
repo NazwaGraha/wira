@@ -12,9 +12,13 @@ class CompetitionLeaderboardController extends Controller
 {
     public function index(Request $request)
     {
-        $event = CompetitionEvent::where('is_active', true)->first();
-        if (!$event) {
-            $event = CompetitionEvent::first();
+        // Resolve Event
+        $allEvents = CompetitionEvent::orderByDesc('id')->get();
+        $selectedEventId = $request->query('event_id');
+        if ($selectedEventId) {
+            $event = CompetitionEvent::find($selectedEventId) ?: CompetitionEvent::where('is_active', true)->first();
+        } else {
+            $event = CompetitionEvent::where('is_active', true)->first() ?: $allEvents->first();
         }
 
         $level = $request->query('level', 'Madya');
@@ -84,6 +88,6 @@ class CompetitionLeaderboardController extends Controller
             return $item;
         });
 
-        return view('admin.competition.leaderboard.index', compact('event', 'level', 'categories', 'standings'));
+        return view('admin.competition.leaderboard.index', compact('event', 'allEvents', 'level', 'categories', 'standings'));
     }
 }

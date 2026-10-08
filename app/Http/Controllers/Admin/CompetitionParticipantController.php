@@ -14,7 +14,15 @@ class CompetitionParticipantController extends Controller
 {
     public function index(Request $request)
     {
-        $event = CompetitionEvent::where('is_active', true)->first() ?: CompetitionEvent::first();
+        // Resolve Event
+        $allEvents = CompetitionEvent::orderByDesc('id')->get();
+        $selectedEventId = $request->query('event_id');
+        if ($selectedEventId) {
+            $event = CompetitionEvent::find($selectedEventId) ?: CompetitionEvent::where('is_active', true)->first();
+        } else {
+            $event = CompetitionEvent::where('is_active', true)->first() ?: $allEvents->first();
+        }
+
         $level = $request->query('level');
         $categoryId = $request->query('category_id');
         $gender = $request->query('gender');
@@ -35,10 +43,21 @@ class CompetitionParticipantController extends Controller
 
         // Main participant teams query (verified only)
         $teamsQuery = CompetitionParticipantTeam::where('is_active', true)
-            ->where(function($q) {
-                $q->whereHas('registration', function($rq) {
+            ->where(function($q) use ($event) {
+                $q->whereHas('registration', function($rq) use ($event) {
                     $rq->where('status', 'verified');
-                })->orWhereNull('competition_registration_id');
+                    if ($event) {
+                        $rq->where('competition_event_id', $event->id);
+                    }
+                });
+                if ($event) {
+                    $q->orWhere(function($sq) use ($event) {
+                        $sq->whereNull('competition_registration_id')
+                           ->whereHas('category', fn($cq) => $cq->where('competition_event_id', $event->id));
+                    });
+                } else {
+                    $q->orWhereNull('competition_registration_id');
+                }
             })
             ->with(['registration', 'category']);
 
@@ -85,13 +104,29 @@ class CompetitionParticipantController extends Controller
 
         // Summary counts
         $allVerifiedTeams = CompetitionParticipantTeam::where('is_active', true)
-            ->where(function($q) {
-                $q->whereHas('registration', function($rq) {
+            ->where(function($q) use ($event) {
+                $q->whereHas('registration', function($rq) use ($event) {
                     $rq->where('status', 'verified');
-                })->orWhereNull('competition_registration_id');
+                    if ($event) {
+                        $rq->where('competition_event_id', $event->id);
+                    }
+                });
+                if ($event) {
+                    $q->orWhere(function($sq) use ($event) {
+                        $sq->whereNull('competition_registration_id')
+                           ->whereHas('category', fn($cq) => $cq->where('competition_event_id', $event->id));
+                    });
+                } else {
+                    $q->orWhereNull('competition_registration_id');
+                }
             })
             ->with('category')
             ->get();
+
+        $schoolsCountQuery = CompetitionRegistration::where('status', 'verified');
+        if ($event) {
+            $schoolsCountQuery->where('competition_event_id', $event->id);
+        }
 
         $stats = [
             'total_teams' => $allVerifiedTeams->count(),
@@ -101,7 +136,7 @@ class CompetitionParticipantController extends Controller
             'mula_teams'  => $allVerifiedTeams->filter(fn($t) => $t->category?->level === 'Mula')->count(),
             'madya_teams' => $allVerifiedTeams->filter(fn($t) => $t->category?->level === 'Madya')->count(),
             'wira_teams'  => $allVerifiedTeams->filter(fn($t) => $t->category?->level === 'Wira')->count(),
-            'total_schools' => CompetitionRegistration::where('status', 'verified')->count(),
+            'total_schools' => $schoolsCountQuery->count(),
         ];
 
         // Group teams by Category for clean accordion/table display
@@ -109,6 +144,7 @@ class CompetitionParticipantController extends Controller
 
         return view('admin.competition.participants.index', compact(
             'event',
+            'allEvents',
             'level',
             'categoryId',
             'gender',
@@ -210,7 +246,13 @@ class CompetitionParticipantController extends Controller
 
     public function printSheet(Request $request)
     {
-        $event = CompetitionEvent::where('is_active', true)->first() ?: CompetitionEvent::first();
+        $selectedEventId = $request->query('event_id');
+        if ($selectedEventId) {
+            $event = CompetitionEvent::find($selectedEventId) ?: CompetitionEvent::where('is_active', true)->first();
+        } else {
+            $event = CompetitionEvent::where('is_active', true)->first() ?: CompetitionEvent::first();
+        }
+
         $level = $request->query('level');
         $categoryId = $request->query('category_id');
         $gender = $request->query('gender');
@@ -218,10 +260,21 @@ class CompetitionParticipantController extends Controller
         $selectedCategory = $categoryId ? CompetitionCategory::find($categoryId) : null;
 
         $query = CompetitionParticipantTeam::where('is_active', true)
-            ->where(function($q) {
-                $q->whereHas('registration', function($rq) {
+            ->where(function($q) use ($event) {
+                $q->whereHas('registration', function($rq) use ($event) {
                     $rq->where('status', 'verified');
-                })->orWhereNull('competition_registration_id');
+                    if ($event) {
+                        $rq->where('competition_event_id', $event->id);
+                    }
+                });
+                if ($event) {
+                    $q->orWhere(function($sq) use ($event) {
+                        $sq->whereNull('competition_registration_id')
+                           ->whereHas('category', fn($cq) => $cq->where('competition_event_id', $event->id));
+                    });
+                } else {
+                    $q->orWhereNull('competition_registration_id');
+                }
             })
             ->with(['registration', 'category']);
 

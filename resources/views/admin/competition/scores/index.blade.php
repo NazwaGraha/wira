@@ -35,15 +35,18 @@
 @section('content')
 <div class="space-y-6">
 
+    <!-- Event Selector & History Bar -->
+    @include('admin.competition.partials.event-selector')
+
     <!-- Level Tabs -->
     <div class="flex flex-wrap gap-2">
-        <a href="{{ route('admin.competition-scores.index', ['level' => 'Mula']) }}" class="px-6 py-3 rounded-xl font-extrabold text-sm transition {{ $level == 'Mula' ? 'bg-blue-600 text-white shadow-md' : 'bg-white text-slate-700 hover:bg-slate-100 border border-slate-200' }}">
+        <a href="{{ route('admin.competition-scores.index', array_merge(request()->query(), ['level' => 'Mula'])) }}" class="px-6 py-3 rounded-xl font-extrabold text-sm transition {{ $level == 'Mula' ? 'bg-blue-600 text-white shadow-md' : 'bg-white text-slate-700 hover:bg-slate-100 border border-slate-200' }}">
             <i class="fa-solid fa-child-reaching mr-1.5"></i> PMR MULA (SD)
         </a>
-        <a href="{{ route('admin.competition-scores.index', ['level' => 'Madya']) }}" class="px-6 py-3 rounded-xl font-extrabold text-sm transition {{ $level == 'Madya' ? 'bg-red-600 text-white shadow-md' : 'bg-white text-slate-700 hover:bg-slate-100 border border-slate-200' }}">
+        <a href="{{ route('admin.competition-scores.index', array_merge(request()->query(), ['level' => 'Madya'])) }}" class="px-6 py-3 rounded-xl font-extrabold text-sm transition {{ $level == 'Madya' ? 'bg-red-600 text-white shadow-md' : 'bg-white text-slate-700 hover:bg-slate-100 border border-slate-200' }}">
             <i class="fa-solid fa-user-group mr-1.5"></i> PMR MADYA (SMP)
         </a>
-        <a href="{{ route('admin.competition-scores.index', ['level' => 'Wira']) }}" class="px-6 py-3 rounded-xl font-extrabold text-sm transition {{ $level == 'Wira' ? 'bg-amber-600 text-white shadow-md' : 'bg-white text-slate-700 hover:bg-slate-100 border border-slate-200' }}">
+        <a href="{{ route('admin.competition-scores.index', array_merge(request()->query(), ['level' => 'Wira'])) }}" class="px-6 py-3 rounded-xl font-extrabold text-sm transition {{ $level == 'Wira' ? 'bg-amber-600 text-white shadow-md' : 'bg-white text-slate-700 hover:bg-slate-100 border border-slate-200' }}">
             <i class="fa-solid fa-graduation-cap mr-1.5"></i> PMR WIRA (SMA)
         </a>
     </div>

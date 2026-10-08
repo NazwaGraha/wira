@@ -40,9 +40,16 @@ class CompetitionFeeController extends Controller
                 ]);
             }
 
+            $allEvents = collect();
             $event = null;
             if (Schema::hasTable('competition_events')) {
-                $event = CompetitionEvent::where('is_active', true)->first() ?: CompetitionEvent::first();
+                $allEvents = CompetitionEvent::orderByDesc('id')->get();
+                $selectedEventId = $request->query('event_id');
+                if ($selectedEventId) {
+                    $event = CompetitionEvent::find($selectedEventId) ?: CompetitionEvent::where('is_active', true)->first();
+                } else {
+                    $event = CompetitionEvent::where('is_active', true)->first() ?: $allEvents->first();
+                }
             }
 
             $level = $request->query('level');
@@ -66,7 +73,7 @@ class CompetitionFeeController extends Controller
 
             $categoriesByLevel = $categories->groupBy('level');
 
-            return view('admin.competition.fees.index', compact('event', 'categories', 'categoriesByLevel', 'level'));
+            return view('admin.competition.fees.index', compact('event', 'allEvents', 'categories', 'categoriesByLevel', 'level'));
         } catch (\Throwable $e) {
             Log::error('CompetitionFeeController index error: ' . $e->getMessage() . ' | ' . $e->getTraceAsString());
             
@@ -88,9 +95,11 @@ class CompetitionFeeController extends Controller
             'fees' => 'required|array',
             'fees.*' => 'required|numeric|min:0',
             'event_registration_fee' => 'nullable|numeric|min:0',
+            'event_id' => 'nullable|exists:competition_events,id',
         ]);
 
-        $event = CompetitionEvent::where('is_active', true)->first();
+        $eventId = $request->input('event_id');
+        $event = $eventId ? CompetitionEvent::find($eventId) : CompetitionEvent::where('is_active', true)->first();
         if ($event && isset($validated['event_registration_fee'])) {
             $event->update([
                 'registration_fee' => $validated['event_registration_fee'],

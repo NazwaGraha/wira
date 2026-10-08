@@ -14,26 +14,33 @@ class CompetitionScoreController extends Controller
 {
     public function index(Request $request)
     {
-        $event = CompetitionEvent::where('is_active', true)->first();
-        if (!$event) {
-            $event = CompetitionEvent::first();
+        // Resolve Event
+        $allEvents = CompetitionEvent::orderByDesc('id')->get();
+        $selectedEventId = $request->query('event_id');
+        if ($selectedEventId) {
+            $event = CompetitionEvent::find($selectedEventId) ?: CompetitionEvent::where('is_active', true)->first();
+        } else {
+            $event = CompetitionEvent::where('is_active', true)->first() ?: $allEvents->first();
         }
 
         $level = $request->query('level', 'Madya');
 
         $categories = CompetitionCategory::where('competition_event_id', $event?->id)
             ->where('level', $level)
-            ->withCount(['teams' => function($q) {
-                $q->where('is_active', true)->where(function($sq) {
-                    $sq->whereHas('registration', function($rq) {
+            ->withCount(['teams' => function($q) use ($event) {
+                $q->where('is_active', true)->where(function($sq) use ($event) {
+                    $sq->whereHas('registration', function($rq) use ($event) {
                         $rq->where('status', 'verified');
+                        if ($event) {
+                            $rq->where('competition_event_id', $event->id);
+                        }
                     })->orWhereNull('competition_registration_id');
                 });
             }])
             ->orderBy('order_position')
             ->get();
 
-        return view('admin.competition.scores.index', compact('event', 'level', 'categories'));
+        return view('admin.competition.scores.index', compact('event', 'allEvents', 'level', 'categories'));
     }
 
     public function input(CompetitionCategory $category, Request $request)
