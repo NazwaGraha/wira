@@ -139,6 +139,15 @@ class CompetitionScoreController extends Controller
                     }
                 }
             }
+
+            // If semifinal scores exist, recalculate ranks immediately so each termin is guaranteed ranks 1, 2, 3
+            if ($scores->isNotEmpty()) {
+                $this->autoRecalculateRanks($category->id, $round);
+                $scores = CompetitionScore::where('competition_category_id', $category->id)
+                    ->where('round_name', $round)
+                    ->get()
+                    ->keyBy('competition_participant_team_id');
+            }
         } elseif ($isFinal) {
             // Babak 3 - Final: Automatically qualify the rank 1 winners of each Semifinal Termin!
             $semiScores = CompetitionScore::where('competition_category_id', $category->id)

@@ -528,14 +528,14 @@
                                                 <td class="px-4 py-3 text-center font-bold rank-cell border-l border-slate-100 bg-slate-50/50">
                                                     @if($score?->rank == 1)
                                                         <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-gradient-to-r from-amber-500 to-yellow-500 text-white font-black text-xs shadow-md">
-                                                            <i class="fa-solid fa-trophy text-amber-100"></i> Juara Termin {{ $tNum }} (Lolos Final)
+                                                            <i class="fa-solid fa-trophy text-amber-100"></i> Peringkat 1 (Lolos Final)
                                                         </span>
                                                     @elseif($score?->rank == 2)
-                                                        <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-slate-200 text-slate-800 font-bold text-xs">
+                                                        <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-slate-200 text-slate-800 font-bold text-xs border border-slate-300">
                                                             <i class="fa-solid fa-medal text-slate-500"></i> Peringkat 2
                                                         </span>
                                                     @elseif($score?->rank == 3)
-                                                        <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-amber-100 text-amber-900 font-bold text-xs">
+                                                        <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-amber-100 text-amber-900 font-bold text-xs border border-amber-300">
                                                             <i class="fa-solid fa-medal text-amber-700"></i> Peringkat 3
                                                         </span>
                                                     @else
@@ -1132,13 +1132,13 @@ window.recalcTerminRanks = function(terminNum) {
         }
 
         if (rank === 1) {
-            cell.innerHTML = `<span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-gradient-to-r from-amber-500 to-yellow-500 text-white font-black text-xs shadow-md"><i class="fa-solid fa-trophy text-amber-100"></i> Juara Termin ${terminNum} (Lolos Final)</span>`;
+            cell.innerHTML = `<span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-gradient-to-r from-amber-500 to-yellow-500 text-white font-black text-xs shadow-md"><i class="fa-solid fa-trophy text-amber-100"></i> Peringkat 1 (Lolos Final)</span>`;
             item.row.classList.add('bg-amber-50/60');
         } else if (rank === 2) {
-            cell.innerHTML = `<span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-slate-200 text-slate-800 font-bold text-xs"><i class="fa-solid fa-medal text-slate-500"></i> Peringkat 2</span>`;
+            cell.innerHTML = `<span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-slate-200 text-slate-800 font-bold text-xs border border-slate-300"><i class="fa-solid fa-medal text-slate-500"></i> Peringkat 2</span>`;
             item.row.classList.remove('bg-amber-50/60');
         } else if (rank === 3) {
-            cell.innerHTML = `<span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-amber-100 text-amber-900 font-bold text-xs"><i class="fa-solid fa-medal text-amber-700"></i> Peringkat 3</span>`;
+            cell.innerHTML = `<span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-amber-100 text-amber-900 font-bold text-xs border border-amber-300"><i class="fa-solid fa-medal text-amber-700"></i> Peringkat 3</span>`;
             item.row.classList.remove('bg-amber-50/60');
         } else {
             cell.innerHTML = `<span class="font-bold text-slate-600 text-xs">Peringkat ${rank}</span>`;
