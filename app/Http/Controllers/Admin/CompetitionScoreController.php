@@ -80,6 +80,7 @@ class CompetitionScoreController extends Controller
             ->keyBy('competition_participant_team_id');
 
         $isSemiFinal = str_contains(strtolower($round), 'semi final') || str_contains(strtolower($round), 'semifinal');
+        $isFinal = (str_contains(strtolower($round), 'final') && !$isSemiFinal) || str_contains(strtolower($round), 'babak 3');
 
         // Fetch Prelim scores & qualified teams if in Semifinal
         $prelimScores = collect();
@@ -88,6 +89,8 @@ class CompetitionScoreController extends Controller
         $termin2Teams = collect();
         $termin3Teams = collect();
         $unassignedTeams = collect();
+        $finalistTeams = collect();
+        $hasSemiFinalResults = false;
 
         if ($isSemiFinal) {
             $prelimScores = CompetitionScore::where('competition_category_id', $category->id)
@@ -136,6 +139,64 @@ class CompetitionScoreController extends Controller
                     }
                 }
             }
+        } elseif ($isFinal) {
+            // Babak 3 - Final: Automatically qualify the rank 1 winners of each Semifinal Termin!
+            $semiScores = CompetitionScore::where('competition_category_id', $category->id)
+                ->where(function ($q) {
+                    $q->where('round_name', 'like', '%Semi Final%')
+                      ->orWhere('round_name', 'like', '%Semifinal%')
+                      ->orWhere('round_name', 'like', '%Babak 2%');
+                })
+                ->where('is_disqualified', false)
+                ->get();
+
+            $byTermin = $semiScores->groupBy(function ($s) {
+                return $s->score_details['termin'] ?? null;
+            });
+
+            foreach ([1, 2, 3] as $tNum) {
+                $tGroup = $byTermin->get($tNum, collect());
+                if ($tGroup->isNotEmpty()) {
+                    // Pick the team with rank 1 or highest final_score
+                    $winnerScore = $tGroup->where('rank', 1)->first()
+                        ?? $tGroup->sortByDesc('final_score')->first();
+
+                    if ($winnerScore && ($winnerScore->final_score > 0 || !empty($winnerScore->score_details['score']) || $winnerScore->rank == 1)) {
+                        $tModel = $teams->firstWhere('id', $winnerScore->competition_participant_team_id);
+                        if ($tModel) {
+                            $finalist = clone $tModel;
+                            $finalist->final_desk = chr(64 + $tNum); // 1 -> A, 2 -> B, 3 -> C
+                            $finalist->semi_termin = $tNum;
+                            $finalist->semi_score = $winnerScore->final_score;
+                            $finalist->semi_rank = $winnerScore->rank ?? 1;
+                            $finalistTeams->push($finalist);
+                        }
+                    }
+                }
+            }
+
+            // Also include any teams that already have scores recorded in this Final round
+            if ($scores->isNotEmpty()) {
+                foreach ($scores as $fTeamId => $fScore) {
+                    if (!$finalistTeams->contains('id', $fTeamId)) {
+                        $exTeam = $teams->firstWhere('id', $fTeamId);
+                        if ($exTeam) {
+                            $finalist = clone $exTeam;
+                            $finalist->final_desk = chr(65 + $finalistTeams->count());
+                            $finalist->semi_termin = null;
+                            $finalist->semi_score = null;
+                            $finalistTeams->push($finalist);
+                        }
+                    }
+                }
+            }
+
+            if ($finalistTeams->isNotEmpty()) {
+                $hasSemiFinalResults = true;
+                $teams = $finalistTeams;
+            } elseif (request('mode') !== 'all_teams') {
+                $teams = collect();
+            }
         }
 
         $nextOrderNumber = $teams->count() + 1;
@@ -148,6 +209,9 @@ class CompetitionScoreController extends Controller
             'availableRegistrations',
             'nextOrderNumber',
             'isSemiFinal',
+            'isFinal',
+            'hasSemiFinalResults',
+            'finalistTeams',
             'prelimScores',
             'qualifiedTeams',
             'termin1Teams',

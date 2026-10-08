@@ -257,6 +257,100 @@
         </form>
     @endif
 
+    @if($isFinal)
+        <!-- Grand Final Management Banner -->
+        <div class="bg-gradient-to-r from-amber-950 via-slate-900 to-amber-950 text-white p-5 rounded-2xl shadow-md border border-amber-700/50 flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4">
+            <div class="space-y-1.5">
+                <div class="flex items-center gap-2 flex-wrap">
+                    <span class="px-2.5 py-0.5 rounded-md text-[10px] font-black uppercase tracking-wider bg-amber-500 text-slate-950 shadow-xs">
+                        <i class="fa-solid fa-trophy mr-1"></i> Babak 3 - Grand Final
+                    </span>
+                    <span class="text-xs font-bold text-amber-200">Babak Penentuan Juara Umum</span>
+                    <span class="text-[11px] font-semibold text-emerald-400 bg-emerald-950/60 border border-emerald-500/30 px-2 py-0.5 rounded-md">
+                        3 Regu Juara Termin Semifinal
+                    </span>
+                </div>
+                <h3 class="text-lg font-black text-white">Pertandingan Final: Perebutan Juara 1, 2, dan 3</h3>
+                <p class="text-xs text-slate-300 max-w-2xl leading-relaxed">
+                    Tiga (3) regu terbaik yang menjuarai masing-masing termin di Babak 2 - Semi Final otomatis melaju ke babak ini untuk memperebutkan <strong>Juara 1 (Emas)</strong>, <strong>Juara 2 (Perak)</strong>, dan <strong>Juara 3 (Perunggu)</strong>.
+                </p>
+            </div>
+            <div class="flex items-center gap-2 shrink-0">
+                <a href="{{ route('admin.competition-scores.input', ['category' => $category->id, 'round' => 'Babak 2 - Semi Final']) }}" class="bg-white/10 hover:bg-white/20 text-white font-bold text-xs px-4 py-2.5 rounded-xl border border-white/20 transition flex items-center gap-2">
+                    <i class="fa-solid fa-arrow-left"></i> Lihat Hasil Semifinal
+                </a>
+            </div>
+        </div>
+
+        @if($hasSemiFinalResults && $finalistTeams->isNotEmpty())
+            <!-- 3 Grand Finalist Cards Grid -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                @foreach($finalistTeams as $idx => $fTeam)
+                    @php
+                        $desk = $fTeam->final_desk ?? chr(65 + $idx);
+                        $tColors = [
+                            'A' => ['border' => 'border-emerald-500/50', 'bg' => 'from-emerald-900/40 to-slate-900', 'badge' => 'bg-emerald-500 text-white'],
+                            'B' => ['border' => 'border-blue-500/50', 'bg' => 'from-blue-900/40 to-slate-900', 'badge' => 'bg-blue-500 text-white'],
+                            'C' => ['border' => 'border-purple-500/50', 'bg' => 'from-purple-900/40 to-slate-900', 'badge' => 'bg-purple-500 text-white'],
+                        ];
+                        $col = $tColors[$desk] ?? $tColors['A'];
+                    @endphp
+                    <div class="bg-gradient-to-br {{ $col['bg'] }} bg-slate-900 border {{ $col['border'] }} rounded-2xl p-4 text-white shadow-sm flex items-start justify-between gap-3">
+                        <div class="space-y-1">
+                            <div class="flex items-center gap-2">
+                                <span class="px-2 py-0.5 rounded text-[10px] font-black {{ $col['badge'] }}">
+                                    MEJA {{ $desk }}
+                                </span>
+                                @if($fTeam->semi_termin)
+                                    <span class="text-[10px] font-bold text-slate-300">
+                                        Juara Termin {{ $fTeam->semi_termin }}
+                                    </span>
+                                @endif
+                            </div>
+                            <div class="font-extrabold text-sm text-white uppercase">{{ $fTeam->team_name }}</div>
+                            <div class="text-xs text-slate-300">{{ $fTeam->registration?->school_name }}</div>
+                            @if($fTeam->semi_score)
+                                <div class="text-[11px] text-amber-300 font-mono font-bold mt-1">
+                                    Skor Semifinal: {{ $fTeam->semi_score }}
+                                </div>
+                            @endif
+                        </div>
+                        <div class="w-10 h-10 rounded-xl bg-white/10 flex items-center justify-center shrink-0 text-amber-400 text-lg shadow-inner">
+                            <i class="fa-solid fa-trophy"></i>
+                        </div>
+                    </div>
+                @endforeach
+            </div>
+        @else
+            <!-- Semifinal Warning Alert -->
+            <div class="bg-amber-50 border border-amber-300 rounded-2xl p-5 flex items-start gap-4">
+                <div class="w-10 h-10 rounded-xl bg-amber-200 text-amber-800 flex items-center justify-center shrink-0 text-lg">
+                    <i class="fa-solid fa-triangle-exclamation"></i>
+                </div>
+                <div class="space-y-1 flex-grow">
+                    <h4 class="font-black text-sm text-amber-900">Menunggu Hasil Babak 2 - Semi Final</h4>
+                    <p class="text-xs text-amber-800 leading-relaxed">
+                        Belum ada regu yang lolos ke Final karena nilai Babak 2 - Semi Final belum diinput atau belum disimpan. Silakan lakukan penilaian di Babak Semifinal terlebih dahulu untuk 3 termin (Termin 1, 2, 3), lalu klik <strong>Simpan Nilai Semifinal</strong>. Sistem akan otomatis meloloskan ketiga Juara Termin ke babak Final ini.
+                    </p>
+                    <div class="pt-2 flex flex-wrap items-center gap-2">
+                        <a href="{{ route('admin.competition-scores.input', ['category' => $category->id, 'round' => 'Babak 2 - Semi Final']) }}" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-amber-600 hover:bg-amber-700 text-white font-bold text-xs shadow transition">
+                            <i class="fa-solid fa-pen-to-square"></i> Input Nilai Babak 2 - Semi Final Sekarang &rarr;
+                        </a>
+                        @if(request('mode') !== 'all_teams')
+                            <a href="{{ route('admin.competition-scores.input', ['category' => $category->id, 'round' => $round, 'mode' => 'all_teams']) }}" class="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg bg-white border border-amber-300 text-amber-900 hover:bg-amber-100 font-bold text-xs transition">
+                                <i class="fa-solid fa-users"></i> Tampilkan Semua Regu (Input Manual)
+                            </a>
+                        @else
+                            <a href="{{ route('admin.competition-scores.input', ['category' => $category->id, 'round' => $round]) }}" class="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg bg-white border border-amber-300 text-amber-900 hover:bg-amber-100 font-bold text-xs transition">
+                                <i class="fa-solid fa-rotate-left"></i> Kembali ke Mode Finalis Otomatis
+                            </a>
+                        @endif
+                    </div>
+                </div>
+            </div>
+        @endif
+    @endif
+
     <!-- Main Scoring Input Table Form -->
     <form action="{{ route('admin.competition-scores.save', $category->id) }}" method="POST" id="scoring-form">
         @csrf
@@ -516,7 +610,7 @@
                 <table class="w-full text-left text-xs text-slate-700">
                     <thead class="bg-slate-100 text-slate-800 uppercase font-black border-b border-slate-200">
                         <tr>
-                            <th class="px-4 py-3 w-16 text-center">No. Urut</th>
+                            <th class="px-4 py-3 {{ $isFinal ? 'w-24' : 'w-16' }} text-center">{{ $isFinal ? 'Meja Final' : 'No. Urut' }}</th>
                             <th class="px-4 py-3 min-w-[220px]">Nama Sekolah / Regu</th>
 
                             @if($category->scoring_type == 'written_practical_time')
@@ -542,13 +636,13 @@
                                 <th class="px-4 py-3 w-32">Waktu Tempuh</th>
                                 <th class="px-4 py-3 w-36 text-center">Poin Waktu (Maks 300)</th>
                             @else
-                                <!-- Standard Time / Quiz -->
-                                <th class="px-4 py-3 w-32">Nilai / Poin</th>
-                                <th class="px-4 py-3 w-32">Waktu Tempuh</th>
+                                <!-- Standard Time / Quiz / Cepat Tepat -->
+                                <th class="px-4 py-3 w-36 text-center">{{ $isFinal ? 'Poin Cepat Tepat (Final)' : 'Nilai / Poin' }}</th>
+                                <th class="px-4 py-3 w-32 text-center">{{ $isFinal ? 'Waktu (Opsional)' : 'Waktu Tempuh' }}</th>
                             @endif
 
                             <th class="px-4 py-3 w-32 text-right">Nilai Akhir (Total)</th>
-                            <th class="px-4 py-3 w-24 text-center bg-slate-200/80 text-slate-900 border-l border-slate-200">Ranking</th>
+                            <th class="px-4 py-3 {{ $isFinal ? 'w-48' : 'w-24' }} text-center bg-slate-200/80 text-slate-900 border-l border-slate-200">{{ $isFinal ? 'Peringkat Juara Final' : 'Ranking' }}</th>
                             <th class="px-3 py-3 w-24 text-center text-slate-600 border-l border-slate-200">Aksi</th>
                         </tr>
                     </thead>
@@ -562,20 +656,33 @@
                                 $teamTimeScore = $details['time_score'] ?? null;
                                 $teamTimePenalty = $details['time_penalty'] ?? 0;
                             @endphp
-                            <tr class="team-row hover:bg-slate-50 transition {{ $score?->rank == 1 ? 'bg-purple-50/60 font-bold' : '' }}" data-team-id="{{ $team->id }}">
-                                <!-- Order Number -->
+                            <tr class="team-row hover:bg-slate-50 transition {{ $score?->rank == 1 ? ($isFinal ? 'bg-amber-50/60 font-bold' : 'bg-purple-50/60 font-bold') : '' }}" data-team-id="{{ $team->id }}">
+                                <!-- Order Number / Final Desk -->
                                 <td class="px-4 py-3 font-mono text-center font-bold text-slate-700">
-                                    {{ $team->order_number ?: ($index + 1) }}
+                                    @if($isFinal && isset($team->final_desk))
+                                        <span class="inline-flex items-center justify-center px-2.5 py-1 rounded-lg bg-amber-100 border border-amber-300 text-amber-950 font-black text-xs shadow-2xs">
+                                            Meja {{ $team->final_desk }}
+                                        </span>
+                                    @else
+                                        {{ $team->order_number ?: ($index + 1) }}
+                                    @endif
                                 </td>
 
                                 <!-- Team Name -->
                                 <td class="px-4 py-3">
-                                    <div class="font-extrabold text-slate-900 text-xs uppercase">{{ $team->team_name }}</div>
-                                    <div class="text-[10px] text-slate-400 mt-0.5 flex items-center gap-1.5 flex-wrap">
-                                        @if($team->registration)
-                                            <span class="font-mono font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 px-1.5 py-0.5 rounded text-[10px]">{{ $team->registration->registration_code }}</span>
+                                    <div class="font-extrabold text-slate-900 text-xs uppercase flex items-center gap-2 flex-wrap">
+                                        <span>{{ $team->team_name }}</span>
+                                        @if($isFinal && isset($team->semi_termin))
+                                            <span class="inline-flex items-center gap-1 font-mono text-[10px] font-black text-emerald-800 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded" title="Juara 1 di Termin {{ $team->semi_termin }} Semifinal">
+                                                <i class="fa-solid fa-trophy text-amber-500"></i> Juara Termin {{ $team->semi_termin }} (Skor: {{ $team->semi_score }})
+                                            </span>
                                         @endif
-                                        <span>{{ $team->registration?->advisor_name }}</span>
+                                    </div>
+                                    <div class="text-[10px] text-slate-500 mt-0.5 flex items-center gap-1.5 flex-wrap">
+                                        <span>{{ $team->registration?->school_name ?? $team->registration?->advisor_name }}</span>
+                                        @if($team->registration?->registration_code)
+                                            <span class="font-mono font-bold text-indigo-700 bg-indigo-50 border border-indigo-200 px-1.5 py-0.5 rounded text-[10px]">{{ $team->registration->registration_code }}</span>
+                                        @endif
                                     </div>
                                 </td>
 
@@ -654,11 +761,29 @@
                                 <!-- Ranking Column -->
                                 <td class="px-4 py-3 text-center font-bold rank-cell border-l border-slate-100 bg-slate-50/50">
                                     @if($score?->rank == 1)
-                                        <span class="inline-flex items-center justify-center w-7 h-7 rounded-full bg-purple-600 text-white font-black text-xs shadow-md">1</span>
+                                        @if($isFinal)
+                                            <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-gradient-to-r from-amber-500 to-yellow-400 text-slate-950 font-black text-xs shadow-md border border-amber-300">
+                                                <i class="fa-solid fa-trophy text-amber-100"></i> Juara 1 (Emas)
+                                            </span>
+                                        @else
+                                            <span class="inline-flex items-center justify-center w-7 h-7 rounded-full bg-purple-600 text-white font-black text-xs shadow-md">1</span>
+                                        @endif
                                     @elseif($score?->rank == 2)
-                                        <span class="inline-flex items-center justify-center w-7 h-7 rounded-full bg-amber-500 text-white font-black text-xs shadow-md">2</span>
+                                        @if($isFinal)
+                                            <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-gradient-to-r from-slate-200 to-slate-100 text-slate-800 font-black text-xs shadow-sm border border-slate-300">
+                                                <i class="fa-solid fa-medal text-slate-500"></i> Juara 2 (Perak)
+                                            </span>
+                                        @else
+                                            <span class="inline-flex items-center justify-center w-7 h-7 rounded-full bg-amber-500 text-white font-black text-xs shadow-md">2</span>
+                                        @endif
                                     @elseif($score?->rank == 3)
-                                        <span class="inline-flex items-center justify-center w-7 h-7 rounded-full bg-orange-400 text-white font-black text-xs shadow-md">3</span>
+                                        @if($isFinal)
+                                            <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-gradient-to-r from-amber-700 to-amber-600 text-white font-black text-xs shadow-sm border border-amber-500">
+                                                <i class="fa-solid fa-medal text-amber-300"></i> Juara 3 (Perunggu)
+                                            </span>
+                                        @else
+                                            <span class="inline-flex items-center justify-center w-7 h-7 rounded-full bg-orange-400 text-white font-black text-xs shadow-md">3</span>
+                                        @endif
                                     @elseif($score?->rank)
                                         <span class="inline-flex items-center justify-center w-7 h-7 rounded-full bg-slate-200 text-slate-800 font-bold text-xs border border-slate-300">{{ $score->rank }}</span>
                                     @else
@@ -681,7 +806,22 @@
                         @empty
                             <tr>
                                 <td colspan="10" class="text-center py-10 text-slate-400">
-                                    Belum ada peserta yang terdaftar di cabang lomba ini.
+                                    @if($isFinal)
+                                        <div class="space-y-2 max-w-md mx-auto">
+                                            <div class="text-amber-500 text-3xl"><i class="fa-solid fa-hourglass-half"></i></div>
+                                            <div class="font-extrabold text-sm text-slate-700">Belum Ada Regu Finalis</div>
+                                            <p class="text-xs text-slate-500">
+                                                Babak 2 - Semi Final belum selesai dinilai. Begitu nilai semifinal disimpan, 3 regu Juara Termin akan otomatis tampil di sini.
+                                            </p>
+                                            <div class="pt-2">
+                                                <a href="{{ route('admin.competition-scores.input', ['category' => $category->id, 'round' => 'Babak 2 - Semi Final']) }}" class="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-red-600 hover:bg-red-700 text-white font-bold text-xs shadow transition">
+                                                    Buka Babak 2 - Semi Final &rarr;
+                                                </a>
+                                            </div>
+                                        </div>
+                                    @else
+                                        Belum ada peserta yang terdaftar di cabang lomba ini.
+                                    @endif
                                 </td>
                             </tr>
                         @endforelse
@@ -1086,6 +1226,7 @@ window.confirmResetDatabase = function() {
 
 document.addEventListener('DOMContentLoaded', function() {
     const isTanduCategory = {{ $isTandu ? 'true' : 'false' }};
+    const isFinalRound = {{ $isFinal ? 'true' : 'false' }};
     const scoringType = "{{ $category->scoring_type }}";
 
     function parseTimeToSeconds(timeStr) {
@@ -1198,23 +1339,39 @@ document.addEventListener('DOMContentLoaded', function() {
             if (rankIndex !== -1) {
                 const rank = rankIndex + 1;
                 let badgeHtml = '';
-                if (rank === 1) {
-                    badgeHtml = '<span class="inline-flex items-center justify-center w-7 h-7 rounded-full bg-purple-600 text-white font-black text-xs shadow-md">1</span>';
-                    d.row.classList.add('bg-purple-50/40');
-                } else if (rank === 2) {
-                    badgeHtml = '<span class="inline-flex items-center justify-center w-7 h-7 rounded-full bg-amber-500 text-white font-black text-xs shadow-md">2</span>';
-                    d.row.classList.remove('bg-purple-50/40');
-                } else if (rank === 3) {
-                    badgeHtml = '<span class="inline-flex items-center justify-center w-7 h-7 rounded-full bg-orange-400 text-white font-black text-xs shadow-md">3</span>';
-                    d.row.classList.remove('bg-purple-50/40');
+                if (isFinalRound) {
+                    if (rank === 1) {
+                        badgeHtml = '<span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-gradient-to-r from-amber-500 to-yellow-400 text-slate-950 font-black text-xs shadow-md border border-amber-300"><i class="fa-solid fa-trophy text-amber-100"></i> Juara 1 (Emas)</span>';
+                        d.row.classList.add('bg-amber-50/60');
+                    } else if (rank === 2) {
+                        badgeHtml = '<span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-gradient-to-r from-slate-200 to-slate-100 text-slate-800 font-black text-xs shadow-sm border border-slate-300"><i class="fa-solid fa-medal text-slate-500"></i> Juara 2 (Perak)</span>';
+                        d.row.classList.remove('bg-amber-50/60');
+                    } else if (rank === 3) {
+                        badgeHtml = '<span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-gradient-to-r from-amber-700 to-amber-600 text-white font-black text-xs shadow-sm border border-amber-500"><i class="fa-solid fa-medal text-amber-300"></i> Juara 3 (Perunggu)</span>';
+                        d.row.classList.remove('bg-amber-50/60');
+                    } else {
+                        badgeHtml = `<span class="inline-flex items-center justify-center w-7 h-7 rounded-full bg-slate-200 text-slate-800 font-bold text-xs border border-slate-300">${rank}</span>`;
+                        d.row.classList.remove('bg-amber-50/60');
+                    }
                 } else {
-                    badgeHtml = `<span class="inline-flex items-center justify-center w-7 h-7 rounded-full bg-slate-200 text-slate-800 font-bold text-xs border border-slate-300">${rank}</span>`;
-                    d.row.classList.remove('bg-purple-50/40');
+                    if (rank === 1) {
+                        badgeHtml = '<span class="inline-flex items-center justify-center w-7 h-7 rounded-full bg-purple-600 text-white font-black text-xs shadow-md">1</span>';
+                        d.row.classList.add('bg-purple-50/40');
+                    } else if (rank === 2) {
+                        badgeHtml = '<span class="inline-flex items-center justify-center w-7 h-7 rounded-full bg-amber-500 text-white font-black text-xs shadow-md">2</span>';
+                        d.row.classList.remove('bg-purple-50/40');
+                    } else if (rank === 3) {
+                        badgeHtml = '<span class="inline-flex items-center justify-center w-7 h-7 rounded-full bg-orange-400 text-white font-black text-xs shadow-md">3</span>';
+                        d.row.classList.remove('bg-purple-50/40');
+                    } else {
+                        badgeHtml = `<span class="inline-flex items-center justify-center w-7 h-7 rounded-full bg-slate-200 text-slate-800 font-bold text-xs border border-slate-300">${rank}</span>`;
+                        d.row.classList.remove('bg-purple-50/40');
+                    }
                 }
                 rankCell.innerHTML = badgeHtml;
             } else {
                 rankCell.innerHTML = '<span class="text-slate-300 font-mono">-</span>';
-                d.row.classList.remove('bg-purple-50/40');
+                d.row.classList.remove('bg-purple-50/40', 'bg-amber-50/60');
             }
         });
     };
