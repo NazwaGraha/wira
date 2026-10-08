@@ -500,7 +500,7 @@
                                         @forelse($tMeta['teams'] as $idx => $team)
                                             @php
                                                 $score = $scores->get($team->id);
-                                                $details = $score?->score_details ?? [];
+                                                $details = is_array($score?->score_details) ? $score->score_details : (json_decode($score?->score_details ?? '', true) ?? []);
                                                 $teamScoreVal = $details['score'] ?? ($score?->final_score ?? '');
                                                 $prelimScore = $prelimScores->get($team->id);
                                                 $deskLetter = $tMeta['desk_letters'][$idx] ?? ($idx + 1);
@@ -673,7 +673,7 @@
                         @forelse($teams as $index => $team)
                             @php 
                                 $score = $scores->get($team->id);
-                                $details = $score?->score_details ?? [];
+                                $details = is_array($score?->score_details) ? $score->score_details : (json_decode($score?->score_details ?? '', true) ?? []);
                                 $teamTechScore = $details['technical_score'] ?? ($details['score'] ?? '');
                                 $teamTime = $score?->time_recorded ?? ($details['time_recorded'] ?? '');
                                 $teamTimeScore = $details['time_score'] ?? null;
@@ -929,7 +929,7 @@
                         @foreach($modalTeams as $mIdx => $mTeam)
                             @php
                                 $mScore = $scores->get($mTeam->id);
-                                $mDetails = $mScore?->score_details ?? [];
+                                $mDetails = is_array($mScore?->score_details) ? $mScore->score_details : (json_decode($mScore?->score_details ?? '', true) ?? []);
                                 $currentTermin = $mDetails['termin'] ?? (($mIdx % 3) + 1);
 
                                 // Pot categorization (Rank 1-3: Pot 1, 4-6: Pot 2, 7-9: Pot 3)

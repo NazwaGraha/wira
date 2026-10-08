@@ -90,6 +90,9 @@ class CompetitionScoreController extends Controller
         $termin3Teams = collect();
         $unassignedTeams = collect();
         $finalistTeams = collect();
+        $finalistOptionA = collect();
+        $finalistOptionB = collect();
+        $finalMode = 'termin_winners';
         $hasSemiFinalResults = false;
 
         if ($isSemiFinal) {
@@ -126,7 +129,8 @@ class CompetitionScoreController extends Controller
             // Distribute into termin collections based on existing score records in Semifinal
             foreach ($teams as $team) {
                 $score = $scores->get($team->id);
-                $termin = $score?->score_details['termin'] ?? null;
+                $details = is_array($score?->score_details) ? $score->score_details : (json_decode($score?->score_details ?? '', true) ?? []);
+                $termin = $details['termin'] ?? null;
                 if ($termin == 1) {
                     $termin1Teams->push($team);
                 } elseif ($termin == 2) {
@@ -481,7 +485,8 @@ class CompetitionScoreController extends Controller
                 ->get();
 
             $byTermin = $scores->groupBy(function ($s) {
-                return $s->score_details['termin'] ?? 1;
+                $details = is_array($s->score_details) ? $s->score_details : (json_decode($s->score_details ?? '', true) ?? []);
+                return $details['termin'] ?? 1;
             });
 
             foreach ($byTermin as $terminNum => $tScores) {
@@ -490,14 +495,16 @@ class CompetitionScoreController extends Controller
                     if ($a->final_score != $b->final_score) {
                         return $b->final_score <=> $a->final_score;
                     }
-                    $secA = $a->score_details['time_seconds'] ?? self::parseTimeToSeconds($a->time_recorded) ?? 999999;
-                    $secB = $b->score_details['time_seconds'] ?? self::parseTimeToSeconds($b->time_recorded) ?? 999999;
+                    $detailsA = is_array($a->score_details) ? $a->score_details : (json_decode($a->score_details ?? '', true) ?? []);
+                    $detailsB = is_array($b->score_details) ? $b->score_details : (json_decode($b->score_details ?? '', true) ?? []);
+                    $secA = $detailsA['time_seconds'] ?? self::parseTimeToSeconds($a->time_recorded) ?? 999999;
+                    $secB = $detailsB['time_seconds'] ?? self::parseTimeToSeconds($b->time_recorded) ?? 999999;
                     return $secA <=> $secB;
                 });
 
                 $rank = 1;
                 foreach ($sorted as $s) {
-                    $details = $s->score_details ?? [];
+                    $details = is_array($s->score_details) ? $s->score_details : (json_decode($s->score_details ?? '', true) ?? []);
                     $details['termin'] = (int) $terminNum;
                     $details['termin_rank'] = $rank;
                     $s->update([
@@ -525,8 +532,10 @@ class CompetitionScoreController extends Controller
                 return $b->final_score <=> $a->final_score;
             }
 
-            $secA = $a->score_details['time_seconds'] ?? self::parseTimeToSeconds($a->time_recorded) ?? 999999;
-            $secB = $b->score_details['time_seconds'] ?? self::parseTimeToSeconds($b->time_recorded) ?? 999999;
+            $detailsA = is_array($a->score_details) ? $a->score_details : (json_decode($a->score_details ?? '', true) ?? []);
+            $detailsB = is_array($b->score_details) ? $b->score_details : (json_decode($b->score_details ?? '', true) ?? []);
+            $secA = $detailsA['time_seconds'] ?? self::parseTimeToSeconds($a->time_recorded) ?? 999999;
+            $secB = $detailsB['time_seconds'] ?? self::parseTimeToSeconds($b->time_recorded) ?? 999999;
             return $secA <=> $secB;
         });
 
