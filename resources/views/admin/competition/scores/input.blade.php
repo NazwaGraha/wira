@@ -259,21 +259,46 @@
 
     @if($isFinal)
         <!-- Grand Final Management Banner -->
-        <div class="bg-gradient-to-r from-amber-950 via-slate-900 to-amber-950 text-white p-5 rounded-2xl shadow-md border border-amber-700/50 flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4">
-            <div class="space-y-1.5">
+        <div class="bg-gradient-to-r from-amber-950 via-slate-900 to-amber-950 text-white p-5 rounded-2xl shadow-md border border-amber-700/50 flex flex-col lg:flex-row items-start lg:items-center justify-between gap-5">
+            <div class="space-y-2 max-w-3xl">
                 <div class="flex items-center gap-2 flex-wrap">
                     <span class="px-2.5 py-0.5 rounded-md text-[10px] font-black uppercase tracking-wider bg-amber-500 text-slate-950 shadow-xs">
                         <i class="fa-solid fa-trophy mr-1"></i> Babak 3 - Grand Final
                     </span>
                     <span class="text-xs font-bold text-amber-200">Babak Penentuan Juara Umum</span>
-                    <span class="text-[11px] font-semibold text-emerald-400 bg-emerald-950/60 border border-emerald-500/30 px-2 py-0.5 rounded-md">
-                        3 Regu Juara Termin Semifinal
-                    </span>
+                    @if($finalMode === 'top_scores')
+                        <span class="text-[11px] font-black text-blue-300 bg-blue-950/80 border border-blue-500/40 px-2.5 py-0.5 rounded-md">
+                            <i class="fa-solid fa-check-circle mr-1"></i> Mode Aktif: Opsi B (Top 3 Nilai Semifinal)
+                        </span>
+                    @else
+                        <span class="text-[11px] font-black text-emerald-300 bg-emerald-950/80 border border-emerald-500/40 px-2.5 py-0.5 rounded-md">
+                            <i class="fa-solid fa-check-circle mr-1"></i> Mode Aktif: Opsi A (Juara Tiap Termin)
+                        </span>
+                    @endif
                 </div>
                 <h3 class="text-lg font-black text-white">Pertandingan Final: Perebutan Juara 1, 2, dan 3</h3>
-                <p class="text-xs text-slate-300 max-w-2xl leading-relaxed">
-                    Tiga (3) regu terbaik yang menjuarai masing-masing termin di Babak 2 - Semi Final otomatis melaju ke babak ini untuk memperebutkan <strong>Juara 1 (Emas)</strong>, <strong>Juara 2 (Perak)</strong>, dan <strong>Juara 3 (Perunggu)</strong>.
+                <p class="text-xs text-slate-300 leading-relaxed">
+                    @if($finalMode === 'top_scores')
+                        Regu yang bertanding dipilih berdasarkan <strong>Opsi B</strong>: Tiga (3) regu dengan perolehan nilai akhir tertinggi dari seluruh peserta babak semifinal (tanpa memedulikan termin).
+                    @else
+                        Regu yang bertanding dipilih berdasarkan <strong>Opsi A (Sesuai Excel Resmi)</strong>: Juara 1 dari masing-masing sesi termin di Babak 2 - Semi Final (Termin 1, 2, dan 3).
+                    @endif
                 </p>
+
+                <!-- Interactive Switcher: Opsi A vs Opsi B -->
+                <div class="pt-2 flex flex-wrap items-center gap-2.5">
+                    <span class="text-xs font-extrabold text-slate-400">Pilih Sistem Kualifikasi Final:</span>
+                    <a href="{{ route('admin.competition-scores.input', ['category' => $category->id, 'round' => $round, 'final_mode' => 'termin_winners']) }}" 
+                       class="px-3.5 py-2 rounded-xl text-xs font-black transition flex items-center gap-2 border {{ $finalMode !== 'top_scores' ? 'bg-gradient-to-r from-amber-500 to-yellow-500 text-slate-950 border-amber-300 shadow-md ring-2 ring-amber-300/40' : 'bg-white/10 text-slate-300 hover:text-white hover:bg-white/20 border-white/15' }}">
+                        <i class="fa-solid fa-layer-group"></i>
+                        <span>Opsi A: Juara Tiap Termin (Excel)</span>
+                    </a>
+                    <a href="{{ route('admin.competition-scores.input', ['category' => $category->id, 'round' => $round, 'final_mode' => 'top_scores']) }}" 
+                       class="px-3.5 py-2 rounded-xl text-xs font-black transition flex items-center gap-2 border {{ $finalMode === 'top_scores' ? 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white border-blue-400 shadow-md ring-2 ring-blue-400/40' : 'bg-white/10 text-slate-300 hover:text-white hover:bg-white/20 border-white/15' }}">
+                        <i class="fa-solid fa-arrow-up-9-1"></i>
+                        <span>Opsi B: Top 3 Nilai Semifinal (Global)</span>
+                    </a>
+                </div>
             </div>
             <div class="flex items-center gap-2 shrink-0">
                 <a href="{{ route('admin.competition-scores.input', ['category' => $category->id, 'round' => 'Babak 2 - Semi Final']) }}" class="bg-white/10 hover:bg-white/20 text-white font-bold text-xs px-4 py-2.5 rounded-xl border border-white/20 transition flex items-center gap-2">
@@ -301,16 +326,14 @@
                                 <span class="px-2 py-0.5 rounded text-[10px] font-black {{ $col['badge'] }}">
                                     MEJA {{ $desk }}
                                 </span>
-                                @if($fTeam->semi_termin)
-                                    <span class="text-[10px] font-bold text-slate-300">
-                                        Juara Termin {{ $fTeam->semi_termin }}
-                                    </span>
-                                @endif
+                                <span class="text-[10px] font-bold text-amber-300">
+                                    {{ $fTeam->qualification_badge ?? ($fTeam->semi_termin ? 'Juara Termin ' . $fTeam->semi_termin : '') }}
+                                </span>
                             </div>
                             <div class="font-extrabold text-sm text-white uppercase">{{ $fTeam->team_name }}</div>
                             <div class="text-xs text-slate-300">{{ $fTeam->registration?->school_name }}</div>
                             @if($fTeam->semi_score)
-                                <div class="text-[11px] text-amber-300 font-mono font-bold mt-1">
+                                <div class="text-[11px] text-emerald-400 font-mono font-bold mt-1">
                                     Skor Semifinal: {{ $fTeam->semi_score }}
                                 </div>
                             @endif
@@ -672,9 +695,9 @@
                                 <td class="px-4 py-3">
                                     <div class="font-extrabold text-slate-900 text-xs uppercase flex items-center gap-2 flex-wrap">
                                         <span>{{ $team->team_name }}</span>
-                                        @if($isFinal && isset($team->semi_termin))
-                                            <span class="inline-flex items-center gap-1 font-mono text-[10px] font-black text-emerald-800 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded" title="Juara 1 di Termin {{ $team->semi_termin }} Semifinal">
-                                                <i class="fa-solid fa-trophy text-amber-500"></i> Juara Termin {{ $team->semi_termin }} (Skor: {{ $team->semi_score }})
+                                        @if($isFinal && (isset($team->qualification_badge) || isset($team->semi_termin)))
+                                            <span class="inline-flex items-center gap-1 font-mono text-[10px] font-black text-emerald-800 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded" title="Kualifikasi Semifinal">
+                                                <i class="fa-solid fa-trophy text-amber-500"></i> {{ $team->qualification_badge ?? ('Juara Termin ' . $team->semi_termin) }} (Skor Semifinal: {{ $team->semi_score }})
                                             </span>
                                         @endif
                                     </div>

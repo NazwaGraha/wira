@@ -149,7 +149,15 @@ class CompetitionScoreController extends Controller
                     ->keyBy('competition_participant_team_id');
             }
         } elseif ($isFinal) {
-            // Babak 3 - Final: Automatically qualify the rank 1 winners of each Semifinal Termin!
+            // Babak 3 - Final Selection Modes:
+            // Opsi A: 'termin_winners' (Juara 1 dari masing-masing Termin 1, 2, 3 - Sesuai Excel Panitia)
+            // Opsi B: 'top_scores' (Top 3 Nilai Akhir Tertinggi Semifinal secara Global)
+            $finalMode = $request->input('final_mode', session('final_mode_' . $category->id, 'termin_winners'));
+            session(['final_mode_' . $category->id => $finalMode]);
+
+            $finalistOptionA = collect();
+            $finalistOptionB = collect();
+
             $semiScores = CompetitionScore::where('competition_category_id', $category->id)
                 ->where(function ($q) {
                     $q->where('round_name', 'like', '%Semi Final%')
@@ -159,6 +167,7 @@ class CompetitionScoreController extends Controller
                 ->where('is_disqualified', false)
                 ->get();
 
+            // === OPSI A: Juara Masing-Masing Termin (Termin 1, 2, 3) ===
             $byTermin = $semiScores->groupBy(function ($s) {
                 return $s->score_details['termin'] ?? null;
             });
@@ -166,22 +175,54 @@ class CompetitionScoreController extends Controller
             foreach ([1, 2, 3] as $tNum) {
                 $tGroup = $byTermin->get($tNum, collect());
                 if ($tGroup->isNotEmpty()) {
-                    // Pick the team with rank 1 or highest final_score
                     $winnerScore = $tGroup->where('rank', 1)->first()
                         ?? $tGroup->sortByDesc('final_score')->first();
 
                     if ($winnerScore && ($winnerScore->final_score > 0 || !empty($winnerScore->score_details['score']) || $winnerScore->rank == 1)) {
                         $tModel = $teams->firstWhere('id', $winnerScore->competition_participant_team_id);
                         if ($tModel) {
-                            $finalist = clone $tModel;
-                            $finalist->final_desk = chr(64 + $tNum); // 1 -> A, 2 -> B, 3 -> C
-                            $finalist->semi_termin = $tNum;
-                            $finalist->semi_score = $winnerScore->final_score;
-                            $finalist->semi_rank = $winnerScore->rank ?? 1;
-                            $finalistTeams->push($finalist);
+                            $f = clone $tModel;
+                            $f->final_desk = chr(64 + $tNum); // 1 -> A, 2 -> B, 3 -> C
+                            $f->qualification_badge = 'Juara Termin ' . $tNum;
+                            $f->semi_termin = $tNum;
+                            $f->semi_score = $winnerScore->final_score;
+                            $f->semi_rank = $winnerScore->rank ?? 1;
+                            $finalistOptionA->push($f);
                         }
                     }
                 }
+            }
+
+            // === OPSI B: Top 3 Nilai Tertinggi Seluruh Semifinal ===
+            $sortedSemi = $semiScores->filter(function ($s) {
+                return $s->final_score > 0 || !empty($s->score_details['score']);
+            })->sort(function ($a, $b) {
+                if ($a->final_score != $b->final_score) {
+                    return $b->final_score <=> $a->final_score;
+                }
+                $secA = $a->score_details['time_seconds'] ?? self::parseTimeToSeconds($a->time_recorded) ?? 999999;
+                $secB = $b->score_details['time_seconds'] ?? self::parseTimeToSeconds($b->time_recorded) ?? 999999;
+                return $secA <=> $secB;
+            })->take(3)->values();
+
+            foreach ($sortedSemi as $bIdx => $bScore) {
+                $tModel = $teams->firstWhere('id', $bScore->competition_participant_team_id);
+                if ($tModel) {
+                    $f = clone $tModel;
+                    $f->final_desk = chr(65 + $bIdx); // 0 -> A, 1 -> B, 2 -> C
+                    $f->qualification_badge = 'Rank ' . ($bIdx + 1) . ' Semifinal (Skor: ' . $bScore->final_score . ')';
+                    $f->semi_termin = $bScore->score_details['termin'] ?? null;
+                    $f->semi_score = $bScore->final_score;
+                    $f->semi_rank = $bIdx + 1;
+                    $finalistOptionB->push($f);
+                }
+            }
+
+            // Pick active finalist list based on selected mode
+            if ($finalMode === 'top_scores') {
+                $finalistTeams = $finalistOptionB;
+            } else {
+                $finalistTeams = $finalistOptionA;
             }
 
             // Also include any teams that already have scores recorded in this Final round
@@ -192,6 +233,7 @@ class CompetitionScoreController extends Controller
                         if ($exTeam) {
                             $finalist = clone $exTeam;
                             $finalist->final_desk = chr(65 + $finalistTeams->count());
+                            $finalist->qualification_badge = 'Finalis Tambahan';
                             $finalist->semi_termin = null;
                             $finalist->semi_score = null;
                             $finalistTeams->push($finalist);
@@ -219,6 +261,9 @@ class CompetitionScoreController extends Controller
             'nextOrderNumber',
             'isSemiFinal',
             'isFinal',
+            'finalMode',
+            'finalistOptionA',
+            'finalistOptionB',
             'hasSemiFinalResults',
             'finalistTeams',
             'prelimScores',
