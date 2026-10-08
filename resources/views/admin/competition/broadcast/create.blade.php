@@ -56,6 +56,12 @@
             border: none !important;
             box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04) !important;
         }
+        .note-float-center {
+            display: block !important;
+            margin-left: auto !important;
+            margin-right: auto !important;
+            float: none !important;
+        }
         .note-popover .popover-content {
             border-radius: 10px !important;
             padding: 6px !important;
@@ -66,6 +72,11 @@
             background: #334155 !important;
             border-color: #475569 !important;
             color: #ffffff !important;
+            display: inline-flex !important;
+            align-items: center !important;
+            gap: 4px !important;
+            font-size: 11px !important;
+            font-weight: 600 !important;
         }
         .note-popover .btn-group .note-btn:hover {
             background: #dc2626 !important;
@@ -353,10 +364,108 @@
                     ['insert', ['link', 'picture', 'hr']],
                     ['view', ['fullscreen', 'codeview', 'help']]
                 ],
+                buttons: {
+                    floatLeft: function(context) {
+                        return $.summernote.ui.button({
+                            contents: '<i class="fa-solid fa-align-left text-xs"></i> Kiri',
+                            tooltip: 'Rata Kiri (Float Kiri)',
+                            click: function() {
+                                var $target = $(context.invoke('editor.restoreTarget'));
+                                if ($target.length) {
+                                    $target.removeClass('note-float-right note-float-center').addClass('note-float-left');
+                                    $target.css({
+                                        'float': 'left',
+                                        'display': 'inline-block',
+                                        'margin-left': '0',
+                                        'margin-right': '18px',
+                                        'margin-bottom': '12px',
+                                        'margin-top': '4px'
+                                    });
+                                    if ($target.parent().is('p, div') && $target.parent().css('text-align') === 'center') {
+                                        $target.parent().css('text-align', '');
+                                    }
+                                    context.invoke('handle.update', $target[0]);
+                                }
+                            }
+                        }).render();
+                    },
+                    floatCenter: function(context) {
+                        return $.summernote.ui.button({
+                            contents: '<i class="fa-solid fa-align-center text-xs text-red-400"></i> Tengah',
+                            tooltip: 'Posisikan Gambar ke Tengah (Center)',
+                            click: function() {
+                                var $target = $(context.invoke('editor.restoreTarget'));
+                                if ($target.length) {
+                                    $target.removeClass('note-float-left note-float-right').addClass('note-float-center');
+                                    $target.css({
+                                        'float': 'none',
+                                        'display': 'block',
+                                        'margin-left': 'auto',
+                                        'margin-right': 'auto',
+                                        'margin-top': '12px',
+                                        'margin-bottom': '12px'
+                                    });
+                                    if ($target.parent().is('p, div')) {
+                                        $target.parent().css('text-align', 'center');
+                                    }
+                                    context.invoke('handle.update', $target[0]);
+                                }
+                            }
+                        }).render();
+                    },
+                    floatRight: function(context) {
+                        return $.summernote.ui.button({
+                            contents: '<i class="fa-solid fa-align-right text-xs"></i> Kanan',
+                            tooltip: 'Rata Kanan (Float Kanan)',
+                            click: function() {
+                                var $target = $(context.invoke('editor.restoreTarget'));
+                                if ($target.length) {
+                                    $target.removeClass('note-float-left note-float-center').addClass('note-float-right');
+                                    $target.css({
+                                        'float': 'right',
+                                        'display': 'inline-block',
+                                        'margin-left': '18px',
+                                        'margin-right': '0',
+                                        'margin-bottom': '12px',
+                                        'margin-top': '4px'
+                                    });
+                                    if ($target.parent().is('p, div') && $target.parent().css('text-align') === 'center') {
+                                        $target.parent().css('text-align', '');
+                                    }
+                                    context.invoke('handle.update', $target[0]);
+                                }
+                            }
+                        }).render();
+                    },
+                    floatNone: function(context) {
+                        return $.summernote.ui.button({
+                            contents: '<i class="fa-solid fa-arrows-rotate text-xs"></i> Reset',
+                            tooltip: 'Reset Posisi (Tanpa Float)',
+                            click: function() {
+                                var $target = $(context.invoke('editor.restoreTarget'));
+                                if ($target.length) {
+                                    $target.removeClass('note-float-left note-float-right note-float-center');
+                                    $target.css({
+                                        'float': 'none',
+                                        'display': 'inline-block',
+                                        'margin-left': '',
+                                        'margin-right': '',
+                                        'margin-top': '',
+                                        'margin-bottom': ''
+                                    });
+                                    if ($target.parent().is('p, div') && $target.parent().css('text-align') === 'center') {
+                                        $target.parent().css('text-align', '');
+                                    }
+                                    context.invoke('handle.update', $target[0]);
+                                }
+                            }
+                        }).render();
+                    }
+                },
                 popover: {
                     image: [
                         ['image', ['resizeFull', 'resizeHalf', 'resizeQuarter', 'resizeNone']],
-                        ['float', ['floatLeft', 'floatRight', 'floatNone']],
+                        ['float', ['floatLeft', 'floatCenter', 'floatRight', 'floatNone']],
                         ['remove', ['removeMedia']]
                     ],
                     link: [

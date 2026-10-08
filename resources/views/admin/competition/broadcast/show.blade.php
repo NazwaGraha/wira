@@ -101,7 +101,7 @@
                             <span class="text-red-600">[Nama Sekolah Penerima]</span>
                         </div>
 
-                        <div class="prose max-w-none text-slate-700 font-normal leading-relaxed text-xs [&_img]:max-w-full [&_img]:rounded-lg [&_img]:my-2 [&_p]:mb-3">{!! $broadcast->content !!}</div>
+                        <div class="prose max-w-none text-slate-700 font-normal leading-relaxed text-xs [&_img]:max-w-full [&_img]:rounded-lg [&_img]:my-2 [&_p]:mb-3 [&_.note-float-center]:mx-auto [&_.note-float-center]:block">{!! $broadcast->content !!}</div>
 
                         @if($broadcast->button_text && $broadcast->button_url)
                             <div class="text-center pt-2 pb-2">

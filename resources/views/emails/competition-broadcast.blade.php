@@ -77,6 +77,16 @@
         .message-body img[style*="float:right"] {
             margin: 4px 0 14px 16px !important;
         }
+        .message-body img.note-float-center,
+        .message-body img[style*="margin-left: auto"],
+        .message-body img[style*="margin-left:auto"],
+        .message-body img[style*="margin: auto"],
+        .message-body img[style*="margin:auto"] {
+            display: block !important;
+            margin-left: auto !important;
+            margin-right: auto !important;
+            float: none !important;
+        }
         .cta-container {
             text-align: center;
             margin: 32px 0 24px 0;
