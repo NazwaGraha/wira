@@ -362,110 +362,43 @@
                     ['para', ['ul', 'ol', 'paragraph']],
                     ['table', ['table']],
                     ['insert', ['link', 'picture', 'hr']],
+                    ['imagePosition', ['imgAlignLeft', 'imgAlignCenter', 'imgAlignRight', 'imgAlignReset']],
                     ['view', ['fullscreen', 'codeview', 'help']]
                 ],
                 buttons: {
-                    floatLeft: function(context) {
+                    imgAlignLeft: function() {
                         return $.summernote.ui.button({
-                            contents: '<i class="fa-solid fa-align-left text-xs"></i> Kiri',
-                            tooltip: 'Rata Kiri (Float Kiri)',
-                            click: function() {
-                                var $target = $(context.invoke('editor.restoreTarget'));
-                                if ($target.length) {
-                                    $target.removeClass('note-float-right note-float-center').addClass('note-float-left');
-                                    $target.css({
-                                        'float': 'left',
-                                        'display': 'inline-block',
-                                        'margin-left': '0',
-                                        'margin-right': '18px',
-                                        'margin-bottom': '12px',
-                                        'margin-top': '4px'
-                                    });
-                                    if ($target.parent().is('p, div') && $target.parent().css('text-align') === 'center') {
-                                        $target.parent().css('text-align', '');
-                                    }
-                                    context.invoke('handle.update', $target[0]);
-                                }
-                            }
+                            contents: '<i class="fa-solid fa-align-left text-xs text-blue-500"></i> <span class="text-[11px] font-bold">Kiri</span>',
+                            tooltip: 'Posisikan Gambar: Rata Kiri',
+                            click: function() { alignSelectedImage('left'); }
                         }).render();
                     },
-                    floatCenter: function(context) {
+                    imgAlignCenter: function() {
                         return $.summernote.ui.button({
-                            contents: '<i class="fa-solid fa-align-center text-xs text-red-400"></i> Tengah',
-                            tooltip: 'Posisikan Gambar ke Tengah (Center)',
-                            click: function() {
-                                var $target = $(context.invoke('editor.restoreTarget'));
-                                if ($target.length) {
-                                    $target.removeClass('note-float-left note-float-right').addClass('note-float-center');
-                                    $target.css({
-                                        'float': 'none',
-                                        'display': 'block',
-                                        'margin-left': 'auto',
-                                        'margin-right': 'auto',
-                                        'margin-top': '12px',
-                                        'margin-bottom': '12px'
-                                    });
-                                    if ($target.parent().is('p, div')) {
-                                        $target.parent().css('text-align', 'center');
-                                    }
-                                    context.invoke('handle.update', $target[0]);
-                                }
-                            }
+                            contents: '<i class="fa-solid fa-align-center text-xs text-red-500"></i> <span class="text-[11px] font-black text-red-600">Center</span>',
+                            tooltip: 'Posisikan Gambar: Rata Tengah / Center',
+                            click: function() { alignSelectedImage('center'); }
                         }).render();
                     },
-                    floatRight: function(context) {
+                    imgAlignRight: function() {
                         return $.summernote.ui.button({
-                            contents: '<i class="fa-solid fa-align-right text-xs"></i> Kanan',
-                            tooltip: 'Rata Kanan (Float Kanan)',
-                            click: function() {
-                                var $target = $(context.invoke('editor.restoreTarget'));
-                                if ($target.length) {
-                                    $target.removeClass('note-float-left note-float-center').addClass('note-float-right');
-                                    $target.css({
-                                        'float': 'right',
-                                        'display': 'inline-block',
-                                        'margin-left': '18px',
-                                        'margin-right': '0',
-                                        'margin-bottom': '12px',
-                                        'margin-top': '4px'
-                                    });
-                                    if ($target.parent().is('p, div') && $target.parent().css('text-align') === 'center') {
-                                        $target.parent().css('text-align', '');
-                                    }
-                                    context.invoke('handle.update', $target[0]);
-                                }
-                            }
+                            contents: '<i class="fa-solid fa-align-right text-xs text-emerald-500"></i> <span class="text-[11px] font-bold">Kanan</span>',
+                            tooltip: 'Posisikan Gambar: Rata Kanan',
+                            click: function() { alignSelectedImage('right'); }
                         }).render();
                     },
-                    floatNone: function(context) {
+                    imgAlignReset: function() {
                         return $.summernote.ui.button({
-                            contents: '<i class="fa-solid fa-arrows-rotate text-xs"></i> Reset',
-                            tooltip: 'Reset Posisi (Tanpa Float)',
-                            click: function() {
-                                var $target = $(context.invoke('editor.restoreTarget'));
-                                if ($target.length) {
-                                    $target.removeClass('note-float-left note-float-right note-float-center');
-                                    $target.css({
-                                        'float': 'none',
-                                        'display': 'inline-block',
-                                        'margin-left': '',
-                                        'margin-right': '',
-                                        'margin-top': '',
-                                        'margin-bottom': ''
-                                    });
-                                    if ($target.parent().is('p, div') && $target.parent().css('text-align') === 'center') {
-                                        $target.parent().css('text-align', '');
-                                    }
-                                    context.invoke('handle.update', $target[0]);
-                                }
-                            }
+                            contents: '<i class="fa-solid fa-arrows-rotate text-xs text-slate-400"></i> <span class="text-[11px]">Normal</span>',
+                            tooltip: 'Reset Posisi Gambar (Normal)',
+                            click: function() { alignSelectedImage('reset'); }
                         }).render();
                     }
                 },
                 popover: {
                     image: [
                         ['image', ['resizeFull', 'resizeHalf', 'resizeQuarter', 'resizeNone']],
-                        ['float', ['floatLeft', 'floatCenter', 'floatRight', 'floatNone']],
+                        ['imageAlignment', ['imgAlignLeft', 'imgAlignCenter', 'imgAlignRight', 'imgAlignReset']],
                         ['remove', ['removeMedia']]
                     ],
                     link: [
@@ -490,6 +423,180 @@
             if (existingExtra) {
                 handleAdditionalEmailsInput(existingExtra);
             }
+        });
+
+        window.lastClickedImage = null;
+
+        // Fungsi Penataan Posisi Gambar (Kiri, Center/Tengah, Kanan, Normal)
+        function alignSelectedImage(alignment) {
+            var $img = null;
+
+            // 1. Cek dari selection box data('target')
+            var $selection = $('.note-control-selection');
+            if ($selection.length && $selection.is(':visible')) {
+                var t = $selection.data('target');
+                if (t && $(t).length) {
+                    $img = $(t);
+                }
+            }
+
+            // 2. Cek restoreTarget dari summernote
+            if (!$img || !$img.length) {
+                try {
+                    var restored = $('#content-editor').summernote('restoreTarget');
+                    if (restored && $(restored).length) $img = $(restored);
+                } catch(e) {}
+            }
+
+            // 3. Cek gambar yang terakhir diklik
+            if ((!$img || !$img.length) && window.lastClickedImage && $(window.lastClickedImage).length) {
+                $img = $(window.lastClickedImage);
+            }
+
+            // 4. Fallback ke gambar pertama di editor jika hanya ada 1 gambar
+            if ((!$img || !$img.length) && $('.note-editable img').length === 1) {
+                $img = $('.note-editable img').first();
+            }
+
+            if (!$img || !$img.length) {
+                alert('Silakan klik pada gambar terlebih dahulu untuk mengatur posisinya.');
+                return;
+            }
+
+            // Simpan referensi terakhir
+            window.lastClickedImage = $img[0];
+
+            // Reset class posisi sebelumnya
+            $img.removeClass('note-float-left note-float-right note-float-center');
+
+            if (alignment === 'center') {
+                $img.addClass('note-float-center');
+                $img.css({
+                    'float': 'none',
+                    'display': 'block',
+                    'margin-left': 'auto',
+                    'margin-right': 'auto',
+                    'margin-top': '14px',
+                    'margin-bottom': '14px'
+                });
+                if ($img.parent().is('p, div')) {
+                    $img.parent().css('text-align', 'center');
+                }
+            } else if (alignment === 'left') {
+                $img.addClass('note-float-left');
+                $img.css({
+                    'float': 'left',
+                    'display': 'inline-block',
+                    'margin-left': '0',
+                    'margin-right': '18px',
+                    'margin-bottom': '14px',
+                    'margin-top': '4px'
+                });
+                if ($img.parent().is('p, div') && $img.parent().css('text-align') === 'center') {
+                    $img.parent().css('text-align', '');
+                }
+            } else if (alignment === 'right') {
+                $img.addClass('note-float-right');
+                $img.css({
+                    'float': 'right',
+                    'display': 'inline-block',
+                    'margin-left': '18px',
+                    'margin-right': '0',
+                    'margin-bottom': '14px',
+                    'margin-top': '4px'
+                });
+                if ($img.parent().is('p, div') && $img.parent().css('text-align') === 'center') {
+                    $img.parent().css('text-align', '');
+                }
+            } else { // normal / reset
+                $img.css({
+                    'float': 'none',
+                    'display': 'inline-block',
+                    'margin-left': '',
+                    'margin-right': '',
+                    'margin-top': '',
+                    'margin-bottom': ''
+                });
+                if ($img.parent().is('p, div') && $img.parent().css('text-align') === 'center') {
+                    $img.parent().css('text-align', '');
+                }
+            }
+
+            // Sinkronisasi posisi handle seleksi Summernote
+            var editorContext = $('#content-editor').data('summernote');
+            if (editorContext) {
+                try {
+                    editorContext.invoke('handle.update', $img[0]);
+                } catch(e) {}
+            }
+
+            setTimeout(function() {
+                updateImageSelectionToolbar($img);
+            }, 50);
+        }
+
+        // Floating quick-bar langsung di atas gambar saat diklik atau setelah di-resize pointer
+        function updateImageSelectionToolbar(targetImg) {
+            var $selection = $('.note-control-selection');
+            if ($selection.length && $selection.is(':visible')) {
+                var $target = targetImg || $selection.data('target');
+                if (!$target || !$($target).length) return;
+
+                var $existing = $selection.find('.note-image-quick-align');
+                if (!$existing.length) {
+                    var $bar = $(`
+                        <div class="note-image-quick-align" style="position: absolute; top: -42px; left: 50%; transform: translateX(-50%); background: #0f172a; color: white; padding: 4px 8px; border-radius: 9999px; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.3); display: flex; align-items: center; gap: 4px; z-index: 1070; pointer-events: auto; white-space: nowrap; border: 1px solid #334155;">
+                            <span style="font-size: 10px; font-weight: 800; color: #94a3b8; margin: 0 4px 0 2px; text-transform: uppercase; letter-spacing: 0.5px;">Posisi:</span>
+                            <button type="button" class="btn-align-left" title="Rata Kiri" style="background: #1e293b; color: white; border: 1px solid #475569; border-radius: 9999px; padding: 3px 9px; font-size: 11px; font-weight: 700; cursor: pointer; display: flex; align-items: center; gap: 4px;">
+                                <i class="fa-solid fa-align-left text-blue-400"></i> Kiri
+                            </button>
+                            <button type="button" class="btn-align-center" title="Center (Rata Tengah)" style="background: #dc2626; color: white; border: 1px solid #ef4444; border-radius: 9999px; padding: 3px 10px; font-size: 11px; font-weight: 800; cursor: pointer; display: flex; align-items: center; gap: 4px;">
+                                <i class="fa-solid fa-align-center text-amber-300"></i> Center
+                            </button>
+                            <button type="button" class="btn-align-right" title="Rata Kanan" style="background: #1e293b; color: white; border: 1px solid #475569; border-radius: 9999px; padding: 3px 9px; font-size: 11px; font-weight: 700; cursor: pointer; display: flex; align-items: center; gap: 4px;">
+                                <i class="fa-solid fa-align-right text-emerald-400"></i> Kanan
+                            </button>
+                            <button type="button" class="btn-align-reset" title="Reset Posisi Normal" style="background: #1e293b; color: #94a3b8; border: 1px solid #475569; border-radius: 9999px; padding: 3px 8px; font-size: 11px; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 4px;">
+                                <i class="fa-solid fa-arrows-rotate"></i> Normal
+                            </button>
+                        </div>
+                    `);
+                    $bar.find('.btn-align-left').on('click mousedown', function(e) { e.preventDefault(); e.stopPropagation(); alignSelectedImage('left'); });
+                    $bar.find('.btn-align-center').on('click mousedown', function(e) { e.preventDefault(); e.stopPropagation(); alignSelectedImage('center'); });
+                    $bar.find('.btn-align-right').on('click mousedown', function(e) { e.preventDefault(); e.stopPropagation(); alignSelectedImage('right'); });
+                    $bar.find('.btn-align-reset').on('click mousedown', function(e) { e.preventDefault(); e.stopPropagation(); alignSelectedImage('reset'); });
+                    $selection.append($bar);
+                }
+
+                // Cek posisi agar tidak keluar dari batas atas editor
+                var selTop = $selection.position().top;
+                if (selTop < 45) {
+                    $selection.find('.note-image-quick-align').css({ 'top': 'auto', 'bottom': '-42px' });
+                } else {
+                    $selection.find('.note-image-quick-align').css({ 'bottom': 'auto', 'top': '-42px' });
+                }
+            }
+        }
+
+        // Listener saat klik gambar atau selesai drag resize dengan pointer
+        $(document).on('click', '.note-editable img', function(e) {
+            window.lastClickedImage = this;
+            setTimeout(function() {
+                updateImageSelectionToolbar($(window.lastClickedImage));
+            }, 60);
+        });
+
+        $(document).on('mouseup', function() {
+            setTimeout(function() {
+                var $selection = $('.note-control-selection');
+                if ($selection.is(':visible')) {
+                    var $t = $selection.data('target');
+                    if ($t && $($t).length) {
+                        window.lastClickedImage = $($t)[0];
+                        updateImageSelectionToolbar($($t));
+                    }
+                }
+            }, 80);
         });
 
         // AJAX Upload Image Handler
