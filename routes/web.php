@@ -117,6 +117,7 @@ Route::prefix('admin')->name('admin.')->group(function () {
         ]);
         Route::post('/competition-registrations/{registration}/verify', [\App\Http\Controllers\Admin\CompetitionRegistrationController::class, 'verify'])->name('competition-registrations.verify');
         Route::post('/competition-registrations/{registration}/reject', [\App\Http\Controllers\Admin\CompetitionRegistrationController::class, 'reject'])->name('competition-registrations.reject');
+        Route::post('/competition-registrations/{registration}/resend-email', [\App\Http\Controllers\Admin\CompetitionRegistrationController::class, 'resendEmail'])->name('competition-registrations.resend-email');
         
         // Daftar Peserta & Regu Lomba Terverifikasi
         Route::get('/competition-participants', [\App\Http\Controllers\Admin\CompetitionParticipantController::class, 'index'])->name('competition-participants.index');

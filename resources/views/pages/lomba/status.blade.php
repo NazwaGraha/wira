@@ -77,6 +77,11 @@
                                 <p class="text-xs text-slate-600 mt-1">
                                     Silakan unduh atau cetak dokumen berikut untuk dibawa pada saat Technical Meeting / Daftar Ulang.
                                 </p>
+                                @if($registration->advisor_email)
+                                    <p class="text-[11px] text-emerald-800 font-semibold mt-1.5 flex items-center gap-1.5">
+                                        <i class="fa-solid fa-envelope-circle-check text-emerald-600"></i> Salinan e-Kwitansi & Kartu Peserta juga telah dikirimkan ke email: <strong>{{ $registration->advisor_email }}</strong>
+                                    </p>
+                                @endif
                             </div>
                             <div class="flex flex-wrap gap-2.5 w-full sm:w-auto">
                                 <a href="{{ url('/lomba/kwitansi/' . ($registration->registration_code ?: $registration->id)) }}" target="_blank" class="flex-grow sm:flex-grow-0 bg-emerald-600 hover:bg-emerald-700 text-white px-5 py-2.5 rounded-xl font-bold text-xs shadow-md transition flex items-center justify-center gap-2">

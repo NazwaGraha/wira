@@ -117,6 +117,15 @@
                     <a href="{{ url('/lomba/kartu-peserta/' . ($registration->registration_code ?: $registration->id)) }}" target="_blank" class="w-full bg-slate-900 hover:bg-slate-800 text-white font-bold py-2.5 rounded-xl shadow transition flex items-center justify-center gap-2 text-xs">
                         <i class="fa-solid fa-id-card"></i> Cetak Kartu Peserta
                     </a>
+
+                    @if($registration->advisor_email)
+                        <form action="{{ route('admin.competition-registrations.resend-email', $registration->id) }}" method="POST" onsubmit="return confirm('Kirimkan ulang e-Kwitansi & Kartu Peserta ke email {{ $registration->advisor_email }}?');">
+                            @csrf
+                            <button type="submit" class="w-full bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200 font-bold py-2.5 rounded-xl transition flex items-center justify-center gap-2 text-xs">
+                                <i class="fa-solid fa-paper-plane"></i> Kirim Ulang Email ke Pembina
+                            </button>
+                        </form>
+                    @endif
                 </div>
             @endif
         </div>

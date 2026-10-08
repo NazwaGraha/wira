@@ -5,9 +5,12 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\CompetitionEvent;
 use App\Models\CompetitionRegistration;
+use App\Mail\RegistrationVerifiedMail;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Log;
 
 class CompetitionRegistrationController extends Controller
 {
@@ -122,14 +125,49 @@ class CompetitionRegistrationController extends Controller
 
     public function verify($id)
     {
-        $registration = CompetitionRegistration::findOrFail($id);
+        $registration = CompetitionRegistration::with(['event', 'teams.category'])->findOrFail($id);
         $registration->update([
             'status' => 'verified',
             'verified_at' => now(),
             'verified_by' => auth()->user()->name ?? 'Admin',
         ]);
 
-        return redirect()->back()->with('success', "Pendaftaran {$registration->school_name} ({$registration->registration_code}) berhasil diverifikasi! Kwitansi & Kartu Peserta kini sudah aktif.");
+        // Kirim otomatis email e-Kwitansi & Kartu Peserta ke email pendaftar
+        $emailSent = false;
+        if (!empty($registration->advisor_email) && filter_var($registration->advisor_email, FILTER_VALIDATE_EMAIL)) {
+            try {
+                Mail::to($registration->advisor_email)->send(new RegistrationVerifiedMail($registration));
+                $emailSent = true;
+            } catch (\Throwable $e) {
+                Log::error("Gagal mengirim email verifikasi ke {$registration->advisor_email}: " . $e->getMessage());
+            }
+        }
+
+        $successMsg = "Pendaftaran {$registration->school_name} ({$registration->registration_code}) berhasil diverifikasi! e-Kwitansi & Kartu Peserta kini sudah aktif.";
+        if ($emailSent) {
+            $successMsg .= " Dokumen e-Kwitansi & Kartu Peserta telah berhasil dikirimkan via email ke {$registration->advisor_email}.";
+        } elseif (!empty($registration->advisor_email)) {
+            $successMsg .= " (Catatan: Pengiriman email notifikasi mengalami kendala koneksi server mail).";
+        }
+
+        return redirect()->back()->with('success', $successMsg);
+    }
+
+    public function resendEmail($id)
+    {
+        $registration = CompetitionRegistration::with(['event', 'teams.category'])->findOrFail($id);
+
+        if (empty($registration->advisor_email) || !filter_var($registration->advisor_email, FILTER_VALIDATE_EMAIL)) {
+            return redirect()->back()->with('error', "Pendaftaran {$registration->school_name} tidak memiliki alamat email yang valid.");
+        }
+
+        try {
+            Mail::to($registration->advisor_email)->send(new RegistrationVerifiedMail($registration));
+            return redirect()->back()->with('success', "Dokumen e-Kwitansi & Kartu Peserta berhasil dikirimkan ke {$registration->advisor_email}!");
+        } catch (\Throwable $e) {
+            Log::error("Gagal mengirim ulang email verifikasi ke {$registration->advisor_email}: " . $e->getMessage());
+            return redirect()->back()->with('error', "Gagal mengirim email: " . $e->getMessage());
+        }
     }
 
     public function reject(Request $request, $id)
