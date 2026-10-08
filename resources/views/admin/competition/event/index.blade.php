@@ -5,13 +5,15 @@
 
 @section('top_actions')
     <div class="flex items-center gap-2">
-        <a href="{{ route('lomba.index') }}" target="_blank" class="bg-slate-800 hover:bg-slate-900 text-white px-3.5 py-2 rounded-xl font-bold text-xs transition flex items-center gap-2 shadow-xs">
+        <a href="{{ route('lomba.index') }}" target="_blank" class="bg-slate-800 hover:bg-slate-900 text-white px-3 sm:px-3.5 py-2 rounded-xl font-bold text-xs transition flex items-center gap-1.5 sm:gap-2 shadow-xs">
             <i class="fa-solid fa-arrow-up-right-from-square text-amber-400"></i>
-            <span>Web Publik /lomba</span>
+            <span class="hidden sm:inline">Web Publik /lomba</span>
+            <span class="sm:hidden">Web</span>
         </a>
-        <a href="{{ route('admin.competition-event.create') }}" class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-xl font-bold text-xs transition flex items-center gap-2 shadow-xs">
+        <a href="{{ route('admin.competition-event.create') }}" class="bg-red-600 hover:bg-red-700 text-white px-3 sm:px-4 py-2 rounded-xl font-bold text-xs transition flex items-center gap-1.5 sm:gap-2 shadow-xs">
             <i class="fa-solid fa-plus"></i>
-            <span>Tambah Edisi Baru</span>
+            <span class="hidden sm:inline">Tambah Edisi Baru</span>
+            <span class="sm:hidden">Tambah</span>
         </a>
     </div>
 @endsection
@@ -122,8 +124,8 @@
             </div>
         </div>
 
-        <div class="overflow-x-auto">
-            <table class="w-full text-left text-xs">
+        <div class="overflow-x-auto touch-pan-x">
+            <table class="w-full text-left text-xs min-w-[700px]">
                 <thead class="bg-slate-50 text-slate-500 uppercase font-black tracking-wider text-[11px] border-b border-slate-100">
                     <tr>
                         <th class="py-3.5 px-5">Edisi / Judul Lomba</th>

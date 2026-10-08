@@ -20,7 +20,7 @@ class CompetitionEventController extends Controller
             ->orderByDesc('id')
             ->get();
 
-        $activeEvent = CompetitionEvent::where('is_active', true)->first() ?: $events->first();
+        $activeEvent = $events->firstWhere('is_active', true) ?: $events->first();
 
         return view('admin.competition.event.index', compact('events', 'activeEvent'));
     }

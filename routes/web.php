@@ -27,6 +27,11 @@ Route::get('/artikel', [ArticleController::class, 'index'])->name('artikel.index
 Route::get('/artikel/{slug}', [ArticleController::class, 'show'])->name('artikel.show');
 
 
+// Fallback redirect for auth middleware default login route
+Route::get('/login', function () {
+    return redirect()->route('admin.login');
+})->name('login');
+
 /*
 |--------------------------------------------------------------------------
 | Backoffice / Admin Routes (CMS Pengelola Artikel & Konten)
