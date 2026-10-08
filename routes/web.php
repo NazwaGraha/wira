@@ -93,9 +93,20 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::resource('gallery', \App\Http\Controllers\Admin\GalleryController::class);
 
         // Manajemen Lomba (SUA BHAKTI BERKARYA)
-        // Pengaturan Event Utama
-        Route::get('/competition-event', [\App\Http\Controllers\Admin\CompetitionEventController::class, 'index'])->name('competition-event.index');
-        Route::post('/competition-event', [\App\Http\Controllers\Admin\CompetitionEventController::class, 'update'])->name('competition-event.update');
+        // Database & Riwayat Event Lomba (CRUD & History)
+        Route::resource('competition-events', \App\Http\Controllers\Admin\CompetitionEventController::class)->names([
+            'index' => 'competition-event.index',
+            'create' => 'competition-event.create',
+            'store' => 'competition-event.store',
+            'show' => 'competition-event.show',
+            'edit' => 'competition-event.edit',
+            'update' => 'competition-event.update',
+            'destroy' => 'competition-event.destroy',
+        ])->parameters([
+            'competition-events' => 'event'
+        ]);
+        Route::post('/competition-events/{event}/activate', [\App\Http\Controllers\Admin\CompetitionEventController::class, 'activate'])->name('competition-event.activate');
+        Route::get('/competition-event', function() { return redirect()->route('admin.competition-event.index'); });
 
         Route::resource('competition-registrations', \App\Http\Controllers\Admin\CompetitionRegistrationController::class)->parameters([
             'competition-registrations' => 'registration'
