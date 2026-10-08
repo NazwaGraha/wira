@@ -217,6 +217,8 @@
                 <div class="text-[11px] text-slate-400 mt-0.5">*Dihitung otomatis secara live saat Anda mengetik</div>
             </div>
         </div>
+    @endif
+
     @if($isSemiFinal)
         <!-- Semifinal Management Card (Otomatis & Fleksibel Buttons) -->
         <div class="bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 text-white p-5 rounded-2xl shadow-md border border-indigo-900/50 flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4">
