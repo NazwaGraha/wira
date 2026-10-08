@@ -130,7 +130,7 @@
                         <div>&bull; Jika Anda membuka aplikasi <strong>FaceTime, Zoom, Photo Booth, atau Google Meet</strong> di Mac, <strong>tutup aplikasi tersebut</strong> agar sensor kamera tidak terkunci.</div>
                         <div>&bull; Pastikan izin Camera diizinkan di Google Chrome (ikon di samping URL <code>wira.nazwagraha.com</code>).</div>
                         <div>&bull; Di Mac: Buka <strong>System Settings &gt; Privacy &amp; Security &gt; Camera</strong>, pastikan Google Chrome dicentang.</div>
-                        <div>&bull; Jika kamera laptop tetap tidak bisa, Anda bisa menggunakan tombol <strong>"Atau Unggah Foto QR Code"</strong> di bawah atau ketik nomor registrasi di kotak pencarian.</div>
+                        <div>&bull; Anda juga bisa langsung menggunakan tombol <strong>"Unggah Foto QR Code"</strong> di bawah ini atau mengetik nomor registrasi di kolom pencarian.</div>
                     </div>
 
                     <button type="button" @click="startScanner()" class="px-3.5 py-2 bg-rose-600 hover:bg-rose-700 text-white rounded-lg font-bold text-xs transition flex items-center gap-1.5 shadow-sm">
@@ -138,12 +138,26 @@
                     </button>
                 </div>
 
-                <!-- Video Viewfinder Container -->
-                <div class="relative rounded-xl overflow-hidden shadow-inner bg-slate-950 w-full min-h-[260px] flex items-center justify-center border border-slate-800">
-                    <div id="qr-reader" class="w-full"></div>
+                <!-- Video Viewfinder Native Container -->
+                <div class="relative rounded-2xl overflow-hidden shadow-inner bg-slate-950 w-full min-h-[260px] aspect-video flex items-center justify-center border-2 border-slate-800">
+                    <!-- Native HTML5 Video -->
+                    <video id="webcam-video" class="w-full h-full object-cover" autoplay playsinline muted></video>
+                    
+                    <!-- Canvas Tersembunyi untuk Scanning Frame -->
+                    <canvas id="qr-canvas" class="hidden"></canvas>
+
+                    <!-- Scanning Target Guide Overlay -->
+                    <div x-show="isCameraStreaming" class="absolute inset-0 pointer-events-none flex items-center justify-center">
+                        <div class="w-48 h-48 border-2 border-emerald-400/90 rounded-2xl relative shadow-[0_0_0_9999px_rgba(0,0,0,0.35)]">
+                            <div class="absolute inset-x-0 top-0 h-0.5 bg-gradient-to-r from-emerald-400 via-teal-300 to-emerald-400 animate-pulse"></div>
+                            <span class="absolute -bottom-6 inset-x-0 text-center text-[10px] font-bold text-emerald-300 uppercase tracking-wider">Arahkan QR ke Kotak</span>
+                        </div>
+                    </div>
+
+                    <!-- Spinner Saat Mengaktifkan Sensor -->
                     <div x-show="isCameraLoading" class="absolute inset-0 bg-slate-900/90 flex flex-col items-center justify-center text-white z-10">
                         <i class="fa-solid fa-circle-notch fa-spin text-3xl text-red-500 mb-2"></i>
-                        <span class="text-xs font-bold">Mengaktifkan sensor kamera laptop / webcam...</span>
+                        <span class="text-xs font-bold">Menghubungkan ke sensor kamera MacBook / webcam...</span>
                     </div>
                 </div>
 
@@ -484,25 +498,8 @@
 
 </div>
 
-<!-- Script Html5-Qrcode CDN untuk Pemindaian Kamera Langsung -->
-<script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
-
-<style>
-    #qr-reader {
-        border: none !important;
-        width: 100% !important;
-    }
-    #qr-reader video {
-        width: 100% !important;
-        height: auto !important;
-        max-height: 360px !important;
-        object-fit: cover !important;
-        border-radius: 12px !important;
-    }
-    #qr-reader img[alt="Info icon"] {
-        display: none !important;
-    }
-</style>
+<!-- Script jsQR CDN untuk Pemindaian Real-Time Native Video -->
+<script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js"></script>
 
 <script>
 function checkinApp() {
@@ -515,12 +512,14 @@ function checkinApp() {
         checkinNotes: '',
         scannerActive: false,
         isCameraLoading: false,
+        isCameraStreaming: false,
         cameraPermissionError: false,
         cameraStatusText: 'Menyiapkan kamera...',
         errorDetailMessage: '',
         availableCameras: [],
         selectedCameraId: '',
-        html5QrCode: null,
+        mediaStream: null,
+        scanIntervalId: null,
 
         init() {
             // Auto focus input
@@ -528,7 +527,7 @@ function checkinApp() {
 
         async toggleScanner() {
             if (this.scannerActive) {
-                await this.stopScanner();
+                this.stopScanner();
             } else {
                 await this.startScanner();
             }
@@ -537,165 +536,208 @@ function checkinApp() {
         async startScanner() {
             this.scannerActive = true;
             this.isCameraLoading = true;
+            this.isCameraStreaming = false;
             this.cameraPermissionError = false;
             this.errorDetailMessage = '';
             this.cameraStatusText = 'Mendeteksi sensor kamera...';
 
             this.$nextTick(async () => {
-                // 1. Bersihkan instance scanner lama jika ada agar tidak macet di background
-                if (this.html5QrCode) {
-                    try {
-                        if (this.html5QrCode.isScanning) {
-                            await this.html5QrCode.stop();
-                        }
-                        await this.html5QrCode.clear();
-                    } catch (e) {
-                        console.warn("Clean previous instance error:", e);
-                    }
-                    this.html5QrCode = null;
-                }
+                const video = document.getElementById('webcam-video');
+                if (!video) return;
 
-                const qrContainer = document.getElementById("qr-reader");
-                if (qrContainer) {
-                    qrContainer.innerHTML = "";
-                }
+                // Stop stream sebelumnya jika ada
+                this.stopMediaStreamOnly();
 
-                // 2. Pre-flight check: uji akses native browser
                 try {
-                    const testStream = await navigator.mediaDevices.getUserMedia({ video: true });
-                    testStream.getTracks().forEach(track => track.stop());
-                } catch (err) {
-                    console.error("Native getUserMedia error:", err);
+                    // Deteksi kamera yang tersedia
+                    try {
+                        const devices = await navigator.mediaDevices.enumerateDevices();
+                        const videoDevices = devices.filter(d => d.kind === 'videoinput');
+                        this.availableCameras = videoDevices;
+                        if (!this.selectedCameraId && videoDevices.length > 0) {
+                            // Di laptop FaceTime/webcam adalah yang pertama
+                            this.selectedCameraId = videoDevices[0].deviceId;
+                        }
+                    } catch (e) {
+                        console.warn("enumerateDevices error:", e);
+                    }
+
+                    // Susun constraints yang ramah MacBook & smartphone
+                    let videoConstraints = {
+                        width: { ideal: 640 },
+                        height: { ideal: 480 }
+                    };
+
+                    if (this.selectedCameraId) {
+                        videoConstraints.deviceId = { exact: this.selectedCameraId };
+                    } else {
+                        videoConstraints.facingMode = "user";
+                    }
+
+                    // Panggil kamera native
+                    this.mediaStream = await navigator.mediaDevices.getUserMedia({
+                        video: videoConstraints,
+                        audio: false
+                    });
+
+                    video.srcObject = this.mediaStream;
+                    video.setAttribute("playsinline", true);
+                    await video.play();
+
                     this.isCameraLoading = false;
+                    this.isCameraStreaming = true;
+                    this.cameraStatusText = 'Kamera Aktif - Arahkan ke QR Code Kwitansi';
+
+                    // Mulai loop pembacaan frame QR code
+                    this.startQrLoop();
+
+                } catch (err) {
+                    console.error("Gagal startScanner native:", err);
+                    
+                    // Fallback sederhana jika exact deviceId gagal
+                    if (this.selectedCameraId) {
+                        try {
+                            this.mediaStream = await navigator.mediaDevices.getUserMedia({
+                                video: true,
+                                audio: false
+                            });
+                            video.srcObject = this.mediaStream;
+                            video.setAttribute("playsinline", true);
+                            await video.play();
+
+                            this.isCameraLoading = false;
+                            this.isCameraStreaming = true;
+                            this.cameraStatusText = 'Kamera Aktif - Arahkan ke QR Code Kwitansi';
+                            this.startQrLoop();
+                            return;
+                        } catch (err2) {
+                            console.error("Fallback getUserMedia video true juga gagal:", err2);
+                        }
+                    }
+
+                    this.isCameraLoading = false;
+                    this.isCameraStreaming = false;
                     this.cameraPermissionError = true;
+
                     if (err.name === 'NotAllowedError' || err.name === 'PermissionDeniedError') {
                         this.cameraStatusText = 'Izin kamera diblokir browser';
                         this.errorDetailMessage = 'Browser belum mengizinkan akses kamera. Klik ikon setelan di samping URL wira.nazwagraha.com, ubah Camera ke Allow lalu reload halaman.';
                     } else if (err.name === 'NotReadableError' || err.name === 'TrackStartError') {
                         this.cameraStatusText = 'Kamera sedang dipakai aplikasi lain';
                         this.errorDetailMessage = 'Sensor kamera Mac Anda sedang digunakan oleh aplikasi lain (seperti FaceTime, Zoom, Photobooth, atau Google Meet). Silakan tutup aplikasi tersebut.';
-                    } else if (err.name === 'NotFoundError' || err.name === 'DevicesNotFoundError') {
-                        this.cameraStatusText = 'Hardware kamera tidak ditemukan';
-                        this.errorDetailMessage = 'Tidak ditemukan perangkat webcam pada komputer ini.';
                     } else {
-                        this.cameraStatusText = 'Gagal membuka kamera: ' + err.name;
+                        this.cameraStatusText = 'Gagal mengakses kamera: ' + (err.name || 'Error');
                         this.errorDetailMessage = err.message || err.toString();
                     }
-                    return;
-                }
-
-                // 3. Inisialisasi Html5Qrcode dengan sensor yang sudah terbukti siap
-                try {
-                    this.html5QrCode = new Html5Qrcode("qr-reader");
-
-                    let cameras = [];
-                    try {
-                        cameras = await Html5Qrcode.getCameras();
-                    } catch (e) {
-                        console.warn("getCameras error:", e);
-                    }
-
-                    this.availableCameras = cameras || [];
-
-                    let targetCamera = null;
-                    if (cameras && cameras.length > 0) {
-                        if (!this.selectedCameraId) {
-                            const backCam = cameras.find(c => (c.label || '').toLowerCase().includes('back') || (c.label || '').toLowerCase().includes('belakang'));
-                            this.selectedCameraId = backCam ? backCam.id : cameras[0].id;
-                        }
-                        targetCamera = this.selectedCameraId;
-                    } else {
-                        targetCamera = { facingMode: "user" };
-                    }
-
-                    await this.runCamera(targetCamera);
-                } catch (err) {
-                    console.error("Html5Qrcode init error:", err);
-                    this.isCameraLoading = false;
-                    this.cameraPermissionError = true;
-                    this.cameraStatusText = 'Gagal inisialisasi scanner';
-                    this.errorDetailMessage = err.message || err.toString();
                 }
             });
         },
 
-        async runCamera(cameraSource) {
-            this.isCameraLoading = true;
-            this.cameraStatusText = 'Menyalakan video feed...';
+        startQrLoop() {
+            if (this.scanIntervalId) {
+                clearInterval(this.scanIntervalId);
+            }
 
-            const config = {
-                fps: 10,
-                qrbox: { width: 250, height: 250 }
-            };
+            const video = document.getElementById('webcam-video');
+            const canvas = document.getElementById('qr-canvas');
+            if (!video || !canvas) return;
 
-            try {
-                if (this.html5QrCode && this.html5QrCode.isScanning) {
-                    await this.html5QrCode.stop();
+            const ctx = canvas.getContext('2d', { willReadFrequently: true });
+
+            this.scanIntervalId = setInterval(() => {
+                if (!this.scannerActive || !this.isCameraStreaming) {
+                    clearInterval(this.scanIntervalId);
+                    return;
                 }
 
-                await this.html5QrCode.start(
-                    cameraSource,
-                    config,
-                    (decodedText) => {
-                        console.log("QR Code Terdeteksi:", decodedText);
-                        this.stopScanner();
-                        this.inputCode = decodedText;
-                        this.lookupCode(decodedText);
-                    },
-                    (errorMessage) => {}
-                );
+                if (video.readyState === video.HAVE_ENOUGH_DATA) {
+                    canvas.width = video.videoWidth;
+                    canvas.height = video.videoHeight;
+                    ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
 
-                this.isCameraLoading = false;
-                this.cameraPermissionError = false;
-                this.cameraStatusText = 'Kamera Aktif - Arahkan ke QR Code Kwitansi';
-            } catch (err) {
-                console.error("runCamera error:", err);
-                this.isCameraLoading = false;
-                this.cameraPermissionError = true;
-                this.cameraStatusText = 'Gagal memutar video kamera';
-                this.errorDetailMessage = err.message || err.toString();
-            }
+                    const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+                    if (window.jsQR) {
+                        const code = jsQR(imageData.data, imageData.width, imageData.height, {
+                            inversionAttempts: "dontInvert"
+                        });
+                        if (code && code.data && code.data.trim()) {
+                            console.log("QR Code Terdeteksi via jsQR:", code.data);
+                            clearInterval(this.scanIntervalId);
+                            this.stopScanner();
+                            this.inputCode = code.data;
+                            this.lookupCode(code.data);
+                        }
+                    }
+                }
+            }, 180); // Cek tiap 180ms (~5.5 frame per detik, sangat cepat dan hemat CPU)
         },
 
         async switchCamera() {
-            if (this.selectedCameraId && this.scannerActive) {
-                await this.runCamera(this.selectedCameraId);
+            if (this.scannerActive) {
+                await this.startScanner();
             }
         },
 
-        async stopScanner() {
-            if (this.html5QrCode && this.html5QrCode.isScanning) {
-                try {
-                    await this.html5QrCode.stop();
-                } catch (err) {
-                    console.error("Gagal stop kamera:", err);
-                }
+        stopMediaStreamOnly() {
+            if (this.scanIntervalId) {
+                clearInterval(this.scanIntervalId);
+                this.scanIntervalId = null;
             }
+            if (this.mediaStream) {
+                this.mediaStream.getTracks().forEach(track => track.stop());
+                this.mediaStream = null;
+            }
+            const video = document.getElementById('webcam-video');
+            if (video) {
+                video.srcObject = null;
+            }
+        },
+
+        stopScanner() {
+            this.stopMediaStreamOnly();
             this.scannerActive = false;
             this.isCameraLoading = false;
+            this.isCameraStreaming = false;
         },
 
         scanFromFile(event) {
             const file = event.target.files[0];
             if (!file) return;
 
-            if (!this.html5QrCode) {
-                this.html5QrCode = new Html5Qrcode("qr-reader");
-            }
-
             this.isLoading = true;
             this.errorMessage = '';
 
-            this.html5QrCode.scanFile(file, true)
-                .then(decodedText => {
-                    this.isLoading = false;
-                    this.inputCode = decodedText;
-                    this.lookupCode(decodedText);
-                })
-                .catch(err => {
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                const img = new Image();
+                img.onload = () => {
+                    const canvas = document.createElement('canvas');
+                    canvas.width = img.width;
+                    canvas.height = img.height;
+                    const ctx = canvas.getContext('2d');
+                    ctx.drawImage(img, 0, 0);
+                    const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+
+                    if (window.jsQR) {
+                        const code = jsQR(imageData.data, imageData.width, imageData.height);
+                        if (code && code.data) {
+                            this.isLoading = false;
+                            this.inputCode = code.data;
+                            this.lookupCode(code.data);
+                            return;
+                        }
+                    }
+
                     this.isLoading = false;
                     this.errorMessage = "QR Code tidak terbaca pada file gambar ini. Pastikan foto QR cukup jelas dan tegak.";
-                });
+                };
+                img.onerror = () => {
+                    this.isLoading = false;
+                    this.errorMessage = "Gagal memproses file gambar.";
+                };
+                img.src = e.target.result;
+            };
+            reader.readAsDataURL(file);
         },
 
         lookupCode(code) {
