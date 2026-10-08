@@ -95,15 +95,6 @@
                 KWITANSI PENDAFTARAN RESMI
             </h3>
             <div class="w-36 h-0.5 bg-red-600 mx-auto mt-1.5"></div>
-
-            <!-- Nomor Kode Registrasi Resmi untuk Daftar Ulang -->
-            <div class="mt-4 inline-block bg-slate-900 text-white px-6 py-2.5 rounded-2xl shadow-sm border border-slate-700">
-                <div class="text-[10px] uppercase font-bold tracking-widest text-slate-300">NOMOR REGISTRASI PENDAFTARAN</div>
-                <div class="text-xl sm:text-2xl font-mono font-black tracking-widest text-white mt-0.5">{{ $registration->registration_code }}</div>
-            </div>
-            <p class="text-[11px] text-slate-500 font-medium mt-2 max-w-md mx-auto">
-                <i class="fa-solid fa-circle-info text-red-500"></i> Wajib ditunjukkan atau scan QR Code saat <strong>Daftar Ulang (Registrasi Ulang)</strong> di meja panitia lomba.
-            </p>
         </div>
 
         <!-- Meta Table Data Kontingen -->
