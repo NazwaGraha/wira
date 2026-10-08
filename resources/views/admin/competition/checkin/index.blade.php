@@ -118,19 +118,23 @@
                     </template>
                 </div>
 
-                <!-- Petunjuk jika izin kamera ditolak atau belum diizinkan -->
+                <!-- Petunjuk jika sensor kamera gagal / izin bermasalah -->
                 <div x-show="cameraPermissionError" class="p-4 mb-3 bg-rose-50 border border-rose-200 rounded-xl text-xs text-rose-800">
-                    <div class="font-bold mb-1 flex items-center gap-1.5 text-rose-900">
-                        <i class="fa-solid fa-lock"></i> Izin Akses Kamera Ditolak / Belum Diaktifkan di Browser
+                    <div class="font-bold mb-1 flex items-center gap-1.5 text-rose-900 text-sm">
+                        <i class="fa-solid fa-triangle-exclamation text-rose-600"></i> Kendala Mengakses Sensor Kamera
                     </div>
-                    <ol class="list-decimal pl-4 space-y-1 text-rose-700 mt-1">
-                        <li>Klik ikon <strong>Pengaturan Situs</strong> di sebelah kiri URL <code>wira.nazwagraha.com</code> pada address bar Google Chrome.</li>
-                        <li>Pada baris <strong>Kamera (Camera)</strong>, ubah menjadi <strong>"Allow" (Izinkan)</strong>.</li>
-                        <li>(Di MacBook/macOS): Buka <strong>System Settings macOS &gt; Privacy &amp; Security &gt; Camera</strong> dan pastikan Google Chrome telah dicentang.</li>
-                        <li>Klik tombol di bawah ini untuk mencoba menyalakan ulang kamera.</li>
-                    </ol>
-                    <button type="button" @click="startScanner()" class="mt-3 px-3 py-1.5 bg-rose-600 hover:bg-rose-700 text-white rounded-lg font-bold text-xs transition flex items-center gap-1.5">
-                        <i class="fa-solid fa-rotate-right"></i> Coba Nyalakan Ulang Kamera
+                    <p class="text-rose-800 font-bold mb-2 bg-white/70 p-2 rounded border border-rose-200" x-text="errorDetailMessage || 'Izin kamera belum aktif atau kamera sedang digunakan aplikasi lain.'"></p>
+                    
+                    <div class="bg-white/80 p-3 rounded-lg border border-rose-200 text-rose-900 mb-3 space-y-1.5">
+                        <div class="font-bold text-rose-950">Cara Mengatasi:</div>
+                        <div>&bull; Jika Anda membuka aplikasi <strong>FaceTime, Zoom, Photo Booth, atau Google Meet</strong> di Mac, <strong>tutup aplikasi tersebut</strong> agar sensor kamera tidak terkunci.</div>
+                        <div>&bull; Pastikan izin Camera diizinkan di Google Chrome (ikon di samping URL <code>wira.nazwagraha.com</code>).</div>
+                        <div>&bull; Di Mac: Buka <strong>System Settings &gt; Privacy &amp; Security &gt; Camera</strong>, pastikan Google Chrome dicentang.</div>
+                        <div>&bull; Jika kamera laptop tetap tidak bisa, Anda bisa menggunakan tombol <strong>"Atau Unggah Foto QR Code"</strong> di bawah atau ketik nomor registrasi di kotak pencarian.</div>
+                    </div>
+
+                    <button type="button" @click="startScanner()" class="px-3.5 py-2 bg-rose-600 hover:bg-rose-700 text-white rounded-lg font-bold text-xs transition flex items-center gap-1.5 shadow-sm">
+                        <i class="fa-solid fa-rotate-right"></i> Coba Nyalakan Ulang Kamera Sekarang
                     </button>
                 </div>
 
@@ -513,6 +517,7 @@ function checkinApp() {
         isCameraLoading: false,
         cameraPermissionError: false,
         cameraStatusText: 'Menyiapkan kamera...',
+        errorDetailMessage: '',
         availableCameras: [],
         selectedCameraId: '',
         html5QrCode: null,
@@ -533,61 +538,100 @@ function checkinApp() {
             this.scannerActive = true;
             this.isCameraLoading = true;
             this.cameraPermissionError = false;
+            this.errorDetailMessage = '';
             this.cameraStatusText = 'Mendeteksi sensor kamera...';
 
             this.$nextTick(async () => {
-                try {
-                    if (!this.html5QrCode) {
-                        this.html5QrCode = new Html5Qrcode("qr-reader");
+                // 1. Bersihkan instance scanner lama jika ada agar tidak macet di background
+                if (this.html5QrCode) {
+                    try {
+                        if (this.html5QrCode.isScanning) {
+                            await this.html5QrCode.stop();
+                        }
+                        await this.html5QrCode.clear();
+                    } catch (e) {
+                        console.warn("Clean previous instance error:", e);
                     }
+                    this.html5QrCode = null;
+                }
 
-                    // Dapatkan daftar kamera perangkat (Laptop / HP)
+                const qrContainer = document.getElementById("qr-reader");
+                if (qrContainer) {
+                    qrContainer.innerHTML = "";
+                }
+
+                // 2. Pre-flight check: uji akses native browser
+                try {
+                    const testStream = await navigator.mediaDevices.getUserMedia({ video: true });
+                    testStream.getTracks().forEach(track => track.stop());
+                } catch (err) {
+                    console.error("Native getUserMedia error:", err);
+                    this.isCameraLoading = false;
+                    this.cameraPermissionError = true;
+                    if (err.name === 'NotAllowedError' || err.name === 'PermissionDeniedError') {
+                        this.cameraStatusText = 'Izin kamera diblokir browser';
+                        this.errorDetailMessage = 'Browser belum mengizinkan akses kamera. Klik ikon setelan di samping URL wira.nazwagraha.com, ubah Camera ke Allow lalu reload halaman.';
+                    } else if (err.name === 'NotReadableError' || err.name === 'TrackStartError') {
+                        this.cameraStatusText = 'Kamera sedang dipakai aplikasi lain';
+                        this.errorDetailMessage = 'Sensor kamera Mac Anda sedang digunakan oleh aplikasi lain (seperti FaceTime, Zoom, Photobooth, atau Google Meet). Silakan tutup aplikasi tersebut.';
+                    } else if (err.name === 'NotFoundError' || err.name === 'DevicesNotFoundError') {
+                        this.cameraStatusText = 'Hardware kamera tidak ditemukan';
+                        this.errorDetailMessage = 'Tidak ditemukan perangkat webcam pada komputer ini.';
+                    } else {
+                        this.cameraStatusText = 'Gagal membuka kamera: ' + err.name;
+                        this.errorDetailMessage = err.message || err.toString();
+                    }
+                    return;
+                }
+
+                // 3. Inisialisasi Html5Qrcode dengan sensor yang sudah terbukti siap
+                try {
+                    this.html5QrCode = new Html5Qrcode("qr-reader");
+
                     let cameras = [];
                     try {
                         cameras = await Html5Qrcode.getCameras();
                     } catch (e) {
-                        console.warn("getCameras error / permission needed:", e);
+                        console.warn("getCameras error:", e);
                     }
 
                     this.availableCameras = cameras || [];
 
+                    let targetCamera = null;
                     if (cameras && cameras.length > 0) {
                         if (!this.selectedCameraId) {
-                            // Di HP cari kamera belakang, di laptop pilih kamera pertama (FaceTime/Webcam)
-                            const backCam = cameras.find(c => (c.label || '').toLowerCase().includes('back') || (c.label || '').toLowerCase().includes('belakang') || (c.label || '').toLowerCase().includes('environment'));
+                            const backCam = cameras.find(c => (c.label || '').toLowerCase().includes('back') || (c.label || '').toLowerCase().includes('belakang'));
                             this.selectedCameraId = backCam ? backCam.id : cameras[0].id;
                         }
-                        await this.runCamera(this.selectedCameraId);
+                        targetCamera = this.selectedCameraId;
                     } else {
-                        // Fallback generic facingMode untuk laptop / browser yang belum mengizinkan enumerateDevices
-                        await this.runCamera(null);
+                        targetCamera = { facingMode: "user" };
                     }
+
+                    await this.runCamera(targetCamera);
                 } catch (err) {
-                    console.error("Gagal startScanner:", err);
+                    console.error("Html5Qrcode init error:", err);
                     this.isCameraLoading = false;
                     this.cameraPermissionError = true;
-                    this.cameraStatusText = 'Akses kamera ditolak / gagal';
+                    this.cameraStatusText = 'Gagal inisialisasi scanner';
+                    this.errorDetailMessage = err.message || err.toString();
                 }
             });
         },
 
-        async runCamera(cameraId) {
+        async runCamera(cameraSource) {
             this.isCameraLoading = true;
-            this.cameraStatusText = 'Menghubungkan ke sensor video...';
+            this.cameraStatusText = 'Menyalakan video feed...';
 
             const config = {
                 fps: 10,
-                qrbox: { width: 250, height: 250 },
-                aspectRatio: 1.333333
+                qrbox: { width: 250, height: 250 }
             };
 
             try {
                 if (this.html5QrCode && this.html5QrCode.isScanning) {
                     await this.html5QrCode.stop();
                 }
-
-                // Jika ada cameraId spesifik pakai itu, jika tidak coba { facingMode: "user" } (kamera laptop depan)
-                const cameraSource = cameraId ? cameraId : { facingMode: "user" };
 
                 await this.html5QrCode.start(
                     cameraSource,
@@ -598,40 +642,18 @@ function checkinApp() {
                         this.inputCode = decodedText;
                         this.lookupCode(decodedText);
                     },
-                    (errorMessage) => {
-                        // frame scanning in progress
-                    }
+                    (errorMessage) => {}
                 );
 
                 this.isCameraLoading = false;
                 this.cameraPermissionError = false;
                 this.cameraStatusText = 'Kamera Aktif - Arahkan ke QR Code Kwitansi';
             } catch (err) {
-                console.warn("Gagal runCamera tahap 1:", err);
-
-                // Fallback tahap 2: Coba environment jika tadi user, atau coba user jika tadi gagal
-                try {
-                    const fallbackSource = { facingMode: "environment" };
-                    await this.html5QrCode.start(
-                        fallbackSource,
-                        config,
-                        (decodedText) => {
-                            this.stopScanner();
-                            this.inputCode = decodedText;
-                            this.lookupCode(decodedText);
-                        },
-                        () => {}
-                    );
-                    this.isCameraLoading = false;
-                    this.cameraPermissionError = false;
-                    this.cameraStatusText = 'Kamera Aktif - Arahkan ke QR Code Kwitansi';
-                    return;
-                } catch (err2) {
-                    console.error("Semua metode kamera gagal:", err2);
-                    this.isCameraLoading = false;
-                    this.cameraPermissionError = true;
-                    this.cameraStatusText = 'Izin kamera belum aktif di browser';
-                }
+                console.error("runCamera error:", err);
+                this.isCameraLoading = false;
+                this.cameraPermissionError = true;
+                this.cameraStatusText = 'Gagal memutar video kamera';
+                this.errorDetailMessage = err.message || err.toString();
             }
         },
 
