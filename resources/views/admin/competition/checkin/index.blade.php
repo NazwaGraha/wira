@@ -4,8 +4,10 @@
 @section('page_title', 'Daftar Ulang / Presensi Peserta Lomba (Hari-H)')
 
 @section('top_actions')
-    <a href="{{ route('admin.competition-participants.index') }}" class="bg-slate-800 hover:bg-slate-900 text-white px-4 py-2.5 rounded-xl font-bold text-xs transition flex items-center gap-2">
-        <i class="fa-solid fa-users-viewfinder"></i> Lihat Peserta Terverifikasi
+    <a href="{{ route('admin.competition-participants.index') }}" class="bg-slate-800 hover:bg-slate-900 text-white px-3 sm:px-4 py-2 sm:py-2.5 rounded-xl font-bold text-xs transition flex items-center gap-1.5 sm:gap-2">
+        <i class="fa-solid fa-users-viewfinder"></i> 
+        <span class="hidden sm:inline">Lihat Peserta Terverifikasi</span>
+        <span class="sm:hidden">Peserta</span>
     </a>
 @endsection
 
@@ -16,50 +18,50 @@
     @include('admin.competition.partials.event-selector')
 
     <!-- Statistik Presensi Kehadiran Hari-H -->
-    <div class="grid grid-cols-1 sm:grid-cols-4 gap-4">
-        <div class="p-5 rounded-2xl bg-white border border-slate-200 shadow-sm flex items-center justify-between">
+    <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+        <div class="p-4 sm:p-5 rounded-2xl bg-white border border-slate-200 shadow-xs flex items-center justify-between">
             <div>
-                <div class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Total Terverifikasi</div>
-                <div class="text-3xl font-black text-slate-900 mt-1">{{ $totalVerified }}</div>
-                <div class="text-[11px] text-slate-400 mt-0.5">Kontingen Lunas</div>
+                <div class="text-[10px] sm:text-xs font-bold text-slate-500 uppercase tracking-wider">Total Lunas</div>
+                <div class="text-2xl sm:text-3xl font-black text-slate-900 mt-0.5 sm:mt-1">{{ $totalVerified }}</div>
+                <div class="text-[10px] sm:text-[11px] text-slate-400 mt-0.5 truncate">Kontingen</div>
             </div>
-            <div class="w-12 h-12 rounded-2xl bg-blue-50 text-blue-600 flex items-center justify-center text-xl font-bold">
+            <div class="w-10 h-10 sm:w-12 sm:h-12 rounded-xl sm:rounded-2xl bg-blue-50 text-blue-600 flex items-center justify-center text-lg sm:text-xl font-bold shrink-0">
                 <i class="fa-solid fa-school"></i>
             </div>
         </div>
 
-        <div class="p-5 rounded-2xl bg-white border border-emerald-200 shadow-sm flex items-center justify-between">
+        <div class="p-4 sm:p-5 rounded-2xl bg-white border border-emerald-200 shadow-xs flex items-center justify-between">
             <div>
-                <div class="text-xs font-semibold text-emerald-600 uppercase tracking-wider">Sudah Hadir (Daftar Ulang)</div>
-                <div class="text-3xl font-black text-emerald-700 mt-1">{{ $totalCheckedIn }}</div>
-                <div class="text-[11px] text-emerald-600 mt-0.5 font-medium">{{ $attendanceRate }}% dari total kontingen</div>
+                <div class="text-[10px] sm:text-xs font-bold text-emerald-600 uppercase tracking-wider">Sudah Hadir</div>
+                <div class="text-2xl sm:text-3xl font-black text-emerald-700 mt-0.5 sm:mt-1">{{ $totalCheckedIn }}</div>
+                <div class="text-[10px] sm:text-[11px] text-emerald-600 mt-0.5 font-bold">{{ $attendanceRate }}%</div>
             </div>
-            <div class="w-12 h-12 rounded-2xl bg-emerald-100 text-emerald-700 flex items-center justify-center text-xl font-bold">
+            <div class="w-10 h-10 sm:w-12 sm:h-12 rounded-xl sm:rounded-2xl bg-emerald-100 text-emerald-700 flex items-center justify-center text-lg sm:text-xl font-bold shrink-0">
                 <i class="fa-solid fa-clipboard-check"></i>
             </div>
         </div>
 
-        <div class="p-5 rounded-2xl bg-white border border-amber-200 shadow-sm flex items-center justify-between">
+        <div class="p-4 sm:p-5 rounded-2xl bg-white border border-amber-200 shadow-xs flex items-center justify-between">
             <div>
-                <div class="text-xs font-semibold text-amber-600 uppercase tracking-wider">Belum Daftar Ulang</div>
-                <div class="text-3xl font-black text-amber-700 mt-1">{{ $totalPending }}</div>
-                <div class="text-[11px] text-amber-600 mt-0.5 font-medium">Menunggu di lokasi</div>
+                <div class="text-[10px] sm:text-xs font-bold text-amber-600 uppercase tracking-wider">Belum Hadir</div>
+                <div class="text-2xl sm:text-3xl font-black text-amber-700 mt-0.5 sm:mt-1">{{ $totalPending }}</div>
+                <div class="text-[10px] sm:text-[11px] text-amber-600 mt-0.5 font-medium">Menunggu</div>
             </div>
-            <div class="w-12 h-12 rounded-2xl bg-amber-100 text-amber-700 flex items-center justify-center text-xl font-bold">
+            <div class="w-10 h-10 sm:w-12 sm:h-12 rounded-xl sm:rounded-2xl bg-amber-100 text-amber-700 flex items-center justify-center text-lg sm:text-xl font-bold shrink-0">
                 <i class="fa-solid fa-clock"></i>
             </div>
         </div>
 
-        <div class="p-5 rounded-2xl bg-gradient-to-br from-slate-900 to-slate-800 text-white shadow-md flex flex-col justify-between">
+        <div class="p-4 sm:p-5 rounded-2xl bg-gradient-to-br from-slate-900 to-slate-800 text-white shadow-md flex flex-col justify-between col-span-2 sm:col-span-1 lg:col-span-1">
             <div class="flex items-center justify-between">
-                <span class="text-xs font-bold text-slate-300 uppercase tracking-wider">Kehadiran Hari-H</span>
-                <span class="px-2 py-0.5 rounded-full text-[11px] font-black bg-emerald-500 text-slate-900">{{ $attendanceRate }}%</span>
+                <span class="text-[10px] sm:text-xs font-bold text-slate-300 uppercase tracking-wider">Kehadiran</span>
+                <span class="px-2 py-0.5 rounded-full text-[10px] sm:text-[11px] font-black bg-emerald-500 text-slate-900">{{ $attendanceRate }}%</span>
             </div>
-            <div class="mt-4">
-                <div class="w-full bg-slate-700 rounded-full h-3 overflow-hidden">
-                    <div class="bg-gradient-to-r from-emerald-500 to-teal-400 h-3 rounded-full transition-all duration-500" style="width: {{ $attendanceRate }}%"></div>
+            <div class="mt-2.5 sm:mt-4">
+                <div class="w-full bg-slate-700 rounded-full h-2.5 sm:h-3 overflow-hidden">
+                    <div class="bg-gradient-to-r from-emerald-500 to-teal-400 h-full rounded-full transition-all duration-500" style="width: {{ $attendanceRate }}%"></div>
                 </div>
-                <div class="flex justify-between items-center text-[11px] text-slate-400 mt-1.5">
+                <div class="flex justify-between items-center text-[10px] sm:text-[11px] text-slate-400 mt-1">
                     <span>{{ $totalCheckedIn }} Hadir</span>
                     <span>{{ $totalVerified }} Total</span>
                 </div>
@@ -69,22 +71,22 @@
 
     <!-- Panel Input Cepat & Scanner QR Code -->
     <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
-        <div class="p-5 sm:p-6 bg-gradient-to-r from-red-600 to-rose-700 text-white">
+        <div class="p-4 sm:p-6 bg-gradient-to-r from-red-600 to-rose-700 text-white">
             <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                <div class="flex items-center gap-3.5">
-                    <div class="w-12 h-12 rounded-2xl bg-white/10 backdrop-blur border border-white/20 flex items-center justify-center text-2xl">
+                <div class="flex items-center gap-3 sm:gap-3.5">
+                    <div class="w-10 h-10 sm:w-12 sm:h-12 rounded-xl sm:rounded-2xl bg-white/10 backdrop-blur border border-white/20 flex items-center justify-center text-xl sm:text-2xl shrink-0">
                         <i class="fa-solid fa-qrcode"></i>
                     </div>
                     <div>
-                        <h2 class="text-lg font-black tracking-tight">Meja Registrasi & Daftar Ulang Kontingen</h2>
-                        <p class="text-xs text-red-100 mt-0.5">Scan QR Code dari Kwitansi Resmi pendaftar atau masukkan Nomor Registrasi (Contoh: SBB-W54342H)</p>
+                        <h2 class="text-base sm:text-lg font-black tracking-tight leading-snug">Meja Registrasi & Daftar Ulang Kontingen</h2>
+                        <p class="text-[11px] sm:text-xs text-red-100 mt-0.5">Scan QR Code dari Kwitansi Resmi atau ketik Nomor Registrasi (Contoh: SBB-W54342H)</p>
                     </div>
                 </div>
 
-                <div class="flex items-center gap-2">
+                <div class="flex items-center gap-2 w-full md:w-auto">
                     <button type="button" 
                             @click="toggleScanner()" 
-                            class="px-4 py-2.5 rounded-xl font-bold text-xs transition flex items-center gap-2 shadow-sm"
+                            class="w-full md:w-auto justify-center px-4 py-2.5 rounded-xl font-bold text-xs transition flex items-center gap-2 shadow-sm"
                             :class="scannerActive ? 'bg-amber-400 text-slate-900 hover:bg-amber-300' : 'bg-white text-red-700 hover:bg-red-50'">
                         <i class="fa-solid" :class="scannerActive ? 'fa-video-slash' : 'fa-camera'"></i>
                         <span x-text="scannerActive ? 'Tutup Kamera Scanner' : 'Buka Kamera Scanner QR'"></span>
@@ -174,29 +176,28 @@
             </div>
 
             <!-- Form Input Manual Kode Registrasi -->
-            <form @submit.prevent="lookupCode(inputCode)" class="flex flex-col sm:flex-row gap-3 max-w-2xl mx-auto">
+            <form @submit.prevent="lookupCode(inputCode)" class="flex flex-col sm:flex-row gap-2.5 sm:gap-3 max-w-2xl mx-auto">
                 <div class="relative flex-1">
-                    <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-slate-400">
-                        <i class="fa-solid fa-barcode text-lg"></i>
+                    <div class="absolute inset-y-0 left-0 pl-3.5 sm:pl-4 flex items-center pointer-events-none text-slate-400">
+                        <i class="fa-solid fa-barcode text-base sm:text-lg"></i>
                     </div>
                     <input type="text" 
                            x-model="inputCode" 
-                           placeholder="Ketik Nomor Registrasi (Contoh: SBB-W54342H atau scan barcode)..." 
-                           class="w-full pl-12 pr-4 py-3.5 bg-white border-2 border-slate-300 focus:border-red-600 focus:ring-4 focus:ring-red-100 rounded-xl font-mono font-bold text-slate-800 placeholder-slate-400 text-sm tracking-wider uppercase transition shadow-sm"
-                           autocomplete="off"
-                           autofocus>
+                           placeholder="Ketik Nomor Registrasi (Contoh: SBB-W54342H)..." 
+                           class="w-full pl-10 sm:pl-12 pr-4 py-3 sm:py-3.5 bg-white border-2 border-slate-300 focus:border-red-600 focus:ring-4 focus:ring-red-100 rounded-xl font-mono font-bold text-slate-800 placeholder-slate-400 text-xs sm:text-sm tracking-wider uppercase transition shadow-sm"
+                           autocomplete="off">
                 </div>
                 <button type="submit" 
                         :disabled="isLoading || !inputCode"
-                        class="px-6 py-3.5 bg-slate-900 hover:bg-slate-800 disabled:opacity-50 text-white rounded-xl font-bold text-sm transition flex items-center justify-center gap-2 shadow-sm shrink-0">
-                    <span x-show="!isLoading"><i class="fa-solid fa-magnifying-glass"></i> Cek Kontingen</span>
+                        class="w-full sm:w-auto px-6 py-3 sm:py-3.5 bg-slate-900 hover:bg-slate-800 disabled:opacity-50 text-white rounded-xl font-bold text-xs sm:text-sm transition flex items-center justify-center gap-2 shadow-sm shrink-0">
+                    <span x-show="!isLoading" class="flex items-center gap-1.5"><i class="fa-solid fa-magnifying-glass"></i> Cek Kontingen</span>
                     <span x-show="isLoading" class="flex items-center gap-2"><i class="fa-solid fa-circle-notch fa-spin"></i> Memeriksa...</span>
                 </button>
             </form>
         </div>
 
         <!-- Alert Error / Notifikasi Pencarian -->
-        <div x-show="errorMessage" x-transition class="p-4 bg-rose-50 border-b border-rose-200 text-rose-700 text-sm flex items-start justify-between gap-3">
+        <div x-show="errorMessage" x-transition class="p-4 bg-rose-50 border-b border-rose-200 text-rose-700 text-xs sm:text-sm flex items-start justify-between gap-3">
             <div class="flex items-center gap-2.5">
                 <i class="fa-solid fa-triangle-exclamation text-rose-500 text-lg"></i>
                 <span class="font-bold" x-text="errorMessage"></span>
@@ -207,17 +208,17 @@
         </div>
 
         <!-- Kartu Hasil Lookup Peserta (Siap Check-In) -->
-        <div x-show="activeCandidate" x-transition class="p-6 bg-white border-b border-slate-200">
+        <div x-show="activeCandidate" x-transition class="p-4 sm:p-6 bg-white border-b border-slate-200">
             <template x-if="activeCandidate">
-                <div class="rounded-2xl border-2 p-6 transition-all"
+                <div class="rounded-2xl border-2 p-4 sm:p-6 transition-all"
                      :class="activeCandidate.is_checked_in ? 'border-emerald-300 bg-emerald-50/40' : 'border-blue-300 bg-blue-50/30'">
                     
-                    <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-6 pb-5 border-b"
+                    <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4 sm:gap-6 pb-4 sm:pb-5 border-b"
                          :class="activeCandidate.is_checked_in ? 'border-emerald-200' : 'border-blue-200'">
                         <div>
-                            <div class="flex flex-wrap items-center gap-2.5 mb-2">
-                                <span class="px-3 py-1 rounded-lg font-mono font-black text-xs uppercase tracking-wider bg-slate-900 text-white shadow-sm" x-text="activeCandidate.registration_code"></span>
-                                <span class="px-2.5 py-1 rounded-lg text-xs font-black uppercase"
+                            <div class="flex flex-wrap items-center gap-2 mb-2">
+                                <span class="px-2.5 py-1 rounded-lg font-mono font-black text-xs uppercase tracking-wider bg-slate-900 text-white shadow-sm" x-text="activeCandidate.registration_code"></span>
+                                <span class="px-2 py-1 rounded-lg text-xs font-black uppercase"
                                       :class="{
                                           'bg-blue-100 text-blue-800': activeCandidate.level === 'WIRA',
                                           'bg-emerald-100 text-emerald-800': activeCandidate.level === 'MADYA',
@@ -226,18 +227,18 @@
                                       x-text="'TINGKAT ' + activeCandidate.level"></span>
                                 
                                 <template x-if="activeCandidate.is_checked_in">
-                                    <span class="px-3 py-1 rounded-lg text-xs font-black bg-emerald-600 text-white flex items-center gap-1.5 shadow-sm">
+                                    <span class="px-2.5 py-1 rounded-lg text-xs font-black bg-emerald-600 text-white flex items-center gap-1.5 shadow-sm">
                                         <i class="fa-solid fa-circle-check"></i> SUDAH DAFTAR ULANG
                                     </span>
                                 </template>
                                 <template x-if="!activeCandidate.is_checked_in">
-                                    <span class="px-3 py-1 rounded-lg text-xs font-black bg-amber-500 text-white flex items-center gap-1.5 shadow-sm">
+                                    <span class="px-2.5 py-1 rounded-lg text-xs font-black bg-amber-500 text-white flex items-center gap-1.5 shadow-sm">
                                         <i class="fa-solid fa-clock"></i> BELUM DAFTAR ULANG (SIAP PRESENSI)
                                     </span>
                                 </template>
                             </div>
-                            <h3 class="text-2xl font-black text-slate-900 tracking-tight" x-text="activeCandidate.school_name"></h3>
-                            <div class="flex flex-wrap items-center gap-4 text-xs text-slate-600 mt-2">
+                            <h3 class="text-xl sm:text-2xl font-black text-slate-900 tracking-tight" x-text="activeCandidate.school_name"></h3>
+                            <div class="flex flex-wrap items-center gap-2.5 sm:gap-4 text-xs text-slate-600 mt-2">
                                 <div><i class="fa-solid fa-user-tie text-slate-400 mr-1.5"></i> Pembina: <strong class="text-slate-800" x-text="activeCandidate.advisor_name"></strong></div>
                                 <div><i class="fa-solid fa-phone text-slate-400 mr-1.5"></i> <span x-text="activeCandidate.advisor_phone"></span></div>
                                 <div><i class="fa-solid fa-money-bill-wave text-slate-400 mr-1.5"></i> Biaya: <strong class="text-emerald-700" x-text="'Rp ' + activeCandidate.total_fee"></strong></div>
@@ -245,9 +246,9 @@
                         </div>
 
                         <!-- Status Badge & Timestamp Kehadiran -->
-                        <div class="flex flex-col items-start lg:items-end gap-2 shrink-0">
+                        <div class="flex flex-col sm:flex-row lg:flex-col items-start sm:items-center lg:items-end justify-between gap-3 shrink-0">
                             <template x-if="activeCandidate.is_checked_in">
-                                <div class="bg-emerald-100/90 border border-emerald-300 rounded-xl p-3 text-left lg:text-right">
+                                <div class="bg-emerald-100/90 border border-emerald-300 rounded-xl p-3 text-left lg:text-right w-full sm:w-auto">
                                     <div class="text-[11px] font-bold text-emerald-800 uppercase tracking-wide">Waktu Kehadiran:</div>
                                     <div class="text-sm font-black text-emerald-950 mt-0.5" x-text="activeCandidate.checked_in_at"></div>
                                     <div class="text-xs text-emerald-800 mt-0.5">Petugas: <strong x-text="activeCandidate.checked_in_by"></strong></div>
@@ -257,11 +258,11 @@
                                 </div>
                             </template>
 
-                            <div class="flex items-center gap-2">
-                                <a :href="'/lomba/kwitansi/' + activeCandidate.registration_code" target="_blank" class="px-3 py-2 rounded-xl border border-slate-300 bg-white hover:bg-slate-50 text-slate-700 text-xs font-bold transition flex items-center gap-1.5">
+                            <div class="flex items-center gap-2 w-full sm:w-auto">
+                                <a :href="'/lomba/kwitansi/' + activeCandidate.registration_code" target="_blank" class="flex-1 sm:flex-none justify-center px-3 py-2 rounded-xl border border-slate-300 bg-white hover:bg-slate-50 text-slate-700 text-xs font-bold transition flex items-center gap-1.5 shadow-xs">
                                     <i class="fa-solid fa-receipt text-red-600"></i> Buka Kwitansi
                                 </a>
-                                <a :href="'/lomba/kartu-peserta/' + activeCandidate.registration_code" target="_blank" class="px-3 py-2 rounded-xl border border-slate-300 bg-white hover:bg-slate-50 text-slate-700 text-xs font-bold transition flex items-center gap-1.5">
+                                <a :href="'/lomba/kartu-peserta/' + activeCandidate.registration_code" target="_blank" class="flex-1 sm:flex-none justify-center px-3 py-2 rounded-xl border border-slate-300 bg-white hover:bg-slate-50 text-slate-700 text-xs font-bold transition flex items-center gap-1.5 shadow-xs">
                                     <i class="fa-solid fa-id-card text-blue-600"></i> Kartu Peserta
                                 </a>
                             </div>
@@ -329,52 +330,52 @@
 
     <!-- Tabel Kontingen & Filter Tab Presensi -->
     <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
-        <div class="p-5 border-b border-slate-100 flex flex-col md:flex-row md:items-center justify-between gap-4">
-            <!-- Tabs Status -->
-            <div class="flex flex-wrap items-center gap-2">
+        <div class="p-3.5 sm:p-5 border-b border-slate-100 flex flex-col md:flex-row md:items-center justify-between gap-3 sm:gap-4">
+            <!-- Tabs Status with smooth swipe on mobile -->
+            <div class="flex items-center gap-2 overflow-x-auto pb-1 max-w-full -mx-1 px-1 scrollbar-none whitespace-nowrap shrink-0">
                 <a href="{{ route('admin.competition-checkin.index', array_merge(request()->except('tab', 'page'), ['tab' => 'pending'])) }}" 
-                   class="px-4 py-2 rounded-xl text-xs font-bold transition flex items-center gap-2 {{ $tab == 'pending' ? 'bg-amber-500 text-white shadow-sm' : 'bg-slate-100 text-slate-700 hover:bg-slate-200' }}">
+                   class="px-3.5 sm:px-4 py-2 rounded-xl text-xs font-bold transition flex items-center gap-1.5 sm:gap-2 whitespace-nowrap shrink-0 {{ $tab == 'pending' ? 'bg-amber-500 text-white shadow-sm' : 'bg-slate-100 text-slate-700 hover:bg-slate-200' }}">
                     <i class="fa-solid fa-clock"></i>
                     <span>Belum Hadir</span>
                     <span class="px-2 py-0.5 rounded-full text-[10px] {{ $tab == 'pending' ? 'bg-amber-700 text-white' : 'bg-slate-200 text-slate-800' }}">{{ $totalPending }}</span>
                 </a>
 
                 <a href="{{ route('admin.competition-checkin.index', array_merge(request()->except('tab', 'page'), ['tab' => 'checked_in'])) }}" 
-                   class="px-4 py-2 rounded-xl text-xs font-bold transition flex items-center gap-2 {{ $tab == 'checked_in' ? 'bg-emerald-600 text-white shadow-sm' : 'bg-slate-100 text-slate-700 hover:bg-slate-200' }}">
+                   class="px-3.5 sm:px-4 py-2 rounded-xl text-xs font-bold transition flex items-center gap-1.5 sm:gap-2 whitespace-nowrap shrink-0 {{ $tab == 'checked_in' ? 'bg-emerald-600 text-white shadow-sm' : 'bg-slate-100 text-slate-700 hover:bg-slate-200' }}">
                     <i class="fa-solid fa-clipboard-check"></i>
-                    <span>Sudah Hadir (Daftar Ulang)</span>
+                    <span>Sudah Hadir</span>
                     <span class="px-2 py-0.5 rounded-full text-[10px] {{ $tab == 'checked_in' ? 'bg-emerald-800 text-white' : 'bg-slate-200 text-slate-800' }}">{{ $totalCheckedIn }}</span>
                 </a>
 
                 <a href="{{ route('admin.competition-checkin.index', array_merge(request()->except('tab', 'page'), ['tab' => 'all'])) }}" 
-                   class="px-4 py-2 rounded-xl text-xs font-bold transition flex items-center gap-2 {{ $tab == 'all' ? 'bg-slate-900 text-white shadow-sm' : 'bg-slate-100 text-slate-700 hover:bg-slate-200' }}">
+                   class="px-3.5 sm:px-4 py-2 rounded-xl text-xs font-bold transition flex items-center gap-1.5 sm:gap-2 whitespace-nowrap shrink-0 {{ $tab == 'all' ? 'bg-slate-900 text-white shadow-sm' : 'bg-slate-100 text-slate-700 hover:bg-slate-200' }}">
                     <i class="fa-solid fa-list"></i>
-                    <span>Semua Kontingen Lunas</span>
+                    <span>Semua Kontingen</span>
                     <span class="px-2 py-0.5 rounded-full text-[10px] {{ $tab == 'all' ? 'bg-slate-700 text-white' : 'bg-slate-200 text-slate-800' }}">{{ $totalVerified }}</span>
                 </a>
             </div>
 
             <!-- Filter Tingkat & Search -->
-            <form action="{{ route('admin.competition-checkin.index') }}" method="GET" class="flex flex-wrap items-center gap-2">
+            <form action="{{ route('admin.competition-checkin.index') }}" method="GET" class="flex flex-wrap sm:flex-nowrap items-center gap-2 w-full md:w-auto">
                 <input type="hidden" name="tab" value="{{ $tab }}">
                 @if(request('event_id'))
                     <input type="hidden" name="event_id" value="{{ request('event_id') }}">
                 @endif
 
-                <select name="level" onchange="this.form.submit()" class="px-3 py-2 text-xs bg-slate-50 border border-slate-200 rounded-xl font-bold text-slate-700">
+                <select name="level" onchange="this.form.submit()" class="px-3 py-2 text-xs bg-slate-50 border border-slate-200 rounded-xl font-bold text-slate-700 shrink-0">
                     <option value="">Semua Tingkat</option>
                     <option value="mula" {{ $level == 'mula' ? 'selected' : '' }}>MULA (SD)</option>
                     <option value="madya" {{ $level == 'madya' ? 'selected' : '' }}>MADYA (SMP)</option>
                     <option value="wira" {{ $level == 'wira' ? 'selected' : '' }}>WIRA (SMA/K)</option>
                 </select>
 
-                <div class="relative">
-                    <input type="text" name="q" value="{{ $search }}" placeholder="Cari sekolah / kode..." class="pl-8 pr-3 py-2 text-xs bg-slate-50 border border-slate-200 rounded-xl text-slate-700 w-44 sm:w-56 focus:w-64 transition-all">
+                <div class="relative flex-1 sm:flex-initial">
+                    <input type="text" name="q" value="{{ $search }}" placeholder="Cari sekolah / kode..." class="pl-8 pr-3 py-2 text-xs bg-slate-50 border border-slate-200 rounded-xl text-slate-700 w-full sm:w-56 focus:sm:w-64 transition-all">
                     <i class="fa-solid fa-magnifying-glass absolute left-2.5 top-2.5 text-slate-400 text-xs"></i>
                 </div>
 
                 @if($search || $level)
-                    <a href="{{ route('admin.competition-checkin.index', ['tab' => $tab, 'event_id' => request('event_id')]) }}" class="p-2 text-slate-400 hover:text-rose-600 text-xs">
+                    <a href="{{ route('admin.competition-checkin.index', ['tab' => $tab, 'event_id' => request('event_id')]) }}" class="p-2 text-slate-400 hover:text-rose-600 text-xs shrink-0" title="Reset filter">
                         <i class="fa-solid fa-xmark"></i>
                     </a>
                 @endif
@@ -382,8 +383,8 @@
         </div>
 
         <!-- Tabel Data -->
-        <div class="overflow-x-auto">
-            <table class="w-full text-left border-collapse text-xs">
+        <div class="overflow-x-auto touch-pan-x">
+            <table class="w-full text-left border-collapse text-xs min-w-[700px]">
                 <thead>
                     <tr class="bg-slate-50 border-b border-slate-200 text-slate-500 uppercase tracking-wider font-bold">
                         <th class="py-3 px-4 w-12 text-center">No</th>

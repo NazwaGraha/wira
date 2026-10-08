@@ -20,7 +20,7 @@
             </div>
 
             <!-- Select Event Form -->
-            <form method="GET" action="" class="mt-1 flex items-center gap-2">
+            <form method="GET" action="" class="mt-1 flex items-center gap-2 max-w-full">
                 {{-- Preserve other query params like level, status, q --}}
                 @foreach(request()->except(['event_id', 'page']) as $k => $v)
                     @if(is_string($v) || is_numeric($v))
@@ -28,7 +28,7 @@
                     @endif
                 @endforeach
 
-                <select name="event_id" onchange="this.form.submit()" class="bg-slate-50 border border-slate-300 hover:border-red-500 rounded-xl px-3 py-1.5 text-xs sm:text-sm font-black text-slate-900 focus:outline-none focus:ring-2 focus:ring-red-100 cursor-pointer shadow-xs">
+                <select name="event_id" onchange="this.form.submit()" class="w-full sm:w-auto max-w-full bg-slate-50 border border-slate-300 hover:border-red-500 rounded-xl px-3 py-1.5 text-xs sm:text-sm font-black text-slate-900 focus:outline-none focus:ring-2 focus:ring-red-100 cursor-pointer shadow-xs truncate">
                     @foreach($allEvents as $ev)
                         <option value="{{ $ev->id }}" {{ (isset($event) && $event->id == $ev->id) ? 'selected' : '' }}>
                             {{ $ev->title }} {{ $ev->start_date ? '(' . $ev->start_date->format('Y') . ')' : '' }} {{ $ev->is_active ? '⭐ [AKTIF]' : '' }}

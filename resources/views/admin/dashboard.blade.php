@@ -4,86 +4,86 @@
 @section('page_title', 'Ringkasan Dashboard CMS')
 
 @section('top_actions')
-    <a href="{{ route('admin.articles.create') }}" class="bg-pmr-primary hover:bg-pmr-dark text-white font-bold text-xs uppercase tracking-wider px-5 py-2.5 rounded-xl shadow-md transition flex items-center gap-2">
-        <i class="fa-solid fa-plus"></i> Tulis Artikel Baru
+    <a href="{{ route('admin.articles.create') }}" class="bg-pmr-primary hover:bg-pmr-dark text-white font-bold text-xs uppercase tracking-wider px-3.5 sm:px-5 py-2 sm:py-2.5 rounded-xl shadow-md transition flex items-center gap-2">
+        <i class="fa-solid fa-plus"></i> <span class="hidden sm:inline">Tulis Artikel Baru</span><span class="sm:hidden">Tulis</span>
     </a>
 @endsection
 
 @section('content')
 <!-- KPI / Metrik Utama (Matching Mockup 08) -->
-<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+<div class="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6 mb-6 sm:mb-8">
     <!-- Card 1 -->
-    <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm flex items-center justify-between">
+    <div class="bg-white p-4 sm:p-6 rounded-2xl border border-slate-200 shadow-sm flex items-center justify-between">
         <div>
-            <div class="text-xs font-bold text-slate-400 uppercase tracking-wider">Total Artikel</div>
-            <div class="text-3xl font-extrabold text-slate-900 mt-1">{{ $totalArticles }}</div>
-            <div class="text-[11px] text-emerald-600 font-semibold mt-1 flex items-center gap-1">
-                <i class="fa-solid fa-arrow-trend-up"></i> Terus bertambah
+            <div class="text-[10px] sm:text-xs font-bold text-slate-400 uppercase tracking-wider">Total Artikel</div>
+            <div class="text-2xl sm:text-3xl font-extrabold text-slate-900 mt-1">{{ $totalArticles }}</div>
+            <div class="text-[10px] sm:text-[11px] text-emerald-600 font-semibold mt-1 flex items-center gap-1">
+                <i class="fa-solid fa-arrow-trend-up"></i> <span class="truncate">Bertambah</span>
             </div>
         </div>
-        <div class="w-12 h-12 rounded-2xl bg-red-50 text-pmr-primary flex items-center justify-center text-xl">
+        <div class="w-10 h-10 sm:w-12 sm:h-12 rounded-xl sm:rounded-2xl bg-red-50 text-pmr-primary flex items-center justify-center text-lg sm:text-xl shrink-0">
             <i class="fa-solid fa-newspaper"></i>
         </div>
     </div>
 
     <!-- Card 2 -->
-    <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm flex items-center justify-between">
+    <div class="bg-white p-4 sm:p-6 rounded-2xl border border-slate-200 shadow-sm flex items-center justify-between">
         <div>
-            <div class="text-xs font-bold text-slate-400 uppercase tracking-wider">Draft / Review</div>
-            <div class="text-3xl font-extrabold text-amber-600 mt-1">{{ $draftArticles }}</div>
-            <div class="text-[11px] text-slate-500 font-semibold mt-1">
+            <div class="text-[10px] sm:text-xs font-bold text-slate-400 uppercase tracking-wider">Draft / Review</div>
+            <div class="text-2xl sm:text-3xl font-extrabold text-amber-600 mt-1">{{ $draftArticles }}</div>
+            <div class="text-[10px] sm:text-[11px] text-slate-500 font-semibold mt-1 truncate">
                 Perlu konfirmasi
             </div>
         </div>
-        <div class="w-12 h-12 rounded-2xl bg-amber-50 text-amber-600 flex items-center justify-center text-xl">
+        <div class="w-10 h-10 sm:w-12 sm:h-12 rounded-xl sm:rounded-2xl bg-amber-50 text-amber-600 flex items-center justify-center text-lg sm:text-xl shrink-0">
             <i class="fa-solid fa-pen-to-square"></i>
         </div>
     </div>
 
     <!-- Card 3 -->
-    <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm flex items-center justify-between">
+    <div class="bg-white p-4 sm:p-6 rounded-2xl border border-slate-200 shadow-sm flex items-center justify-between">
         <div>
-            <div class="text-xs font-bold text-slate-400 uppercase tracking-wider">Total Pembaca</div>
-            <div class="text-3xl font-extrabold text-slate-900 mt-1">{{ number_format($totalViews) }}</div>
-            <div class="text-[11px] text-emerald-600 font-semibold mt-1 flex items-center gap-1">
-                <i class="fa-solid fa-eye"></i> Impresi halaman
+            <div class="text-[10px] sm:text-xs font-bold text-slate-400 uppercase tracking-wider">Total Pembaca</div>
+            <div class="text-2xl sm:text-3xl font-extrabold text-slate-900 mt-1">{{ number_format($totalViews) }}</div>
+            <div class="text-[10px] sm:text-[11px] text-emerald-600 font-semibold mt-1 flex items-center gap-1">
+                <i class="fa-solid fa-eye"></i> <span class="truncate">Impresi</span>
             </div>
         </div>
-        <div class="w-12 h-12 rounded-2xl bg-blue-50 text-blue-600 flex items-center justify-center text-xl">
+        <div class="w-10 h-10 sm:w-12 sm:h-12 rounded-xl sm:rounded-2xl bg-blue-50 text-blue-600 flex items-center justify-center text-lg sm:text-xl shrink-0">
             <i class="fa-solid fa-chart-line"></i>
         </div>
     </div>
 
     <!-- Card 4 -->
-    <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm flex items-center justify-between">
+    <div class="bg-white p-4 sm:p-6 rounded-2xl border border-slate-200 shadow-sm flex items-center justify-between">
         <div>
-            <div class="text-xs font-bold text-slate-400 uppercase tracking-wider">Pendaftar Relawan</div>
-            <div class="text-3xl font-extrabold text-slate-900 mt-1">{{ $totalRegistrations }}</div>
-            <div class="text-[11px] text-pmr-primary font-semibold mt-1">
-                Masa Bakti 2026/2027
+            <div class="text-[10px] sm:text-xs font-bold text-slate-400 uppercase tracking-wider">Pendaftar Relawan</div>
+            <div class="text-2xl sm:text-3xl font-extrabold text-slate-900 mt-1">{{ $totalRegistrations }}</div>
+            <div class="text-[10px] sm:text-[11px] text-pmr-primary font-semibold mt-1 truncate">
+                2026/2027
             </div>
         </div>
-        <div class="w-12 h-12 rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center text-xl">
+        <div class="w-10 h-10 sm:w-12 sm:h-12 rounded-xl sm:rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center text-lg sm:text-xl shrink-0">
             <i class="fa-solid fa-user-plus"></i>
         </div>
     </div>
 </div>
 
-<div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-6 sm:gap-8">
     <!-- Recent Articles Table (8 Cols - Matching Mockup 08) -->
-    <div class="lg:col-span-8 bg-white rounded-3xl p-6 border border-slate-200 shadow-sm">
-        <div class="flex items-center justify-between mb-6">
+    <div class="lg:col-span-8 bg-white rounded-2xl sm:rounded-3xl p-4 sm:p-6 border border-slate-200 shadow-sm">
+        <div class="flex items-center justify-between mb-4 sm:mb-6">
             <div>
-                <h3 class="font-extrabold text-slate-900 text-lg">Artikel Terbaru</h3>
-                <p class="text-xs text-slate-500">Daftar artikel yang baru saja diterbitkan di portal publik.</p>
+                <h3 class="font-extrabold text-slate-900 text-base sm:text-lg">Artikel Terbaru</h3>
+                <p class="text-[11px] sm:text-xs text-slate-500">Daftar artikel yang baru saja diterbitkan di portal publik.</p>
             </div>
-            <a href="{{ route('admin.articles.index') }}" class="text-xs text-pmr-primary font-bold hover:underline">
+            <a href="{{ route('admin.articles.index') }}" class="text-xs text-pmr-primary font-bold hover:underline shrink-0">
                 Kelola Semua &rarr;
             </a>
         </div>
 
-        <div class="overflow-x-auto">
-            <table class="w-full text-left text-xs">
+        <div class="overflow-x-auto touch-pan-x">
+            <table class="w-full text-left text-xs min-w-[500px]">
                 <thead class="bg-slate-50 text-slate-500 uppercase tracking-wider border-y border-slate-200">
                     <tr>
                         <th class="py-3 px-4">Judul Artikel</th>

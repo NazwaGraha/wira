@@ -10,8 +10,9 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     
-    <!-- FontAwesome & Tailwind -->
+    <!-- Alpine.js & FontAwesome & Tailwind -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = {
@@ -34,19 +35,38 @@
     </script>
     @stack('styles')
 </head>
-<body class="bg-slate-100 text-slate-800 font-sans antialiased flex h-screen overflow-hidden">
+<body x-data="{ mobileSidebarOpen: false }" class="bg-slate-100 text-slate-800 font-sans antialiased flex h-screen overflow-hidden relative">
+
+    <!-- Mobile Backdrop Overlay -->
+    <div x-show="mobileSidebarOpen" 
+         x-transition:enter="transition-opacity ease-linear duration-200"
+         x-transition:enter-start="opacity-0"
+         x-transition:enter-end="opacity-100"
+         x-transition:leave="transition-opacity ease-linear duration-200"
+         x-transition:leave-start="opacity-100"
+         x-transition:leave-end="opacity-0"
+         @click="mobileSidebarOpen = false" 
+         class="fixed inset-0 bg-slate-950/70 backdrop-blur-xs z-40 md:hidden"
+         style="display: none;"></div>
 
     <!-- Sidebar -->
-    <aside class="w-64 bg-slate-900 text-slate-300 flex flex-col flex-shrink-0 border-r border-slate-800">
+    <aside :class="mobileSidebarOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'"
+           class="fixed md:static inset-y-0 left-0 z-50 w-72 md:w-64 bg-slate-900 text-slate-300 flex flex-col flex-shrink-0 border-r border-slate-800 transition-transform duration-300 ease-in-out shadow-2xl md:shadow-none">
         <!-- Brand Header -->
-        <div class="h-24 bg-slate-950 px-4 flex items-center gap-3 border-b border-slate-800">
-            <div class="bg-white rounded-xl p-2 flex items-center justify-center shadow-md">
-                <img src="{{ asset('images/logo.png') }}" alt="Logo PMR Wira SMAN 1 Ciawi" class="h-11 w-auto object-contain">
+        <div class="h-20 md:h-24 bg-slate-950 px-4 flex items-center justify-between border-b border-slate-800">
+            <div class="flex items-center gap-3 overflow-hidden">
+                <div class="bg-white rounded-xl p-2 flex items-center justify-center shadow-md shrink-0">
+                    <img src="{{ asset('images/logo.png') }}" alt="Logo PMR Wira SMAN 1 Ciawi" class="h-9 md:h-11 w-auto object-contain">
+                </div>
+                <div class="overflow-hidden">
+                    <div class="font-extrabold text-white text-xs tracking-wide truncate">PMR WIRA CIAWI</div>
+                    <div class="text-[10px] text-red-400 font-semibold tracking-wider uppercase">Backoffice CMS</div>
+                </div>
             </div>
-            <div class="overflow-hidden">
-                <div class="font-extrabold text-white text-xs tracking-wide truncate">PMR WIRA CIAWI</div>
-                <div class="text-[10px] text-red-400 font-semibold tracking-wider uppercase">Backoffice CMS</div>
-            </div>
+            <!-- Tombol Tutup Sidebar Khusus Mobile -->
+            <button type="button" @click="mobileSidebarOpen = false" class="md:hidden p-2 text-slate-400 hover:text-white rounded-xl hover:bg-slate-800 transition" title="Tutup Menu">
+                <i class="fa-solid fa-xmark text-lg"></i>
+            </button>
         </div>
 
         <!-- Navigation Links -->
@@ -198,16 +218,26 @@
     </aside>
 
     <!-- Main Content Area -->
-    <div class="flex-grow flex flex-col h-full overflow-hidden">
+    <div class="flex-grow flex flex-col h-full overflow-hidden w-full min-w-0">
         <!-- Top Navbar -->
-        <header class="h-20 bg-white border-b border-slate-200 px-8 flex items-center justify-between flex-shrink-0">
-            <div>
-                <h1 class="text-xl font-extrabold text-slate-800">@yield('page_title', 'Manajemen Artikel')</h1>
-                <p class="text-xs text-slate-500">PMR Wira SMAN 1 Ciawi &bull; Periode Ragana Dwi Pantara 2026/2027</p>
+        <header class="h-16 sm:h-20 bg-white border-b border-slate-200 px-3.5 sm:px-8 flex items-center justify-between flex-shrink-0 gap-2 sm:gap-4">
+            <div class="flex items-center gap-2.5 sm:gap-4 min-w-0">
+                <!-- Hamburger Button (Mobile Only) -->
+                <button type="button" 
+                        @click="mobileSidebarOpen = true" 
+                        class="md:hidden p-2 rounded-xl text-slate-700 hover:bg-slate-100 hover:text-slate-900 transition flex items-center justify-center shrink-0 border border-slate-200 shadow-xs"
+                        aria-label="Buka Menu Sidebar">
+                    <i class="fa-solid fa-bars text-base"></i>
+                </button>
+
+                <div class="min-w-0">
+                    <h1 class="text-sm sm:text-xl font-extrabold text-slate-900 truncate">@yield('page_title', 'Manajemen Artikel')</h1>
+                    <p class="text-[10px] sm:text-xs text-slate-500 truncate hidden sm:block">PMR Wira SMAN 1 Ciawi &bull; Periode Ragana Dwi Pantara 2026/2027</p>
+                </div>
             </div>
 
-            <div class="flex items-center gap-4">
-                <div class="hidden md:flex items-center text-xs bg-slate-100 px-3.5 py-2 rounded-xl text-slate-600 gap-2 border border-slate-200">
+            <div class="flex items-center gap-2 sm:gap-4 shrink-0">
+                <div class="hidden lg:flex items-center text-xs bg-slate-100 px-3.5 py-2 rounded-xl text-slate-600 gap-2 border border-slate-200">
                     <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
                     <span>Database Status: <strong>Terkoneksi</strong></span>
                 </div>
@@ -217,7 +247,7 @@
         </header>
 
         <!-- Body Scrollable Content -->
-        <main class="flex-grow overflow-y-auto p-8">
+        <main class="flex-grow overflow-y-auto p-3.5 sm:p-6 md:p-8">
             @if (session('success'))
                 <div class="mb-6 bg-emerald-50 border border-emerald-200 text-emerald-800 px-5 py-4 rounded-xl flex items-center gap-3 shadow-sm">
                     <i class="fa-solid fa-circle-check text-emerald-500 text-xl"></i>
