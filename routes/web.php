@@ -202,6 +202,8 @@ Route::prefix('lomba')->name('lomba.')->group(function () {
     Route::post('/daftar', [\App\Http\Controllers\CompetitionController::class, 'store'])->name('store');
     Route::get('/status', [\App\Http\Controllers\CompetitionController::class, 'status'])->name('status');
     Route::get('/kwitansi/{code}', [\App\Http\Controllers\CompetitionController::class, 'receipt'])->name('receipt');
+    Route::get('/kwitansi/{code}', [\App\Http\Controllers\CompetitionController::class, 'receipt'])->name('kwitansi');
     Route::get('/kartu-peserta/{code}', [\App\Http\Controllers\CompetitionController::class, 'participantCards'])->name('cards');
+    Route::get('/kartu-peserta/{code}', [\App\Http\Controllers\CompetitionController::class, 'participantCards'])->name('kartu-peserta');
     Route::get('/live-scoreboard', [\App\Http\Controllers\CompetitionController::class, 'liveScoreboard'])->name('scoreboard');
 });

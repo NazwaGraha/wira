@@ -138,9 +138,13 @@ class CompetitionController extends Controller
         $code = trim($request->query('code', ''));
 
         if (strtoupper($code) === 'SBB-TOCSEA') {
-            CompetitionRegistration::where('registration_code', 'SBB-TOCSEA')
-                ->update(['registration_code' => 'SBB-W54342H']);
-            return redirect()->route('lomba.status', ['code' => 'SBB-W54342H']);
+            try {
+                CompetitionRegistration::where('registration_code', 'SBB-TOCSEA')
+                    ->update(['registration_code' => 'SBB-W54342H']);
+            } catch (\Throwable $e) {
+                // Ignore if already updated or connection issue
+            }
+            return redirect('/lomba/status?code=SBB-W54342H');
         }
 
         $registration = null;
@@ -157,9 +161,13 @@ class CompetitionController extends Controller
     public function receipt($code)
     {
         if (strtoupper($code) === 'SBB-TOCSEA') {
-            CompetitionRegistration::where('registration_code', 'SBB-TOCSEA')
-                ->update(['registration_code' => 'SBB-W54342H']);
-            return redirect()->route('lomba.kwitansi', ['code' => 'SBB-W54342H']);
+            try {
+                CompetitionRegistration::where('registration_code', 'SBB-TOCSEA')
+                    ->update(['registration_code' => 'SBB-W54342H']);
+            } catch (\Throwable $e) {
+                // Ignore if already updated or connection issue
+            }
+            return redirect('/lomba/kwitansi/SBB-W54342H');
         }
 
         $registration = CompetitionRegistration::where('registration_code', $code)
@@ -173,9 +181,13 @@ class CompetitionController extends Controller
     public function participantCards($code)
     {
         if (strtoupper($code) === 'SBB-TOCSEA') {
-            CompetitionRegistration::where('registration_code', 'SBB-TOCSEA')
-                ->update(['registration_code' => 'SBB-W54342H']);
-            return redirect()->route('lomba.kartu-peserta', ['code' => 'SBB-W54342H']);
+            try {
+                CompetitionRegistration::where('registration_code', 'SBB-TOCSEA')
+                    ->update(['registration_code' => 'SBB-W54342H']);
+            } catch (\Throwable $e) {
+                // Ignore if already updated or connection issue
+            }
+            return redirect('/lomba/kartu-peserta/SBB-W54342H');
         }
 
         $registration = CompetitionRegistration::where('registration_code', $code)
