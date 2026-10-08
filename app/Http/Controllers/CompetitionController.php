@@ -136,6 +136,13 @@ class CompetitionController extends Controller
     public function status(Request $request)
     {
         $code = trim($request->query('code', ''));
+
+        if (strtoupper($code) === 'SBB-TOCSEA') {
+            CompetitionRegistration::where('registration_code', 'SBB-TOCSEA')
+                ->update(['registration_code' => 'SBB-W54342H']);
+            return redirect()->route('lomba.status', ['code' => 'SBB-W54342H']);
+        }
+
         $registration = null;
 
         if ($code) {
@@ -149,6 +156,12 @@ class CompetitionController extends Controller
 
     public function receipt($code)
     {
+        if (strtoupper($code) === 'SBB-TOCSEA') {
+            CompetitionRegistration::where('registration_code', 'SBB-TOCSEA')
+                ->update(['registration_code' => 'SBB-W54342H']);
+            return redirect()->route('lomba.kwitansi', ['code' => 'SBB-W54342H']);
+        }
+
         $registration = CompetitionRegistration::where('registration_code', $code)
             ->orWhere('id', $code)
             ->with(['event', 'teams.category'])
@@ -159,6 +172,12 @@ class CompetitionController extends Controller
 
     public function participantCards($code)
     {
+        if (strtoupper($code) === 'SBB-TOCSEA') {
+            CompetitionRegistration::where('registration_code', 'SBB-TOCSEA')
+                ->update(['registration_code' => 'SBB-W54342H']);
+            return redirect()->route('lomba.kartu-peserta', ['code' => 'SBB-W54342H']);
+        }
+
         $registration = CompetitionRegistration::where('registration_code', $code)
             ->orWhere('id', $code)
             ->with(['event', 'teams.category'])

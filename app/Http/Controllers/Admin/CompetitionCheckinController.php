@@ -106,6 +106,12 @@ class CompetitionCheckinController extends Controller
 
         $cleanCode = strtoupper($cleanCode);
 
+        if ($cleanCode === 'SBB-TOCSEA') {
+            CompetitionRegistration::where('registration_code', 'SBB-TOCSEA')
+                ->update(['registration_code' => 'SBB-W54342H']);
+            $cleanCode = 'SBB-W54342H';
+        }
+
         $registration = CompetitionRegistration::with(['event', 'teams.category'])
             ->where('registration_code', $cleanCode)
             ->first();
