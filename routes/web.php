@@ -142,6 +142,7 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::get('/competition-scores/{category}/input', [\App\Http\Controllers\Admin\CompetitionScoreController::class, 'input'])->name('competition-scores.input');
         Route::post('/competition-scores/{category}/save', [\App\Http\Controllers\Admin\CompetitionScoreController::class, 'saveScores'])->name('competition-scores.save');
         Route::post('/competition-scores/{category}/reset', [\App\Http\Controllers\Admin\CompetitionScoreController::class, 'resetScores'])->name('competition-scores.reset');
+        Route::post('/competition-scores/{category}/assign-termins', [\App\Http\Controllers\Admin\CompetitionScoreController::class, 'assignTermins'])->name('competition-scores.assign-termins');
         Route::post('/competition-scores/{category}/quick-add-team', [\App\Http\Controllers\Admin\CompetitionScoreController::class, 'quickAddTeam'])->name('competition-scores.quick-add-team');
         Route::delete('/competition-scores/{category}/teams/{team}', [\App\Http\Controllers\Admin\CompetitionScoreController::class, 'removeTeam'])->name('competition-scores.remove-team');
 

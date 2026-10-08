@@ -79,6 +79,65 @@ class CompetitionScoreController extends Controller
             ->get()
             ->keyBy('competition_participant_team_id');
 
+        $isSemiFinal = str_contains(strtolower($round), 'semi final') || str_contains(strtolower($round), 'semifinal');
+
+        // Fetch Prelim scores & qualified teams if in Semifinal
+        $prelimScores = collect();
+        $qualifiedTeams = collect();
+        $termin1Teams = collect();
+        $termin2Teams = collect();
+        $termin3Teams = collect();
+        $unassignedTeams = collect();
+
+        if ($isSemiFinal) {
+            $prelimScores = CompetitionScore::where('competition_category_id', $category->id)
+                ->where(function ($q) {
+                    $q->where('round_name', 'like', '%Penyisihan%')
+                      ->orWhere('round_name', 'like', '%Babak 1%');
+                })
+                ->where('is_disqualified', false)
+                ->orderByRaw('`rank` IS NULL, `rank` ASC')
+                ->orderByDesc('final_score')
+                ->get()
+                ->keyBy('competition_participant_team_id');
+
+            if ($prelimScores->isNotEmpty()) {
+                foreach ($prelimScores as $teamId => $pScore) {
+                    $t = $teams->firstWhere('id', $teamId);
+                    if ($t) {
+                        $t->prelim_rank = $pScore->rank;
+                        $t->prelim_score = $pScore->final_score;
+                        $t->prelim_time = $pScore->time_recorded;
+                        $qualifiedTeams->push($t);
+                    }
+                }
+            } else {
+                foreach ($teams as $idx => $t) {
+                    $t->prelim_rank = $idx + 1;
+                    $t->prelim_score = '-';
+                    $t->prelim_time = '-';
+                    $qualifiedTeams->push($t);
+                }
+            }
+
+            // Distribute into termin collections based on existing score records in Semifinal
+            foreach ($teams as $team) {
+                $score = $scores->get($team->id);
+                $termin = $score?->score_details['termin'] ?? null;
+                if ($termin == 1) {
+                    $termin1Teams->push($team);
+                } elseif ($termin == 2) {
+                    $termin2Teams->push($team);
+                } elseif ($termin == 3) {
+                    $termin3Teams->push($team);
+                } else {
+                    if ($qualifiedTeams->contains('id', $team->id)) {
+                        $unassignedTeams->push($team);
+                    }
+                }
+            }
+        }
+
         $nextOrderNumber = $teams->count() + 1;
 
         return view('admin.competition.scores.input', compact(
@@ -87,7 +146,14 @@ class CompetitionScoreController extends Controller
             'teams',
             'scores',
             'availableRegistrations',
-            'nextOrderNumber'
+            'nextOrderNumber',
+            'isSemiFinal',
+            'prelimScores',
+            'qualifiedTeams',
+            'termin1Teams',
+            'termin2Teams',
+            'termin3Teams',
+            'unassignedTeams'
         ));
     }
 
@@ -170,6 +236,14 @@ class CompetitionScoreController extends Controller
                     break;
             }
 
+            $existingScore = CompetitionScore::where([
+                'competition_category_id' => $category->id,
+                'competition_participant_team_id' => $teamId,
+                'round_name' => $round,
+            ])->first();
+
+            $mergedDetails = array_merge($existingScore?->score_details ?? [], $data);
+
             CompetitionScore::updateOrCreate(
                 [
                     'competition_category_id' => $category->id,
@@ -177,7 +251,7 @@ class CompetitionScoreController extends Controller
                     'round_name' => $round,
                 ],
                 [
-                    'score_details' => $data,
+                    'score_details' => $mergedDetails,
                     'final_score' => $isDisqualified ? 0 : $finalScore,
                     'time_recorded' => $timeRecorded,
                     'is_disqualified' => $isDisqualified,
@@ -280,6 +354,48 @@ class CompetitionScoreController extends Controller
 
     private function autoRecalculateRanks($categoryId, $round)
     {
+        $isSemiFinal = str_contains(strtolower($round), 'semi final') || str_contains(strtolower($round), 'semifinal');
+
+        if ($isSemiFinal) {
+            // Group by termin (1, 2, 3) and rank within each termin!
+            $scores = CompetitionScore::where('competition_category_id', $categoryId)
+                ->where('round_name', $round)
+                ->get();
+
+            $byTermin = $scores->groupBy(function ($s) {
+                return $s->score_details['termin'] ?? 1;
+            });
+
+            foreach ($byTermin as $terminNum => $tScores) {
+                $valid = $tScores->where('is_disqualified', false);
+                $sorted = $valid->sort(function ($a, $b) {
+                    if ($a->final_score != $b->final_score) {
+                        return $b->final_score <=> $a->final_score;
+                    }
+                    $secA = $a->score_details['time_seconds'] ?? self::parseTimeToSeconds($a->time_recorded) ?? 999999;
+                    $secB = $b->score_details['time_seconds'] ?? self::parseTimeToSeconds($b->time_recorded) ?? 999999;
+                    return $secA <=> $secB;
+                });
+
+                $rank = 1;
+                foreach ($sorted as $s) {
+                    $details = $s->score_details ?? [];
+                    $details['termin'] = (int) $terminNum;
+                    $details['termin_rank'] = $rank;
+                    $s->update([
+                        'rank' => $rank,
+                        'score_details' => $details,
+                    ]);
+                    $rank++;
+                }
+
+                foreach ($tScores->where('is_disqualified', true) as $dq) {
+                    $dq->update(['rank' => null]);
+                }
+            }
+            return;
+        }
+
         $scores = CompetitionScore::where('competition_category_id', $categoryId)
             ->where('round_name', $round)
             ->where('is_disqualified', false)
@@ -307,6 +423,170 @@ class CompetitionScoreController extends Controller
             ->where('round_name', $round)
             ->where('is_disqualified', true)
             ->update(['rank' => null]);
+    }
+
+    /**
+     * Assign teams to Termin 1, 2, and 3 in Semifinal.
+     * Modes: 'automatic' (Snake Seeding), 'random' (Pot Drawing), 'manual' (Custom).
+     */
+    public function assignTermins(CompetitionCategory $category, Request $request)
+    {
+        $round = $request->input('round_name', 'Babak 2 - Semi Final');
+        $mode = $request->input('mode', 'automatic');
+
+        // Fetch Prelim scores to get the qualified teams in rank order
+        $prelimScores = CompetitionScore::where('competition_category_id', $category->id)
+            ->where(function ($q) {
+                $q->where('round_name', 'like', '%Penyisihan%')
+                  ->orWhere('round_name', 'like', '%Babak 1%');
+            })
+            ->where('is_disqualified', false)
+            ->orderByRaw('`rank` IS NULL, `rank` ASC')
+            ->orderByDesc('final_score')
+            ->get();
+
+        $eligibleTeams = collect();
+        if ($prelimScores->isNotEmpty()) {
+            foreach ($prelimScores as $ps) {
+                $t = CompetitionParticipantTeam::with('registration')->find($ps->competition_participant_team_id);
+                if ($t) {
+                    $t->prelim_rank = $ps->rank;
+                    $t->prelim_score = $ps->final_score;
+                    $eligibleTeams->push($t);
+                }
+            }
+        } else {
+            $eligibleTeams = CompetitionParticipantTeam::where('competition_category_id', $category->id)
+                ->where('is_active', true)
+                ->with('registration')
+                ->orderBy('order_number')
+                ->get();
+        }
+
+        $topTeams = $eligibleTeams->take(9);
+
+        if ($mode === 'automatic') {
+            // Snake Seeding (1-6-7, 2-5-8, 3-4-9) with School Protection
+            $assignments = $this->calculateSnakeSeeding($topTeams);
+        } elseif ($mode === 'random') {
+            // Pot-based Drawing (Pot 1, Pot 2, Pot 3) with School Protection
+            $assignments = $this->calculatePotRandomDrawing($topTeams);
+        } else {
+            // Manual assignments: array of team_id => termin
+            $assignments = $request->input('assignments', []);
+        }
+
+        // Save assignments to CompetitionScore for Babak 2 - Semi Final
+        foreach ($assignments as $teamId => $terminNum) {
+            $terminNum = (int) $terminNum;
+            if ($terminNum < 1 || $terminNum > 3) continue;
+
+            $score = CompetitionScore::firstOrNew([
+                'competition_category_id' => $category->id,
+                'competition_participant_team_id' => $teamId,
+                'round_name' => $round,
+            ]);
+
+            $details = $score->score_details ?? [];
+            $details['termin'] = $terminNum;
+            $score->score_details = $details;
+            $score->save();
+        }
+
+        // Recalculate ranks if scores already exist
+        $this->autoRecalculateRanks($category->id, $round);
+
+        return redirect()->route('admin.competition-scores.input', [
+            'category' => $category->id,
+            'round' => $round,
+        ])->with('success', 'Pembagian regu ke Termin 1, 2, dan 3 berhasil diperbarui dan diterapkan ke lembar skor!');
+    }
+
+    private function calculateSnakeSeeding($teams): array
+    {
+        $pattern = [
+            0 => 1, // Rank 1 -> Termin 1
+            1 => 2, // Rank 2 -> Termin 2
+            2 => 3, // Rank 3 -> Termin 3
+            3 => 3, // Rank 4 -> Termin 3
+            4 => 2, // Rank 5 -> Termin 2
+            5 => 1, // Rank 6 -> Termin 1
+            6 => 1, // Rank 7 -> Termin 1
+            7 => 2, // Rank 8 -> Termin 2
+            8 => 3, // Rank 9 -> Termin 3
+        ];
+
+        $assignments = [];
+        foreach ($teams->values() as $idx => $team) {
+            $assignments[$team->id] = $pattern[$idx] ?? (($idx % 3) + 1);
+        }
+
+        return $this->resolveSchoolProtection($teams, $assignments);
+    }
+
+    private function calculatePotRandomDrawing($teams): array
+    {
+        $teamsArr = $teams->values();
+        $pot1 = $teamsArr->slice(0, 3)->shuffle()->values();
+        $pot2 = $teamsArr->slice(3, 3)->shuffle()->values();
+        $pot3 = $teamsArr->slice(6, 3)->shuffle()->values();
+
+        $assignments = [];
+        for ($i = 0; $i < 3; $i++) {
+            $termin = $i + 1;
+            if (isset($pot1[$i])) $assignments[$pot1[$i]->id] = $termin;
+            if (isset($pot2[$i])) $assignments[$pot2[$i]->id] = $termin;
+            if (isset($pot3[$i])) $assignments[$pot3[$i]->id] = $termin;
+        }
+
+        return $this->resolveSchoolProtection($teams, $assignments);
+    }
+
+    private function resolveSchoolProtection($teams, array $assignments): array
+    {
+        $teamSchools = [];
+        foreach ($teams as $t) {
+            $school = $t->registration?->school_name ?? $t->team_name;
+            $baseSchool = trim(preg_replace('/\s*(\((A|B|C|PUTRA|PUTRI|\d+)\)|Regu\s+[A-Z\d]+)$/i', '', $school));
+            $teamSchools[$t->id] = strtoupper($baseSchool);
+        }
+
+        for ($attempt = 0; $attempt < 10; $attempt++) {
+            $hasCollision = false;
+            $termins = [1 => [], 2 => [], 3 => []];
+            foreach ($assignments as $tId => $tNum) {
+                $termins[$tNum][] = $tId;
+            }
+
+            foreach ($termins as $tNum => $tIds) {
+                $seenSchools = [];
+                foreach ($tIds as $tId) {
+                    $sch = $teamSchools[$tId] ?? $tId;
+                    if (isset($seenSchools[$sch])) {
+                        $hasCollision = true;
+                        foreach ([1, 2, 3] as $targetTNum) {
+                            if ($targetTNum == $tNum) continue;
+                            foreach ($termins[$targetTNum] as $candId) {
+                                $candSch = $teamSchools[$candId] ?? $candId;
+                                $safeForCurrent = !in_array($candSch, array_map(fn($id) => $teamSchools[$id], array_diff($tIds, [$tId])));
+                                $safeForTarget = !in_array($sch, array_map(fn($id) => $teamSchools[$id], array_diff($termins[$targetTNum], [$candId])));
+
+                                if ($safeForCurrent && $safeForTarget) {
+                                    $assignments[$tId] = $targetTNum;
+                                    $assignments[$candId] = $tNum;
+                                    break 3;
+                                }
+                            }
+                        }
+                    }
+                    $seenSchools[$sch] = $tId;
+                }
+            }
+
+            if (!$hasCollision) break;
+        }
+
+        return $assignments;
     }
 
     public function quickAddTeam(CompetitionCategory $category, Request $request)

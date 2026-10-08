@@ -217,6 +217,42 @@
                 <div class="text-[11px] text-slate-400 mt-0.5">*Dihitung otomatis secara live saat Anda mengetik</div>
             </div>
         </div>
+    @if($isSemiFinal)
+        <!-- Semifinal Management Card (Otomatis & Fleksibel Buttons) -->
+        <div class="bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 text-white p-5 rounded-2xl shadow-md border border-indigo-900/50 flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4">
+            <div class="space-y-1.5">
+                <div class="flex items-center gap-2 flex-wrap">
+                    <span class="px-2.5 py-0.5 rounded-md text-[10px] font-black uppercase tracking-wider bg-indigo-500 text-white shadow-xs">
+                        <i class="fa-solid fa-users-rays mr-1"></i> Babak 2 - Semi Final
+                    </span>
+                    <span class="text-xs font-bold text-indigo-200">Sistem 3 Termin Cepat Tepat</span>
+                    <span class="text-[11px] font-semibold text-emerald-400 bg-emerald-950/60 border border-emerald-500/30 px-2 py-0.5 rounded-md">
+                        3 Regu per Termin &bull; Juara 1 Lolos ke Final
+                    </span>
+                </div>
+                <h3 class="text-lg font-black text-white">Pembagian Regu & Meja Pertandingan Semifinal</h3>
+                <p class="text-xs text-slate-300 max-w-2xl leading-relaxed">
+                    Sembilan (9) regu terbaik dari babak penyisihan bertanding dalam 3 sesi termin. Juara 1 dari masing-masing Termin (total 3 regu) akan memperebutkan Juara Umum di <strong>Babak 3 - Final</strong>.
+                </p>
+            </div>
+            <div class="flex flex-wrap items-center gap-2.5 shrink-0 w-full lg:w-auto">
+                <button type="button" onclick="confirmAutoTermin()" class="flex-1 lg:flex-initial bg-gradient-to-r from-red-600 to-rose-600 hover:from-red-500 hover:to-rose-500 text-white font-black text-xs px-4 py-3 rounded-xl shadow-lg shadow-red-950/30 transition flex items-center justify-center gap-2 cursor-pointer border border-red-400/30">
+                    <i class="fa-solid fa-wand-magic-sparkles text-amber-300"></i>
+                    <span>Pembagian Termin Otomatis</span>
+                </button>
+                <button type="button" onclick="openFlexibleModal()" class="flex-1 lg:flex-initial bg-white/10 hover:bg-white/20 text-white font-extrabold text-xs px-4 py-3 rounded-xl shadow transition flex items-center justify-center gap-2 cursor-pointer border border-white/20 backdrop-blur-xs">
+                    <i class="fa-solid fa-sliders text-indigo-300"></i>
+                    <span>Pembagian Termin Fleksibel</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- Hidden Form for Automatic Seeding Submission -->
+        <form id="auto-termin-form" action="{{ route('admin.competition-scores.assign-termins', $category->id) }}" method="POST" class="hidden">
+            @csrf
+            <input type="hidden" name="round_name" value="{{ $round }}">
+            <input type="hidden" name="mode" value="automatic">
+        </form>
     @endif
 
     <!-- Main Scoring Input Table Form -->
@@ -224,7 +260,247 @@
         @csrf
         <input type="hidden" name="round_name" value="{{ $round }}">
 
-        <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+        @if($isSemiFinal)
+            @if($termin1Teams->isEmpty() && $termin2Teams->isEmpty() && $termin3Teams->isEmpty())
+                <!-- Empty State: Teams not yet divided into termins -->
+                <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-8 text-center space-y-4">
+                    <div class="w-16 h-16 bg-amber-50 text-amber-500 rounded-full flex items-center justify-center mx-auto text-2xl border border-amber-200">
+                        <i class="fa-solid fa-layer-group"></i>
+                    </div>
+                    <div class="max-w-md mx-auto space-y-1">
+                        <h4 class="text-base font-black text-slate-800">Regu Semifinal Belum Dibagikan ke Termin</h4>
+                        <p class="text-xs text-slate-500">
+                            Silakan pilih salah satu opsi pembagian regu di bawah ini untuk menampilkan lembar skor Termin 1, 2, dan 3:
+                        </p>
+                    </div>
+                    <div class="flex flex-wrap items-center justify-center gap-3 pt-2">
+                        <button type="button" onclick="confirmAutoTermin()" class="bg-red-600 hover:bg-red-700 text-white font-black text-xs px-5 py-3 rounded-xl shadow-md transition flex items-center gap-2 cursor-pointer">
+                            <i class="fa-solid fa-wand-magic-sparkles text-amber-300"></i> Pembagian Termin Otomatis (Snake Seeding)
+                        </button>
+                        <button type="button" onclick="openFlexibleModal()" class="bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs px-5 py-3 rounded-xl shadow-md transition flex items-center gap-2 cursor-pointer">
+                            <i class="fa-solid fa-sliders"></i> Pembagian Termin Fleksibel (Undian / Manual)
+                        </button>
+                    </div>
+
+                    @if($qualifiedTeams->isNotEmpty())
+                        <div class="mt-8 pt-6 border-t border-slate-100 max-w-2xl mx-auto text-left">
+                            <h5 class="text-xs font-bold uppercase text-slate-500 tracking-wider mb-3 flex items-center gap-2">
+                                <i class="fa-solid fa-medal text-amber-500"></i> 9 Regu Terbaik Babak Penyisihan (Siap Masuk Semifinal):
+                            </h5>
+                            <div class="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
+                                @foreach($qualifiedTeams->take(9) as $qIdx => $qTeam)
+                                    <div class="p-3 rounded-xl bg-slate-50 border border-slate-200 text-xs hover:border-indigo-300 transition">
+                                        <div class="flex items-center justify-between">
+                                            <span class="font-black text-slate-900 text-xs">{{ $qIdx + 1 }}. {{ $qTeam->team_name }}</span>
+                                            <span class="text-[10px] font-black text-indigo-700 bg-indigo-50 border border-indigo-200 px-1.5 py-0.5 rounded">R{{ $qTeam->prelim_rank ?? ($qIdx+1) }}</span>
+                                        </div>
+                                        <div class="text-[11px] text-slate-500 mt-1 truncate font-medium">{{ $qTeam->registration?->school_name }}</div>
+                                        <div class="text-[10px] text-slate-400 mt-0.5">Nilai: <strong class="text-slate-700">{{ $qTeam->prelim_score }}</strong> &bull; Waktu: {{ $qTeam->prelim_time }}</div>
+                                    </div>
+                                @endforeach
+                            </div>
+                        </div>
+                    @endif
+                </div>
+            @else
+                <!-- The 3 Distinct Termin Score Sheets -->
+                @php
+                    $terminList = [
+                        1 => [
+                            'name' => 'TERMIN 1 (SESI 1)',
+                            'teams' => $termin1Teams,
+                            'theme' => 'emerald',
+                            'header_bg' => 'from-emerald-900 to-slate-900',
+                            'badge_bg' => 'bg-emerald-500',
+                            'subtext' => 'Juara 1 dari Termin 1 otomatis melaju ke Babak 3 - Final',
+                            'desk_letters' => ['A', 'B', 'C', 'D'],
+                        ],
+                        2 => [
+                            'name' => 'TERMIN 2 (SESI 2)',
+                            'teams' => $termin2Teams,
+                            'theme' => 'blue',
+                            'header_bg' => 'from-blue-900 to-slate-900',
+                            'badge_bg' => 'bg-blue-500',
+                            'subtext' => 'Juara 1 dari Termin 2 otomatis melaju ke Babak 3 - Final',
+                            'desk_letters' => ['A', 'B', 'C', 'D'],
+                        ],
+                        3 => [
+                            'name' => 'TERMIN 3 (SESI 3)',
+                            'teams' => $termin3Teams,
+                            'theme' => 'purple',
+                            'header_bg' => 'from-purple-900 to-slate-900',
+                            'badge_bg' => 'bg-purple-500',
+                            'subtext' => 'Juara 1 dari Termin 3 otomatis melaju ke Babak 3 - Final',
+                            'desk_letters' => ['A', 'B', 'C', 'D'],
+                        ],
+                    ];
+                @endphp
+
+                <div class="space-y-6">
+                    @foreach($terminList as $tNum => $tMeta)
+                        <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden termin-section" data-termin="{{ $tNum }}">
+                            <!-- Termin Header -->
+                            <div class="p-4 bg-gradient-to-r {{ $tMeta['header_bg'] }} text-white flex flex-col sm:flex-row justify-between sm:items-center gap-2">
+                                <div class="flex items-center gap-3">
+                                    <span class="w-8 h-8 rounded-xl {{ $tMeta['badge_bg'] }} text-white font-black text-sm flex items-center justify-center shadow-md">
+                                        {{ $tNum }}
+                                    </span>
+                                    <div>
+                                        <div class="font-black text-sm text-white tracking-wide flex items-center gap-2">
+                                            {{ $tMeta['name'] }}
+                                            <span class="text-[11px] font-bold px-2 py-0.5 rounded-full bg-white/10 text-white/90">
+                                                {{ $tMeta['teams']->count() }} Regu
+                                            </span>
+                                        </div>
+                                        <div class="text-[11px] text-slate-300 mt-0.5">
+                                            {{ $tMeta['subtext'] }}
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="text-right">
+                                    <button type="button" onclick="openFlexibleModal()" class="text-xs text-white/80 hover:text-white underline font-semibold flex items-center gap-1 cursor-pointer">
+                                        <i class="fa-solid fa-arrows-split-up-and-left text-[10px]"></i> Atur Regu Termin
+                                    </button>
+                                </div>
+                            </div>
+
+                            <!-- Termin Table -->
+                            <div class="overflow-x-auto">
+                                <table class="w-full text-left text-xs text-slate-700 termin-table">
+                                    <thead class="bg-slate-100 text-slate-800 uppercase font-black border-b border-slate-200">
+                                        <tr>
+                                            <th class="px-4 py-3 w-24 text-center">Meja / Urut</th>
+                                            <th class="px-4 py-3 min-w-[240px]">Nama Sekolah & Regu</th>
+                                            <th class="px-4 py-3 w-40 text-center">Nilai Poin Semifinal</th>
+                                            <th class="px-4 py-3 w-40">Catatan Juri</th>
+                                            <th class="px-4 py-3 w-32 text-right">Nilai Akhir</th>
+                                            <th class="px-4 py-3 w-52 text-center bg-slate-200/80 text-slate-900 border-l border-slate-200">Peringkat Termin {{ $tNum }}</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody class="divide-y divide-slate-100 font-medium">
+                                        @forelse($tMeta['teams'] as $idx => $team)
+                                            @php
+                                                $score = $scores->get($team->id);
+                                                $details = $score?->score_details ?? [];
+                                                $teamScoreVal = $details['score'] ?? ($score?->final_score ?? '');
+                                                $prelimScore = $prelimScores->get($team->id);
+                                                $deskLetter = $tMeta['desk_letters'][$idx] ?? ($idx + 1);
+                                            @endphp
+                                            <tr class="team-row hover:bg-slate-50 transition {{ $score?->rank == 1 ? 'bg-amber-50/60 font-bold' : '' }}" data-team-id="{{ $team->id }}">
+                                                <!-- Desk / Order -->
+                                                <td class="px-4 py-3 font-mono text-center font-black text-slate-700">
+                                                    <span class="inline-flex items-center justify-center px-2.5 py-1 rounded-lg bg-slate-100 border border-slate-300 text-slate-900 text-xs font-bold">
+                                                        Meja {{ $deskLetter }}
+                                                    </span>
+                                                </td>
+
+                                                <!-- Team Name & Prelim Rank Badge -->
+                                                <td class="px-4 py-3">
+                                                    <div class="font-extrabold text-slate-900 text-xs uppercase flex items-center gap-2 flex-wrap">
+                                                        <span>{{ $team->team_name }}</span>
+                                                        @if($prelimScore)
+                                                            <span class="font-mono text-[10px] font-black text-indigo-700 bg-indigo-50 border border-indigo-200 px-2 py-0.5 rounded" title="Peringkat {{ $prelimScore->rank }} di Babak Penyisihan">
+                                                                Rank {{ $prelimScore->rank }} Penyisihan
+                                                            </span>
+                                                        @endif
+                                                    </div>
+                                                    <div class="text-[11px] text-slate-500 mt-0.5 flex items-center gap-2">
+                                                        <span>{{ $team->registration?->school_name }}</span>
+                                                        @if($team->registration?->registration_code)
+                                                            <span class="font-mono text-[10px] text-slate-400">({{ $team->registration->registration_code }})</span>
+                                                        @endif
+                                                    </div>
+                                                </td>
+
+                                                <!-- Score Input -->
+                                                <td class="px-4 py-3">
+                                                    <input type="number" step="0.01" name="scores[{{ $team->id }}][score]" value="{{ $teamScoreVal }}" placeholder="Contoh: 2100" class="input-generic-score input-termin-score w-full p-2.5 bg-slate-50 border border-slate-200 rounded-lg text-xs font-bold text-slate-900 focus:bg-white focus:outline-none focus:border-red-500 shadow-2xs">
+                                                    <input type="hidden" name="scores[{{ $team->id }}][termin]" value="{{ $tNum }}">
+                                                </td>
+
+                                                <!-- Notes -->
+                                                <td class="px-4 py-3">
+                                                    <input type="text" name="scores[{{ $team->id }}][notes]" value="{{ $score?->notes ?? '' }}" placeholder="Catatan juri / babak rebutan" class="w-full p-2 bg-slate-50 border border-slate-200 rounded-lg text-xs focus:bg-white focus:outline-none focus:border-red-500">
+                                                </td>
+
+                                                <!-- Final Score -->
+                                                <td class="px-4 py-3 text-right">
+                                                    <input type="number" step="0.01" name="scores[{{ $team->id }}][manual_final_score]" value="{{ $score?->final_score ?? '' }}" placeholder="Auto" class="input-final-score w-28 p-2 bg-white border border-slate-300 font-mono font-black text-right text-xs rounded-lg text-red-600 focus:outline-none focus:border-red-500 shadow-sm">
+                                                </td>
+
+                                                <!-- Rank in this Termin -->
+                                                <td class="px-4 py-3 text-center font-bold rank-cell border-l border-slate-100 bg-slate-50/50">
+                                                    @if($score?->rank == 1)
+                                                        <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-gradient-to-r from-amber-500 to-yellow-500 text-white font-black text-xs shadow-md">
+                                                            <i class="fa-solid fa-trophy text-amber-100"></i> Juara Termin {{ $tNum }} (Lolos Final)
+                                                        </span>
+                                                    @elseif($score?->rank == 2)
+                                                        <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-slate-200 text-slate-800 font-bold text-xs">
+                                                            <i class="fa-solid fa-medal text-slate-500"></i> Peringkat 2
+                                                        </span>
+                                                    @elseif($score?->rank == 3)
+                                                        <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-amber-100 text-amber-900 font-bold text-xs">
+                                                            <i class="fa-solid fa-medal text-amber-700"></i> Peringkat 3
+                                                        </span>
+                                                    @else
+                                                        <span class="text-slate-400 font-mono">-</span>
+                                                    @endif
+                                                </td>
+                                            </tr>
+                                        @empty
+                                            <tr>
+                                                <td colspan="6" class="text-center py-6 text-slate-400">
+                                                    Belum ada regu yang dialokasikan ke Termin {{ $tNum }}.
+                                                </td>
+                                            </tr>
+                                        @endforelse
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    @endforeach
+
+                    <!-- Optional: Unassigned Teams Box -->
+                    @if($unassignedTeams->isNotEmpty())
+                        <div class="bg-amber-50/70 border border-amber-200 rounded-2xl p-5 space-y-3">
+                            <div class="flex items-center justify-between">
+                                <div class="font-extrabold text-xs text-amber-900 flex items-center gap-2">
+                                    <i class="fa-solid fa-circle-exclamation text-amber-600"></i>
+                                    <span>Regu Lainnya Belum Masuk Termin ({{ $unassignedTeams->count() }} Regu):</span>
+                                </div>
+                                <button type="button" onclick="openFlexibleModal()" class="text-xs font-bold text-indigo-700 hover:underline">
+                                    Bagi ke Termin &rarr;
+                                </button>
+                            </div>
+                            <div class="flex flex-wrap gap-2">
+                                @foreach($unassignedTeams as $uTeam)
+                                    <span class="px-3 py-1.5 rounded-xl bg-white border border-amber-300 text-xs font-bold text-slate-800 shadow-2xs">
+                                        {{ $uTeam->team_name }} ({{ $uTeam->registration?->school_name }})
+                                    </span>
+                                @endforeach
+                            </div>
+                        </div>
+                    @endif
+
+                    <!-- Unified Semifinal Save Bar -->
+                    <div class="p-6 bg-slate-50 border border-slate-200 rounded-2xl flex flex-col sm:flex-row justify-between items-center gap-4 shadow-sm">
+                        <div class="text-xs text-slate-600 flex items-center gap-2">
+                            <i class="fa-solid fa-circle-check text-emerald-600 text-base"></i>
+                            <span>Klik <strong>Simpan Nilai Semifinal</strong> untuk mengunci skor seluruh termin dan menetapkan 3 finalis ke babak final.</span>
+                        </div>
+                        <div class="flex flex-wrap items-center gap-2 w-full sm:w-auto">
+                            <button type="button" onclick="clearAllFormInputs()" class="w-full sm:w-auto bg-slate-200 hover:bg-slate-300 text-slate-700 font-extrabold text-xs px-5 py-3 rounded-xl transition flex items-center justify-center gap-1.5 shadow-sm cursor-pointer">
+                                <i class="fa-solid fa-arrows-rotate text-blue-600"></i> Kosongkan Form
+                            </button>
+                            <button type="submit" class="w-full sm:w-auto bg-red-600 hover:bg-red-700 text-white font-extrabold text-xs px-8 py-3 rounded-xl shadow-lg shadow-red-900/20 transition flex items-center justify-center gap-2 cursor-pointer">
+                                <i class="fa-solid fa-floppy-disk"></i> Simpan Nilai Semifinal (Semua Termin)
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            @endif
+        @else
+            <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
             <div class="p-5 bg-slate-50 border-b border-slate-200 flex flex-col sm:flex-row justify-between sm:items-center gap-2">
                 <div class="font-extrabold text-sm text-slate-800 flex items-center gap-2">
                     <i class="fa-solid fa-clipboard-list text-red-600"></i> Lembar Skor: {{ $round }}
@@ -425,8 +701,135 @@
                     </button>
                 </div>
             </div>
-        </div>
+        @endif
     </form>
+
+    @if($isSemiFinal)
+        <!-- Flexible Termin Modal (Pot Drawing & Manual Assignments) -->
+        <div id="flexible-termin-modal" class="hidden bg-slate-900/60 fixed inset-0 z-50 flex items-center justify-center p-4 backdrop-blur-xs">
+            <div class="bg-white rounded-2xl max-w-2xl w-full shadow-2xl border border-slate-200 overflow-hidden flex flex-col max-h-[92vh]">
+                <!-- Modal Header -->
+                <div class="p-5 bg-slate-900 text-white flex items-center justify-between">
+                    <div>
+                        <div class="flex items-center gap-2">
+                            <span class="px-2 py-0.5 rounded text-[10px] font-black uppercase tracking-wider bg-indigo-500 text-white">
+                                PMR {{ $category->level }} &bull; Semifinal
+                            </span>
+                            <span id="pot-draw-feedback" class="hidden text-[10px] font-bold text-amber-300 bg-amber-950/80 px-2 py-0.5 rounded border border-amber-500/40 animate-pulse"></span>
+                        </div>
+                        <h3 class="font-black text-base text-white mt-1">Pembagian Termin Fleksibel (Babak Semifinal)</h3>
+                        <p class="text-xs text-slate-400">Atur penempatan regu ke Termin 1, 2, atau 3 secara manual atau menggunakan pengundian sistem pot.</p>
+                    </div>
+                    <button type="button" onclick="closeFlexibleModal()" class="text-slate-400 hover:text-white p-1 cursor-pointer">
+                        <i class="fa-solid fa-xmark text-lg"></i>
+                    </button>
+                </div>
+
+                <!-- Quick Action Bar & Live Counters -->
+                <div class="p-4 bg-slate-50 border-b border-slate-200 flex flex-col sm:flex-row items-center justify-between gap-3">
+                    <div class="flex items-center gap-2 w-full sm:w-auto">
+                        <button type="button" onclick="applyModalPotDrawing()" class="flex-1 sm:flex-initial bg-gradient-to-r from-amber-500 to-yellow-500 hover:from-amber-600 hover:to-yellow-600 text-slate-950 font-black text-xs px-3.5 py-2 rounded-xl shadow-xs transition flex items-center justify-center gap-1.5 cursor-pointer">
+                            <i class="fa-solid fa-dice text-sm"></i> Acak / Undi (Sistem Pot)
+                        </button>
+                        <button type="button" onclick="applyModalSnakeSeeding()" class="flex-1 sm:flex-initial bg-slate-200 hover:bg-slate-300 text-slate-800 font-extrabold text-xs px-3.5 py-2 rounded-xl transition flex items-center justify-center gap-1.5 cursor-pointer">
+                            <i class="fa-solid fa-wand-magic-sparkles text-indigo-600"></i> Snake Seeding
+                        </button>
+                    </div>
+
+                    <!-- Live Counters -->
+                    <div class="flex items-center gap-1.5 text-xs font-bold w-full sm:w-auto justify-end">
+                        <span class="px-2.5 py-1 rounded-lg bg-emerald-50 text-emerald-800 border border-emerald-300 flex items-center gap-1">
+                            T1: <strong id="counter-t1" class="font-black">0</strong>/3
+                        </span>
+                        <span class="px-2.5 py-1 rounded-lg bg-blue-50 text-blue-800 border border-blue-300 flex items-center gap-1">
+                            T2: <strong id="counter-t2" class="font-black">0</strong>/3
+                        </span>
+                        <span class="px-2.5 py-1 rounded-lg bg-purple-50 text-purple-800 border border-purple-300 flex items-center gap-1">
+                            T3: <strong id="counter-t3" class="font-black">0</strong>/3
+                        </span>
+                    </div>
+                </div>
+
+                <!-- Modal Body: Table of Qualified Teams -->
+                <form action="{{ route('admin.competition-scores.assign-termins', $category->id) }}" method="POST" id="flexible-termin-form" class="overflow-y-auto flex-grow p-5 space-y-3">
+                    @csrf
+                    <input type="hidden" name="round_name" value="{{ $round }}">
+                    <input type="hidden" name="mode" value="manual">
+
+                    <div class="space-y-2">
+                        @php
+                            $modalTeams = $qualifiedTeams->isNotEmpty() ? $qualifiedTeams->take(9) : $teams->take(9);
+                        @endphp
+
+                        @foreach($modalTeams as $mIdx => $mTeam)
+                            @php
+                                $mScore = $scores->get($mTeam->id);
+                                $mDetails = $mScore?->score_details ?? [];
+                                $currentTermin = $mDetails['termin'] ?? (($mIdx % 3) + 1);
+
+                                // Pot categorization (Rank 1-3: Pot 1, 4-6: Pot 2, 7-9: Pot 3)
+                                $potNum = ($mIdx < 3) ? 1 : (($mIdx < 6) ? 2 : 3);
+                                $potLabel = ($potNum == 1) ? 'Pot 1 (Unggulan)' : (($potNum == 2) ? 'Pot 2 (Menengah)' : 'Pot 3 (Kuda Hitam)');
+                                $potColor = ($potNum == 1) ? 'text-amber-700 bg-amber-50 border-amber-200' : (($potNum == 2) ? 'text-blue-700 bg-blue-50 border-blue-200' : 'text-emerald-700 bg-emerald-50 border-emerald-200');
+                            @endphp
+
+                            <div class="p-3 bg-slate-50 border border-slate-200 rounded-xl flex flex-col sm:flex-row sm:items-center justify-between gap-3 modal-team-row" data-team-id="{{ $mTeam->id }}" data-pot="{{ $potNum }}" data-school="{{ strtoupper($mTeam->registration?->school_name ?? $mTeam->team_name) }}">
+                                <div class="flex items-center gap-3">
+                                    <div class="w-6 h-6 rounded-lg bg-slate-200 text-slate-800 font-mono font-black text-xs flex items-center justify-center shrink-0">
+                                        {{ $mIdx + 1 }}
+                                    </div>
+                                    <div>
+                                        <div class="font-extrabold text-slate-900 text-xs flex items-center gap-2 flex-wrap">
+                                            <span>{{ $mTeam->team_name }}</span>
+                                            <span class="text-[10px] font-black px-1.5 py-0.5 rounded border {{ $potColor }}">
+                                                {{ $potLabel }}
+                                            </span>
+                                            @if($mTeam->prelim_rank)
+                                                <span class="text-[10px] font-bold text-slate-500">Rank {{ $mTeam->prelim_rank }}</span>
+                                            @endif
+                                        </div>
+                                        <div class="text-[11px] text-slate-500 truncate">{{ $mTeam->registration?->school_name }}</div>
+                                    </div>
+                                </div>
+
+                                <!-- 3 Termin Selector Pills -->
+                                <div class="flex items-center gap-1.5 shrink-0">
+                                    <label class="cursor-pointer select-none">
+                                        <input type="radio" name="assignments[{{ $mTeam->id }}]" value="1" {{ $currentTermin == 1 ? 'checked' : '' }} onchange="updateTerminCounters()" class="sr-only peer">
+                                        <span class="px-3 py-1.5 rounded-lg text-xs font-bold border border-slate-300 text-slate-600 bg-white peer-checked:bg-emerald-600 peer-checked:text-white peer-checked:border-emerald-600 transition inline-block">
+                                            Termin 1
+                                        </span>
+                                    </label>
+                                    <label class="cursor-pointer select-none">
+                                        <input type="radio" name="assignments[{{ $mTeam->id }}]" value="2" {{ $currentTermin == 2 ? 'checked' : '' }} onchange="updateTerminCounters()" class="sr-only peer">
+                                        <span class="px-3 py-1.5 rounded-lg text-xs font-bold border border-slate-300 text-slate-600 bg-white peer-checked:bg-blue-600 peer-checked:text-white peer-checked:border-blue-600 transition inline-block">
+                                            Termin 2
+                                        </span>
+                                    </label>
+                                    <label class="cursor-pointer select-none">
+                                        <input type="radio" name="assignments[{{ $mTeam->id }}]" value="3" {{ $currentTermin == 3 ? 'checked' : '' }} onchange="updateTerminCounters()" class="sr-only peer">
+                                        <span class="px-3 py-1.5 rounded-lg text-xs font-bold border border-slate-300 text-slate-600 bg-white peer-checked:bg-purple-600 peer-checked:text-white peer-checked:border-purple-600 transition inline-block">
+                                            Termin 3
+                                        </span>
+                                    </label>
+                                </div>
+                            </div>
+                        @endforeach
+                    </div>
+
+                    <!-- Modal Actions -->
+                    <div class="pt-4 border-t border-slate-200 flex flex-col sm:flex-row justify-end items-center gap-2">
+                        <button type="button" onclick="closeFlexibleModal()" class="w-full sm:w-auto px-4 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs rounded-xl transition cursor-pointer">
+                            Batal
+                        </button>
+                        <button type="submit" class="w-full sm:w-auto px-6 py-2.5 bg-red-600 hover:bg-red-700 text-white font-extrabold text-xs rounded-xl shadow-md transition flex items-center justify-center gap-2 cursor-pointer">
+                            <i class="fa-solid fa-check"></i> Terapkan Pembagian Termin & Tampilkan di Lembar Skor
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    @endif
 
 </div>
 
@@ -454,6 +857,153 @@ window.switchAddTab = function(tab) {
 window.setLabel = function(val) {
     const input = document.getElementById('verified_team_label');
     if (input) input.value = val;
+};
+
+// Semifinal Termin Modal & Allocation Functions
+window.confirmAutoTermin = function() {
+    if (confirm("Terapkan Pembagian Termin Otomatis (Metode Snake Seeding Berimbang) untuk 9 regu terbaik?\n\n- Termin 1: Peringkat 1, 6, 7\n- Termin 2: Peringkat 2, 5, 8\n- Termin 3: Peringkat 3, 4, 9\n\n*Regu dari sekolah yang sama otomatis dipisahkan ke termin berbeda.")) {
+        const form = document.getElementById('auto-termin-form');
+        if (form) form.submit();
+    }
+};
+
+window.openFlexibleModal = function() {
+    const modal = document.getElementById('flexible-termin-modal');
+    if (modal) {
+        modal.classList.remove('hidden');
+        window.updateTerminCounters();
+    }
+};
+
+window.closeFlexibleModal = function() {
+    const modal = document.getElementById('flexible-termin-modal');
+    if (modal) modal.classList.add('hidden');
+};
+
+window.applyModalSnakeSeeding = function() {
+    const rows = Array.from(document.querySelectorAll('.modal-team-row'));
+    const pattern = [1, 2, 3, 3, 2, 1, 1, 2, 3];
+    rows.forEach((row, idx) => {
+        const tNum = pattern[idx] || ((idx % 3) + 1);
+        const rad = row.querySelector(`input[type="radio"][value="${tNum}"]`);
+        if (rad) rad.checked = true;
+    });
+    window.updateTerminCounters();
+    const fb = document.getElementById('pot-draw-feedback');
+    if (fb) {
+        fb.classList.remove('hidden');
+        fb.innerText = '⚡ Snake Seeding Diterapkan!';
+        setTimeout(() => fb.classList.add('hidden'), 2500);
+    }
+};
+
+window.applyModalPotDrawing = function() {
+    const rows = Array.from(document.querySelectorAll('.modal-team-row'));
+    if (rows.length === 0) return;
+
+    const pot1 = rows.slice(0, 3);
+    const pot2 = rows.slice(3, 6);
+    const pot3 = rows.slice(6, 9);
+
+    const shuffle = arr => arr.slice().sort(() => Math.random() - 0.5);
+
+    const sPot1 = shuffle(pot1);
+    const sPot2 = shuffle(pot2);
+    const sPot3 = shuffle(pot3);
+
+    [1, 2, 3].forEach((tNum, idx) => {
+        if (sPot1[idx]) {
+            const rad = sPot1[idx].querySelector(`input[type="radio"][value="${tNum}"]`);
+            if (rad) rad.checked = true;
+        }
+        if (sPot2[idx]) {
+            const rad = sPot2[idx].querySelector(`input[type="radio"][value="${tNum}"]`);
+            if (rad) rad.checked = true;
+        }
+        if (sPot3[idx]) {
+            const rad = sPot3[idx].querySelector(`input[type="radio"][value="${tNum}"]`);
+            if (rad) rad.checked = true;
+        }
+    });
+
+    window.updateTerminCounters();
+    const fb = document.getElementById('pot-draw-feedback');
+    if (fb) {
+        fb.classList.remove('hidden');
+        fb.innerText = '🎲 Undian Sistem Pot Berhasil!';
+        setTimeout(() => fb.classList.add('hidden'), 2500);
+    }
+};
+
+window.updateTerminCounters = function() {
+    const counts = { 1: 0, 2: 0, 3: 0 };
+    document.querySelectorAll('.modal-team-row input[type="radio"]:checked').forEach(rad => {
+        const val = parseInt(rad.value, 10);
+        if (counts[val] !== undefined) counts[val]++;
+    });
+
+    [1, 2, 3].forEach(tNum => {
+        const el = document.getElementById(`counter-t${tNum}`);
+        if (el) {
+            el.innerText = counts[tNum];
+            const parent = el.parentElement;
+            if (counts[tNum] === 3) {
+                parent.className = 'px-2.5 py-1 rounded-lg bg-emerald-100 text-emerald-900 border border-emerald-400 font-black flex items-center gap-1';
+            } else {
+                parent.className = 'px-2.5 py-1 rounded-lg bg-amber-50 text-amber-800 border border-amber-300 font-bold flex items-center gap-1';
+            }
+        }
+    });
+};
+
+window.recalcTerminRanks = function(terminNum) {
+    const section = document.querySelector(`.termin-section[data-termin="${terminNum}"]`);
+    if (!section) return;
+
+    const rows = Array.from(section.querySelectorAll('.team-row'));
+    const scoredRows = rows.map(row => {
+        const scoreInput = row.querySelector('.input-termin-score') || row.querySelector('.input-generic-score');
+        const finalInput = row.querySelector('.input-final-score');
+        let val = parseFloat(finalInput?.value);
+        if (isNaN(val) && scoreInput && scoreInput.value !== '') {
+            val = parseFloat(scoreInput.value);
+            if (!isNaN(val) && finalInput) finalInput.value = val;
+        }
+        return {
+            row: row,
+            score: isNaN(val) ? -999999 : val,
+            hasScore: !isNaN(val) && (scoreInput?.value !== '' || finalInput?.value !== '')
+        };
+    });
+
+    scoredRows.sort((a, b) => b.score - a.score);
+
+    let rank = 1;
+    scoredRows.forEach(item => {
+        const cell = item.row.querySelector('.rank-cell');
+        if (!cell) return;
+
+        if (!item.hasScore) {
+            cell.innerHTML = '<span class="text-slate-400 font-mono">-</span>';
+            item.row.classList.remove('bg-amber-50/60');
+            return;
+        }
+
+        if (rank === 1) {
+            cell.innerHTML = `<span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-gradient-to-r from-amber-500 to-yellow-500 text-white font-black text-xs shadow-md"><i class="fa-solid fa-trophy text-amber-100"></i> Juara Termin ${terminNum} (Lolos Final)</span>`;
+            item.row.classList.add('bg-amber-50/60');
+        } else if (rank === 2) {
+            cell.innerHTML = `<span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-slate-200 text-slate-800 font-bold text-xs"><i class="fa-solid fa-medal text-slate-500"></i> Peringkat 2</span>`;
+            item.row.classList.remove('bg-amber-50/60');
+        } else if (rank === 3) {
+            cell.innerHTML = `<span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-amber-100 text-amber-900 font-bold text-xs"><i class="fa-solid fa-medal text-amber-700"></i> Peringkat 3</span>`;
+            item.row.classList.remove('bg-amber-50/60');
+        } else {
+            cell.innerHTML = `<span class="font-bold text-slate-600 text-xs">Peringkat ${rank}</span>`;
+            item.row.classList.remove('bg-amber-50/60');
+        }
+        rank++;
+    });
 };
 
 window.confirmDeleteTeam = function(actionUrl, teamName) {
@@ -772,6 +1322,15 @@ document.addEventListener('DOMContentLoaded', function() {
         if (finalInput) {
             finalInput.addEventListener('input', window.recalculateAllRanks);
         }
+    });
+
+    // Real-time rank calculation for Semifinal Termin sections
+    document.querySelectorAll('.termin-section').forEach(sec => {
+        const tNum = sec.dataset.termin;
+        sec.querySelectorAll('.input-termin-score, .input-final-score').forEach(inp => {
+            inp.addEventListener('input', () => window.recalcTerminRanks(tNum));
+        });
+        window.recalcTerminRanks(tNum);
     });
 
     // Run initial rank calculation on page load
