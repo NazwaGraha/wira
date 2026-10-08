@@ -57,10 +57,10 @@
             <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-200 flex flex-col justify-between hover:border-red-400 transition hover:shadow-md">
                 <div>
                     <div class="flex items-center justify-between gap-2 mb-3">
-                        <span class="font-mono text-xs font-bold uppercase tracking-wider bg-slate-100 text-slate-600 px-2.5 py-1 rounded-md border border-slate-200">
+                        <span class="font-mono text-sm sm:text-base font-black uppercase tracking-wider bg-slate-900 text-white px-3.5 py-1.5 rounded-xl border border-slate-800 shadow-xs">
                             {{ $cat->code ?? 'LOMBA' }}
                         </span>
-                        <span class="text-xs font-extrabold text-slate-500 bg-slate-100 px-2.5 py-0.5 rounded-full border border-slate-200">
+                        <span class="text-xs sm:text-sm font-extrabold text-slate-500 bg-slate-100 px-3 py-1 rounded-full border border-slate-200">
                             PMR {{ $cat->level }}
                         </span>
                     </div>

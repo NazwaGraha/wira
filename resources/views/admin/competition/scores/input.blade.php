@@ -19,8 +19,8 @@
     <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 flex flex-col md:flex-row justify-between md:items-center gap-4">
         <div>
             <div class="flex items-center gap-2">
-                <span class="font-mono text-xs font-bold text-red-600 bg-red-50 border border-red-200 px-2.5 py-0.5 rounded-md">{{ $category->code ?? 'LOMBA' }}</span>
-                <span class="text-xs font-bold text-slate-500">PMR {{ $category->level }}</span>
+                <span class="font-mono text-sm sm:text-base font-black text-slate-900 bg-slate-100 border-2 border-slate-300 px-3 py-1 rounded-xl shadow-xs uppercase tracking-wider">{{ $category->code ?? 'LOMBA' }}</span>
+                <span class="text-xs sm:text-sm font-bold text-slate-500">PMR {{ $category->level }}</span>
                 @if($category->gender_category === 'Putra')
                     <span class="text-xs font-black text-blue-700 bg-blue-50 border border-blue-200 px-2.5 py-0.5 rounded-md inline-flex items-center gap-1">
                         <i class="fa-solid fa-mars text-blue-600"></i> Kategori Putra
