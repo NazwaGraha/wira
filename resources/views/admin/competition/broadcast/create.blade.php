@@ -232,7 +232,6 @@
                                 <th class="p-3">Jenjang</th>
                                 <th class="p-3">Alamat Email</th>
                                 <th class="p-3">Kontak Pembina</th>
-                                <th class="p-3 text-center">Status</th>
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-slate-100 font-medium">
@@ -247,17 +246,10 @@
                                     </td>
                                     <td class="p-3 font-mono font-bold text-slate-700">{{ $item['email'] }}</td>
                                     <td class="p-3 text-slate-600">{{ $item['advisor_name'] }} ({{ $item['advisor_phone'] }})</td>
-                                    <td class="p-3 text-center">
-                                        @if(($item['status'] ?? '') == 'verified')
-                                            <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-100 text-emerald-800">Lunas</span>
-                                        @else
-                                            <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-slate-100 text-slate-700">Terdaftar</span>
-                                        @endif
-                                    </td>
                                 </tr>
                             @empty
                                 <tr>
-                                    <td colspan="6" class="p-6 text-center text-slate-400">Tidak ada kontak dari database yang cocok dengan filter.</td>
+                                    <td colspan="5" class="p-6 text-center text-slate-400">Tidak ada kontak dari database yang cocok dengan filter.</td>
                                 </tr>
                             @endforelse
                         </tbody>
