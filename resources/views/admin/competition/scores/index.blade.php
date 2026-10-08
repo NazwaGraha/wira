@@ -40,13 +40,13 @@
 
     <!-- Level Tabs -->
     <div class="flex flex-wrap gap-2">
-        <a href="{{ route('admin.competition-scores.index', array_merge(request()->query(), ['level' => 'Mula'])) }}" class="px-6 py-3 rounded-xl font-extrabold text-sm transition {{ $level == 'Mula' ? 'bg-blue-600 text-white shadow-md' : 'bg-white text-slate-700 hover:bg-slate-100 border border-slate-200' }}">
+        <a href="{{ route('admin.competition-scores.index', array_merge(request()->query(), ['level' => 'Mula'])) }}" class="px-6 py-3 rounded-xl font-extrabold text-sm transition {{ $level == 'Mula' ? 'bg-emerald-600 text-white shadow-md shadow-emerald-600/30 border border-emerald-600' : 'bg-white text-slate-700 hover:bg-emerald-50 hover:text-emerald-700 hover:border-emerald-300 border border-slate-200' }}">
             <i class="fa-solid fa-child-reaching mr-1.5"></i> PMR MULA (SD)
         </a>
-        <a href="{{ route('admin.competition-scores.index', array_merge(request()->query(), ['level' => 'Madya'])) }}" class="px-6 py-3 rounded-xl font-extrabold text-sm transition {{ $level == 'Madya' ? 'bg-red-600 text-white shadow-md' : 'bg-white text-slate-700 hover:bg-slate-100 border border-slate-200' }}">
+        <a href="{{ route('admin.competition-scores.index', array_merge(request()->query(), ['level' => 'Madya'])) }}" class="px-6 py-3 rounded-xl font-extrabold text-sm transition {{ $level == 'Madya' ? 'bg-blue-600 text-white shadow-md shadow-blue-600/30 border border-blue-600' : 'bg-white text-slate-700 hover:bg-blue-50 hover:text-blue-700 hover:border-blue-300 border border-slate-200' }}">
             <i class="fa-solid fa-user-group mr-1.5"></i> PMR MADYA (SMP)
         </a>
-        <a href="{{ route('admin.competition-scores.index', array_merge(request()->query(), ['level' => 'Wira'])) }}" class="px-6 py-3 rounded-xl font-extrabold text-sm transition {{ $level == 'Wira' ? 'bg-amber-600 text-white shadow-md' : 'bg-white text-slate-700 hover:bg-slate-100 border border-slate-200' }}">
+        <a href="{{ route('admin.competition-scores.index', array_merge(request()->query(), ['level' => 'Wira'])) }}" class="px-6 py-3 rounded-xl font-extrabold text-sm transition {{ $level == 'Wira' ? 'bg-amber-400 text-slate-950 font-black shadow-md shadow-amber-400/30 border border-amber-400' : 'bg-white text-slate-700 hover:bg-amber-50 hover:text-amber-800 hover:border-amber-300 border border-slate-200' }}">
             <i class="fa-solid fa-graduation-cap mr-1.5"></i> PMR WIRA (SMA)
         </a>
     </div>
@@ -54,7 +54,7 @@
     <!-- Category Cards Grid -->
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         @foreach($categories as $cat)
-            <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-200 flex flex-col justify-between hover:border-red-400 transition hover:shadow-md">
+            <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-200 flex flex-col justify-between hover:border-slate-300 transition hover:shadow-md">
                 <div>
                     <div class="flex items-center justify-between gap-2 mb-3">
                         <span class="font-mono text-sm sm:text-base font-black uppercase tracking-wider bg-slate-900 text-white px-3.5 py-1.5 rounded-xl border border-slate-800 shadow-xs">
