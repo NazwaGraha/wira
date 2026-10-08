@@ -144,6 +144,7 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::get('/competition-broadcast', [\App\Http\Controllers\Admin\CompetitionBroadcastController::class, 'index'])->name('competition-broadcast.index');
         Route::get('/competition-broadcast/create', [\App\Http\Controllers\Admin\CompetitionBroadcastController::class, 'create'])->name('competition-broadcast.create');
         Route::post('/competition-broadcast/send', [\App\Http\Controllers\Admin\CompetitionBroadcastController::class, 'send'])->name('competition-broadcast.send');
+        Route::post('/competition-broadcast/upload-image', [\App\Http\Controllers\Admin\CompetitionBroadcastController::class, 'uploadImage'])->name('competition-broadcast.upload-image');
         Route::get('/competition-broadcast/{id}', [\App\Http\Controllers\Admin\CompetitionBroadcastController::class, 'show'])->name('competition-broadcast.show');
         Route::delete('/competition-broadcast/{id}', [\App\Http\Controllers\Admin\CompetitionBroadcastController::class, 'destroy'])->name('competition-broadcast.destroy');
 

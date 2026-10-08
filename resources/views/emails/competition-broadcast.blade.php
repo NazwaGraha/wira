@@ -55,9 +55,27 @@
             margin-bottom: 16px;
         }
         .message-body {
-            white-space: pre-line;
             margin-bottom: 24px;
             color: #334155;
+            line-height: 1.8;
+            font-size: 15px;
+        }
+        .message-body p {
+            margin: 0 0 14px 0;
+        }
+        .message-body img {
+            max-width: 100% !important;
+            height: auto;
+            border-radius: 8px;
+            display: inline-block;
+        }
+        .message-body img[style*="float: left"],
+        .message-body img[style*="float:left"] {
+            margin: 4px 16px 14px 0 !important;
+        }
+        .message-body img[style*="float: right"],
+        .message-body img[style*="float:right"] {
+            margin: 4px 0 14px 16px !important;
         }
         .cta-container {
             text-align: center;
@@ -127,7 +145,7 @@
                 </div>
             @endif
 
-            <div class="message-body">{!! nl2br(e($contentBody)) !!}</div>
+            <div class="message-body">{!! $contentBody !!}</div>
 
             @if(!empty($buttonText) && !empty($buttonUrl))
                 <div class="cta-container">

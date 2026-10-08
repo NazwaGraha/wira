@@ -65,6 +65,7 @@ class CompetitionBroadcastController extends Controller
             'target_event' => 'required|string',
             'target_level' => 'required|in:all,Mula,Madya,Wira',
             'target_status' => 'required|in:all,verified',
+            'additional_emails' => 'nullable|string',
             'is_test_mode' => 'nullable|boolean',
             'test_email' => 'nullable|email|max:255',
         ]);
@@ -94,8 +95,30 @@ class CompetitionBroadcastController extends Controller
                 $validated['target_status']
             );
 
+            // Tambahkan email manual tambahan bila ada
+            $additionalRaw = $request->input('additional_emails', '');
+            if (!empty($additionalRaw)) {
+                $split = preg_split('/[\r\n,;]+/', $additionalRaw);
+                foreach ($split as $em) {
+                    $em = strtolower(trim($em));
+                    if (!empty($em) && filter_var($em, FILTER_VALIDATE_EMAIL)) {
+                        if (!isset($recipients[$em])) {
+                            $recipients[$em] = [
+                                'email' => $em,
+                                'school_name' => 'Kontak Tambahan (Manual / Undangan Khusus)',
+                                'advisor_name' => 'Penerima Undangan',
+                                'advisor_phone' => '-',
+                                'level' => 'Umum',
+                                'event_id' => null,
+                                'status' => 'custom',
+                            ];
+                        }
+                    }
+                }
+            }
+
             if (empty($recipients)) {
-                return redirect()->back()->withInput()->with('error', 'Tidak ditemukan data kontak email yang sesuai dengan kriteria target.');
+                return redirect()->back()->withInput()->with('error', 'Tidak ditemukan data kontak email yang sesuai dengan kriteria target atau email tambahan.');
             }
         }
 
@@ -202,5 +225,24 @@ class CompetitionBroadcastController extends Controller
         }
 
         return $recipients;
+    }
+
+    public function uploadImage(Request $request)
+    {
+        $request->validate([
+            'image' => 'required|image|mimes:jpeg,png,jpg,gif,webp|max:10240',
+        ]);
+
+        if ($request->hasFile('image')) {
+            $file = $request->file('image');
+            $filename = 'broadcast_' . time() . '_' . \Illuminate\Support\Str::random(8) . '.' . $file->getClientOriginalExtension();
+            $path = $file->storeAs('broadcast_images', $filename, 'public');
+            return response()->json([
+                'success' => true,
+                'url' => asset('storage/' . $path),
+            ]);
+        }
+
+        return response()->json(['success' => false, 'message' => 'Gagal mengunggah file gambar.'], 400);
     }
 }

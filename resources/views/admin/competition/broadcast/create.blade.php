@@ -3,6 +3,77 @@
 @section('title', 'Tulis Siaran Email Informasi Lomba')
 @section('page_title', 'Form Siaran Email & Informasi Lomba')
 
+@push('styles')
+    <!-- Summernote Lite CSS & Custom Styling -->
+    <link href="https://cdn.jsdelivr.net/npm/summernote@0.8.20/dist/summernote-lite.min.css" rel="stylesheet">
+    <style>
+        .note-editor.note-frame {
+            border: 1px solid #e2e8f0 !important;
+            border-radius: 14px !important;
+            overflow: hidden !important;
+            box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05) !important;
+            background: #ffffff !important;
+        }
+        .note-toolbar {
+            background: #f8fafc !important;
+            border-bottom: 1px solid #e2e8f0 !important;
+            padding: 8px 10px !important;
+        }
+        .note-btn {
+            background: #ffffff !important;
+            border: 1px solid #cbd5e1 !important;
+            border-radius: 8px !important;
+            padding: 5px 9px !important;
+            font-size: 12px !important;
+            color: #334155 !important;
+            transition: all 0.15s ease !important;
+        }
+        .note-btn:hover, .note-btn.active {
+            background: #fee2e2 !important;
+            border-color: #ef4444 !important;
+            color: #980000 !important;
+        }
+        .note-editable {
+            font-family: inherit !important;
+            font-size: 14px !important;
+            line-height: 1.7 !important;
+            color: #1e293b !important;
+            min-height: 320px !important;
+            padding: 20px !important;
+            background: #ffffff !important;
+        }
+        .note-editable img {
+            max-width: 100% !important;
+            border-radius: 8px !important;
+            margin: 6px 0 !important;
+            transition: outline 0.15s ease;
+        }
+        .note-editable img:hover {
+            outline: 2px dashed #dc2626 !important;
+        }
+        .note-modal .modal-content {
+            border-radius: 16px !important;
+            border: none !important;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04) !important;
+        }
+        .note-popover .popover-content {
+            border-radius: 10px !important;
+            padding: 6px !important;
+            background: #1e293b !important;
+            color: #ffffff !important;
+        }
+        .note-popover .btn-group .note-btn {
+            background: #334155 !important;
+            border-color: #475569 !important;
+            color: #ffffff !important;
+        }
+        .note-popover .btn-group .note-btn:hover {
+            background: #dc2626 !important;
+            border-color: #ef4444 !important;
+        }
+    </style>
+@endpush
+
 @section('top_actions')
     <a href="{{ route('admin.competition-broadcast.index') }}" class="px-4 py-2 bg-slate-100 text-slate-600 font-bold text-xs rounded-xl hover:bg-slate-200 transition">
         &larr; Kembali ke Riwayat Siaran
@@ -23,7 +94,7 @@
         
         <!-- Kolom Kiri: Form Komposisi Pesan -->
         <div class="lg:col-span-7 space-y-6">
-            <form action="{{ route('admin.competition-broadcast.send') }}" method="POST" class="bg-white p-6 sm:p-8 rounded-2xl shadow-sm border border-slate-200 space-y-6">
+            <form id="broadcast-form" action="{{ route('admin.competition-broadcast.send') }}" method="POST" class="bg-white p-6 sm:p-8 rounded-2xl shadow-sm border border-slate-200 space-y-6">
                 @csrf
 
                 <div>
@@ -35,14 +106,14 @@
 
                 <hr class="border-slate-100">
 
-                <!-- 1. Kriteria Target Penerima -->
+                <!-- 1. Kriteria Target Penerima Database -->
                 <div class="space-y-4 bg-slate-50 p-4 sm:p-5 rounded-xl border border-slate-200">
                     <div class="flex items-center justify-between">
                         <span class="text-xs font-extrabold text-slate-800 uppercase tracking-wider flex items-center gap-2">
-                            <i class="fa-solid fa-filter text-indigo-500"></i> Kriteria Target Penerima
+                            <i class="fa-solid fa-filter text-indigo-500"></i> Kriteria Penerima dari Database
                         </span>
-                        <span class="text-[11px] font-bold text-indigo-600 bg-indigo-50 px-2.5 py-0.5 rounded-full border border-indigo-100">
-                            {{ count($recipients) }} Kontak Terpilih
+                        <span id="db-badge-count" class="text-[11px] font-bold text-indigo-600 bg-indigo-50 px-2.5 py-0.5 rounded-full border border-indigo-100">
+                            {{ count($recipients) }} Kontak dari Database
                         </span>
                     </div>
 
@@ -77,9 +148,27 @@
                             </select>
                         </div>
                     </div>
+
+                    <!-- Tambahan Email Manual di Luar Database -->
+                    <div class="pt-3 border-t border-slate-200">
+                        <div class="flex items-center justify-between mb-1.5">
+                            <label class="text-xs font-extrabold text-slate-800 flex items-center gap-1.5">
+                                <i class="fa-solid fa-user-plus text-red-600"></i>
+                                <span>Tambahan Email Penerima Lainnya (Di Luar Database)</span>
+                            </label>
+                            <span id="additional-count-badge" class="text-[10px] font-black text-slate-600 bg-slate-200 px-2 py-0.5 rounded-full">
+                                0 Email Tambahan
+                            </span>
+                        </div>
+                        <textarea id="additional_emails" name="additional_emails" rows="3" oninput="handleAdditionalEmailsInput(this.value)" placeholder="Ketik atau paste email tambahan (bisa lebih dari 1). Pisahkan dengan koma (,) atau baris baru (enter).&#10;Contoh:&#10;pembina.baru@gmail.com, sman1ciawi@sch.id&#10;pmr.bogorraya@gmail.com" class="w-full bg-white border border-slate-300 rounded-xl p-3 text-xs font-mono text-slate-800 focus:outline-none focus:border-red-500 leading-relaxed">{{ old('additional_emails') }}</textarea>
+                        <p class="text-[11px] text-slate-500 mt-1.5 flex items-start gap-1.5 leading-snug">
+                            <i class="fa-solid fa-circle-info text-sky-500 mt-0.5 text-xs"></i>
+                            <span>Bisa memasukkan beberapa alamat email sekaligus. Email tambahan ini akan otomatis ikut menerima siaran bersama daftar sekolah di database.</span>
+                        </p>
+                    </div>
                 </div>
 
-                <!-- 2. Konten Email -->
+                <!-- 2. Konten Email & Text Editor Lengkap -->
                 <div class="space-y-4">
                     <div>
                         <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">
@@ -96,10 +185,22 @@
                     </div>
 
                     <div>
-                        <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">
-                            Isi Pesan / Informasi Kegiatan <span class="text-rose-500">*</span>
-                        </label>
-                        <textarea name="content" rows="8" required placeholder="Tuliskan isi pengumuman, undangan kegiatan, jadwal technical meeting, atau link unduh juklak juknis..." class="w-full bg-slate-50 border border-slate-200 p-4 rounded-xl text-sm focus:bg-white focus:outline-none focus:border-red-500 leading-relaxed text-slate-800">{{ old('content') }}</textarea>
+                        <div class="flex items-center justify-between mb-1.5">
+                            <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider">
+                                Isi Pesan / Informasi Kegiatan <span class="text-rose-500">*</span>
+                            </label>
+                            <span class="text-[11px] text-slate-400 font-semibold flex items-center gap-1">
+                                <i class="fa-regular fa-image text-red-500"></i> Mendukung sisip gambar & atur ukuran/posisi
+                            </span>
+                        </div>
+                        
+                        <!-- Rich Text Editor (Summernote) -->
+                        <textarea id="content-editor" name="content" required>{!! old('content') !!}</textarea>
+                        
+                        <p class="text-[11px] text-slate-400 mt-1.5 flex items-center gap-1.5">
+                            <i class="fa-solid fa-lightbulb text-amber-500"></i>
+                            <span><strong>Tips Gambar:</strong> Klik pada gambar yang telah disisipkan untuk mengatur ukuran (100%, 50%, 25%, drag sudut) dan posisi (Rata Kiri, Tengah, Rata Kanan).</span>
+                        </p>
                     </div>
 
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -162,14 +263,32 @@
                         <h4 class="font-extrabold text-slate-900 text-sm flex items-center gap-2">
                             <i class="fa-solid fa-address-book text-emerald-600"></i> Kontak Penerima Terpilih
                         </h4>
-                        <div class="text-[11px] text-slate-500 mt-0.5">Sesuai filter kriteria di sebelah kiri</div>
+                        <div class="text-[11px] text-slate-500 mt-0.5">Ringkasan kontak database & email tambahan</div>
                     </div>
-                    <span class="px-3 py-1 bg-emerald-50 text-emerald-700 border border-emerald-200 text-xs font-black rounded-full">
-                        {{ count($recipients) }} Email Unik
+                    <span id="total-recipients-pill" class="px-3 py-1 bg-emerald-50 text-emerald-700 border border-emerald-200 text-xs font-black rounded-full">
+                        {{ count($recipients) }} Total Penerima
                     </span>
                 </div>
 
-                <div class="max-h-[550px] overflow-y-auto space-y-2 pr-1 divide-y divide-slate-100">
+                <!-- Summary Counter Stats -->
+                <div class="grid grid-cols-2 gap-2 text-xs">
+                    <div class="p-3 bg-slate-50 rounded-xl border border-slate-100">
+                        <div class="text-[10px] font-bold text-slate-400 uppercase">Dari Database</div>
+                        <div class="font-black text-slate-800 text-base mt-0.5">{{ count($recipients) }} Kontak</div>
+                    </div>
+                    <div class="p-3 bg-red-50/60 rounded-xl border border-red-100">
+                        <div class="text-[10px] font-bold text-red-700 uppercase">Tambahan Manual</div>
+                        <div id="additional-preview-count" class="font-black text-red-700 text-base mt-0.5">0 Kontak</div>
+                    </div>
+                </div>
+
+                <!-- Preview List -->
+                <div class="max-h-[500px] overflow-y-auto space-y-2 pr-1 divide-y divide-slate-100">
+                    
+                    <!-- Dynamic Container for Custom Additional Emails -->
+                    <div id="custom-emails-container" class="space-y-2"></div>
+
+                    <!-- Database Emails -->
                     @forelse($recipients as $item)
                         <div class="pt-2 first:pt-0">
                             <div class="flex items-start justify-between gap-2">
@@ -189,16 +308,16 @@
                             </div>
                         </div>
                     @empty
-                        <div class="py-8 text-center text-slate-400 text-xs">
+                        <div id="no-db-recipients" class="py-8 text-center text-slate-400 text-xs">
                             <i class="fa-solid fa-user-slash text-2xl mb-2 text-slate-300"></i>
-                            <div>Tidak ada kontak yang cocok dengan filter yang dipilih.</div>
+                            <div>Tidak ada kontak dari database yang cocok dengan filter yang dipilih.</div>
                         </div>
                     @endforelse
                 </div>
 
                 <div class="p-3 bg-slate-50 rounded-xl border border-slate-100 text-[11px] text-slate-500 leading-relaxed">
                     <i class="fa-solid fa-shield-halved text-emerald-600 mr-1"></i>
-                    <strong>Anti Duplikasi:</strong> Setiap alamat email hanya akan menerima 1 salinan email siaran per pengiriman, meskipun mendaftarkan beberapa regu sekaligus.
+                    <strong>Anti Duplikasi:</strong> Setiap alamat email unik hanya akan menerima 1 salinan email per pengiriman.
                 </div>
             </div>
         </div>
@@ -206,20 +325,163 @@
     </div>
 
 </div>
-
-<script>
-    function updateFilter(el) {
-        const form = el.form;
-        const targetEvent = form.querySelector('[name="target_event"]').value;
-        const targetLevel = form.querySelector('[name="target_level"]').value;
-        const targetStatus = form.querySelector('[name="target_status"]').value;
-
-        const url = new URL(window.location.href);
-        url.searchParams.set('target_event', targetEvent);
-        url.searchParams.set('target_level', targetLevel);
-        url.searchParams.set('target_status', targetStatus);
-
-        window.location.href = url.toString();
-    }
-</script>
 @endsection
+
+@push('scripts')
+    <!-- jQuery & Summernote Lite Scripts -->
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/summernote@0.8.20/dist/summernote-lite.min.js"></script>
+
+    <script>
+        const initialDbRecipientsCount = {{ count($recipients) }};
+        const dbEmailsList = {!! json_encode(array_keys($recipients)) !!};
+
+        $(document).ready(function() {
+            // Inisialisasi Summernote Lite
+            $('#content-editor').summernote({
+                placeholder: 'Tuliskan pengumuman kegiatan, jadwal, juklak/juknis, atau informasi resmi lainnya...',
+                tabsize: 2,
+                height: 380,
+                toolbar: [
+                    ['style', ['style']],
+                    ['font', ['bold', 'italic', 'underline', 'strikethrough', 'clear']],
+                    ['fontname', ['fontname']],
+                    ['fontsize', ['fontsize']],
+                    ['color', ['color']],
+                    ['para', ['ul', 'ol', 'paragraph']],
+                    ['table', ['table']],
+                    ['insert', ['link', 'picture', 'hr']],
+                    ['view', ['fullscreen', 'codeview', 'help']]
+                ],
+                popover: {
+                    image: [
+                        ['image', ['resizeFull', 'resizeHalf', 'resizeQuarter', 'resizeNone']],
+                        ['float', ['floatLeft', 'floatRight', 'floatNone']],
+                        ['remove', ['removeMedia']]
+                    ],
+                    link: [
+                        ['link', ['linkDialogShow', 'unlink']]
+                    ],
+                    table: [
+                        ['add', ['addRowDown', 'addRowUp', 'addColLeft', 'addColRight']],
+                        ['delete', ['deleteRow', 'deleteCol', 'deleteTable']],
+                    ]
+                },
+                callbacks: {
+                    onImageUpload: function(files) {
+                        for (let i = 0; i < files.length; i++) {
+                            uploadBroadcastImage(files[i]);
+                        }
+                    }
+                }
+            });
+
+            // Trigger preview jika ada nilai lama pada additional emails
+            const existingExtra = document.getElementById('additional_emails').value;
+            if (existingExtra) {
+                handleAdditionalEmailsInput(existingExtra);
+            }
+        });
+
+        // AJAX Upload Image Handler
+        function uploadBroadcastImage(file) {
+            const data = new FormData();
+            data.append('image', file);
+            data.append('_token', '{{ csrf_token() }}');
+
+            // Tampilkan status uploading sementara
+            const $status = $('<div class="text-xs text-red-600 font-bold p-2 bg-red-50 rounded">Mengunggah gambar...</div>');
+            $('.note-editor').append($status);
+
+            $.ajax({
+                url: "{{ route('admin.competition-broadcast.upload-image') }}",
+                cache: false,
+                contentType: false,
+                processData: false,
+                data: data,
+                type: "POST",
+                success: function(response) {
+                    $status.remove();
+                    if (response && response.url) {
+                        $('#content-editor').summernote('insertImage', response.url, function($image) {
+                            $image.css('max-width', '100%');
+                            $image.addClass('rounded-lg');
+                        });
+                    }
+                },
+                error: function(xhr) {
+                    $status.remove();
+                    console.error('Upload Error:', xhr);
+                    const msg = xhr.responseJSON && xhr.responseJSON.message 
+                        ? xhr.responseJSON.message 
+                        : 'Gagal mengunggah gambar. Pastikan format jpeg/png/webp dan ukuran di bawah 10MB.';
+                    alert(msg);
+                }
+            });
+        }
+
+        // Live Preview & Counter untuk Email Tambahan Manual
+        function handleAdditionalEmailsInput(text) {
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            const rawParts = text.split(/[\r\n,;]+/);
+            const validEmails = [];
+
+            rawParts.forEach(part => {
+                const clean = part.trim().toLowerCase();
+                if (clean && emailRegex.test(clean) && !validEmails.includes(clean)) {
+                    validEmails.push(clean);
+                }
+            });
+
+            // Update badge di textarea
+            const count = validEmails.length;
+            document.getElementById('additional-count-badge').textContent = `${count} Email Tambahan`;
+            document.getElementById('additional-preview-count').textContent = `${count} Kontak`;
+
+            // Update Total Penerima Pill
+            const total = initialDbRecipientsCount + count;
+            document.getElementById('total-recipients-pill').textContent = `${total} Total Penerima`;
+
+            // Render daftar email tambahan di kolom kanan
+            const container = document.getElementById('custom-emails-container');
+            container.innerHTML = '';
+
+            if (validEmails.length > 0) {
+                const header = document.createElement('div');
+                header.className = 'text-[11px] font-black text-red-600 uppercase tracking-wider pb-1 flex items-center gap-1';
+                header.innerHTML = '<i class="fa-solid fa-plus-circle"></i> Email Tambahan Baru:';
+                container.appendChild(header);
+
+                validEmails.forEach(email => {
+                    const isDuplicateWithDb = dbEmailsList.includes(email);
+                    const itemEl = document.createElement('div');
+                    itemEl.className = 'p-2 bg-red-50/70 border border-red-200 rounded-xl flex items-center justify-between gap-2';
+                    itemEl.innerHTML = `
+                        <div class="min-w-0">
+                            <div class="font-bold text-slate-800 text-xs font-mono truncate">${email}</div>
+                            <div class="text-[10px] text-red-600 font-semibold">${isDuplicateWithDb ? '⚠️ Sudah ada di DB (Akan digabung)' : 'Kontak Tambahan (Custom)'}</div>
+                        </div>
+                        <span class="px-2 py-0.5 rounded text-[9px] font-black bg-red-600 text-white shrink-0">
+                            MANUAL
+                        </span>
+                    `;
+                    container.appendChild(itemEl);
+                });
+            }
+        }
+
+        function updateFilter(el) {
+            const form = el.form;
+            const targetEvent = form.querySelector('[name="target_event"]').value;
+            const targetLevel = form.querySelector('[name="target_level"]').value;
+            const targetStatus = form.querySelector('[name="target_status"]').value;
+
+            const url = new URL(window.location.href);
+            url.searchParams.set('target_event', targetEvent);
+            url.searchParams.set('target_level', targetLevel);
+            url.searchParams.set('target_status', targetStatus);
+
+            window.location.href = url.toString();
+        }
+    </script>
+@endpush
