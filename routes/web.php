@@ -106,6 +106,10 @@ Route::prefix('admin')->name('admin.')->group(function () {
             'competition-events' => 'event'
         ]);
         Route::post('/competition-events/{event}/activate', [\App\Http\Controllers\Admin\CompetitionEventController::class, 'activate'])->name('competition-event.activate');
+        Route::post('/competition-events/{event}/categories', [\App\Http\Controllers\Admin\CompetitionEventController::class, 'storeCategory'])->name('competition-event.categories.store');
+        Route::put('/competition-events/{event}/categories/{category}', [\App\Http\Controllers\Admin\CompetitionEventController::class, 'updateCategory'])->name('competition-event.categories.update');
+        Route::delete('/competition-events/{event}/categories/{category}', [\App\Http\Controllers\Admin\CompetitionEventController::class, 'destroyCategory'])->name('competition-event.categories.destroy');
+        Route::post('/competition-events/{event}/categories-preset', [\App\Http\Controllers\Admin\CompetitionEventController::class, 'addPresetCategories'])->name('competition-event.categories.preset');
         Route::get('/competition-event', function() { return redirect()->route('admin.competition-event.index'); });
 
         Route::resource('competition-registrations', \App\Http\Controllers\Admin\CompetitionRegistrationController::class)->parameters([

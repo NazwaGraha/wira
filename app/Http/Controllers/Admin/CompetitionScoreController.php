@@ -27,6 +27,7 @@ class CompetitionScoreController extends Controller
 
         $categories = CompetitionCategory::where('competition_event_id', $event?->id)
             ->where('level', $level)
+            ->where('is_active', true)
             ->withCount(['teams' => function($q) use ($event) {
                 $q->where('is_active', true)->where(function($sq) use ($event) {
                     $sq->whereHas('registration', function($rq) use ($event) {
