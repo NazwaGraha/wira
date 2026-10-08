@@ -11,24 +11,26 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('competition_email_broadcasts', function (Blueprint $table) {
-            $table->id();
-            $table->foreignId('competition_event_id')->nullable()->constrained()->nullOnDelete();
-            $table->string('subject');
-            $table->string('headline')->nullable();
-            $table->longText('content');
-            $table->string('button_text')->nullable();
-            $table->string('button_url')->nullable();
-            $table->string('target_scope')->default('all'); // all, current_event, selected_event
-            $table->string('target_level')->default('all'); // all, Mula, Madya, Wira
-            $table->string('target_status')->default('all'); // all, verified
-            $table->integer('recipient_count')->default(0);
-            $table->json('recipients_data')->nullable(); // detailed list of recipient emails & schools
-            $table->string('sent_by')->nullable();
-            $table->string('status')->default('sent'); // sent, failed, draft
-            $table->text('notes')->nullable();
-            $table->timestamps();
-        });
+        if (!Schema::hasTable('competition_email_broadcasts')) {
+            Schema::create('competition_email_broadcasts', function (Blueprint $table) {
+                $table->id();
+                $table->foreignId('competition_event_id')->nullable()->constrained()->nullOnDelete();
+                $table->string('subject');
+                $table->string('headline')->nullable();
+                $table->longText('content');
+                $table->string('button_text')->nullable();
+                $table->string('button_url')->nullable();
+                $table->string('target_scope')->default('all'); // all, current_event, selected_event
+                $table->string('target_level')->default('all'); // all, Mula, Madya, Wira
+                $table->string('target_status')->default('all'); // all, verified
+                $table->integer('recipient_count')->default(0);
+                $table->json('recipients_data')->nullable(); // detailed list of recipient emails & schools
+                $table->string('sent_by')->nullable();
+                $table->string('status')->default('sent'); // sent, failed, draft
+                $table->text('notes')->nullable();
+                $table->timestamps();
+            });
+        }
     }
 
     /**
