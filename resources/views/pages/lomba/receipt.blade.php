@@ -73,6 +73,10 @@
                 <div class="col-span-8 text-slate-800">: {{ $registration->advisor_name }} ({{ $registration->advisor_phone }})</div>
             </div>
             <div class="grid grid-cols-12 gap-2">
+                <div class="col-span-4 font-bold text-slate-600">Alamat Email</div>
+                <div class="col-span-8 text-slate-800">: {{ $registration->advisor_email ?: '-' }}</div>
+            </div>
+            <div class="grid grid-cols-12 gap-2">
                 <div class="col-span-4 font-bold text-slate-600">Untuk Pembayaran</div>
                 <div class="col-span-8 text-slate-800">: Registrasi Peserta Lomba {{ $registration->event->title ?? 'SUA BHAKTI BERKARYA III 2025' }}</div>
             </div>

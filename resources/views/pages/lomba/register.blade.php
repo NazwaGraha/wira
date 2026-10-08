@@ -131,8 +131,12 @@
                         </div>
 
                         <div>
-                            <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">Alamat Email Pembina</label>
-                            <input type="email" name="advisor_email" value="{{ old('advisor_email') }}" placeholder="email@sekolah.sch.id" class="w-full bg-slate-50 border border-slate-200 px-4 py-2.5 rounded-xl text-sm focus:bg-white focus:outline-none focus:border-red-500">
+                            <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">Alamat Email <span class="text-rose-500">*</span></label>
+                            <input type="email" name="advisor_email" value="{{ old('advisor_email') }}" required placeholder="contoh: kontak@sekolah.sch.id / pmr@gmail.com" class="w-full bg-slate-50 border border-slate-200 px-4 py-2.5 rounded-xl text-sm focus:bg-white focus:outline-none focus:border-red-500">
+                            <p class="text-[11px] text-slate-500 mt-1.5 flex items-start gap-1.5 leading-snug">
+                                <i class="fa-solid fa-circle-info text-blue-500 mt-0.5 text-xs"></i>
+                                <span>Bisa menggunakan <strong>alamat email sekolah, email pembina, atau email organisasi / PMR</strong>. Digunakan untuk informasi kegiatan, undangan lomba, dan tanda terima pendaftaran.</span>
+                            </p>
                         </div>
 
                         <div>

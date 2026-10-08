@@ -38,6 +38,150 @@
         </a>
     </div>
 
+    <!-- History & Statistics Summary per Edition / Year -->
+    <div x-data="{ openStats: false, openSchools: false }" class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+        <div class="p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-slate-50/70 border-b border-slate-100">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center font-bold text-lg shrink-0">
+                    <i class="fa-solid fa-chart-pie"></i>
+                </div>
+                <div>
+                    <h3 class="font-black text-slate-900 text-sm">Rekapitulasi Data Peserta & Asal Sekolah</h3>
+                    <p class="text-xs text-slate-500 mt-0.5">Analisis jumlah pendaftar tahun ke tahun dan daftar sekolah yang berpartisipasi</p>
+                </div>
+            </div>
+            <div class="flex items-center gap-2">
+                <button type="button" @click="openStats = !openStats" class="px-3.5 py-1.5 rounded-xl text-xs font-bold transition flex items-center gap-1.5 border" :class="openStats ? 'bg-indigo-600 text-white border-indigo-600' : 'bg-white text-slate-700 border-slate-200 hover:bg-slate-100'">
+                    <i class="fa-solid fa-clock-rotate-left"></i>
+                    <span>Statistik Tiap Tahun ({{ count($eventStats) }} Edisi)</span>
+                    <i class="fa-solid text-[10px]" :class="openStats ? 'fa-chevron-up' : 'fa-chevron-down'"></i>
+                </button>
+                <button type="button" @click="openSchools = !openSchools" class="px-3.5 py-1.5 rounded-xl text-xs font-bold transition flex items-center gap-1.5 border" :class="openSchools ? 'bg-red-600 text-white border-red-600' : 'bg-white text-slate-700 border-slate-200 hover:bg-slate-100'">
+                    <i class="fa-solid fa-school"></i>
+                    <span>Daftar Sekolah ({{ $schoolsSummary->count() }})</span>
+                    <i class="fa-solid text-[10px]" :class="openSchools ? 'fa-chevron-up' : 'fa-chevron-down'"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- Section 1: Comparison Across Years / Editions -->
+        <div x-show="openStats" x-collapse class="p-5 border-b border-slate-100 bg-slate-50/30">
+            <div class="text-xs font-bold uppercase text-slate-400 tracking-wider mb-3 flex items-center gap-2">
+                <i class="fa-solid fa-layer-group text-indigo-500"></i> Perbandingan Partisipasi Antar Edisi Lomba
+            </div>
+            <div class="overflow-x-auto">
+                <table class="w-full text-left text-xs">
+                    <thead class="bg-slate-100 text-slate-700 font-bold uppercase">
+                        <tr>
+                            <th class="p-3 rounded-l-lg">Edisi / Tahun Lomba</th>
+                            <th class="p-3 text-center">Status</th>
+                            <th class="p-3 text-center">Jumlah Sekolah</th>
+                            <th class="p-3 text-center">Total Regu</th>
+                            <th class="p-3 text-center">Mula (SD)</th>
+                            <th class="p-3 text-center">Madya (SMP)</th>
+                            <th class="p-3 text-center">Wira (SMA)</th>
+                            <th class="p-3 text-center rounded-r-lg">Terverifikasi</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-slate-100 font-medium">
+                        @forelse($eventStats as $stat)
+                            <tr class="hover:bg-indigo-50/40 transition {{ isset($event) && $event->id == $stat['event']->id ? 'bg-indigo-50/60 font-bold' : '' }}">
+                                <td class="p-3">
+                                    <div class="font-extrabold text-slate-900">{{ $stat['event']->title }}</div>
+                                    <div class="text-[11px] text-slate-500">{{ $stat['event']->start_date ? $stat['event']->start_date->translatedFormat('d M Y') : '-' }}</div>
+                                </td>
+                                <td class="p-3 text-center">
+                                    @if($stat['event']->is_active)
+                                        <span class="px-2 py-0.5 rounded-full text-[10px] font-black bg-emerald-100 text-emerald-800">AKTIF</span>
+                                    @else
+                                        <span class="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-slate-100 text-slate-600">ARSIP</span>
+                                    @endif
+                                </td>
+                                <td class="p-3 text-center font-extrabold text-slate-800 text-sm">
+                                    {{ $stat['total_schools'] }}
+                                </td>
+                                <td class="p-3 text-center font-black text-indigo-700 text-sm">
+                                    {{ $stat['total_teams'] }}
+                                </td>
+                                <td class="p-3 text-center text-blue-700 font-bold">
+                                    {{ $stat['mula'] }}
+                                </td>
+                                <td class="p-3 text-center text-red-700 font-bold">
+                                    {{ $stat['madya'] }}
+                                </td>
+                                <td class="p-3 text-center text-amber-700 font-bold">
+                                    {{ $stat['wira'] }}
+                                </td>
+                                <td class="p-3 text-center">
+                                    <span class="px-2.5 py-1 rounded-lg text-[11px] font-black bg-emerald-50 text-emerald-700 border border-emerald-200">
+                                        {{ $stat['verified_registrations'] }} / {{ $stat['total_registrations'] }}
+                                    </span>
+                                </td>
+                            </tr>
+                        @empty
+                            <tr>
+                                <td colspan="8" class="p-4 text-center text-slate-400">Belum ada data edisi lomba.</td>
+                            </tr>
+                        @endforelse
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Section 2: List of Participating Schools for Current Selected Edition -->
+        <div x-show="openSchools" x-collapse class="p-5 bg-white">
+            <div class="flex items-center justify-between mb-3">
+                <div class="text-xs font-bold uppercase text-slate-400 tracking-wider flex items-center gap-2">
+                    <i class="fa-solid fa-list-check text-red-500"></i> Asal Sekolah Terdaftar di Edisi: <span class="text-slate-800 font-black">{{ $event?->title ?? 'Semua Edisi' }}</span>
+                </div>
+            </div>
+            <div class="overflow-x-auto max-h-80 overflow-y-auto border border-slate-100 rounded-xl">
+                <table class="w-full text-left text-xs">
+                    <thead class="bg-slate-50 text-slate-700 font-bold uppercase sticky top-0 z-10 border-b border-slate-200">
+                        <tr>
+                            <th class="p-3">No</th>
+                            <th class="p-3">Nama Sekolah</th>
+                            <th class="p-3">Tingkat</th>
+                            <th class="p-3">Regu</th>
+                            <th class="p-3">Pembina</th>
+                            <th class="p-3">Alamat Email</th>
+                            <th class="p-3 text-center">Status</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-slate-100">
+                        @forelse($schoolsSummary as $idx => $sch)
+                            <tr class="hover:bg-slate-50 transition">
+                                <td class="p-3 text-slate-400 font-bold">{{ $idx + 1 }}</td>
+                                <td class="p-3 font-extrabold text-slate-900 uppercase">{{ $sch->school_name }}</td>
+                                <td class="p-3">
+                                    <span class="px-2 py-0.5 rounded text-[10px] font-extrabold {{ $sch->level == 'Mula' ? 'bg-blue-50 text-blue-700 border border-blue-200' : ($sch->level == 'Madya' ? 'bg-red-50 text-red-700 border border-red-200' : 'bg-amber-50 text-amber-700 border border-amber-200') }}">
+                                        {{ $sch->level }}
+                                    </span>
+                                </td>
+                                <td class="p-3 font-bold text-slate-800">{{ $sch->teams_count }} Regu</td>
+                                <td class="p-3 text-slate-700">{{ $sch->advisor_name }} ({{ $sch->advisor_phone }})</td>
+                                <td class="p-3 font-medium text-slate-600">{{ $sch->advisor_email ?: '-' }}</td>
+                                <td class="p-3 text-center">
+                                    @if($sch->status == 'verified')
+                                        <span class="px-2 py-0.5 rounded text-[10px] font-extrabold bg-emerald-100 text-emerald-800">Lunas</span>
+                                    @elseif($sch->status == 'pending')
+                                        <span class="px-2 py-0.5 rounded text-[10px] font-extrabold bg-amber-100 text-amber-800">Pending</span>
+                                    @else
+                                        <span class="px-2 py-0.5 rounded text-[10px] font-extrabold bg-rose-100 text-rose-800">Ditolak</span>
+                                    @endif
+                                </td>
+                            </tr>
+                        @empty
+                            <tr>
+                                <td colspan="7" class="p-4 text-center text-slate-400">Belum ada sekolah yang terdaftar pada edisi ini.</td>
+                            </tr>
+                        @endforelse
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
     <!-- Table Card -->
     <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
         <!-- Filter and Search -->
@@ -94,6 +238,12 @@
                             <td class="px-6 py-4">
                                 <div class="font-bold text-slate-800 text-xs">{{ $reg->advisor_name }}</div>
                                 <div class="text-xs text-slate-500"><i class="fa-brands fa-whatsapp text-emerald-500"></i> {{ $reg->advisor_phone }}</div>
+                                @if($reg->advisor_email)
+                                    <div class="text-[11px] text-slate-500 mt-0.5 flex items-center gap-1 font-normal">
+                                        <i class="fa-regular fa-envelope text-slate-400 text-[10px]"></i> 
+                                        <span class="truncate max-w-[170px]" title="{{ $reg->advisor_email }}">{{ $reg->advisor_email }}</span>
+                                    </div>
+                                @endif
                             </td>
                             <td class="px-6 py-4">
                                 <div class="font-mono font-bold text-slate-900 text-xs">Rp {{ number_format($reg->total_payment, 0, ',', '.') }}</div>

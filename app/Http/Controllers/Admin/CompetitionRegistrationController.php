@@ -63,7 +63,55 @@ class CompetitionRegistrationController extends Controller
             'rejected' => (clone $countsQuery)->where('status', 'rejected')->count(),
         ];
 
-        return view('admin.competition.registrations.index', compact('registrations', 'counts', 'status', 'level', 'search', 'event', 'allEvents'));
+        // Statistik perbandingan tahunan antar event / edisi
+        $eventStats = CompetitionEvent::withCount([
+            'registrations as total_registrations',
+            'registrations as verified_registrations' => function($q) {
+                $q->where('status', 'verified');
+            },
+        ])->orderByDesc('id')->get()->map(function($ev) {
+            $totalTeams = DB::table('competition_participant_teams')
+                ->join('competition_registrations', 'competition_participant_teams.competition_registration_id', '=', 'competition_registrations.id')
+                ->where('competition_registrations.competition_event_id', $ev->id)
+                ->count();
+
+            $totalSchools = CompetitionRegistration::where('competition_event_id', $ev->id)
+                ->distinct('school_name')
+                ->count('school_name');
+
+            $mulaCount = CompetitionRegistration::where('competition_event_id', $ev->id)->where('level', 'Mula')->count();
+            $madyaCount = CompetitionRegistration::where('competition_event_id', $ev->id)->where('level', 'Madya')->count();
+            $wiraCount = CompetitionRegistration::where('competition_event_id', $ev->id)->where('level', 'Wira')->count();
+
+            return [
+                'event' => $ev,
+                'total_registrations' => $ev->total_registrations,
+                'verified_registrations' => $ev->verified_registrations,
+                'total_schools' => $totalSchools,
+                'total_teams' => $totalTeams,
+                'mula' => $mulaCount,
+                'madya' => $madyaCount,
+                'wira' => $wiraCount,
+            ];
+        });
+
+        // Rekapitulasi daftar sekolah untuk event yang dipilih
+        $schoolsSummary = CompetitionRegistration::withCount('teams')
+            ->when($event, fn($q) => $q->where('competition_event_id', $event->id))
+            ->orderBy('school_name')
+            ->get();
+
+        return view('admin.competition.registrations.index', compact(
+            'registrations', 
+            'counts', 
+            'status', 
+            'level', 
+            'search', 
+            'event', 
+            'allEvents',
+            'eventStats',
+            'schoolsSummary'
+        ));
     }
 
     public function show($id)

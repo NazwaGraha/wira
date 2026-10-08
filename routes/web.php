@@ -140,6 +140,13 @@ Route::prefix('admin')->name('admin.')->group(function () {
         // Rekap Juara Umum & Klasemen
         Route::get('/competition-leaderboard', [\App\Http\Controllers\Admin\CompetitionLeaderboardController::class, 'index'])->name('competition-leaderboard.index');
 
+        // Siaran Email / Informasi Kegiatan & Undangan Lomba
+        Route::get('/competition-broadcast', [\App\Http\Controllers\Admin\CompetitionBroadcastController::class, 'index'])->name('competition-broadcast.index');
+        Route::get('/competition-broadcast/create', [\App\Http\Controllers\Admin\CompetitionBroadcastController::class, 'create'])->name('competition-broadcast.create');
+        Route::post('/competition-broadcast/send', [\App\Http\Controllers\Admin\CompetitionBroadcastController::class, 'send'])->name('competition-broadcast.send');
+        Route::get('/competition-broadcast/{id}', [\App\Http\Controllers\Admin\CompetitionBroadcastController::class, 'show'])->name('competition-broadcast.show');
+        Route::delete('/competition-broadcast/{id}', [\App\Http\Controllers\Admin\CompetitionBroadcastController::class, 'destroy'])->name('competition-broadcast.destroy');
+
         // System Utility: Bersihkan Cache & Sinkronisasi Server
         Route::get('/clear-cache', function () {
             try {

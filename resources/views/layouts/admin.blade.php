@@ -121,6 +121,10 @@
                 <i class="fa-solid fa-coins w-5 text-center text-emerald-400"></i>
                 <span>Setup Biaya Lomba</span>
             </a>
+            <a href="{{ route('admin.competition-broadcast.index') }}" class="flex items-center gap-3 px-3 py-2.5 rounded-xl font-medium text-sm transition {{ request()->routeIs('admin.competition-broadcast.*') ? 'bg-pmr-primary text-white shadow-md shadow-red-950/40' : 'hover:bg-slate-800 text-slate-300' }}">
+                <i class="fa-solid fa-paper-plane w-5 text-center text-indigo-400"></i>
+                <span>Siaran Email / Informasi</span>
+            </a>
 
             <!-- Submenu Donor Darah -->
             <div class="pt-4 pb-1 text-[11px] font-bold uppercase text-slate-500 tracking-wider px-3">Kelola Donor Darah</div>

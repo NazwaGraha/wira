@@ -51,7 +51,7 @@ class CompetitionController extends Controller
             'level' => 'required|in:Mula,Madya,Wira',
             'advisor_name' => 'required|string|max:255',
             'advisor_phone' => 'required|string|max:20',
-            'advisor_email' => 'nullable|email|max:255',
+            'advisor_email' => 'required|email|max:255',
             'school_address' => 'nullable|string',
             'categories' => 'required|array|min:1',
             'categories.*' => 'exists:competition_categories,id',
