@@ -574,7 +574,7 @@
                                         <i class="fa-solid fa-pen-to-square text-xs"></i>
                                     </button>
 
-                                    <form action="{{ route('competition-event.categories.destroy', [$event->id, $cat->id]) }}" method="POST" class="inline" onsubmit="return confirm('Apakah Anda yakin ingin menghapus cabang lomba \'{{ $cat->name }} ({{ $cat->level }} - {{ $cat->gender_category }})\' dari edisi ini?');">
+                                    <form action="{{ route('admin.competition-event.categories.destroy', [$event->id, $cat->id]) }}" method="POST" class="inline" onsubmit="return confirm('Apakah Anda yakin ingin menghapus cabang lomba \'{{ $cat->name }} ({{ $cat->level }} - {{ $cat->gender_category }})\' dari edisi ini?');">
                                         @csrf
                                         @method('DELETE')
                                         <button type="submit" class="w-8 h-8 rounded-lg bg-rose-50 hover:bg-rose-100 text-rose-600 flex items-center justify-center transition" title="Hapus Cabang Lomba">
@@ -633,7 +633,7 @@
             </button>
         </div>
 
-        <form action="{{ route('competition-event.categories.store', $event->id) }}" method="POST" class="space-y-4">
+        <form action="{{ route('admin.competition-event.categories.store', $event->id) }}" method="POST" class="space-y-4">
             @csrf
 
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -897,7 +897,7 @@
             </button>
         </div>
 
-        <form action="{{ route('competition-event.categories.preset', $event->id) }}" method="POST" class="space-y-4">
+        <form action="{{ route('admin.competition-event.categories.preset', $event->id) }}" method="POST" class="space-y-4">
             @csrf
 
             <p class="text-xs text-slate-600 leading-relaxed">
