@@ -9,13 +9,13 @@
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
         <div class="text-center max-w-3xl mx-auto">
             <div class="inline-flex items-center gap-2 bg-red-500/10 border border-red-500/30 text-red-400 px-4 py-1.5 rounded-full text-xs font-bold tracking-wider uppercase mb-6">
-                <i class="fa-solid fa-trophy"></i> Ajang Prestasi Relawan Muda PMR Wira Ciawi
+                <i class="fa-solid fa-trophy"></i> {{ $event->theme ?: 'AJANG PRESTASI RELAWAN MUDA PMR WIRA CIAWI' }}
             </div>
             <h1 class="text-4xl md:text-5xl font-extrabold tracking-tight mb-4">
-                {{ $event->title ?? 'SUA BHAKTI BERKARYA III 2025' }}
+                {{ $event->title ?? 'SUA BHAKTI BERKARYA III TAHUN 2025' }}
             </h1>
             <p class="text-slate-300 text-base md:text-lg mb-8 leading-relaxed">
-                {{ $event->description ?? 'Kompetisi Kepalangmerahan tingkat Mula (SD), Madya (SMP), dan Wira (SMA/SMK/MA) se-Jabodetabek.' }}
+                {{ $event->description ?? 'Ajang kompetisi kepalangmerahan bergengsi tingkat Mula (SD), Madya (SMP), dan Wira (SMA/SMK/MA) se-Jabodetabek dan sekitarnya.' }}
             </p>
 
             <div class="flex flex-wrap justify-center gap-4">
@@ -30,6 +30,11 @@
                 <a href="{{ route('lomba.scoreboard') }}" class="bg-amber-500/20 hover:bg-amber-500/30 border border-amber-500/40 text-amber-300 px-7 py-3.5 rounded-xl font-bold transition flex items-center gap-2">
                     <i class="fa-solid fa-square-poll-vertical"></i> Live Klasemen Juara
                 </a>
+                @if($event && $event->handbook_file)
+                    <a href="{{ asset('storage/' . $event->handbook_file) }}" target="_blank" class="bg-indigo-600/20 hover:bg-indigo-600/30 border border-indigo-500/40 text-indigo-300 px-7 py-3.5 rounded-xl font-bold transition flex items-center gap-2">
+                        <i class="fa-solid fa-file-pdf"></i> Unduh Juklak Juknis
+                    </a>
+                @endif
             </div>
         </div>
 
@@ -41,7 +46,17 @@
                 </div>
                 <div>
                     <div class="text-xs text-slate-400 font-semibold">Pelaksanaan</div>
-                    <div class="text-sm font-bold text-white">{{ $event->start_date ? $event->start_date->translatedFormat('d F Y') : '15 - 16 Oktober 2026' }}</div>
+                    <div class="text-sm font-bold text-white">
+                        @if($event && $event->start_date)
+                            @if($event->end_date && $event->end_date->format('Y-m-d') !== $event->start_date->format('Y-m-d'))
+                                {{ $event->start_date->translatedFormat('d') }} - {{ $event->end_date->translatedFormat('d F Y') }}
+                            @else
+                                {{ $event->start_date->translatedFormat('d F Y') }}
+                            @endif
+                        @else
+                            15 - 16 Oktober 2026
+                        @endif
+                    </div>
                 </div>
             </div>
 

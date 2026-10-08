@@ -93,6 +93,10 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::resource('gallery', \App\Http\Controllers\Admin\GalleryController::class);
 
         // Manajemen Lomba (SUA BHAKTI BERKARYA)
+        // Pengaturan Event Utama
+        Route::get('/competition-event', [\App\Http\Controllers\Admin\CompetitionEventController::class, 'index'])->name('competition-event.index');
+        Route::post('/competition-event', [\App\Http\Controllers\Admin\CompetitionEventController::class, 'update'])->name('competition-event.update');
+
         Route::resource('competition-registrations', \App\Http\Controllers\Admin\CompetitionRegistrationController::class)->parameters([
             'competition-registrations' => 'registration'
         ]);
