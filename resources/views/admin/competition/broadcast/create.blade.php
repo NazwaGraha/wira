@@ -9,21 +9,24 @@
     <style>
         .note-editor.note-frame {
             border: 1px solid #e2e8f0 !important;
-            border-radius: 14px !important;
+            border-radius: 16px !important;
             overflow: hidden !important;
-            box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05) !important;
+            box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.05) !important;
             background: #ffffff !important;
         }
         .note-toolbar {
             background: #f8fafc !important;
             border-bottom: 1px solid #e2e8f0 !important;
-            padding: 8px 10px !important;
+            padding: 10px 12px !important;
+            display: flex !important;
+            flex-wrap: wrap !important;
+            gap: 4px !important;
         }
         .note-btn {
             background: #ffffff !important;
             border: 1px solid #cbd5e1 !important;
             border-radius: 8px !important;
-            padding: 5px 9px !important;
+            padding: 6px 10px !important;
             font-size: 12px !important;
             color: #334155 !important;
             transition: all 0.15s ease !important;
@@ -36,17 +39,18 @@
         .note-editable {
             font-family: inherit !important;
             font-size: 14px !important;
-            line-height: 1.7 !important;
+            line-height: 1.8 !important;
             color: #1e293b !important;
-            min-height: 320px !important;
-            padding: 20px !important;
+            min-height: 380px !important;
+            padding: 24px !important;
             background: #ffffff !important;
         }
         .note-editable img {
             max-width: 100% !important;
             border-radius: 8px !important;
-            margin: 6px 0 !important;
+            margin: 8px 0 !important;
             transition: outline 0.15s ease;
+            cursor: pointer;
         }
         .note-editable img:hover {
             outline: 2px dashed #dc2626 !important;
@@ -92,7 +96,7 @@
 @endsection
 
 @section('content')
-<div class="space-y-6">
+<div class="max-w-5xl mx-auto space-y-6">
 
     @if(session('error'))
         <div class="p-4 rounded-xl bg-rose-50 border border-rose-200 text-rose-700 text-xs font-bold flex items-center gap-2">
@@ -101,239 +105,280 @@
         </div>
     @endif
 
-    <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
-        
-        <!-- Kolom Kiri: Form Komposisi Pesan -->
-        <div class="lg:col-span-7 space-y-6">
-            <form id="broadcast-form" action="{{ route('admin.competition-broadcast.send') }}" method="POST" class="bg-white p-6 sm:p-8 rounded-2xl shadow-sm border border-slate-200 space-y-6">
-                @csrf
+    <form id="broadcast-form" action="{{ route('admin.competition-broadcast.send') }}" method="POST" class="space-y-6">
+        @csrf
 
-                <div>
-                    <h3 class="text-base font-extrabold text-slate-900 flex items-center gap-2 mb-1">
-                        <i class="fa-solid fa-pen-nib text-red-600"></i> Komposisi Pesan Email Siaran
-                    </h3>
-                    <p class="text-xs text-slate-500">Pesan ini akan dikirimkan otomatis ke seluruh kontak email sekolah / pembina sesuai target yang Anda tentukan.</p>
-                </div>
-
-                <hr class="border-slate-100">
-
-                <!-- 1. Kriteria Target Penerima Database -->
-                <div class="space-y-4 bg-slate-50 p-4 sm:p-5 rounded-xl border border-slate-200">
-                    <div class="flex items-center justify-between">
-                        <span class="text-xs font-extrabold text-slate-800 uppercase tracking-wider flex items-center gap-2">
-                            <i class="fa-solid fa-filter text-indigo-500"></i> Kriteria Penerima dari Database
-                        </span>
-                        <span id="db-badge-count" class="text-[11px] font-bold text-indigo-600 bg-indigo-50 px-2.5 py-0.5 rounded-full border border-indigo-100">
-                            {{ count($recipients) }} Kontak dari Database
-                        </span>
+        <!-- SECTION 1 (FULL 1 KOLOM): Kriteria Target Penerima & Tambahan Email -->
+        <div class="bg-white p-6 sm:p-8 rounded-2xl shadow-sm border border-slate-200 space-y-6">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-slate-100">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-xl bg-red-50 text-red-600 flex items-center justify-center font-black text-sm shrink-0">
+                        1
                     </div>
-
-                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                        <div>
-                            <label class="block text-[11px] font-bold text-slate-600 mb-1">Edisi / Tahun Lomba</label>
-                            <select name="target_event" onchange="updateFilter(this)" class="w-full bg-white border border-slate-300 rounded-xl px-3 py-2 text-xs font-semibold text-slate-800 focus:outline-none focus:border-red-500">
-                                <option value="all" {{ $targetEvent == 'all' ? 'selected' : '' }}>Semua Edisi (Lintas Tahun)</option>
-                                @foreach($events as $ev)
-                                    <option value="{{ $ev->id }}" {{ $targetEvent == (string)$ev->id ? 'selected' : '' }}>
-                                        {{ $ev->title }} {{ $ev->is_active ? '⭐' : '' }}
-                                    </option>
-                                @endforeach
-                            </select>
-                        </div>
-
-                        <div>
-                            <label class="block text-[11px] font-bold text-slate-600 mb-1">Jenjang Tingkat PMR</label>
-                            <select name="target_level" onchange="updateFilter(this)" class="w-full bg-white border border-slate-300 rounded-xl px-3 py-2 text-xs font-semibold text-slate-800 focus:outline-none focus:border-red-500">
-                                <option value="all" {{ $targetLevel == 'all' ? 'selected' : '' }}>Semua Tingkat</option>
-                                <option value="Mula" {{ $targetLevel == 'Mula' ? 'selected' : '' }}>Mula (SD)</option>
-                                <option value="Madya" {{ $targetLevel == 'Madya' ? 'selected' : '' }}>Madya (SMP)</option>
-                                <option value="Wira" {{ $targetLevel == 'Wira' ? 'selected' : '' }}>Wira (SMA)</option>
-                            </select>
-                        </div>
-
-                        <div>
-                            <label class="block text-[11px] font-bold text-slate-600 mb-1">Status Verifikasi</label>
-                            <select name="target_status" onchange="updateFilter(this)" class="w-full bg-white border border-slate-300 rounded-xl px-3 py-2 text-xs font-semibold text-slate-800 focus:outline-none focus:border-red-500">
-                                <option value="all" {{ $targetStatus == 'all' ? 'selected' : '' }}>Semua Pendaftar</option>
-                                <option value="verified" {{ $targetStatus == 'verified' ? 'selected' : '' }}>Hanya Lunas (Terverifikasi)</option>
-                            </select>
-                        </div>
-                    </div>
-
-                    <!-- Tambahan Email Manual di Luar Database -->
-                    <div class="pt-3 border-t border-slate-200">
-                        <div class="flex items-center justify-between mb-1.5">
-                            <label class="text-xs font-extrabold text-slate-800 flex items-center gap-1.5">
-                                <i class="fa-solid fa-user-plus text-red-600"></i>
-                                <span>Tambahan Email Penerima Lainnya (Di Luar Database)</span>
-                            </label>
-                            <span id="additional-count-badge" class="text-[10px] font-black text-slate-600 bg-slate-200 px-2 py-0.5 rounded-full">
-                                0 Email Tambahan
-                            </span>
-                        </div>
-                        <textarea id="additional_emails" name="additional_emails" rows="3" oninput="handleAdditionalEmailsInput(this.value)" placeholder="Ketik atau paste email tambahan (bisa lebih dari 1). Pisahkan dengan koma (,) atau baris baru (enter).&#10;Contoh:&#10;pembina.baru@gmail.com, sman1ciawi@sch.id&#10;pmr.bogorraya@gmail.com" class="w-full bg-white border border-slate-300 rounded-xl p-3 text-xs font-mono text-slate-800 focus:outline-none focus:border-red-500 leading-relaxed">{{ old('additional_emails') }}</textarea>
-                        <p class="text-[11px] text-slate-500 mt-1.5 flex items-start gap-1.5 leading-snug">
-                            <i class="fa-solid fa-circle-info text-sky-500 mt-0.5 text-xs"></i>
-                            <span>Bisa memasukkan beberapa alamat email sekaligus. Email tambahan ini akan otomatis ikut menerima siaran bersama daftar sekolah di database.</span>
-                        </p>
+                    <div>
+                        <h3 class="text-base font-black text-slate-900">Kriteria Target Penerima & Email Tambahan</h3>
+                        <p class="text-xs text-slate-500 mt-0.5">Tentukan sekolah mana saja yang akan menerima siaran dan tambahkan email di luar database bila diperlukan.</p>
                     </div>
                 </div>
-
-                <!-- 2. Konten Email & Text Editor Lengkap -->
-                <div class="space-y-4">
-                    <div>
-                        <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">
-                            Subjek Email <span class="text-rose-500">*</span>
-                        </label>
-                        <input type="text" name="subject" value="{{ old('subject') }}" required placeholder="Contoh: [PENGUMUMAN] Undangan Pendaftaran Lomba SUA BHAKTI BERKARYA IV 2026" class="w-full bg-slate-50 border border-slate-200 px-4 py-2.5 rounded-xl text-sm focus:bg-white focus:outline-none focus:border-red-500 font-semibold text-slate-900">
-                    </div>
-
-                    <div>
-                        <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">
-                            Headline / Judul Banner di Dalam Email
-                        </label>
-                        <input type="text" name="headline" value="{{ old('headline', 'SUA BHAKTI BERKARYA') }}" placeholder="Contoh: SUA BHAKTI BERKARYA IV - 2026" class="w-full bg-slate-50 border border-slate-200 px-4 py-2.5 rounded-xl text-sm focus:bg-white focus:outline-none focus:border-red-500 font-medium text-slate-900">
-                    </div>
-
-                    <div>
-                        <div class="flex items-center justify-between mb-1.5">
-                            <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider">
-                                Isi Pesan / Informasi Kegiatan <span class="text-rose-500">*</span>
-                            </label>
-                            <span class="text-[11px] text-slate-400 font-semibold flex items-center gap-1">
-                                <i class="fa-regular fa-image text-red-500"></i> Mendukung sisip gambar & atur ukuran/posisi
-                            </span>
-                        </div>
-                        
-                        <!-- Rich Text Editor (Summernote) -->
-                        <textarea id="content-editor" name="content" required>{!! old('content') !!}</textarea>
-                        
-                        <p class="text-[11px] text-slate-400 mt-1.5 flex items-center gap-1.5">
-                            <i class="fa-solid fa-lightbulb text-amber-500"></i>
-                            <span><strong>Tips Gambar:</strong> Klik pada gambar yang telah disisipkan untuk mengatur ukuran (100%, 50%, 25%, drag sudut) dan posisi (Rata Kiri, Tengah, Rata Kanan).</span>
-                        </p>
-                    </div>
-
-                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                        <div>
-                            <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">
-                                Teks Tombol Aksi (Opsional)
-                            </label>
-                            <input type="text" name="button_text" value="{{ old('button_text') }}" placeholder="Contoh: Buka Petunjuk Teknis Lomba" class="w-full bg-slate-50 border border-slate-200 px-4 py-2.5 rounded-xl text-sm focus:bg-white focus:outline-none focus:border-red-500 font-medium">
-                        </div>
-
-                        <div>
-                            <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">
-                                Link / Tautan Tombol Aksi
-                            </label>
-                            <input type="url" name="button_url" value="{{ old('button_url') }}" placeholder="Contoh: https://wira.nazwagraha.com/lomba" class="w-full bg-slate-50 border border-slate-200 px-4 py-2.5 rounded-xl text-sm focus:bg-white focus:outline-none focus:border-red-500 font-medium">
-                        </div>
-                    </div>
-
-                    <div>
-                        <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">
-                            Catatan Tambahan Panitia / Narahubung WhatsApp (Opsional)
-                        </label>
-                        <textarea name="notes" rows="2" placeholder="Contoh: Narahubung Panitia: 0812-xxxx-xxxx (Kak Reza)" class="w-full bg-slate-50 border border-slate-200 px-4 py-2 rounded-xl text-sm focus:bg-white focus:outline-none focus:border-red-500">{{ old('notes') }}</textarea>
-                    </div>
-                </div>
-
-                <hr class="border-slate-100">
-
-                <!-- 3. Mode Pengujian (Test Send) -->
-                <div x-data="{ isTest: false }" class="bg-amber-50/60 p-4 rounded-xl border border-amber-200 space-y-3">
-                    <label class="flex items-center gap-2 cursor-pointer">
-                        <input type="checkbox" name="is_test_mode" value="1" x-model="isTest" class="w-4 h-4 text-red-600 rounded border-amber-300 focus:ring-red-500">
-                        <span class="text-xs font-black text-amber-950">Mode Uji Coba (Kirim hanya ke email admin / penguji terlebih dahulu)</span>
-                    </label>
-
-                    <div x-show="isTest" x-collapse>
-                        <label class="block text-[11px] font-bold text-amber-900 mb-1">Kirim Salinan Uji Coba Ke Alamat Email Ini:</label>
-                        <input type="email" name="test_email" value="{{ auth()->user()->email ?? '' }}" placeholder="email.anda@gmail.com" class="w-full bg-white border border-amber-300 px-3 py-2 rounded-xl text-xs font-semibold focus:outline-none focus:border-red-500">
-                        <p class="text-[10px] text-amber-700 mt-1">Gunakan opsi ini untuk melihat tampilan email di inbox Anda sebelum menyebarkannya ke seluruh sekolah.</p>
-                    </div>
-                </div>
-
-                <!-- Submit Button -->
-                <div class="flex items-center justify-between pt-2">
-                    <a href="{{ route('admin.competition-broadcast.index') }}" class="text-xs font-bold text-slate-500 hover:text-slate-800">
-                        Batal
-                    </a>
-                    <button type="submit" onclick="return confirm('Kirimkan siaran email ini sekarang?');" class="bg-red-600 hover:bg-red-700 text-white font-black text-xs px-6 py-3 rounded-xl transition shadow-md shadow-red-600/30 flex items-center gap-2">
-                        <i class="fa-solid fa-paper-plane"></i> Kirim Siaran Email Sekarang
-                    </button>
-                </div>
-            </form>
-        </div>
-
-        <!-- Kolom Kanan: Live Audience Preview & Daftar Kontak -->
-        <div class="lg:col-span-5 space-y-6">
-            <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 space-y-4">
-                <div class="flex items-center justify-between">
-                    <div>
-                        <h4 class="font-extrabold text-slate-900 text-sm flex items-center gap-2">
-                            <i class="fa-solid fa-address-book text-emerald-600"></i> Kontak Penerima Terpilih
-                        </h4>
-                        <div class="text-[11px] text-slate-500 mt-0.5">Ringkasan kontak database & email tambahan</div>
-                    </div>
-                    <span id="total-recipients-pill" class="px-3 py-1 bg-emerald-50 text-emerald-700 border border-emerald-200 text-xs font-black rounded-full">
-                        {{ count($recipients) }} Total Penerima
+                <div class="flex items-center gap-2">
+                    <span id="db-badge-count" class="text-xs font-black text-indigo-700 bg-indigo-50 px-3 py-1 rounded-full border border-indigo-100">
+                        {{ count($recipients) }} Kontak dari Database
                     </span>
                 </div>
+            </div>
 
-                <!-- Summary Counter Stats -->
-                <div class="grid grid-cols-2 gap-2 text-xs">
-                    <div class="p-3 bg-slate-50 rounded-xl border border-slate-100">
-                        <div class="text-[10px] font-bold text-slate-400 uppercase">Dari Database</div>
-                        <div class="font-black text-slate-800 text-base mt-0.5">{{ count($recipients) }} Kontak</div>
+            <!-- Filter Grid 3 Kolom -->
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 mb-1.5 uppercase tracking-wider">Edisi / Tahun Lomba</label>
+                    <select name="target_event" onchange="updateFilter(this)" class="w-full bg-slate-50 border border-slate-200 hover:border-slate-300 rounded-xl px-3.5 py-2.5 text-xs font-bold text-slate-800 focus:bg-white focus:outline-none focus:border-red-500">
+                        <option value="all" {{ $targetEvent == 'all' ? 'selected' : '' }}>Semua Edisi (Lintas Tahun)</option>
+                        @foreach($events as $ev)
+                            <option value="{{ $ev->id }}" {{ $targetEvent == (string)$ev->id ? 'selected' : '' }}>
+                                {{ $ev->title }} {{ $ev->is_active ? '⭐' : '' }}
+                            </option>
+                        @endforeach
+                    </select>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 mb-1.5 uppercase tracking-wider">Jenjang Tingkat PMR</label>
+                    <select name="target_level" onchange="updateFilter(this)" class="w-full bg-slate-50 border border-slate-200 hover:border-slate-300 rounded-xl px-3.5 py-2.5 text-xs font-bold text-slate-800 focus:bg-white focus:outline-none focus:border-red-500">
+                        <option value="all" {{ $targetLevel == 'all' ? 'selected' : '' }}>Semua Tingkat</option>
+                        <option value="Mula" {{ $targetLevel == 'Mula' ? 'selected' : '' }}>Mula (SD)</option>
+                        <option value="Madya" {{ $targetLevel == 'Madya' ? 'selected' : '' }}>Madya (SMP)</option>
+                        <option value="Wira" {{ $targetLevel == 'Wira' ? 'selected' : '' }}>Wira (SMA)</option>
+                    </select>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 mb-1.5 uppercase tracking-wider">Status Verifikasi</label>
+                    <select name="target_status" onchange="updateFilter(this)" class="w-full bg-slate-50 border border-slate-200 hover:border-slate-300 rounded-xl px-3.5 py-2.5 text-xs font-bold text-slate-800 focus:bg-white focus:outline-none focus:border-red-500">
+                        <option value="all" {{ $targetStatus == 'all' ? 'selected' : '' }}>Semua Pendaftar</option>
+                        <option value="verified" {{ $targetStatus == 'verified' ? 'selected' : '' }}>Hanya Lunas (Terverifikasi)</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Input Multi-Email Tambahan -->
+            <div class="pt-4 border-t border-slate-100">
+                <div class="flex items-center justify-between mb-2">
+                    <label class="text-xs font-extrabold text-slate-800 flex items-center gap-2">
+                        <i class="fa-solid fa-user-plus text-red-600"></i>
+                        <span>Tambahan Email Penerima Lainnya (Di Luar Database)</span>
+                    </label>
+                    <span id="additional-count-badge" class="text-[11px] font-black text-slate-600 bg-slate-100 px-2.5 py-1 rounded-full border border-slate-200">
+                        0 Email Tambahan
+                    </span>
+                </div>
+                <textarea id="additional_emails" name="additional_emails" rows="3" oninput="handleAdditionalEmailsInput(this.value)" placeholder="Ketik atau tempel alamat email tambahan di sini (bisa lebih dari 1). Pisahkan dengan tanda koma (,) atau baris baru (enter).&#10;Contoh:&#10;pembina.baru@gmail.com, sman1ciawi@sch.id&#10;pmr.unitbogor@gmail.com" class="w-full bg-slate-50 border border-slate-200 rounded-xl p-3.5 text-xs font-mono text-slate-800 focus:bg-white focus:outline-none focus:border-red-500 leading-relaxed">{{ old('additional_emails') }}</textarea>
+                <p class="text-[11px] text-slate-500 mt-1.5 flex items-start gap-1.5 leading-snug">
+                    <i class="fa-solid fa-circle-info text-sky-500 mt-0.5 text-xs"></i>
+                    <span>Email tambahan ini akan otomatis ikut menerima siaran bersama daftar sekolah di database. Sistem otomatis memvalidasi format email dan mencegah duplikasi.</span>
+                </p>
+            </div>
+        </div>
+
+        <!-- SECTION 2 (FULL 1 KOLOM): Ringkasan & Pratinjau Daftar Penerima Terpilih -->
+        <div x-data="{ openPreview: false }" class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+            <div class="p-5 sm:p-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-slate-50/70 border-b border-slate-100">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center font-black text-sm shrink-0">
+                        2
                     </div>
-                    <div class="p-3 bg-red-50/60 rounded-xl border border-red-100">
-                        <div class="text-[10px] font-bold text-red-700 uppercase">Tambahan Manual</div>
-                        <div id="additional-preview-count" class="font-black text-red-700 text-base mt-0.5">0 Kontak</div>
+                    <div>
+                        <h3 class="text-base font-black text-slate-900">Ringkasan Kontak Penerima Terpilih</h3>
+                        <p class="text-xs text-slate-500 mt-0.5">Total kontak unik sekolah dari database dan email tambahan yang akan menerima email ini.</p>
                     </div>
                 </div>
 
-                <!-- Preview List -->
-                <div class="max-h-[500px] overflow-y-auto space-y-2 pr-1 divide-y divide-slate-100">
-                    
-                    <!-- Dynamic Container for Custom Additional Emails -->
-                    <div id="custom-emails-container" class="space-y-2"></div>
+                <div class="flex items-center gap-3">
+                    <div class="flex items-center gap-2">
+                        <span id="total-recipients-pill" class="px-3.5 py-1.5 bg-emerald-600 text-white text-xs font-black rounded-xl shadow-xs">
+                            {{ count($recipients) }} Total Penerima
+                        </span>
+                    </div>
+                    <button type="button" @click="openPreview = !openPreview" class="px-3.5 py-1.5 rounded-xl text-xs font-bold transition flex items-center gap-1.5 border" :class="openPreview ? 'bg-slate-800 text-white border-slate-800' : 'bg-white text-slate-700 border-slate-200 hover:bg-slate-100'">
+                        <i class="fa-solid" :class="openPreview ? 'fa-eye-slash' : 'fa-list-check'"></i>
+                        <span x-text="openPreview ? 'Tutup Rincian' : 'Lihat Rincian Kontak'"></span>
+                        <i class="fa-solid text-[10px]" :class="openPreview ? 'fa-chevron-up' : 'fa-chevron-down'"></i>
+                    </button>
+                </div>
+            </div>
 
-                    <!-- Database Emails -->
-                    @forelse($recipients as $item)
-                        <div class="pt-2 first:pt-0">
-                            <div class="flex items-start justify-between gap-2">
-                                <div class="min-w-0">
-                                    <div class="font-bold text-slate-900 text-xs truncate uppercase">{{ $item['school_name'] }}</div>
-                                    <div class="text-[11px] text-slate-500 truncate mt-0.5 flex items-center gap-1">
-                                        <i class="fa-regular fa-envelope text-[10px] text-slate-400"></i>
-                                        <span class="font-mono text-slate-700 font-semibold">{{ $item['email'] }}</span>
-                                    </div>
-                                    <div class="text-[10px] text-slate-400 mt-0.5">
-                                        {{ $item['advisor_name'] }} &bull; {{ $item['advisor_phone'] }}
-                                    </div>
-                                </div>
-                                <span class="px-2 py-0.5 rounded text-[10px] font-black shrink-0 {{ $item['level'] == 'Mula' ? 'bg-blue-50 text-blue-700' : ($item['level'] == 'Madya' ? 'bg-red-50 text-red-700' : 'bg-amber-50 text-amber-700') }}">
-                                    {{ $item['level'] }}
-                                </span>
-                            </div>
-                        </div>
-                    @empty
-                        <div id="no-db-recipients" class="py-8 text-center text-slate-400 text-xs">
-                            <i class="fa-solid fa-user-slash text-2xl mb-2 text-slate-300"></i>
-                            <div>Tidak ada kontak dari database yang cocok dengan filter yang dipilih.</div>
-                        </div>
-                    @endforelse
+            <!-- Detail List (Collapsible Accordion) -->
+            <div x-show="openPreview" x-collapse class="p-6 bg-white space-y-4">
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
+                    <div class="p-3 bg-slate-50 rounded-xl border border-slate-100 flex items-center justify-between">
+                        <span class="text-slate-500 font-bold uppercase text-[11px]">Dari Database Pendaftaran:</span>
+                        <span class="font-black text-slate-900 text-sm">{{ count($recipients) }} Kontak</span>
+                    </div>
+                    <div class="p-3 bg-red-50/60 rounded-xl border border-red-100 flex items-center justify-between">
+                        <span class="text-red-700 font-bold uppercase text-[11px]">Email Tambahan Manual:</span>
+                        <span id="additional-preview-count" class="font-black text-red-700 text-sm">0 Kontak</span>
+                    </div>
                 </div>
 
-                <div class="p-3 bg-slate-50 rounded-xl border border-slate-100 text-[11px] text-slate-500 leading-relaxed">
-                    <i class="fa-solid fa-shield-halved text-emerald-600 mr-1"></i>
-                    <strong>Anti Duplikasi:</strong> Setiap alamat email unik hanya akan menerima 1 salinan email per pengiriman.
+                <!-- Custom Additional Emails Container -->
+                <div id="custom-emails-container" class="space-y-2"></div>
+
+                <!-- Database Recipients Table -->
+                <div class="overflow-x-auto max-h-72 overflow-y-auto border border-slate-200 rounded-xl">
+                    <table class="w-full text-left text-xs">
+                        <thead class="bg-slate-50 text-slate-700 font-bold uppercase sticky top-0 border-b border-slate-200">
+                            <tr>
+                                <th class="p-3">No</th>
+                                <th class="p-3">Nama Sekolah / Unit PMR</th>
+                                <th class="p-3">Jenjang</th>
+                                <th class="p-3">Alamat Email</th>
+                                <th class="p-3">Kontak Pembina</th>
+                                <th class="p-3 text-center">Status</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-slate-100 font-medium">
+                            @forelse($recipients as $idx => $item)
+                                <tr class="hover:bg-slate-50 transition">
+                                    <td class="p-3 text-slate-400 font-bold">{{ $loop->iteration }}</td>
+                                    <td class="p-3 font-extrabold text-slate-900 uppercase">{{ $item['school_name'] }}</td>
+                                    <td class="p-3">
+                                        <span class="px-2 py-0.5 rounded text-[10px] font-black {{ $item['level'] == 'Mula' ? 'bg-blue-50 text-blue-700' : ($item['level'] == 'Madya' ? 'bg-red-50 text-red-700' : 'bg-amber-50 text-amber-700') }}">
+                                            {{ $item['level'] }}
+                                        </span>
+                                    </td>
+                                    <td class="p-3 font-mono font-bold text-slate-700">{{ $item['email'] }}</td>
+                                    <td class="p-3 text-slate-600">{{ $item['advisor_name'] }} ({{ $item['advisor_phone'] }})</td>
+                                    <td class="p-3 text-center">
+                                        @if(($item['status'] ?? '') == 'verified')
+                                            <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-100 text-emerald-800">Lunas</span>
+                                        @else
+                                            <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-slate-100 text-slate-700">Terdaftar</span>
+                                        @endif
+                                    </td>
+                                </tr>
+                            @empty
+                                <tr>
+                                    <td colspan="6" class="p-6 text-center text-slate-400">Tidak ada kontak dari database yang cocok dengan filter.</td>
+                                </tr>
+                            @endforelse
+                        </tbody>
+                    </table>
                 </div>
             </div>
         </div>
 
-    </div>
+        <!-- SECTION 3 (FULL 1 KOLOM): Komposisi Pesan & Text Editor Lengkap -->
+        <div class="bg-white p-6 sm:p-8 rounded-2xl shadow-sm border border-slate-200 space-y-6">
+            <div class="flex items-center gap-3 pb-4 border-b border-slate-100">
+                <div class="w-10 h-10 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center font-black text-sm shrink-0">
+                    3
+                </div>
+                <div>
+                    <h3 class="text-base font-black text-slate-900">Komposisi Pesan & Konten Siaran</h3>
+                    <p class="text-xs text-slate-500 mt-0.5">Tuliskan pesan siaran resmi dengan formatting lengkap dan sisipkan poster/gambar kegiatan.</p>
+                </div>
+            </div>
+
+            <div class="space-y-5">
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">
+                        Subjek Email <span class="text-rose-500">*</span>
+                    </label>
+                    <input type="text" name="subject" value="{{ old('subject') }}" required placeholder="Contoh: [PENGUMUMAN RESMI] Undangan Pendaftaran Lomba SUA BHAKTI BERKARYA IV 2026" class="w-full bg-slate-50 border border-slate-200 px-4 py-3 rounded-xl text-sm focus:bg-white focus:outline-none focus:border-red-500 font-bold text-slate-900">
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">
+                        Headline / Judul Banner di Dalam Email
+                    </label>
+                    <input type="text" name="headline" value="{{ old('headline', 'SUA BHAKTI BERKARYA') }}" placeholder="Contoh: SUA BHAKTI BERKARYA IV - 2026" class="w-full bg-slate-50 border border-slate-200 px-4 py-3 rounded-xl text-sm focus:bg-white focus:outline-none focus:border-red-500 font-semibold text-slate-900">
+                </div>
+
+                <div>
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-2">
+                        <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider">
+                            Isi Pesan / Informasi Kegiatan <span class="text-rose-500">*</span>
+                        </label>
+                        <span class="text-[11px] text-slate-500 font-semibold flex items-center gap-1.5 bg-slate-100 px-2.5 py-1 rounded-lg">
+                            <i class="fa-regular fa-image text-red-500"></i> Sisip gambar via tombol toolbar / drag & drop (Resize pointer & Posisi Kiri/Center/Kanan)
+                        </span>
+                    </div>
+                    
+                    <!-- Rich Text Editor (Summernote) Full Width -->
+                    <textarea id="content-editor" name="content" required>{!! old('content') !!}</textarea>
+                    
+                    <div class="mt-2 p-3 bg-slate-50 rounded-xl border border-slate-200 flex items-start gap-2 text-[11px] text-slate-600 leading-relaxed">
+                        <i class="fa-solid fa-lightbulb text-amber-500 mt-0.5 text-xs"></i>
+                        <div>
+                            <strong>Tips Penataan Gambar:</strong> Setelah menyisipkan gambar, klik gambar tersebut untuk mengecilkan/membesarkan ukuran dengan pointer sudut (drag), lalu atur posisinya menjadi <strong>Rata Kiri</strong>, <strong>Center (Tengah)</strong>, atau <strong>Rata Kanan</strong> menggunakan bilah tombol yang otomatis muncul di atas gambar atau di toolbar atas.
+                        </div>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">
+                            Teks Tombol Aksi / Call-to-Action (Opsional)
+                        </label>
+                        <input type="text" name="button_text" value="{{ old('button_text') }}" placeholder="Contoh: Buka Petunjuk Teknis Lomba" class="w-full bg-slate-50 border border-slate-200 px-4 py-2.5 rounded-xl text-sm focus:bg-white focus:outline-none focus:border-red-500 font-medium">
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">
+                            Link / Tautan Tombol Aksi
+                        </label>
+                        <input type="url" name="button_url" value="{{ old('button_url') }}" placeholder="Contoh: https://wira.nazwagraha.com/lomba" class="w-full bg-slate-50 border border-slate-200 px-4 py-2.5 rounded-xl text-sm focus:bg-white focus:outline-none focus:border-red-500 font-medium">
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">
+                        Catatan Tambahan Panitia / Narahubung WhatsApp (Opsional)
+                    </label>
+                    <textarea name="notes" rows="2" placeholder="Contoh: Narahubung Panitia: 0812-xxxx-xxxx (Kak Reza)" class="w-full bg-slate-50 border border-slate-200 px-4 py-2.5 rounded-xl text-sm focus:bg-white focus:outline-none focus:border-red-500">{{ old('notes') }}</textarea>
+                </div>
+            </div>
+        </div>
+
+        <!-- SECTION 4 (FULL 1 KOLOM): Mode Uji Coba & Eksekusi Pengiriman -->
+        <div class="bg-white p-6 sm:p-8 rounded-2xl shadow-sm border border-slate-200 space-y-6">
+            <div class="flex items-center gap-3 pb-4 border-b border-slate-100">
+                <div class="w-10 h-10 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center font-black text-sm shrink-0">
+                    4
+                </div>
+                <div>
+                    <h3 class="text-base font-black text-slate-900">Uji Coba & Pengiriman Siaran</h3>
+                    <p class="text-xs text-slate-500 mt-0.5">Kirim uji coba terlebih dahulu ke email pribadi atau langsung sebarkan ke seluruh kontak.</p>
+                </div>
+            </div>
+
+            <!-- Mode Pengujian (Test Send) -->
+            <div x-data="{ isTest: false }" class="bg-amber-50/60 p-5 rounded-2xl border border-amber-200 space-y-3">
+                <label class="flex items-center gap-3 cursor-pointer">
+                    <input type="checkbox" name="is_test_mode" value="1" x-model="isTest" class="w-4 h-4 text-red-600 rounded border-amber-300 focus:ring-red-500">
+                    <div>
+                        <span class="text-xs font-black text-amber-950 block">Mode Uji Coba (Kirim Hanya Ke Email Penguji)</span>
+                        <span class="text-[11px] text-amber-700">Aktifkan opsi ini jika Anda ingin melihat hasil email masuk di inbox pribadi Anda terlebih dahulu sebelum dikirimkan ke sekolah-sekolah.</span>
+                    </div>
+                </label>
+
+                <div x-show="isTest" x-collapse class="pt-2">
+                    <label class="block text-[11px] font-bold text-amber-900 mb-1.5">Alamat Email Tujuan Uji Coba:</label>
+                    <input type="email" name="test_email" value="{{ auth()->user()->email ?? '' }}" placeholder="email.anda@gmail.com" class="w-full bg-white border border-amber-300 px-3.5 py-2.5 rounded-xl text-xs font-semibold focus:outline-none focus:border-red-500">
+                </div>
+            </div>
+
+            <!-- Actions -->
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pt-2">
+                <a href="{{ route('admin.competition-broadcast.index') }}" class="px-5 py-3 rounded-xl border border-slate-200 text-slate-600 hover:bg-slate-100 text-xs font-bold text-center transition">
+                    &larr; Batal & Kembali
+                </a>
+                <button type="submit" onclick="return confirm('Kirimkan siaran email ini sekarang?');" class="bg-red-600 hover:bg-red-700 text-white font-black text-sm px-8 py-3.5 rounded-xl transition shadow-lg shadow-red-600/30 flex items-center justify-center gap-2">
+                    <i class="fa-solid fa-paper-plane"></i> Kirim Siaran Email Sekarang
+                </button>
+            </div>
+        </div>
+
+    </form>
 
 </div>
 @endsection
@@ -492,8 +537,8 @@
                     'margin-bottom': '14px',
                     'margin-top': '4px'
                 });
-                if ($img.parent().is('p, div') && $img.parent().css('text-align') === 'center') {
-                    $img.parent().css('text-align', '');
+                if ($img.parent().is('p, div')) {
+                    $img.parent().css('text-align', 'left');
                 }
             } else if (alignment === 'right') {
                 $img.addClass('note-float-right');
@@ -505,8 +550,8 @@
                     'margin-bottom': '14px',
                     'margin-top': '4px'
                 });
-                if ($img.parent().is('p, div') && $img.parent().css('text-align') === 'center') {
-                    $img.parent().css('text-align', '');
+                if ($img.parent().is('p, div')) {
+                    $img.parent().css('text-align', 'right');
                 }
             } else { // normal / reset
                 $img.css({
@@ -658,31 +703,35 @@
             const total = initialDbRecipientsCount + count;
             document.getElementById('total-recipients-pill').textContent = `${total} Total Penerima`;
 
-            // Render daftar email tambahan di kolom kanan
+            // Render daftar email tambahan di section preview
             const container = document.getElementById('custom-emails-container');
             container.innerHTML = '';
 
             if (validEmails.length > 0) {
                 const header = document.createElement('div');
                 header.className = 'text-[11px] font-black text-red-600 uppercase tracking-wider pb-1 flex items-center gap-1';
-                header.innerHTML = '<i class="fa-solid fa-plus-circle"></i> Email Tambahan Baru:';
+                header.innerHTML = '<i class="fa-solid fa-plus-circle"></i> Email Tambahan Baru yang Dimasukkan:';
                 container.appendChild(header);
+
+                const grid = document.createElement('div');
+                grid.className = 'grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2';
 
                 validEmails.forEach(email => {
                     const isDuplicateWithDb = dbEmailsList.includes(email);
                     const itemEl = document.createElement('div');
-                    itemEl.className = 'p-2 bg-red-50/70 border border-red-200 rounded-xl flex items-center justify-between gap-2';
+                    itemEl.className = 'p-2.5 bg-red-50/70 border border-red-200 rounded-xl flex items-center justify-between gap-2 text-xs';
                     itemEl.innerHTML = `
                         <div class="min-w-0">
-                            <div class="font-bold text-slate-800 text-xs font-mono truncate">${email}</div>
-                            <div class="text-[10px] text-red-600 font-semibold">${isDuplicateWithDb ? '⚠️ Sudah ada di DB (Akan digabung)' : 'Kontak Tambahan (Custom)'}</div>
+                            <div class="font-bold text-slate-800 font-mono truncate text-[11px]">${email}</div>
+                            <div class="text-[10px] text-red-600 font-semibold">${isDuplicateWithDb ? '⚠️ Sudah ada di DB (Digabung)' : 'Kontak Tambahan (Custom)'}</div>
                         </div>
                         <span class="px-2 py-0.5 rounded text-[9px] font-black bg-red-600 text-white shrink-0">
                             MANUAL
                         </span>
                     `;
-                    container.appendChild(itemEl);
+                    grid.appendChild(itemEl);
                 });
+                container.appendChild(grid);
             }
         }
 
