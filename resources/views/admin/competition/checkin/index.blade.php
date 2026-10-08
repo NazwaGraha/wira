@@ -95,16 +95,64 @@
 
         <div class="p-5 sm:p-6 bg-slate-50 border-b border-slate-200">
             <!-- Box Scanner Kamera Live -->
-            <div x-show="scannerActive" x-transition class="mb-6 bg-white p-4 rounded-2xl border-2 border-dashed border-red-300 max-w-md mx-auto">
-                <div class="text-center mb-3">
-                    <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-red-100 text-red-700 animate-pulse">
-                        <i class="fa-solid fa-circle text-[8px] text-red-600"></i> Kamera Aktif - Arahkan ke QR Code Kwitansi
+            <div x-show="scannerActive" x-transition class="mb-6 bg-white p-5 rounded-2xl border-2 border-dashed border-red-300 max-w-lg mx-auto shadow-sm">
+                
+                <!-- Status Bar & Pemilih Kamera -->
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-3">
+                    <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold"
+                          :class="isCameraLoading ? 'bg-amber-100 text-amber-800 animate-pulse' : (cameraPermissionError ? 'bg-rose-100 text-rose-700' : 'bg-emerald-100 text-emerald-800')">
+                        <i class="fa-solid" :class="isCameraLoading ? 'fa-circle-notch fa-spin' : (cameraPermissionError ? 'fa-triangle-exclamation' : 'fa-video')"></i>
+                        <span x-text="cameraStatusText"></span>
                     </span>
+
+                    <!-- Dropdown Pilih Kamera jika ada lebih dari 1 kamera -->
+                    <template x-if="availableCameras.length > 1">
+                        <div class="flex items-center gap-1.5 text-xs">
+                            <span class="text-slate-500 font-bold"><i class="fa-solid fa-camera-rotate"></i></span>
+                            <select x-model="selectedCameraId" @change="switchCamera()" class="text-xs py-1 px-2.5 bg-slate-100 border border-slate-300 rounded-lg font-semibold text-slate-700 focus:ring-2 focus:ring-red-500">
+                                <template x-for="cam in availableCameras" :key="cam.id">
+                                    <option :value="cam.id" x-text="cam.label || ('Kamera ' + cam.id.substr(0,8))"></option>
+                                </template>
+                            </select>
+                        </div>
+                    </template>
                 </div>
-                <div id="qr-reader" class="rounded-xl overflow-hidden shadow-inner bg-black w-full min-h-[260px]"></div>
-                <p class="text-[11px] text-slate-400 text-center mt-2.5">
-                    Pastikan QR Code di Kwitansi atau Kartu Peserta berada di dalam kotak pemindai.
-                </p>
+
+                <!-- Petunjuk jika izin kamera ditolak atau belum diizinkan -->
+                <div x-show="cameraPermissionError" class="p-4 mb-3 bg-rose-50 border border-rose-200 rounded-xl text-xs text-rose-800">
+                    <div class="font-bold mb-1 flex items-center gap-1.5 text-rose-900">
+                        <i class="fa-solid fa-lock"></i> Izin Akses Kamera Ditolak / Belum Diaktifkan di Browser
+                    </div>
+                    <ol class="list-decimal pl-4 space-y-1 text-rose-700 mt-1">
+                        <li>Klik ikon <strong>Pengaturan Situs</strong> di sebelah kiri URL <code>wira.nazwagraha.com</code> pada address bar Google Chrome.</li>
+                        <li>Pada baris <strong>Kamera (Camera)</strong>, ubah menjadi <strong>"Allow" (Izinkan)</strong>.</li>
+                        <li>(Di MacBook/macOS): Buka <strong>System Settings macOS &gt; Privacy &amp; Security &gt; Camera</strong> dan pastikan Google Chrome telah dicentang.</li>
+                        <li>Klik tombol di bawah ini untuk mencoba menyalakan ulang kamera.</li>
+                    </ol>
+                    <button type="button" @click="startScanner()" class="mt-3 px-3 py-1.5 bg-rose-600 hover:bg-rose-700 text-white rounded-lg font-bold text-xs transition flex items-center gap-1.5">
+                        <i class="fa-solid fa-rotate-right"></i> Coba Nyalakan Ulang Kamera
+                    </button>
+                </div>
+
+                <!-- Video Viewfinder Container -->
+                <div class="relative rounded-xl overflow-hidden shadow-inner bg-slate-950 w-full min-h-[260px] flex items-center justify-center border border-slate-800">
+                    <div id="qr-reader" class="w-full"></div>
+                    <div x-show="isCameraLoading" class="absolute inset-0 bg-slate-900/90 flex flex-col items-center justify-center text-white z-10">
+                        <i class="fa-solid fa-circle-notch fa-spin text-3xl text-red-500 mb-2"></i>
+                        <span class="text-xs font-bold">Mengaktifkan sensor kamera laptop / webcam...</span>
+                    </div>
+                </div>
+
+                <!-- Opsi Cadangan: Unggah Gambar / Foto QR -->
+                <div class="mt-3 pt-3 border-t border-slate-200 flex flex-col sm:flex-row items-center justify-between gap-2 text-xs text-slate-500">
+                    <span>Arahkan lembar kwitansi / kartu ke kamera.</span>
+                    <div>
+                        <input type="file" id="qr-file-input" accept="image/*" class="hidden" @change="scanFromFile($event)">
+                        <button type="button" onclick="document.getElementById('qr-file-input').click()" class="text-blue-600 hover:text-blue-800 font-bold inline-flex items-center gap-1">
+                            <i class="fa-solid fa-file-image"></i> Atau Unggah Foto QR Code
+                        </button>
+                    </div>
+                </div>
             </div>
 
             <!-- Form Input Manual Kode Registrasi -->
@@ -435,6 +483,23 @@
 <!-- Script Html5-Qrcode CDN untuk Pemindaian Kamera Langsung -->
 <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
 
+<style>
+    #qr-reader {
+        border: none !important;
+        width: 100% !important;
+    }
+    #qr-reader video {
+        width: 100% !important;
+        height: auto !important;
+        max-height: 360px !important;
+        object-fit: cover !important;
+        border-radius: 12px !important;
+    }
+    #qr-reader img[alt="Info icon"] {
+        display: none !important;
+    }
+</style>
+
 <script>
 function checkinApp() {
     return {
@@ -445,59 +510,170 @@ function checkinApp() {
         activeCandidate: null,
         checkinNotes: '',
         scannerActive: false,
+        isCameraLoading: false,
+        cameraPermissionError: false,
+        cameraStatusText: 'Menyiapkan kamera...',
+        availableCameras: [],
+        selectedCameraId: '',
         html5QrCode: null,
 
         init() {
             // Auto focus input
         },
 
-        toggleScanner() {
+        async toggleScanner() {
             if (this.scannerActive) {
-                this.stopScanner();
+                await this.stopScanner();
             } else {
-                this.startScanner();
+                await this.startScanner();
             }
         },
 
-        startScanner() {
+        async startScanner() {
             this.scannerActive = true;
-            this.$nextTick(() => {
-                if (!this.html5QrCode) {
-                    this.html5QrCode = new Html5Qrcode("qr-reader");
+            this.isCameraLoading = true;
+            this.cameraPermissionError = false;
+            this.cameraStatusText = 'Mendeteksi sensor kamera...';
+
+            this.$nextTick(async () => {
+                try {
+                    if (!this.html5QrCode) {
+                        this.html5QrCode = new Html5Qrcode("qr-reader");
+                    }
+
+                    // Dapatkan daftar kamera perangkat (Laptop / HP)
+                    let cameras = [];
+                    try {
+                        cameras = await Html5Qrcode.getCameras();
+                    } catch (e) {
+                        console.warn("getCameras error / permission needed:", e);
+                    }
+
+                    this.availableCameras = cameras || [];
+
+                    if (cameras && cameras.length > 0) {
+                        if (!this.selectedCameraId) {
+                            // Di HP cari kamera belakang, di laptop pilih kamera pertama (FaceTime/Webcam)
+                            const backCam = cameras.find(c => (c.label || '').toLowerCase().includes('back') || (c.label || '').toLowerCase().includes('belakang') || (c.label || '').toLowerCase().includes('environment'));
+                            this.selectedCameraId = backCam ? backCam.id : cameras[0].id;
+                        }
+                        await this.runCamera(this.selectedCameraId);
+                    } else {
+                        // Fallback generic facingMode untuk laptop / browser yang belum mengizinkan enumerateDevices
+                        await this.runCamera(null);
+                    }
+                } catch (err) {
+                    console.error("Gagal startScanner:", err);
+                    this.isCameraLoading = false;
+                    this.cameraPermissionError = true;
+                    this.cameraStatusText = 'Akses kamera ditolak / gagal';
                 }
-                const config = { fps: 10, qrbox: { width: 250, height: 250 } };
-                this.html5QrCode.start(
-                    { facingMode: "environment" },
+            });
+        },
+
+        async runCamera(cameraId) {
+            this.isCameraLoading = true;
+            this.cameraStatusText = 'Menghubungkan ke sensor video...';
+
+            const config = {
+                fps: 10,
+                qrbox: { width: 250, height: 250 },
+                aspectRatio: 1.333333
+            };
+
+            try {
+                if (this.html5QrCode && this.html5QrCode.isScanning) {
+                    await this.html5QrCode.stop();
+                }
+
+                // Jika ada cameraId spesifik pakai itu, jika tidak coba { facingMode: "user" } (kamera laptop depan)
+                const cameraSource = cameraId ? cameraId : { facingMode: "user" };
+
+                await this.html5QrCode.start(
+                    cameraSource,
                     config,
-                    (decodedText, decodedResult) => {
-                        // QR Code Terdeteksi
+                    (decodedText) => {
                         console.log("QR Code Terdeteksi:", decodedText);
                         this.stopScanner();
                         this.inputCode = decodedText;
                         this.lookupCode(decodedText);
                     },
                     (errorMessage) => {
-                        // Scan berlangsung / frame belum menemukan QR
+                        // frame scanning in progress
                     }
-                ).catch((err) => {
-                    console.error("Gagal membuka kamera:", err);
-                    alert("Tidak dapat mengakses kamera: " + (err.message || err));
-                    this.scannerActive = false;
-                });
-            });
+                );
+
+                this.isCameraLoading = false;
+                this.cameraPermissionError = false;
+                this.cameraStatusText = 'Kamera Aktif - Arahkan ke QR Code Kwitansi';
+            } catch (err) {
+                console.warn("Gagal runCamera tahap 1:", err);
+
+                // Fallback tahap 2: Coba environment jika tadi user, atau coba user jika tadi gagal
+                try {
+                    const fallbackSource = { facingMode: "environment" };
+                    await this.html5QrCode.start(
+                        fallbackSource,
+                        config,
+                        (decodedText) => {
+                            this.stopScanner();
+                            this.inputCode = decodedText;
+                            this.lookupCode(decodedText);
+                        },
+                        () => {}
+                    );
+                    this.isCameraLoading = false;
+                    this.cameraPermissionError = false;
+                    this.cameraStatusText = 'Kamera Aktif - Arahkan ke QR Code Kwitansi';
+                    return;
+                } catch (err2) {
+                    console.error("Semua metode kamera gagal:", err2);
+                    this.isCameraLoading = false;
+                    this.cameraPermissionError = true;
+                    this.cameraStatusText = 'Izin kamera belum aktif di browser';
+                }
+            }
         },
 
-        stopScanner() {
-            if (this.html5QrCode && this.html5QrCode.isScanning) {
-                this.html5QrCode.stop().then(() => {
-                    this.scannerActive = false;
-                }).catch(err => {
-                    console.error("Gagal stop kamera:", err);
-                    this.scannerActive = false;
-                });
-            } else {
-                this.scannerActive = false;
+        async switchCamera() {
+            if (this.selectedCameraId && this.scannerActive) {
+                await this.runCamera(this.selectedCameraId);
             }
+        },
+
+        async stopScanner() {
+            if (this.html5QrCode && this.html5QrCode.isScanning) {
+                try {
+                    await this.html5QrCode.stop();
+                } catch (err) {
+                    console.error("Gagal stop kamera:", err);
+                }
+            }
+            this.scannerActive = false;
+            this.isCameraLoading = false;
+        },
+
+        scanFromFile(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            if (!this.html5QrCode) {
+                this.html5QrCode = new Html5Qrcode("qr-reader");
+            }
+
+            this.isLoading = true;
+            this.errorMessage = '';
+
+            this.html5QrCode.scanFile(file, true)
+                .then(decodedText => {
+                    this.isLoading = false;
+                    this.inputCode = decodedText;
+                    this.lookupCode(decodedText);
+                })
+                .catch(err => {
+                    this.isLoading = false;
+                    this.errorMessage = "QR Code tidak terbaca pada file gambar ini. Pastikan foto QR cukup jelas dan tegak.";
+                });
         },
 
         lookupCode(code) {
