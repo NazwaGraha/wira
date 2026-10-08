@@ -94,7 +94,7 @@ class CompetitionCheckinController extends Controller
         }
 
         // Ekstraksi kode jika hasil scan QR Code adalah full URL
-        // Contoh URL: https://domain/lomba/kwitansi/SBB-TOCSEA atau ?code=SBB-TOCSEA
+        // Contoh URL: https://domain/lomba/kwitansi/SBB-W54342H atau ?code=SBB-W54342H
         $cleanCode = $rawCode;
         if (preg_match('/(?:kwitansi|kartu-peserta)\/([A-Za-z0-9\-_]+)/i', $rawCode, $matches)) {
             $cleanCode = $matches[1];

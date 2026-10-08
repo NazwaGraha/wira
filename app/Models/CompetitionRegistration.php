@@ -48,4 +48,34 @@ class CompetitionRegistration extends Model
     {
         return $this->hasMany(CompetitionParticipantTeam::class);
     }
+
+    /**
+     * Generate format nomor registrasi unik resmi lomba (Contoh: SBB-W54342H)
+     */
+    public static function generateRegistrationCode(?string $level = null): string
+    {
+        $prefixChar = 'R';
+        if ($level) {
+            $lvl = strtolower(trim($level));
+            if ($lvl === 'wira') {
+                $prefixChar = 'W';
+            } elseif ($lvl === 'madya') {
+                $prefixChar = 'M';
+            } elseif ($lvl === 'mula') {
+                $prefixChar = 'U';
+            } else {
+                $prefixChar = strtoupper(substr($lvl, 0, 1));
+            }
+        } else {
+            $prefixChar = chr(mt_rand(65, 90));
+        }
+
+        do {
+            $randomDigits = str_pad((string) mt_rand(10000, 99999), 5, '0', STR_PAD_LEFT);
+            $suffixChar = chr(mt_rand(65, 90));
+            $code = "SBB-{$prefixChar}{$randomDigits}{$suffixChar}";
+        } while (static::where('registration_code', $code)->exists());
+
+        return $code;
+    }
 }

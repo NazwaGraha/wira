@@ -77,7 +77,7 @@
                     </div>
                     <div>
                         <h2 class="text-lg font-black tracking-tight">Meja Registrasi & Daftar Ulang Kontingen</h2>
-                        <p class="text-xs text-red-100 mt-0.5">Scan QR Code dari Kwitansi Resmi pendaftar atau masukkan Nomor Registrasi (Contoh: SBB-TOCSEA)</p>
+                        <p class="text-xs text-red-100 mt-0.5">Scan QR Code dari Kwitansi Resmi pendaftar atau masukkan Nomor Registrasi (Contoh: SBB-W54342H)</p>
                     </div>
                 </div>
 
@@ -115,7 +115,7 @@
                     </div>
                     <input type="text" 
                            x-model="inputCode" 
-                           placeholder="Ketik Nomor Registrasi (Contoh: SBB-TOCSEA atau scan barcode)..." 
+                           placeholder="Ketik Nomor Registrasi (Contoh: SBB-W54342H atau scan barcode)..." 
                            class="w-full pl-12 pr-4 py-3.5 bg-white border-2 border-slate-300 focus:border-red-600 focus:ring-4 focus:ring-red-100 rounded-xl font-mono font-bold text-slate-800 placeholder-slate-400 text-sm tracking-wider uppercase transition shadow-sm"
                            autocomplete="off"
                            autofocus>

@@ -60,10 +60,7 @@ class CompetitionController extends Controller
             'payment_proof' => 'required|image|mimes:jpeg,png,jpg,pdf|max:5120',
         ]);
 
-        $code = 'SBB-' . strtoupper(Str::random(6));
-        while (CompetitionRegistration::where('registration_code', $code)->exists()) {
-            $code = 'SBB-' . strtoupper(Str::random(6));
-        }
+        $code = CompetitionRegistration::generateRegistrationCode($validated['level'] ?? null);
 
         $proofPath = null;
         if ($request->hasFile('payment_proof')) {
