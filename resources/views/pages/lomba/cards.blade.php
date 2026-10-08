@@ -42,7 +42,7 @@
                     <div class="flex items-center justify-center gap-2">
                         <img src="{{ asset('images/logo.png') }}" class="h-8" alt="Logo">
                         <div>
-                            <div class="text-[11px] font-black tracking-wider text-slate-900 leading-none">SUA BHAKTI BERKARYA III 2025</div>
+                            <div class="text-[11px] font-black tracking-wider text-slate-900 leading-none">{{ strtoupper($registration->event->title ?? 'SUA BHAKTI BERKARYA') }}</div>
                             <div class="text-[9px] font-bold text-red-600 uppercase tracking-widest mt-0.5">PMR WIRA SMAN 1 CIAWI</div>
                         </div>
                     </div>
@@ -72,7 +72,7 @@
                     </div>
                     <div class="text-right">
                         <div class="font-bold text-emerald-600"><i class="fa-solid fa-circle-check"></i> RESMI / SAH</div>
-                        <div>Bogor, Okt 2026</div>
+                        <div>Bogor, {{ $registration->event && $registration->event->event_date ? \Carbon\Carbon::parse($registration->event->event_date)->translatedFormat('M Y') : date('M Y') }}</div>
                     </div>
                 </div>
 

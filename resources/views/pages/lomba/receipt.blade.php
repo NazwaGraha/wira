@@ -39,7 +39,7 @@
             <div class="flex items-center gap-4">
                 <img src="{{ asset('images/logo.png') }}" alt="Logo PMR" class="h-16 w-auto">
                 <div>
-                    <h1 class="text-lg font-black text-slate-900 tracking-wider">PANITIA SUA BHAKTI BERKARYA III</h1>
+                    <h1 class="text-lg font-black text-slate-900 tracking-wider">PANITIA {{ strtoupper($registration->event->title ?? 'SUA BHAKTI BERKARYA') }}</h1>
                     <h2 class="text-xs font-bold text-red-600 tracking-widest uppercase">PMR WIRA SMAN 1 CIAWI KAB. BOGOR</h2>
                     <p class="text-[10px] text-slate-500">Jl. Veteran III No. 01 Ciawi, Bogor &bull; Email: pmrwira@sman1ciawi.sch.id</p>
                 </div>
@@ -78,7 +78,7 @@
             </div>
             <div class="grid grid-cols-12 gap-2">
                 <div class="col-span-4 font-bold text-slate-600">Untuk Pembayaran</div>
-                <div class="col-span-8 text-slate-800">: Registrasi Peserta Lomba {{ $registration->event->title ?? 'SUA BHAKTI BERKARYA III 2025' }}</div>
+                <div class="col-span-8 text-slate-800">: Registrasi Peserta Lomba {{ $registration->event->title ?? 'SUA BHAKTI BERKARYA' }}</div>
             </div>
         </div>
 
@@ -121,7 +121,7 @@
 
             <div class="text-center w-52">
                 <div class="text-slate-600 mb-16">Bogor, {{ date('d F Y') }}<br>Bendahara Panitia Pelaksana,</div>
-                <div class="font-bold text-slate-900 border-b border-slate-400 pb-1">PANITIA SBB III 2025</div>
+                <div class="font-bold text-slate-900 border-b border-slate-400 pb-1">PANITIA {{ strtoupper($registration->event->title ?? 'SUA BHAKTI BERKARYA') }}</div>
                 <div class="text-[10px] text-slate-500">PMR Wira SMAN 1 Ciawi</div>
             </div>
         </div>

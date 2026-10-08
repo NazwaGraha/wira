@@ -271,7 +271,7 @@
                     <!-- Kanan: Judul Kegiatan SUA BHAKTI BERKARYA -->
                     <td style="vertical-align: middle; text-align: right;">
                         <div class="header-title">
-                            SUA BHAKTI<br>BERKARYA
+                            {{ !empty($registration->event->title) ? strtoupper($registration->event->title) : 'SUA BHAKTI BERKARYA' }}
                         </div>
                     </td>
                 </tr>
