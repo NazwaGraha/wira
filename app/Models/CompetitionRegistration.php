@@ -26,11 +26,17 @@ class CompetitionRegistration extends Model
         'rejection_reason',
         'verified_at',
         'verified_by',
+        'is_checked_in',
+        'checked_in_at',
+        'checked_in_by',
+        'checkin_notes',
     ];
 
     protected $casts = [
         'total_payment' => 'decimal:2',
         'verified_at' => 'datetime',
+        'is_checked_in' => 'boolean',
+        'checked_in_at' => 'datetime',
     ];
 
     public function event(): BelongsTo

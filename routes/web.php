@@ -118,6 +118,12 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::post('/competition-registrations/{registration}/verify', [\App\Http\Controllers\Admin\CompetitionRegistrationController::class, 'verify'])->name('competition-registrations.verify');
         Route::post('/competition-registrations/{registration}/reject', [\App\Http\Controllers\Admin\CompetitionRegistrationController::class, 'reject'])->name('competition-registrations.reject');
         Route::post('/competition-registrations/{registration}/resend-email', [\App\Http\Controllers\Admin\CompetitionRegistrationController::class, 'resendEmail'])->name('competition-registrations.resend-email');
+
+        // Daftar Ulang / Check-In Peserta Lomba (Hari-H)
+        Route::get('/competition-checkin', [\App\Http\Controllers\Admin\CompetitionCheckinController::class, 'index'])->name('competition-checkin.index');
+        Route::get('/competition-checkin/lookup', [\App\Http\Controllers\Admin\CompetitionCheckinController::class, 'lookup'])->name('competition-checkin.lookup');
+        Route::post('/competition-checkin/process', [\App\Http\Controllers\Admin\CompetitionCheckinController::class, 'process'])->name('competition-checkin.process');
+        Route::post('/competition-checkin/{id}/cancel', [\App\Http\Controllers\Admin\CompetitionCheckinController::class, 'cancel'])->name('competition-checkin.cancel');
         
         // Daftar Peserta & Regu Lomba Terverifikasi
         Route::get('/competition-participants', [\App\Http\Controllers\Admin\CompetitionParticipantController::class, 'index'])->name('competition-participants.index');

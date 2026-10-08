@@ -105,6 +105,10 @@
                 <i class="fa-solid fa-clipboard-check w-5 text-center text-amber-400"></i>
                 <span>Verifikasi Pendaftar</span>
             </a>
+            <a href="{{ route('admin.competition-checkin.index') }}" class="flex items-center gap-3 px-3 py-2.5 rounded-xl font-medium text-sm transition {{ request()->routeIs('admin.competition-checkin.*') ? 'bg-pmr-primary text-white shadow-md shadow-red-950/40' : 'hover:bg-slate-800 text-slate-300' }}">
+                <i class="fa-solid fa-qrcode w-5 text-center text-emerald-400"></i>
+                <span>Daftar Ulang Peserta</span>
+            </a>
             <a href="{{ route('admin.competition-participants.index') }}" class="flex items-center gap-3 px-3 py-2.5 rounded-xl font-medium text-sm transition {{ request()->routeIs('admin.competition-participants.*') ? 'bg-pmr-primary text-white shadow-md shadow-red-950/40' : 'hover:bg-slate-800 text-slate-300' }}">
                 <i class="fa-solid fa-users-viewfinder w-5 text-center text-sky-400"></i>
                 <span>Peserta Terverifikasi</span>
