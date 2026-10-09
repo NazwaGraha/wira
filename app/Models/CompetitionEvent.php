@@ -45,4 +45,9 @@ class CompetitionEvent extends Model
     {
         return $this->hasMany(CompetitionRegistration::class);
     }
+
+    public function infoMenus(): HasMany
+    {
+        return $this->hasMany(CompetitionInfoMenu::class)->orderBy('order_position');
+    }
 }

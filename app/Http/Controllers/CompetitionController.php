@@ -24,7 +24,38 @@ class CompetitionController extends Controller
 
         $categoriesByLevel = $event ? $event->categories->groupBy('level') : collect();
 
-        return view('pages.lomba.index', compact('event', 'categoriesByLevel'));
+        // Load Menu Informasi Lomba (Backoffice Managed)
+        $infoMenus = collect();
+        try {
+            if (\Illuminate\Support\Facades\Schema::hasTable('competition_info_menus')) {
+                $infoMenus = \App\Models\CompetitionInfoMenu::where('is_active', true)
+                    ->when($event, function($q) use ($event) {
+                        $q->where(function($sub) use ($event) {
+                            $sub->where('competition_event_id', $event->id)
+                                ->orWhereNull('competition_event_id');
+                        });
+                    })
+                    ->orderBy('order_position')
+                    ->orderBy('id')
+                    ->get();
+            }
+        } catch (\Throwable $e) {
+            $infoMenus = collect();
+        }
+
+        // Fallback to default 8 items if database records are empty
+        if ($infoMenus->isEmpty()) {
+            $defaultItems = \App\Models\CompetitionInfoMenu::defaultItems();
+            $infoMenus = collect(array_map(function($item) use ($event) {
+                if ($event && $event->handbook_file && in_array($item['title'], ['Juklak Juknis', 'Buku Panduan Lomba'])) {
+                    $item['action_type'] = 'file';
+                    $item['file_path'] = $event->handbook_file;
+                }
+                return new \App\Models\CompetitionInfoMenu($item);
+            }, $defaultItems));
+        }
+
+        return view('pages.lomba.index', compact('event', 'categoriesByLevel', 'infoMenus'));
     }
 
     public function register()

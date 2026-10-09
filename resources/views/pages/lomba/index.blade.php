@@ -206,224 +206,75 @@
             </button>
         </div>
 
-        <!-- Modal Body: 8 Sub Menu Cards Grid -->
+        <!-- Modal Body: Sub Menu Cards Grid (Managed via Backoffice) -->
         <div class="p-6 sm:p-8 md:p-10 space-y-6 sm:space-y-8 max-h-[75vh] overflow-y-auto">
             <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-slate-800/60 p-4 sm:p-5 rounded-2xl border border-slate-700/60 text-sm sm:text-base text-slate-200">
                 <div class="flex items-center gap-3">
                     <i class="fa-solid fa-bullhorn text-amber-400 text-lg sm:text-xl shrink-0"></i>
                     <span class="font-medium">Pilih sub menu di bawah untuk mengunduh dokumen resmi, membaca panduan, melihat denah lokasi, atau menghubungi panitia.</span>
                 </div>
-                <span class="text-xs sm:text-sm font-black text-amber-300 bg-amber-500/10 border border-amber-500/20 px-3 py-1 rounded-lg shrink-0 w-fit">8 Pilihan Sub Menu</span>
+                <span class="text-xs sm:text-sm font-black text-amber-300 bg-amber-500/10 border border-amber-500/20 px-3 py-1 rounded-lg shrink-0 w-fit">{{ $infoMenus->count() }} Pilihan Sub Menu</span>
             </div>
 
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 sm:gap-6">
-
-                <!-- 1. Surat Rekomendasi -->
-                <div class="bg-slate-800/70 hover:bg-slate-800/95 border-2 border-slate-700/70 hover:border-red-500/60 rounded-3xl p-5 sm:p-6 transition-all duration-200 flex flex-col justify-between group hover:shadow-xl hover:shadow-red-950/30">
-                    <div class="space-y-4">
-                        <div class="flex items-center justify-between">
-                            <div class="w-12 h-12 rounded-2xl bg-red-500/15 text-red-400 group-hover:bg-red-500/25 flex items-center justify-center text-xl sm:text-2xl transition">
-                                <i class="fa-solid fa-file-shield"></i>
+                @forelse($infoMenus as $menu)
+                    @php
+                        $pal = $menu->theme_classes;
+                        $hasFile = ($menu->action_type === 'file' && $menu->file_path);
+                        $isLink = in_array($menu->action_type, ['link', 'whatsapp']) && $menu->url_link;
+                    @endphp
+                    <div class="bg-slate-800/70 hover:bg-slate-800/95 border-2 border-slate-700/70 {{ $pal['border_hover'] }} rounded-3xl p-5 sm:p-6 transition-all duration-200 flex flex-col justify-between group hover:shadow-xl {{ $pal['shadow_hover'] }}">
+                        <div class="space-y-4">
+                            <div class="flex items-center justify-between">
+                                <div class="w-12 h-12 rounded-2xl {{ $pal['icon_bg'] }} {{ $pal['icon_text'] }} {{ $pal['icon_hover'] }} flex items-center justify-center text-xl sm:text-2xl transition">
+                                    <i class="{{ $menu->icon ?: 'fa-solid fa-folder-open' }}"></i>
+                                </div>
+                                <span class="px-2.5 py-1 rounded-lg text-xs font-black uppercase tracking-wider {{ $pal['badge_bg'] }} {{ $pal['badge_text'] }} border {{ $pal['badge_border'] }}">
+                                    {{ $menu->category_badge }}
+                                </span>
                             </div>
-                            <span class="px-2.5 py-1 rounded-lg text-xs font-black uppercase tracking-wider bg-red-950/80 text-red-300 border border-red-500/30">
-                                Dokumen Resmi
-                            </span>
-                        </div>
-                        <div>
-                            <h4 class="font-black text-white text-base sm:text-lg group-hover:text-red-300 transition">Surat Rekomendasi</h4>
-                            <p class="text-sm text-slate-200 mt-2 leading-relaxed font-medium">Dokumen rekomendasi izin kegiatan dari PMI dan instansi kedinasan terkait.</p>
-                        </div>
-                    </div>
-                    <div class="pt-5 mt-4 border-t border-slate-700/60">
-                        <button type="button" onclick="handleDocumentAction('Surat Rekomendasi', 'rekomendasi')" class="w-full py-3 px-4 rounded-xl bg-red-600/20 hover:bg-red-600 text-red-300 hover:text-white font-black text-xs sm:text-sm transition border border-red-500/30 flex items-center justify-center gap-2 cursor-pointer shadow-sm">
-                            <i class="fa-solid fa-file-arrow-down text-sm"></i>
-                            <span>Unduh Dokumen</span>
-                        </button>
-                    </div>
-                </div>
-
-                <!-- 2. Surat Undangan Lomba -->
-                <div class="bg-slate-800/70 hover:bg-slate-800/95 border-2 border-slate-700/70 hover:border-sky-500/60 rounded-3xl p-5 sm:p-6 transition-all duration-200 flex flex-col justify-between group hover:shadow-xl hover:shadow-sky-950/30">
-                    <div class="space-y-4">
-                        <div class="flex items-center justify-between">
-                            <div class="w-12 h-12 rounded-2xl bg-sky-500/15 text-sky-400 group-hover:bg-sky-500/25 flex items-center justify-center text-xl sm:text-2xl transition">
-                                <i class="fa-solid fa-envelope-open-text"></i>
+                            <div>
+                                <h4 class="font-black text-white text-base sm:text-lg {{ $pal['title_hover'] }} transition">
+                                    {{ $menu->title }}
+                                </h4>
+                                <p class="text-sm text-slate-200 mt-2 leading-relaxed font-medium">
+                                    {{ $menu->description }}
+                                </p>
                             </div>
-                            <span class="px-2.5 py-1 rounded-lg text-xs font-black uppercase tracking-wider bg-sky-950/80 text-sky-300 border border-sky-500/30">
-                                Undangan
-                            </span>
                         </div>
-                        <div>
-                            <h4 class="font-black text-white text-base sm:text-lg group-hover:text-sky-300 transition">Surat Undangan Lomba</h4>
-                            <p class="text-sm text-slate-200 mt-2 leading-relaxed font-medium">Surat edaran undangan resmi partisipasi lomba untuk kepala sekolah & pembina PMR.</p>
-                        </div>
-                    </div>
-                    <div class="pt-5 mt-4 border-t border-slate-700/60">
-                        <button type="button" onclick="handleDocumentAction('Surat Undangan Lomba', 'undangan')" class="w-full py-3 px-4 rounded-xl bg-sky-600/20 hover:bg-sky-600 text-sky-300 hover:text-white font-black text-xs sm:text-sm transition border border-sky-500/30 flex items-center justify-center gap-2 cursor-pointer shadow-sm">
-                            <i class="fa-solid fa-file-arrow-down text-sm"></i>
-                            <span>Unduh Undangan</span>
-                        </button>
-                    </div>
-                </div>
-
-                <!-- 3. Juklak Juknis -->
-                <div class="bg-slate-800/70 hover:bg-slate-800/95 border-2 border-slate-700/70 hover:border-rose-500/60 rounded-3xl p-5 sm:p-6 transition-all duration-200 flex flex-col justify-between group hover:shadow-xl hover:shadow-rose-950/30">
-                    <div class="space-y-4">
-                        <div class="flex items-center justify-between">
-                            <div class="w-12 h-12 rounded-2xl bg-rose-500/15 text-rose-400 group-hover:bg-rose-500/25 flex items-center justify-center text-xl sm:text-2xl transition">
-                                <i class="fa-solid fa-book-bookmark"></i>
-                            </div>
-                            <span class="px-2.5 py-1 rounded-lg text-xs font-black uppercase tracking-wider bg-rose-950/80 text-rose-300 border border-rose-500/30">
-                                Wajib Dibaca
-                            </span>
-                        </div>
-                        <div>
-                            <h4 class="font-black text-white text-base sm:text-lg group-hover:text-rose-300 transition">Juklak Juknis</h4>
-                            <p class="text-sm text-slate-200 mt-2 leading-relaxed font-medium">Petunjuk Pelaksanaan & Petunjuk Teknis aturan resmi perlombaan dan tata tertib.</p>
+                        <div class="pt-5 mt-4 border-t border-slate-700/60">
+                            @if($hasFile)
+                                <a href="{{ asset('storage/' . $menu->file_path) }}" target="_blank" class="w-full py-3 px-4 rounded-xl {{ $pal['btn_solid'] }} font-black text-xs sm:text-sm transition flex items-center justify-center gap-2 shadow-md">
+                                    <i class="fa-solid fa-file-arrow-down text-sm"></i>
+                                    <span>{{ $menu->button_text ?: 'Unduh Berkas' }}</span>
+                                </a>
+                            @elseif($isLink)
+                                <a href="{{ $menu->url_link }}" target="_blank" class="w-full py-3 px-4 rounded-xl {{ $pal['btn_bg'] }} {{ $pal['btn_text'] }} font-black text-xs sm:text-sm transition border {{ $pal['btn_border'] }} flex items-center justify-center gap-2 shadow-sm">
+                                    @if($menu->action_type === 'whatsapp')
+                                        <i class="fa-brands fa-whatsapp text-base"></i>
+                                    @elseif(str_contains($menu->url_link, 'maps'))
+                                        <i class="fa-solid fa-diamond-turn-right text-sm"></i>
+                                    @elseif(str_contains($menu->url_link, 'instagram'))
+                                        <i class="fa-brands fa-instagram text-sm"></i>
+                                    @else
+                                        <i class="fa-solid fa-arrow-up-right-from-square text-sm"></i>
+                                    @endif
+                                    <span>{{ $menu->button_text ?: 'Buka Tautan' }}</span>
+                                </a>
+                            @else
+                                <button type="button" onclick="handleDocumentAction('{{ addslashes($menu->title) }}', 'notice')" class="w-full py-3 px-4 rounded-xl {{ $pal['btn_bg'] }} {{ $pal['btn_text'] }} font-black text-xs sm:text-sm transition border {{ $pal['btn_border'] }} flex items-center justify-center gap-2 cursor-pointer shadow-sm">
+                                    <i class="fa-solid fa-file-arrow-down text-sm"></i>
+                                    <span>{{ $menu->button_text ?: 'Unduh Dokumen' }}</span>
+                                </button>
+                            @endif
                         </div>
                     </div>
-                    <div class="pt-5 mt-4 border-t border-slate-700/60">
-                        @if($event && $event->handbook_file)
-                            <a href="{{ asset('storage/' . $event->handbook_file) }}" target="_blank" class="w-full py-3 px-4 rounded-xl bg-rose-600 hover:bg-rose-500 text-white font-black text-xs sm:text-sm transition flex items-center justify-center gap-2 shadow-md shadow-rose-900/40">
-                                <i class="fa-solid fa-file-pdf text-sm"></i>
-                                <span>Unduh Juklak Juknis</span>
-                            </a>
-                        @else
-                            <button type="button" onclick="handleDocumentAction('Juklak Juknis Lomba', 'juklak')" class="w-full py-3 px-4 rounded-xl bg-rose-600/20 hover:bg-rose-600 text-rose-300 hover:text-white font-black text-xs sm:text-sm transition border border-rose-500/30 flex items-center justify-center gap-2 cursor-pointer shadow-sm">
-                                <i class="fa-solid fa-file-pdf text-sm"></i>
-                                <span>Unduh Juklak Juknis</span>
-                            </button>
-                        @endif
+                @empty
+                    <div class="col-span-full py-12 text-center text-slate-400">
+                        <i class="fa-solid fa-folder-open text-3xl mb-2"></i>
+                        <p class="text-sm">Belum ada informasi lomba yang ditambahkan.</p>
                     </div>
-                </div>
-
-                <!-- 4. Grid Nilai -->
-                <div class="bg-slate-800/70 hover:bg-slate-800/95 border-2 border-slate-700/70 hover:border-amber-500/60 rounded-3xl p-5 sm:p-6 transition-all duration-200 flex flex-col justify-between group hover:shadow-xl hover:shadow-amber-950/30">
-                    <div class="space-y-4">
-                        <div class="flex items-center justify-between">
-                            <div class="w-12 h-12 rounded-2xl bg-amber-500/15 text-amber-400 group-hover:bg-amber-500/25 flex items-center justify-center text-xl sm:text-2xl transition">
-                                <i class="fa-solid fa-table-list"></i>
-                            </div>
-                            <span class="px-2.5 py-1 rounded-lg text-xs font-black uppercase tracking-wider bg-amber-950/80 text-amber-300 border border-amber-500/30">
-                                Transparansi
-                            </span>
-                        </div>
-                        <div>
-                            <h4 class="font-black text-white text-base sm:text-lg group-hover:text-amber-300 transition">Grid Nilai</h4>
-                            <p class="text-sm text-slate-200 mt-2 leading-relaxed font-medium">Matriks rubrik penilaian juri, bobot kriteria teknis, dan rumus perhitungan skor.</p>
-                        </div>
-                    </div>
-                    <div class="pt-5 mt-4 border-t border-slate-700/60">
-                        <button type="button" onclick="handleDocumentAction('Grid & Rubrik Nilai Juri', 'grid_nilai')" class="w-full py-3 px-4 rounded-xl bg-amber-600/20 hover:bg-amber-600 text-amber-300 hover:text-white font-black text-xs sm:text-sm transition border border-amber-500/30 flex items-center justify-center gap-2 cursor-pointer shadow-sm">
-                            <i class="fa-solid fa-chart-column text-sm"></i>
-                            <span>Lihat Rubrik Nilai</span>
-                        </button>
-                    </div>
-                </div>
-
-                <!-- 5. Peta Lokasi Lomba -->
-                <div class="bg-slate-800/70 hover:bg-slate-800/95 border-2 border-slate-700/70 hover:border-emerald-500/60 rounded-3xl p-5 sm:p-6 transition-all duration-200 flex flex-col justify-between group hover:shadow-xl hover:shadow-emerald-950/30">
-                    <div class="space-y-4">
-                        <div class="flex items-center justify-between">
-                            <div class="w-12 h-12 rounded-2xl bg-emerald-500/15 text-emerald-400 group-hover:bg-emerald-500/25 flex items-center justify-center text-xl sm:text-2xl transition">
-                                <i class="fa-solid fa-map-location-dot"></i>
-                            </div>
-                            <span class="px-2.5 py-1 rounded-lg text-xs font-black uppercase tracking-wider bg-emerald-950/80 text-emerald-300 border border-emerald-500/30">
-                                Venue & Denah
-                            </span>
-                        </div>
-                        <div>
-                            <h4 class="font-black text-white text-base sm:text-lg group-hover:text-emerald-300 transition">Peta Lokasi Lomba</h4>
-                            <p class="text-sm text-slate-200 mt-2 leading-relaxed font-medium">Denah kampus SMAN 1 Ciawi, posisi pos mata lomba, area transit, dan rute navigasi.</p>
-                        </div>
-                    </div>
-                    <div class="pt-5 mt-4 border-t border-slate-700/60">
-                        <a href="https://maps.google.com/?q=SMAN+1+Ciawi+Bogor" target="_blank" class="w-full py-3 px-4 rounded-xl bg-emerald-600/20 hover:bg-emerald-600 text-emerald-300 hover:text-white font-black text-xs sm:text-sm transition border border-emerald-500/30 flex items-center justify-center gap-2 shadow-sm">
-                            <i class="fa-solid fa-diamond-turn-right text-sm"></i>
-                            <span>Buka Google Maps</span>
-                        </a>
-                    </div>
-                </div>
-
-                <!-- 6. Buku Panduan Lomba -->
-                <div class="bg-slate-800/70 hover:bg-slate-800/95 border-2 border-slate-700/70 hover:border-purple-500/60 rounded-3xl p-5 sm:p-6 transition-all duration-200 flex flex-col justify-between group hover:shadow-xl hover:shadow-purple-950/30">
-                    <div class="space-y-4">
-                        <div class="flex items-center justify-between">
-                            <div class="w-12 h-12 rounded-2xl bg-purple-500/15 text-purple-400 group-hover:bg-purple-500/25 flex items-center justify-center text-xl sm:text-2xl transition">
-                                <i class="fa-solid fa-book-open-reader"></i>
-                            </div>
-                            <span class="px-2.5 py-1 rounded-lg text-xs font-black uppercase tracking-wider bg-purple-950/80 text-purple-300 border border-purple-500/30">
-                                Handbook
-                            </span>
-                        </div>
-                        <div>
-                            <h4 class="font-black text-white text-base sm:text-lg group-hover:text-purple-300 transition">Buku Panduan Lomba</h4>
-                            <p class="text-sm text-slate-200 mt-2 leading-relaxed font-medium">Panduan teknis operasional untuk kontingen, pembina pendamping, dan peserta lomba.</p>
-                        </div>
-                    </div>
-                    <div class="pt-5 mt-4 border-t border-slate-700/60">
-                        @if($event && $event->handbook_file)
-                            <a href="{{ asset('storage/' . $event->handbook_file) }}" target="_blank" class="w-full py-3 px-4 rounded-xl bg-purple-600 hover:bg-purple-500 text-white font-black text-xs sm:text-sm transition flex items-center justify-center gap-2 shadow-md shadow-purple-900/40">
-                                <i class="fa-solid fa-file-arrow-down text-sm"></i>
-                                <span>Unduh Handbook</span>
-                            </a>
-                        @else
-                            <button type="button" onclick="handleDocumentAction('Buku Panduan Lomba (Handbook)', 'panduan')" class="w-full py-3 px-4 rounded-xl bg-purple-600/20 hover:bg-purple-600 text-purple-300 hover:text-white font-black text-xs sm:text-sm transition border border-purple-500/30 flex items-center justify-center gap-2 cursor-pointer shadow-sm">
-                                <i class="fa-solid fa-file-arrow-down text-sm"></i>
-                                <span>Unduh Handbook</span>
-                            </button>
-                        @endif
-                    </div>
-                </div>
-
-                <!-- 7. Dokumentasi Kegiatan -->
-                <div class="bg-slate-800/70 hover:bg-slate-800/95 border-2 border-slate-700/70 hover:border-cyan-500/60 rounded-3xl p-5 sm:p-6 transition-all duration-200 flex flex-col justify-between group hover:shadow-xl hover:shadow-cyan-950/30">
-                    <div class="space-y-4">
-                        <div class="flex items-center justify-between">
-                            <div class="w-12 h-12 rounded-2xl bg-cyan-500/15 text-cyan-400 group-hover:bg-cyan-500/25 flex items-center justify-center text-xl sm:text-2xl transition">
-                                <i class="fa-solid fa-photo-film"></i>
-                            </div>
-                            <span class="px-2.5 py-1 rounded-lg text-xs font-black uppercase tracking-wider bg-cyan-950/80 text-cyan-300 border border-cyan-500/30">
-                                Galeri Media
-                            </span>
-                        </div>
-                        <div>
-                            <h4 class="font-black text-white text-base sm:text-lg group-hover:text-cyan-300 transition">Dokumentasi Kegiatan</h4>
-                            <p class="text-sm text-slate-200 mt-2 leading-relaxed font-medium">Koleksi foto, video rekaman lomba, dan kilas balik gelaran Sua Bhakti Berkarya.</p>
-                        </div>
-                    </div>
-                    <div class="pt-5 mt-4 border-t border-slate-700/60">
-                        <a href="https://instagram.com/pmrwirasman1c" target="_blank" class="w-full py-3 px-4 rounded-xl bg-cyan-600/20 hover:bg-cyan-600 text-cyan-300 hover:text-white font-black text-xs sm:text-sm transition border border-cyan-500/30 flex items-center justify-center gap-2 shadow-sm">
-                            <i class="fa-brands fa-instagram text-sm"></i>
-                            <span>Buka Galeri Foto & Video</span>
-                        </a>
-                    </div>
-                </div>
-
-                <!-- 8. Contact Person -->
-                <div class="bg-slate-800/70 hover:bg-slate-800/95 border-2 border-slate-700/70 hover:border-emerald-500/60 rounded-3xl p-5 sm:p-6 transition-all duration-200 flex flex-col justify-between group hover:shadow-xl hover:shadow-emerald-950/30">
-                    <div class="space-y-4">
-                        <div class="flex items-center justify-between">
-                            <div class="w-12 h-12 rounded-2xl bg-emerald-500/15 text-emerald-400 group-hover:bg-emerald-500/25 flex items-center justify-center text-xl sm:text-2xl transition">
-                                <i class="fa-brands fa-whatsapp"></i>
-                            </div>
-                            <span class="px-2.5 py-1 rounded-lg text-xs font-black uppercase tracking-wider bg-emerald-950/80 text-emerald-300 border border-emerald-500/30">
-                                Hotline 24/7
-                            </span>
-                        </div>
-                        <div>
-                            <h4 class="font-black text-white text-base sm:text-lg group-hover:text-emerald-300 transition">Contact Person</h4>
-                            <p class="text-sm text-slate-200 mt-2 leading-relaxed font-medium">Layanan konsultasi resmi narahubung panitia lomba untuk pertanyaan dan konfirmasi.</p>
-                        </div>
-                    </div>
-                    <div class="pt-5 mt-4 border-t border-slate-700/60">
-                        <a href="https://wa.me/6281383885600?text=Halo%20Panitia%20Sua%20Bhakti%20Berkarya%2C%20saya%20ingin%20bertanya%20seputar%20informasi%20lomba" target="_blank" class="w-full py-3 px-4 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-black text-xs sm:text-sm transition flex items-center justify-center gap-2 shadow-md shadow-emerald-950/40">
-                            <i class="fa-brands fa-whatsapp text-base"></i>
-                            <span>Chat WhatsApp Panitia</span>
-                        </a>
-                    </div>
-                </div>
-
+                @endforelse
             </div>
         </div>
 

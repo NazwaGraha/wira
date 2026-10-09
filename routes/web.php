@@ -161,6 +161,11 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::get('/competition-broadcast/{id}', [\App\Http\Controllers\Admin\CompetitionBroadcastController::class, 'show'])->name('competition-broadcast.show');
         Route::delete('/competition-broadcast/{id}', [\App\Http\Controllers\Admin\CompetitionBroadcastController::class, 'destroy'])->name('competition-broadcast.destroy');
 
+        // Pengelolaan Menu Informasi Lomba (CRUD Sub Menu & Dokumen Berkas)
+        Route::resource('competition-info-menus', \App\Http\Controllers\Admin\CompetitionInfoMenuController::class)->names('competition-info-menus');
+        Route::post('/competition-info-menus/{id}/toggle-active', [\App\Http\Controllers\Admin\CompetitionInfoMenuController::class, 'toggleActive'])->name('competition-info-menus.toggle-active');
+        Route::post('/competition-info-menus-reset-defaults', [\App\Http\Controllers\Admin\CompetitionInfoMenuController::class, 'resetDefaults'])->name('competition-info-menus.reset-defaults');
+
         // System Utility: Bersihkan Cache & Sinkronisasi Server
         Route::get('/clear-cache', function () {
             try {
