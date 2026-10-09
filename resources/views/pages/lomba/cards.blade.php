@@ -59,8 +59,17 @@
 
                     <div class="mt-4 bg-slate-50 border border-slate-200 rounded-xl p-3 inline-block w-full text-center">
                         <div class="text-[10px] text-slate-400 font-bold uppercase tracking-wider">Cabang Lomba:</div>
-                        <div class="text-sm font-black text-slate-800">{{ $team->category->name }}</div>
-                        <div class="text-xs font-bold text-slate-600">PMR {{ $registration->level }} &bull; {{ $team->category->gender_category }}</div>
+                        @php
+                            $cardLevelBadge = match($registration->level) {
+                                'Mula' => 'text-emerald-800 bg-emerald-100 border-emerald-300',
+                                'Madya' => 'text-blue-800 bg-blue-100 border-blue-300',
+                                default => 'text-amber-900 bg-amber-100 border-amber-300',
+                            };
+                        @endphp
+                        <div class="mt-1 flex items-center justify-center gap-1.5">
+                            <span class="px-2 py-0.5 rounded text-[11px] font-black border {{ $cardLevelBadge }}">PMR {{ $registration->level }}</span>
+                            <span class="text-xs font-bold text-slate-600">&bull; {{ $team->category->gender_category }}</span>
+                        </div>
                     </div>
                 </div>
 

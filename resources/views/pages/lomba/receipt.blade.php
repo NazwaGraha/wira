@@ -105,7 +105,11 @@
             </div>
             <div class="grid grid-cols-12 gap-2">
                 <div class="col-span-12 sm:col-span-4 font-bold text-slate-500 uppercase text-[11px] sm:text-xs">Tingkat Kontingen</div>
-                <div class="col-span-12 sm:col-span-8 font-extrabold text-red-600">: PMR {{ $registration->level }} ({{ $registration->level == 'Mula' ? 'SD' : ($registration->level == 'Madya' ? 'SMP' : 'SMA') }})</div>
+                <div class="col-span-12 sm:col-span-8 font-extrabold">: 
+                    <span class="{{ $registration->level == 'Mula' ? 'text-emerald-700' : ($registration->level == 'Madya' ? 'text-blue-700' : 'text-amber-800') }}">
+                        PMR {{ $registration->level }} ({{ $registration->level == 'Mula' ? 'SD / MI' : ($registration->level == 'Madya' ? 'SMP / MTs' : 'SMA / SMK / MA') }})
+                    </span>
+                </div>
             </div>
             <div class="grid grid-cols-12 gap-2">
                 <div class="col-span-12 sm:col-span-4 font-bold text-slate-500 uppercase text-[11px] sm:text-xs">Nama Pembina / Pendamping</div>

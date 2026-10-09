@@ -42,8 +42,17 @@
                             @endif
                         </div>
                         <h2 class="text-2xl font-black text-slate-900 mt-1 uppercase">{{ $registration->school_name }}</h2>
-                        <div class="text-xs text-slate-600 font-semibold mt-0.5">
-                            Tingkat: <span class="text-red-600 font-bold">PMR {{ $registration->level }}</span> &bull; Pembina: {{ $registration->advisor_name }} ({{ $registration->advisor_phone }})
+                        @php
+                            $levelColorClass = match($registration->level) {
+                                'Mula' => 'text-emerald-700 bg-emerald-100 border border-emerald-300',
+                                'Madya' => 'text-blue-700 bg-blue-100 border border-blue-300',
+                                default => 'text-amber-900 bg-amber-100 border border-amber-300',
+                            };
+                        @endphp
+                        <div class="text-xs text-slate-600 font-semibold mt-1 flex items-center gap-2 flex-wrap">
+                            <span>Tingkat: <span class="px-2.5 py-0.5 rounded-md font-black text-xs {{ $levelColorClass }}">PMR {{ $registration->level }}</span></span>
+                            <span>&bull;</span>
+                            <span>Pembina: {{ $registration->advisor_name }} ({{ $registration->advisor_phone }})</span>
                         </div>
                     </div>
 

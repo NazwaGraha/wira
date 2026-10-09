@@ -101,78 +101,111 @@
         </div>
 
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            <!-- MULA (SD) -->
-            <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-200 flex flex-col">
-                <div class="flex items-center justify-between pb-4 border-b border-slate-100 mb-4">
+            <!-- MULA (SD / MI) - Dominasi HIJAU -->
+            <div class="bg-white rounded-3xl p-6 sm:p-7 shadow-sm hover:shadow-xl border-2 border-emerald-500/40 hover:border-emerald-500 transition-all flex flex-col relative overflow-hidden group">
+                <div class="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-emerald-500 to-green-600"></div>
+                <div class="flex items-center justify-between pb-4 border-b border-emerald-100/70 mb-5">
                     <div>
-                        <span class="bg-blue-100 text-blue-800 text-xs font-extrabold px-3 py-1 rounded-full uppercase">Tingkat SD</span>
-                        <h3 class="text-xl font-bold text-slate-900 mt-2">PMR Mula</h3>
+                        <span class="bg-emerald-100 text-emerald-800 border border-emerald-200 text-xs font-black px-3 py-1 rounded-full uppercase tracking-wider">Tingkat SD / MI</span>
+                        <h3 class="text-2xl font-black text-slate-900 mt-2 flex items-center gap-2">
+                            PMR Mula
+                            <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 inline-block animate-pulse"></span>
+                        </h3>
                     </div>
-                    <div class="w-10 h-10 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center text-lg">
+                    <div class="w-12 h-12 rounded-2xl bg-emerald-50 text-emerald-600 border border-emerald-200/60 flex items-center justify-center text-xl shadow-xs group-hover:scale-105 transition-transform">
                         <i class="fa-solid fa-child-reaching"></i>
                     </div>
                 </div>
+
+                <div class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[11px] font-bold bg-emerald-50 text-emerald-800 border border-emerald-200/60 w-fit mb-4">
+                    <i class="fa-solid fa-layer-group text-emerald-600"></i>
+                    <span>{{ $categoriesByLevel->get('Mula', collect())->count() }} Cabang Lomba Tersedia</span>
+                </div>
+
                 <ul class="space-y-3 flex-grow text-sm text-slate-600 mb-6">
                     @foreach($categoriesByLevel->get('Mula', []) as $cat)
                         <li class="flex items-start gap-2.5">
-                            <i class="fa-solid fa-circle-check text-emerald-500 mt-1"></i>
-                            <span><strong>{{ $cat->name }}</strong> @if($cat->gender_category !== 'Umum') ({{ $cat->gender_category }}) @endif</span>
+                            <i class="fa-solid fa-circle-check text-emerald-500 mt-1 shrink-0"></i>
+                            <span class="text-slate-700"><strong>{{ $cat->name }}</strong> @if($cat->gender_category !== 'Umum') <span class="text-xs font-semibold text-emerald-700 bg-emerald-50 px-1.5 py-0.5 rounded border border-emerald-200/50">({{ $cat->gender_category }})</span> @endif</span>
                         </li>
                     @endforeach
                 </ul>
-                <a href="{{ route('lomba.register') }}?level=Mula" class="w-full text-center py-2.5 rounded-xl font-bold bg-blue-50 hover:bg-blue-600 hover:text-white text-blue-700 transition text-sm">
-                    Daftar Tingkat Mula &rarr;
+
+                <a href="{{ route('lomba.register') }}?level=Mula" class="w-full text-center py-3 rounded-xl font-extrabold bg-emerald-600 hover:bg-emerald-700 text-white shadow-md shadow-emerald-950/15 transition flex items-center justify-center gap-2 text-sm group-hover:shadow-lg">
+                    <span>Daftar Tingkat Mula</span>
+                    <i class="fa-solid fa-arrow-right text-xs group-hover:translate-x-1 transition-transform"></i>
                 </a>
             </div>
 
-            <!-- MADYA (SMP) -->
-            <div class="bg-white rounded-2xl p-6 shadow-md border-2 border-red-500/30 relative flex flex-col">
-                <div class="absolute -top-3 right-6 bg-red-600 text-white text-[10px] font-extrabold px-3 py-0.5 rounded-full uppercase tracking-wider">
-                    Paling Favorit
-                </div>
-                <div class="flex items-center justify-between pb-4 border-b border-slate-100 mb-4">
+            <!-- MADYA (SMP / MTs) - Dominasi BIRU -->
+            <div class="bg-white rounded-3xl p-6 sm:p-7 shadow-sm hover:shadow-xl border-2 border-blue-500/40 hover:border-blue-600 transition-all flex flex-col relative overflow-hidden group">
+                <div class="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-blue-500 to-indigo-600"></div>
+                <div class="flex items-center justify-between pb-4 border-b border-blue-100/70 mb-5">
                     <div>
-                        <span class="bg-red-100 text-red-800 text-xs font-extrabold px-3 py-1 rounded-full uppercase">Tingkat SMP</span>
-                        <h3 class="text-xl font-bold text-slate-900 mt-2">PMR Madya</h3>
+                        <span class="bg-blue-100 text-blue-800 border border-blue-200 text-xs font-black px-3 py-1 rounded-full uppercase tracking-wider">Tingkat SMP / MTs</span>
+                        <h3 class="text-2xl font-black text-slate-900 mt-2 flex items-center gap-2">
+                            PMR Madya
+                            <span class="w-2.5 h-2.5 rounded-full bg-blue-500 inline-block animate-pulse"></span>
+                        </h3>
                     </div>
-                    <div class="w-10 h-10 rounded-xl bg-red-50 text-red-600 flex items-center justify-center text-lg">
+                    <div class="w-12 h-12 rounded-2xl bg-blue-50 text-blue-600 border border-blue-200/60 flex items-center justify-center text-xl shadow-xs group-hover:scale-105 transition-transform">
                         <i class="fa-solid fa-user-group"></i>
                     </div>
                 </div>
+
+                <div class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[11px] font-bold bg-blue-50 text-blue-800 border border-blue-200/60 w-fit mb-4">
+                    <i class="fa-solid fa-layer-group text-blue-600"></i>
+                    <span>{{ $categoriesByLevel->get('Madya', collect())->count() }} Cabang Lomba Tersedia</span>
+                </div>
+
                 <ul class="space-y-3 flex-grow text-sm text-slate-600 mb-6">
                     @foreach($categoriesByLevel->get('Madya', []) as $cat)
                         <li class="flex items-start gap-2.5">
-                            <i class="fa-solid fa-circle-check text-red-500 mt-1"></i>
-                            <span><strong>{{ $cat->name }}</strong> @if($cat->gender_category !== 'Umum') ({{ $cat->gender_category }}) @endif</span>
+                            <i class="fa-solid fa-circle-check text-blue-500 mt-1 shrink-0"></i>
+                            <span class="text-slate-700"><strong>{{ $cat->name }}</strong> @if($cat->gender_category !== 'Umum') <span class="text-xs font-semibold text-blue-700 bg-blue-50 px-1.5 py-0.5 rounded border border-blue-200/50">({{ $cat->gender_category }})</span> @endif</span>
                         </li>
                     @endforeach
                 </ul>
-                <a href="{{ route('lomba.register') }}?level=Madya" class="w-full text-center py-2.5 rounded-xl font-bold bg-red-600 hover:bg-red-700 text-white shadow-md shadow-red-900/20 transition text-sm">
-                    Daftar Tingkat Madya &rarr;
+
+                <a href="{{ route('lomba.register') }}?level=Madya" class="w-full text-center py-3 rounded-xl font-extrabold bg-blue-600 hover:bg-blue-700 text-white shadow-md shadow-blue-950/15 transition flex items-center justify-center gap-2 text-sm group-hover:shadow-lg">
+                    <span>Daftar Tingkat Madya</span>
+                    <i class="fa-solid fa-arrow-right text-xs group-hover:translate-x-1 transition-transform"></i>
                 </a>
             </div>
 
-            <!-- WIRA (SMA) -->
-            <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-200 flex flex-col">
-                <div class="flex items-center justify-between pb-4 border-b border-slate-100 mb-4">
+            <!-- WIRA (SMA / SMK / MA) - Dominasi KUNING -->
+            <div class="bg-white rounded-3xl p-6 sm:p-7 shadow-sm hover:shadow-xl border-2 border-amber-500/40 hover:border-amber-500 transition-all flex flex-col relative overflow-hidden group">
+                <div class="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-amber-400 via-amber-500 to-yellow-500"></div>
+                <div class="flex items-center justify-between pb-4 border-b border-amber-100/70 mb-5">
                     <div>
-                        <span class="bg-amber-100 text-amber-800 text-xs font-extrabold px-3 py-1 rounded-full uppercase">Tingkat SMA / SMK / MA</span>
-                        <h3 class="text-xl font-bold text-slate-900 mt-2">PMR Wira</h3>
+                        <span class="bg-amber-100 text-amber-900 border border-amber-200 text-xs font-black px-3 py-1 rounded-full uppercase tracking-wider">Tingkat SMA / SMK / MA</span>
+                        <h3 class="text-2xl font-black text-slate-900 mt-2 flex items-center gap-2">
+                            PMR Wira
+                            <span class="w-2.5 h-2.5 rounded-full bg-amber-400 inline-block animate-pulse"></span>
+                        </h3>
                     </div>
-                    <div class="w-10 h-10 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center text-lg">
+                    <div class="w-12 h-12 rounded-2xl bg-amber-50 text-amber-600 border border-amber-200/60 flex items-center justify-center text-xl shadow-xs group-hover:scale-105 transition-transform">
                         <i class="fa-solid fa-graduation-cap"></i>
                     </div>
                 </div>
+
+                <div class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[11px] font-bold bg-amber-50 text-amber-900 border border-amber-200/60 w-fit mb-4">
+                    <i class="fa-solid fa-layer-group text-amber-600"></i>
+                    <span>{{ $categoriesByLevel->get('Wira', collect())->count() }} Cabang Lomba Tersedia</span>
+                </div>
+
                 <ul class="space-y-3 flex-grow text-sm text-slate-600 mb-6">
                     @foreach($categoriesByLevel->get('Wira', []) as $cat)
                         <li class="flex items-start gap-2.5">
-                            <i class="fa-solid fa-circle-check text-amber-500 mt-1"></i>
-                            <span><strong>{{ $cat->name }}</strong> @if($cat->gender_category !== 'Umum') ({{ $cat->gender_category }}) @endif</span>
+                            <i class="fa-solid fa-circle-check text-amber-500 mt-1 shrink-0"></i>
+                            <span class="text-slate-700"><strong>{{ $cat->name }}</strong> @if($cat->gender_category !== 'Umum') <span class="text-xs font-semibold text-amber-800 bg-amber-50 px-1.5 py-0.5 rounded border border-amber-200/50">({{ $cat->gender_category }})</span> @endif</span>
                         </li>
                     @endforeach
                 </ul>
-                <a href="{{ route('lomba.register') }}?level=Wira" class="w-full text-center py-2.5 rounded-xl font-bold bg-amber-50 hover:bg-amber-600 hover:text-white text-amber-700 transition text-sm">
-                    Daftar Tingkat Wira &rarr;
+
+                <a href="{{ route('lomba.register') }}?level=Wira" class="w-full text-center py-3 rounded-xl font-extrabold bg-amber-400 hover:bg-amber-500 text-slate-950 shadow-md shadow-amber-950/15 transition flex items-center justify-center gap-2 text-sm group-hover:shadow-lg">
+                    <span>Daftar Tingkat Wira</span>
+                    <i class="fa-solid fa-arrow-right text-xs group-hover:translate-x-1 transition-transform"></i>
                 </a>
             </div>
         </div>

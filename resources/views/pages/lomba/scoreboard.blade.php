@@ -15,15 +15,15 @@
             </div>
 
             <!-- Level Selector Tabs -->
-            <div class="bg-slate-800 p-1.5 rounded-2xl border border-slate-700 flex w-full sm:w-auto gap-1">
-                <a href="{{ route('lomba.scoreboard', ['level' => 'Mula']) }}" class="flex-1 sm:flex-initial text-center px-3 sm:px-5 py-2.5 rounded-xl font-bold text-xs transition {{ $level == 'Mula' ? 'bg-red-600 text-white shadow-lg shadow-red-900/40' : 'text-slate-400 hover:text-white' }}">
-                    Mula (SD)
+            <div class="bg-slate-800 p-1.5 rounded-2xl border border-slate-700 flex w-full sm:w-auto gap-1.5">
+                <a href="{{ route('lomba.scoreboard', ['level' => 'Mula']) }}" class="flex-1 sm:flex-initial text-center px-3.5 sm:px-5 py-2.5 rounded-xl font-extrabold text-xs transition {{ $level == 'Mula' ? 'bg-emerald-600 text-white shadow-lg shadow-emerald-950/40' : 'text-slate-400 hover:text-white hover:bg-slate-700/50' }}">
+                    🟢 Mula (SD)
                 </a>
-                <a href="{{ route('lomba.scoreboard', ['level' => 'Madya']) }}" class="flex-1 sm:flex-initial text-center px-3 sm:px-5 py-2.5 rounded-xl font-bold text-xs transition {{ $level == 'Madya' ? 'bg-red-600 text-white shadow-lg shadow-red-900/40' : 'text-slate-400 hover:text-white' }}">
-                    Madya (SMP)
+                <a href="{{ route('lomba.scoreboard', ['level' => 'Madya']) }}" class="flex-1 sm:flex-initial text-center px-3.5 sm:px-5 py-2.5 rounded-xl font-extrabold text-xs transition {{ $level == 'Madya' ? 'bg-blue-600 text-white shadow-lg shadow-blue-950/40' : 'text-slate-400 hover:text-white hover:bg-slate-700/50' }}">
+                    🔵 Madya (SMP)
                 </a>
-                <a href="{{ route('lomba.scoreboard', ['level' => 'Wira']) }}" class="flex-1 sm:flex-initial text-center px-3 sm:px-5 py-2.5 rounded-xl font-bold text-xs transition {{ $level == 'Wira' ? 'bg-red-600 text-white shadow-lg shadow-red-900/40' : 'text-slate-400 hover:text-white' }}">
-                    Wira (SMA)
+                <a href="{{ route('lomba.scoreboard', ['level' => 'Wira']) }}" class="flex-1 sm:flex-initial text-center px-3.5 sm:px-5 py-2.5 rounded-xl font-extrabold text-xs transition {{ $level == 'Wira' ? 'bg-amber-400 text-slate-950 font-black shadow-lg shadow-amber-950/40' : 'text-slate-400 hover:text-white hover:bg-slate-700/50' }}">
+                    🟡 Wira (SMA)
                 </a>
             </div>
         </div>
@@ -37,8 +37,20 @@
         <div class="bg-white rounded-3xl p-6 sm:p-10 shadow-sm border border-slate-200">
             <div class="flex flex-col sm:flex-row justify-between sm:items-center gap-4 mb-8 pb-6 border-b border-slate-100">
                 <div>
-                    <span class="bg-amber-100 text-amber-900 text-xs font-black px-3 py-1 rounded-full uppercase tracking-wider">Peringkat Tertinggi</span>
-                    <h2 class="text-2xl font-black text-slate-900 mt-2">Klasemen Juara Umum — PMR {{ $level }}</h2>
+                    @php
+                        $levelBadge = match($level) {
+                            'Mula' => 'bg-emerald-100 text-emerald-800 border-emerald-300',
+                            'Madya' => 'bg-blue-100 text-blue-800 border-blue-300',
+                            default => 'bg-amber-100 text-amber-900 border-amber-300',
+                        };
+                    @endphp
+                    <span class="border {{ $levelBadge }} text-xs font-black px-3 py-1 rounded-full uppercase tracking-wider">Peringkat Tertinggi</span>
+                    <h2 class="text-2xl font-black text-slate-900 mt-2 flex items-center gap-2 flex-wrap">
+                        <span>Klasemen Juara Umum &mdash;</span>
+                        <span class="inline-flex items-center gap-1.5 px-3 py-0.5 rounded-xl text-base font-black {{ $levelBadge }} border">
+                            PMR {{ $level }}
+                        </span>
+                    </h2>
                     <p class="text-xs text-slate-500 mt-0.5">Akumulasi seluruh perolehan poin dari setiap cabang mata lomba yang dimenangkan.</p>
                 </div>
             </div>
