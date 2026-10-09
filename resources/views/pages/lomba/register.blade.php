@@ -154,16 +154,16 @@
                         <span class="w-6 h-6 rounded-full bg-red-600 text-white text-xs flex items-center justify-center font-bold">3</span>
                         Pilih Cabang Lomba & Jumlah Regu
                     </h3>
-                    <p class="text-xs text-slate-500 mb-3">Centang cabang lomba yang ingin diikuti. Masing-masing sekolah dibatasi <strong>maksimal 1 regu Putra dan 1 regu Putri</strong>, kecuali khusus cabang <strong>Ketangkasan Cuci Tangan</strong> dan <strong>Olimpiade</strong> yang diperbolehkan mendaftarkan lebih dari 1 regu.</p>
+                    <p class="text-xs text-slate-500 mb-3">Centang cabang lomba yang ingin diikuti. Masing-masing sekolah dibatasi <strong>maksimal 1 regu Putra dan 1 regu Putri</strong>, kecuali khusus cabang <strong>Ketangkasan Cuci Tangan</strong> dan <strong>Olimpiade Kepalangmerahan</strong> yang dibatasi <strong>maksimal 3 regu</strong> per sekolah.</p>
 
                     <div class="bg-amber-50 border border-amber-200 text-amber-950 p-4 rounded-2xl text-xs flex items-start gap-3 mb-4 shadow-2xs">
                         <i class="fa-solid fa-shield-halved text-amber-600 text-base mt-0.5 shrink-0"></i>
                         <div class="leading-relaxed space-y-1">
                             <strong class="text-amber-900 text-xs">Ketentuan Kuota Regu per Sekolah:</strong>
                             <ul class="list-disc pl-4 space-y-0.5 text-amber-900/90">
-                                <li>Setiap sekolah dibatasi <strong>maksimal 1 regu Putra dan 1 regu Putri</strong> untuk masing-masing cabang lomba.</li>
-                                <li>Pengecualian khusus: Pendaftaran <strong>lebih dari 1 regu (Multi-Regu)</strong> hanya diperbolehkan untuk cabang <strong>Ketangkasan Cuci Tangan</strong> dan <strong>Olimpiade Kepalangmerahan</strong>.</li>
-                                <li>Pada cabang lomba dengan kuota 1 regu, kuota regu terkunci otomatis agar mencegah pendaftaran ganda dari sekolah yang sama.</li>
+                                <li>Setiap sekolah dibatasi <strong>maksimal 1 regu Putra dan 1 regu Putri</strong> untuk masing-masing cabang lomba umum.</li>
+                                <li>Khusus cabang <strong>Ketangkasan Cuci Tangan</strong> dan <strong>Olimpiade Kepalangmerahan</strong>, masing-masing sekolah dibatasi <strong>maksimum 3 regu</strong>.</li>
+                                <li>Pada cabang lomba dengan kuota 1 regu, kuota terkunci otomatis guna mencegah pendaftaran ganda dari sekolah yang sama.</li>
                             </ul>
                         </div>
                     </div>
@@ -175,9 +175,10 @@
                                     $isPa = $cat->gender_category === 'Putra';
                                     $isPi = $cat->gender_category === 'Putri';
                                     $isMulti = $cat->isMultiTeamAllowed();
+                                    $maxAllowed = $cat->maxTeamsPerSchool();
                                     $isChecked = in_array($cat->id, old('categories', []));
                                 @endphp
-                                <div class="border {{ $isPa ? 'border-blue-200 bg-blue-50/20' : ($isPi ? 'border-rose-200 bg-rose-50/20' : 'border-slate-200 bg-slate-50/40') }} rounded-2xl p-4 hover:border-red-400 hover:shadow-xs transition space-y-3" id="cat-card-{{ $cat->id }}" data-multi="{{ $isMulti ? 'true' : 'false' }}">
+                                <div class="border {{ $isPa ? 'border-blue-200 bg-blue-50/20' : ($isPi ? 'border-rose-200 bg-rose-50/20' : 'border-slate-200 bg-slate-50/40') }} rounded-2xl p-4 hover:border-red-400 hover:shadow-xs transition space-y-3" id="cat-card-{{ $cat->id }}" data-multi="{{ $isMulti ? 'true' : 'false' }}" data-max-teams="{{ $maxAllowed }}">
                                     <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                                         <label class="flex items-start sm:items-center gap-3 cursor-pointer flex-grow select-none">
                                             <input type="checkbox" name="categories[]" value="{{ $cat->id }}" data-fee="{{ intval($cat->registration_fee ?: ($event->registration_fee ?: 150000)) }}" class="cat-checkbox mt-1 sm:mt-0 w-5 h-5 text-red-600 rounded border-slate-300 focus:ring-red-500" {{ $isChecked ? 'checked' : '' }} onchange="onCategoryToggle({{ $cat->id }})">
@@ -199,8 +200,8 @@
                                                     @endif
 
                                                     @if($isMulti)
-                                                        <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-black uppercase tracking-wider bg-emerald-100 text-emerald-800 border border-emerald-300">
-                                                            <i class="fa-solid fa-layer-group text-emerald-600"></i> Multi-Regu Diperbolehkan
+                                                        <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-black uppercase tracking-wider bg-emerald-100 text-emerald-800 border border-emerald-300" title="Khusus cabang ini dibatasi maksimum 3 regu per sekolah">
+                                                            <i class="fa-solid fa-layer-group text-emerald-600"></i> Kuota: Maks. 3 Regu
                                                         </span>
                                                     @else
                                                         <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-bold uppercase tracking-wider bg-slate-100 text-slate-700 border border-slate-200" title="Dibatasi 1 regu per sekolah">
@@ -380,6 +381,8 @@
             if (btnAdd) btnAdd.classList.remove('hidden');
             if (container.querySelectorAll('.team-input-row').length === 0) {
                 addTeamRow(catId);
+            } else {
+                updateRemoveButtons(catId);
             }
         } else {
             container.classList.add('hidden');
@@ -391,11 +394,13 @@
     function addTeamRow(catId) {
         const card = document.getElementById('cat-card-' + catId);
         const isMulti = card ? card.dataset.multi === 'true' : true;
+        const maxTeams = card ? parseInt(card.dataset.maxTeams || (isMulti ? '3' : '1')) : 3;
         const container = document.getElementById('teams-container-' + catId);
         const count = container ? container.querySelectorAll('.team-input-row').length : 0;
 
-        if (!isMulti && count >= 1) {
-            return; // Dibatasi maksimal 1 regu untuk cabang ini
+        if (count >= maxTeams) {
+            alert(`Cabang lomba ini dibatasi maksimal ${maxTeams} regu per sekolah.`);
+            return;
         }
 
         const cb = document.querySelector(`input[name="categories[]"][value="${catId}"]`);
@@ -432,16 +437,40 @@
     }
 
     function updateRemoveButtons(catId) {
+        const card = document.getElementById('cat-card-' + catId);
+        const isMulti = card ? card.dataset.multi === 'true' : true;
+        const maxTeams = card ? parseInt(card.dataset.maxTeams || (isMulti ? '3' : '1')) : 3;
         const container = document.getElementById('teams-container-' + catId);
+        if (!container) return;
         const rows = container.querySelectorAll('.team-input-row');
         rows.forEach((r, idx) => {
             const removeBtn = r.querySelector('.btn-remove-team');
-            if (rows.length > 1) {
-                removeBtn.classList.remove('hidden');
-            } else {
-                removeBtn.classList.add('hidden');
+            if (removeBtn) {
+                if (rows.length > 1) {
+                    removeBtn.classList.remove('hidden');
+                } else {
+                    removeBtn.classList.add('hidden');
+                }
+            }
+            if (isMulti) {
+                const label = r.querySelector('.row-index-label');
+                if (label) label.textContent = `Regu ${String.fromCharCode(65 + idx)}:`;
             }
         });
+
+        // Toggle btn-add-team state
+        const btnAdd = document.getElementById('btn-add-team-' + catId);
+        if (btnAdd) {
+            if (rows.length >= maxTeams) {
+                btnAdd.disabled = true;
+                btnAdd.classList.add('opacity-40', 'cursor-not-allowed');
+                btnAdd.title = `Maksimal ${maxTeams} regu telah tercapai`;
+            } else {
+                btnAdd.disabled = false;
+                btnAdd.classList.remove('opacity-40', 'cursor-not-allowed');
+                btnAdd.title = '+ Tambah Regu';
+            }
+        }
     }
 
     function calculateFee() {

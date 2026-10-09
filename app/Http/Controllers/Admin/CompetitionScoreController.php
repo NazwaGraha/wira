@@ -730,13 +730,17 @@ class CompetitionScoreController extends Controller
             $label = trim($validated['team_label'] ?? '');
             $teamName = $registration->school_name . ($label ? " {$label}" : '');
 
-            if (!$category->isMultiTeamAllowed()) {
-                $existingTeam = CompetitionParticipantTeam::where('competition_category_id', $category->id)
-                    ->where('competition_registration_id', $registration->id)
-                    ->first();
-                if ($existingTeam) {
-                    $genderLabel = $category->gender_category !== 'Umum' ? " {$category->gender_category}" : '';
-                    return redirect()->back()->with('error', "Sekolah '{$registration->school_name}' sudah memiliki 1 regu ({$existingTeam->team_name}) di cabang {$category->name}{$genderLabel}. Masing-masing sekolah dibatasi maksimal 1 regu Putra dan 1 regu Putri (kecuali Cuci Tangan dan Olimpiade).");
+            $existingCount = CompetitionParticipantTeam::where('competition_category_id', $category->id)
+                ->where('competition_registration_id', $registration->id)
+                ->count();
+            $maxAllowed = $category->maxTeamsPerSchool();
+
+            if ($existingCount >= $maxAllowed) {
+                $genderLabel = $category->gender_category !== 'Umum' ? " {$category->gender_category}" : '';
+                if ($category->isMultiTeamAllowed()) {
+                    return redirect()->back()->with('error', "Sekolah '{$registration->school_name}' sudah mencapai batas maksimal {$maxAllowed} regu di cabang {$category->name}{$genderLabel}.");
+                } else {
+                    return redirect()->back()->with('error', "Sekolah '{$registration->school_name}' sudah memiliki 1 regu di cabang {$category->name}{$genderLabel}. Masing-masing sekolah dibatasi maksimal 1 regu Putra dan 1 regu Putri (kecuali Cuci Tangan dan Olimpiade maks. 3 regu).");
                 }
             }
 
