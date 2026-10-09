@@ -242,9 +242,9 @@
                                 </p>
                                 @if($menu->action_type === 'whatsapp' || str_contains(strtolower($menu->title), 'contact'))
                                     <div class="mt-3 flex items-center gap-1.5 flex-wrap">
-                                        <span class="px-2.5 py-0.5 rounded-md text-[10px] font-black bg-blue-500/20 text-blue-300 border border-blue-500/30">🟢 PMR Mula</span>
-                                        <span class="px-2.5 py-0.5 rounded-md text-[10px] font-black bg-rose-500/20 text-rose-300 border border-rose-500/30">🔵 PMR Madya</span>
-                                        <span class="px-2.5 py-0.5 rounded-md text-[10px] font-black bg-amber-500/20 text-amber-300 border border-amber-500/30">🟠 PMR Wira</span>
+                                        <span class="px-2.5 py-0.5 rounded-md text-[10px] font-black bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">🟢 PMR Mula</span>
+                                        <span class="px-2.5 py-0.5 rounded-md text-[10px] font-black bg-blue-500/20 text-blue-300 border border-blue-500/30">🔵 PMR Madya</span>
+                                        <span class="px-2.5 py-0.5 rounded-md text-[10px] font-black bg-amber-500/20 text-amber-300 border border-amber-500/30">🟡 PMR Wira</span>
                                     </div>
                                 @endif
                             </div>
@@ -352,16 +352,16 @@
                         
                         $cardTheme = match($lvl) {
                             'Mula' => [
-                                'badge_bg' => 'bg-blue-500/20 text-blue-300 border-blue-500/40',
+                                'badge_bg' => 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40',
                                 'title' => 'PMR Mula (Tingkat SD / MI)',
-                                'border' => 'border-blue-500/40 hover:border-blue-400',
-                                'dot' => 'bg-blue-400',
+                                'border' => 'border-emerald-500/40 hover:border-emerald-400',
+                                'dot' => 'bg-emerald-400',
                             ],
                             'Madya' => [
-                                'badge_bg' => 'bg-rose-500/20 text-rose-300 border-rose-500/40',
+                                'badge_bg' => 'bg-blue-500/20 text-blue-300 border-blue-500/40',
                                 'title' => 'PMR Madya (Tingkat SMP / MTs)',
-                                'border' => 'border-rose-500/40 hover:border-rose-400',
-                                'dot' => 'bg-rose-400',
+                                'border' => 'border-blue-500/40 hover:border-blue-400',
+                                'dot' => 'bg-blue-400',
                             ],
                             default => [
                                 'badge_bg' => 'bg-amber-500/20 text-amber-300 border-amber-500/40',

@@ -208,48 +208,48 @@
 
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-4 pt-1">
                     <!-- 1. PMR MULA -->
-                    <div class="p-4 rounded-2xl bg-white border-2 border-blue-200 shadow-sm space-y-3">
+                    <div class="p-4 rounded-2xl bg-white border-2 border-emerald-200 shadow-sm space-y-3">
                         <div class="flex items-center justify-between">
-                            <span class="px-2.5 py-1 rounded-lg text-[10px] font-black uppercase tracking-wider bg-blue-50 text-blue-700 border border-blue-200">
+                            <span class="px-2.5 py-1 rounded-lg text-[10px] font-black uppercase tracking-wider bg-emerald-50 text-emerald-700 border border-emerald-200">
                                 🟢 PMR Mula (SD/MI)
                             </span>
                             <input type="hidden" name="contacts_data[0][level]" value="Mula">
-                            <input type="hidden" name="contacts_data[0][color]" value="blue">
+                            <input type="hidden" name="contacts_data[0][color]" value="emerald">
                         </div>
                         <div class="space-y-1">
                             <label class="block text-[11px] font-bold text-slate-700">Nama Narahubung</label>
-                            <input type="text" name="contacts_data[0][name]" value="{{ old('contacts_data.0.name', 'Kak Panitia Mula') }}" placeholder="Contoh: Kak Siti / Kak Ahmad" class="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs font-semibold focus:border-blue-500 focus:ring-1 focus:ring-blue-200">
+                            <input type="text" name="contacts_data[0][name]" value="{{ old('contacts_data.0.name', 'Kak Panitia Mula') }}" placeholder="Contoh: Kak Siti / Kak Ahmad" class="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs font-semibold focus:border-emerald-500 focus:ring-1 focus:ring-emerald-200">
                         </div>
                         <div class="space-y-1">
                             <label class="block text-[11px] font-bold text-slate-700">No. WhatsApp / HP</label>
-                            <input type="text" name="contacts_data[0][phone]" value="{{ old('contacts_data.0.phone', '081383885600') }}" placeholder="081383885600" class="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs font-semibold focus:border-blue-500 focus:ring-1 focus:ring-blue-200">
+                            <input type="text" name="contacts_data[0][phone]" value="{{ old('contacts_data.0.phone', '081383885600') }}" placeholder="081383885600" class="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs font-semibold focus:border-emerald-500 focus:ring-1 focus:ring-emerald-200">
                         </div>
                         <div class="space-y-1">
                             <label class="block text-[11px] font-bold text-slate-700">Keterangan / Jabatan</label>
-                            <input type="text" name="contacts_data[0][role]" value="{{ old('contacts_data.0.role', 'Koordinator PMR Mula (SD/MI)') }}" placeholder="Koordinator PMR Mula" class="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs focus:border-blue-500">
+                            <input type="text" name="contacts_data[0][role]" value="{{ old('contacts_data.0.role', 'Koordinator PMR Mula (SD/MI)') }}" placeholder="Koordinator PMR Mula" class="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs focus:border-emerald-500">
                         </div>
                     </div>
 
                     <!-- 2. PMR MADYA -->
-                    <div class="p-4 rounded-2xl bg-white border-2 border-rose-200 shadow-sm space-y-3">
+                    <div class="p-4 rounded-2xl bg-white border-2 border-blue-200 shadow-sm space-y-3">
                         <div class="flex items-center justify-between">
-                            <span class="px-2.5 py-1 rounded-lg text-[10px] font-black uppercase tracking-wider bg-rose-50 text-rose-700 border border-rose-200">
+                            <span class="px-2.5 py-1 rounded-lg text-[10px] font-black uppercase tracking-wider bg-blue-50 text-blue-700 border border-blue-200">
                                 🔵 PMR Madya (SMP/MTs)
                             </span>
                             <input type="hidden" name="contacts_data[1][level]" value="Madya">
-                            <input type="hidden" name="contacts_data[1][color]" value="red">
+                            <input type="hidden" name="contacts_data[1][color]" value="blue">
                         </div>
                         <div class="space-y-1">
                             <label class="block text-[11px] font-bold text-slate-700">Nama Narahubung</label>
-                            <input type="text" name="contacts_data[1][name]" value="{{ old('contacts_data.1.name', 'Kak Panitia Madya') }}" placeholder="Contoh: Kak Dimas / Kak Rina" class="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs font-semibold focus:border-rose-500 focus:ring-1 focus:ring-rose-200">
+                            <input type="text" name="contacts_data[1][name]" value="{{ old('contacts_data.1.name', 'Kak Panitia Madya') }}" placeholder="Contoh: Kak Dimas / Kak Rina" class="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs font-semibold focus:border-blue-500 focus:ring-1 focus:ring-blue-200">
                         </div>
                         <div class="space-y-1">
                             <label class="block text-[11px] font-bold text-slate-700">No. WhatsApp / HP</label>
-                            <input type="text" name="contacts_data[1][phone]" value="{{ old('contacts_data.1.phone', '081383885600') }}" placeholder="081383885600" class="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs font-semibold focus:border-rose-500 focus:ring-1 focus:ring-rose-200">
+                            <input type="text" name="contacts_data[1][phone]" value="{{ old('contacts_data.1.phone', '081383885600') }}" placeholder="081383885600" class="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs font-semibold focus:border-blue-500 focus:ring-1 focus:ring-blue-200">
                         </div>
                         <div class="space-y-1">
                             <label class="block text-[11px] font-bold text-slate-700">Keterangan / Jabatan</label>
-                            <input type="text" name="contacts_data[1][role]" value="{{ old('contacts_data.1.role', 'Koordinator PMR Madya (SMP/MTs)') }}" placeholder="Koordinator PMR Madya" class="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs focus:border-rose-500">
+                            <input type="text" name="contacts_data[1][role]" value="{{ old('contacts_data.1.role', 'Koordinator PMR Madya (SMP/MTs)') }}" placeholder="Koordinator PMR Madya" class="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs focus:border-blue-500">
                         </div>
                     </div>
 
@@ -257,7 +257,7 @@
                     <div class="p-4 rounded-2xl bg-white border-2 border-amber-200 shadow-sm space-y-3">
                         <div class="flex items-center justify-between">
                             <span class="px-2.5 py-1 rounded-lg text-[10px] font-black uppercase tracking-wider bg-amber-50 text-amber-700 border border-amber-200">
-                                🟠 PMR Wira (SMA/SMK/MA)
+                                🟡 PMR Wira (SMA/SMK/MA)
                             </span>
                             <input type="hidden" name="contacts_data[2][level]" value="Wira">
                             <input type="hidden" name="contacts_data[2][color]" value="amber">

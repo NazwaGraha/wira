@@ -49,22 +49,22 @@ class CompetitionInfoMenu extends Model
         $levelMeta = [
             'Mula' => [
                 'label' => 'PMR Mula (SD / MI)',
-                'color' => 'blue',
-                'badge_bg' => 'bg-blue-100 text-blue-800 border-blue-200',
-                'dot_bg' => 'bg-blue-500',
+                'color' => 'emerald',
+                'badge_bg' => 'bg-emerald-100 text-emerald-800 border-emerald-300',
+                'dot_bg' => 'bg-emerald-500',
                 'role_default' => 'Koordinator PMR Mula (SD/MI)',
             ],
             'Madya' => [
                 'label' => 'PMR Madya (SMP / MTs)',
-                'color' => 'red',
-                'badge_bg' => 'bg-rose-100 text-rose-800 border-rose-200',
-                'dot_bg' => 'bg-rose-500',
+                'color' => 'blue',
+                'badge_bg' => 'bg-blue-100 text-blue-800 border-blue-300',
+                'dot_bg' => 'bg-blue-500',
                 'role_default' => 'Koordinator PMR Madya (SMP/MTs)',
             ],
             'Wira' => [
                 'label' => 'PMR Wira (SMA / SMK / MA)',
                 'color' => 'amber',
-                'badge_bg' => 'bg-amber-100 text-amber-800 border-amber-200',
+                'badge_bg' => 'bg-amber-100 text-amber-800 border-amber-300',
                 'dot_bg' => 'bg-amber-500',
                 'role_default' => 'Koordinator PMR Wira (SMA/SMK/MA)',
             ],
@@ -113,7 +113,7 @@ class CompetitionInfoMenu extends Model
                 'name' => 'Kak Panitia Mula',
                 'phone' => '081383885600',
                 'role' => 'Koordinator PMR Mula (SD/MI)',
-                'color' => 'blue',
+                'color' => 'emerald',
             ],
             [
                 'level' => 'Madya',
@@ -121,7 +121,7 @@ class CompetitionInfoMenu extends Model
                 'name' => 'Kak Panitia Madya',
                 'phone' => '081383885600',
                 'role' => 'Koordinator PMR Madya (SMP/MTs)',
-                'color' => 'red',
+                'color' => 'blue',
             ],
             [
                 'level' => 'Wira',
