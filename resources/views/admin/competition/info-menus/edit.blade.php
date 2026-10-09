@@ -216,11 +216,99 @@
                 </div>
             </div>
 
-            <!-- Field for URL / WhatsApp -->
+            <!-- Field for URL -->
             <div id="field_url_link" class="space-y-1.5 p-4 rounded-2xl bg-slate-50 border border-slate-200">
                 <label class="block text-xs font-bold text-slate-700">Alamat Tautan (URL / Link)</label>
                 <input type="text" name="url_link" value="{{ old('url_link', $infoMenu->url_link) }}" placeholder="https://maps.google.com/... atau https://wa.me/62813..." class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-pmr-primary focus:ring-2 focus:ring-red-100 text-sm font-medium transition">
                 <p class="text-[11px] text-slate-400 mt-1">Pastikan diawali dengan <code>https://</code> atau <code>http://</code>.</p>
+            </div>
+
+            <!-- Field for 3 Contact Persons (PMR Mula, PMR Madya, PMR Wira) -->
+            @php
+                $contacts = $infoMenu->contacts_list;
+                $mula = collect($contacts)->firstWhere('level', 'Mula') ?? ['name' => 'Kak Panitia Mula', 'phone' => '081383885600', 'role' => 'Koordinator PMR Mula (SD/MI)'];
+                $madya = collect($contacts)->firstWhere('level', 'Madya') ?? ['name' => 'Kak Panitia Madya', 'phone' => '081383885600', 'role' => 'Koordinator PMR Madya (SMP/MTs)'];
+                $wira = collect($contacts)->firstWhere('level', 'Wira') ?? ['name' => 'Kak Panitia Wira', 'phone' => '081383885600', 'role' => 'Koordinator PMR Wira (SMA/SMK/MA)'];
+            @endphp
+            <div id="field_contacts_data" class="space-y-4 p-5 rounded-3xl bg-emerald-50/70 border-2 border-emerald-300">
+                <div class="flex items-center gap-2.5 text-emerald-950 font-black text-sm">
+                    <i class="fa-brands fa-whatsapp text-emerald-600 text-xl"></i>
+                    <span>Daftar 3 Narahubung Contact Person (PMR Mula, Madya, dan Wira)</span>
+                </div>
+                <p class="text-xs text-emerald-800 leading-relaxed">
+                    Pengunjung lomba dapat memilih salah satu narahubung sesuai tingkatan PMR sekolah mereka untuk berkonsultasi langsung via WhatsApp.
+                </p>
+
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 pt-1">
+                    <!-- 1. PMR MULA -->
+                    <div class="p-4 rounded-2xl bg-white border-2 border-blue-200 shadow-sm space-y-3">
+                        <div class="flex items-center justify-between">
+                            <span class="px-2.5 py-1 rounded-lg text-[10px] font-black uppercase tracking-wider bg-blue-50 text-blue-700 border border-blue-200">
+                                🟢 PMR Mula (SD/MI)
+                            </span>
+                            <input type="hidden" name="contacts_data[0][level]" value="Mula">
+                            <input type="hidden" name="contacts_data[0][color]" value="blue">
+                        </div>
+                        <div class="space-y-1">
+                            <label class="block text-[11px] font-bold text-slate-700">Nama Narahubung</label>
+                            <input type="text" name="contacts_data[0][name]" value="{{ old('contacts_data.0.name', $mula['name'] ?? '') }}" placeholder="Contoh: Kak Siti / Kak Ahmad" class="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs font-semibold focus:border-blue-500 focus:ring-1 focus:ring-blue-200">
+                        </div>
+                        <div class="space-y-1">
+                            <label class="block text-[11px] font-bold text-slate-700">No. WhatsApp / HP</label>
+                            <input type="text" name="contacts_data[0][phone]" value="{{ old('contacts_data.0.phone', $mula['phone'] ?? '') }}" placeholder="081383885600" class="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs font-semibold focus:border-blue-500 focus:ring-1 focus:ring-blue-200">
+                        </div>
+                        <div class="space-y-1">
+                            <label class="block text-[11px] font-bold text-slate-700">Keterangan / Jabatan</label>
+                            <input type="text" name="contacts_data[0][role]" value="{{ old('contacts_data.0.role', $mula['role'] ?? 'Koordinator PMR Mula (SD/MI)') }}" placeholder="Koordinator PMR Mula" class="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs focus:border-blue-500">
+                        </div>
+                    </div>
+
+                    <!-- 2. PMR MADYA -->
+                    <div class="p-4 rounded-2xl bg-white border-2 border-rose-200 shadow-sm space-y-3">
+                        <div class="flex items-center justify-between">
+                            <span class="px-2.5 py-1 rounded-lg text-[10px] font-black uppercase tracking-wider bg-rose-50 text-rose-700 border border-rose-200">
+                                🔵 PMR Madya (SMP/MTs)
+                            </span>
+                            <input type="hidden" name="contacts_data[1][level]" value="Madya">
+                            <input type="hidden" name="contacts_data[1][color]" value="red">
+                        </div>
+                        <div class="space-y-1">
+                            <label class="block text-[11px] font-bold text-slate-700">Nama Narahubung</label>
+                            <input type="text" name="contacts_data[1][name]" value="{{ old('contacts_data.1.name', $madya['name'] ?? '') }}" placeholder="Contoh: Kak Budi / Kak Rina" class="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs font-semibold focus:border-rose-500 focus:ring-1 focus:ring-rose-200">
+                        </div>
+                        <div class="space-y-1">
+                            <label class="block text-[11px] font-bold text-slate-700">No. WhatsApp / HP</label>
+                            <input type="text" name="contacts_data[1][phone]" value="{{ old('contacts_data.1.phone', $madya['phone'] ?? '') }}" placeholder="081383885600" class="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs font-semibold focus:border-rose-500 focus:ring-1 focus:ring-rose-200">
+                        </div>
+                        <div class="space-y-1">
+                            <label class="block text-[11px] font-bold text-slate-700">Keterangan / Jabatan</label>
+                            <input type="text" name="contacts_data[1][role]" value="{{ old('contacts_data.1.role', $madya['role'] ?? 'Koordinator PMR Madya (SMP/MTs)') }}" placeholder="Koordinator PMR Madya" class="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs focus:border-rose-500">
+                        </div>
+                    </div>
+
+                    <!-- 3. PMR WIRA -->
+                    <div class="p-4 rounded-2xl bg-white border-2 border-amber-200 shadow-sm space-y-3">
+                        <div class="flex items-center justify-between">
+                            <span class="px-2.5 py-1 rounded-lg text-[10px] font-black uppercase tracking-wider bg-amber-50 text-amber-700 border border-amber-200">
+                                🟠 PMR Wira (SMA/SMK/MA)
+                            </span>
+                            <input type="hidden" name="contacts_data[2][level]" value="Wira">
+                            <input type="hidden" name="contacts_data[2][color]" value="amber">
+                        </div>
+                        <div class="space-y-1">
+                            <label class="block text-[11px] font-bold text-slate-700">Nama Narahubung</label>
+                            <input type="text" name="contacts_data[2][name]" value="{{ old('contacts_data.2.name', $wira['name'] ?? '') }}" placeholder="Contoh: Kak Dika / Kak Maya" class="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs font-semibold focus:border-amber-500 focus:ring-1 focus:ring-amber-200">
+                        </div>
+                        <div class="space-y-1">
+                            <label class="block text-[11px] font-bold text-slate-700">No. WhatsApp / HP</label>
+                            <input type="text" name="contacts_data[2][phone]" value="{{ old('contacts_data.2.phone', $wira['phone'] ?? '') }}" placeholder="081383885600" class="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs font-semibold focus:border-amber-500 focus:ring-1 focus:ring-amber-200">
+                        </div>
+                        <div class="space-y-1">
+                            <label class="block text-[11px] font-bold text-slate-700">Keterangan / Jabatan</label>
+                            <input type="text" name="contacts_data[2][role]" value="{{ old('contacts_data.2.role', $wira['role'] ?? 'Koordinator PMR Wira (SMA/SMK/MA)') }}" placeholder="Koordinator PMR Wira" class="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs focus:border-amber-500">
+                        </div>
+                    </div>
+                </div>
             </div>
 
             <!-- Button Text -->
@@ -278,16 +366,24 @@
         const actionType = document.querySelector('input[name="action_type"]:checked')?.value || 'file';
         const fileBox = document.getElementById('field_file_upload');
         const urlBox = document.getElementById('field_url_link');
+        const contactsBox = document.getElementById('field_contacts_data');
 
         if (actionType === 'file') {
-            fileBox.style.display = 'block';
-            urlBox.style.display = 'none';
-        } else if (actionType === 'link' || actionType === 'whatsapp') {
-            fileBox.style.display = 'none';
-            urlBox.style.display = 'block';
+            if (fileBox) fileBox.style.display = 'block';
+            if (urlBox) urlBox.style.display = 'none';
+            if (contactsBox) contactsBox.style.display = 'none';
+        } else if (actionType === 'link') {
+            if (fileBox) fileBox.style.display = 'none';
+            if (urlBox) urlBox.style.display = 'block';
+            if (contactsBox) contactsBox.style.display = 'none';
+        } else if (actionType === 'whatsapp') {
+            if (fileBox) fileBox.style.display = 'none';
+            if (urlBox) urlBox.style.display = 'none';
+            if (contactsBox) contactsBox.style.display = 'block';
         } else {
-            fileBox.style.display = 'none';
-            urlBox.style.display = 'none';
+            if (fileBox) fileBox.style.display = 'none';
+            if (urlBox) urlBox.style.display = 'none';
+            if (contactsBox) contactsBox.style.display = 'none';
         }
     }
 

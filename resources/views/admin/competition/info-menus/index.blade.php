@@ -355,16 +355,27 @@
                                 @endif
                             </div>
                         @elseif($item->action_type === 'whatsapp')
-                            <div class="p-2.5 rounded-xl bg-white/90 border border-emerald-200/80 flex items-center justify-between gap-2 shadow-2xs">
-                                <div class="flex items-center gap-1.5 text-emerald-700 font-bold text-[11px] truncate">
-                                    <i class="fa-brands fa-whatsapp text-emerald-500 text-sm shrink-0"></i>
-                                    <span class="truncate">Hotline WhatsApp</span>
+                            <div class="space-y-1.5">
+                                <div class="flex items-center justify-between text-[10px] font-black uppercase tracking-wider text-emerald-800 px-0.5">
+                                    <span><i class="fa-brands fa-whatsapp text-emerald-600 mr-1"></i> 3 Narahubung Aktif:</span>
                                 </div>
-                                @if($item->url_link)
-                                    <a href="{{ $item->url_link }}" target="_blank" class="px-2.5 py-1 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white font-extrabold text-[10px] shrink-0 transition flex items-center gap-1">
-                                        <i class="fa-brands fa-whatsapp text-[10px]"></i> Chat
-                                    </a>
-                                @endif
+                                @foreach($item->contacts_list as $contact)
+                                    <div class="p-2 rounded-xl bg-white/95 border border-emerald-200/90 flex items-center justify-between gap-2 shadow-2xs">
+                                        <div class="min-w-0 flex items-center gap-2">
+                                            <span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[9px] font-black tracking-wider uppercase border {{ $contact['badge_bg'] }}">
+                                                <span class="w-1.5 h-1.5 rounded-full {{ $contact['dot_bg'] }}"></span>
+                                                {{ $contact['level'] }}
+                                            </span>
+                                            <div class="truncate">
+                                                <div class="text-[11px] font-black text-slate-800 truncate leading-tight">{{ $contact['name'] }}</div>
+                                                <div class="text-[9px] text-slate-500 font-mono leading-none">{{ $contact['phone'] }}</div>
+                                            </div>
+                                        </div>
+                                        <a href="{{ $contact['wa_url'] }}" target="_blank" class="px-2 py-1 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white font-extrabold text-[9px] shrink-0 transition flex items-center gap-1 shadow-2xs">
+                                            <i class="fa-brands fa-whatsapp text-[10px]"></i> Chat
+                                        </a>
+                                    </div>
+                                @endforeach
                             </div>
                         @else
                             <div class="p-2 rounded-xl bg-amber-100/60 text-amber-800 text-[11px] font-medium flex items-center gap-1.5">
@@ -498,9 +509,20 @@
                                         <span class="truncate">{{ $item->url_link }}</span>
                                     </a>
                                 @elseif($item->action_type === 'whatsapp')
-                                    <a href="{{ $item->url_link }}" target="_blank" class="inline-flex items-center gap-1 font-bold text-emerald-600 hover:underline">
-                                        <i class="fa-brands fa-whatsapp text-sm"></i> Chat WhatsApp
-                                    </a>
+                                    <div class="flex flex-col gap-1.5 py-1">
+                                        @foreach($item->contacts_list as $contact)
+                                            <div class="flex items-center justify-between gap-3 text-xs">
+                                                <span class="inline-flex items-center gap-1.5 font-bold text-slate-700">
+                                                    <span class="w-2 h-2 rounded-full {{ $contact['dot_bg'] }}"></span>
+                                                    <span>{{ $contact['level'] }}:</span>
+                                                    <span class="font-normal text-slate-600">{{ $contact['name'] }}</span>
+                                                </span>
+                                                <a href="{{ $contact['wa_url'] }}" target="_blank" class="px-2 py-0.5 rounded bg-emerald-50 hover:bg-emerald-100 text-emerald-700 font-bold text-[10px] shrink-0 transition flex items-center gap-1 border border-emerald-200">
+                                                    <i class="fa-brands fa-whatsapp"></i> Chat
+                                                </a>
+                                            </div>
+                                        @endforeach
+                                    </div>
                                 @else
                                     <span class="text-slate-400 font-semibold"><i class="fa-solid fa-clock-rotate-left mr-1"></i> Sedang Disiapkan</span>
                                 @endif

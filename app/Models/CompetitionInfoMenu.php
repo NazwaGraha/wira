@@ -20,6 +20,7 @@ class CompetitionInfoMenu extends Model
         'action_type',
         'file_path',
         'url_link',
+        'contacts_data',
         'button_text',
         'order_position',
         'is_active',
@@ -28,11 +29,130 @@ class CompetitionInfoMenu extends Model
     protected $casts = [
         'is_active' => 'boolean',
         'order_position' => 'integer',
+        'contacts_data' => 'array',
     ];
 
     public function event(): BelongsTo
     {
         return $this->belongsTo(CompetitionEvent::class, 'competition_event_id');
+    }
+
+    /**
+     * Get the 3 contact persons (PMR Mula, PMR Madya, PMR Wira)
+     */
+    public function getContactsListAttribute(): array
+    {
+        $raw = (!empty($this->contacts_data) && is_array($this->contacts_data) && count($this->contacts_data) > 0)
+            ? $this->contacts_data
+            : self::defaultContacts();
+
+        $levelMeta = [
+            'Mula' => [
+                'label' => 'PMR Mula (SD / MI)',
+                'color' => 'blue',
+                'badge_bg' => 'bg-blue-100 text-blue-800 border-blue-200',
+                'dot_bg' => 'bg-blue-500',
+                'role_default' => 'Koordinator PMR Mula (SD/MI)',
+            ],
+            'Madya' => [
+                'label' => 'PMR Madya (SMP / MTs)',
+                'color' => 'red',
+                'badge_bg' => 'bg-rose-100 text-rose-800 border-rose-200',
+                'dot_bg' => 'bg-rose-500',
+                'role_default' => 'Koordinator PMR Madya (SMP/MTs)',
+            ],
+            'Wira' => [
+                'label' => 'PMR Wira (SMA / SMK / MA)',
+                'color' => 'amber',
+                'badge_bg' => 'bg-amber-100 text-amber-800 border-amber-200',
+                'dot_bg' => 'bg-amber-500',
+                'role_default' => 'Koordinator PMR Wira (SMA/SMK/MA)',
+            ],
+        ];
+
+        $enriched = [];
+        foreach ($raw as $item) {
+            $lvl = $item['level'] ?? 'Lomba';
+            $meta = $levelMeta[$lvl] ?? [
+                'label' => "PMR {$lvl}",
+                'color' => 'slate',
+                'badge_bg' => 'bg-slate-100 text-slate-800 border-slate-200',
+                'dot_bg' => 'bg-slate-500',
+                'role_default' => "Koordinator PMR {$lvl}",
+            ];
+
+            $name = $item['name'] ?? "Kak Panitia {$lvl}";
+            $phone = $item['phone'] ?? '081383885600';
+            $role = !empty($item['role']) ? $item['role'] : $meta['role_default'];
+
+            $enriched[] = [
+                'level' => $lvl,
+                'label' => $item['label'] ?? $meta['label'],
+                'name' => $name,
+                'phone' => $phone,
+                'role' => $role,
+                'color' => $item['color'] ?? $meta['color'],
+                'badge_bg' => $meta['badge_bg'],
+                'dot_bg' => $meta['dot_bg'],
+                'wa_url' => self::formatWhatsAppUrl($phone, $lvl, $name),
+            ];
+        }
+
+        return $enriched;
+    }
+
+    /**
+     * Default 3 contact persons
+     */
+    public static function defaultContacts(): array
+    {
+        return [
+            [
+                'level' => 'Mula',
+                'label' => 'PMR Mula (SD / MI)',
+                'name' => 'Kak Panitia Mula',
+                'phone' => '081383885600',
+                'role' => 'Koordinator PMR Mula (SD/MI)',
+                'color' => 'blue',
+            ],
+            [
+                'level' => 'Madya',
+                'label' => 'PMR Madya (SMP / MTs)',
+                'name' => 'Kak Panitia Madya',
+                'phone' => '081383885600',
+                'role' => 'Koordinator PMR Madya (SMP/MTs)',
+                'color' => 'red',
+            ],
+            [
+                'level' => 'Wira',
+                'label' => 'PMR Wira (SMA / SMK / MA)',
+                'name' => 'Kak Panitia Wira',
+                'phone' => '081383885600',
+                'role' => 'Koordinator PMR Wira (SMA/SMK/MA)',
+                'color' => 'amber',
+            ],
+        ];
+    }
+
+    /**
+     * Format WhatsApp chat URL for a contact person
+     */
+    public static function formatWhatsAppUrl(?string $phone, string $level = 'Lomba', string $name = ''): string
+    {
+        $cleanPhone = preg_replace('/[^0-9]/', '', (string)$phone);
+        if (str_starts_with($cleanPhone, '0')) {
+            $cleanPhone = '62' . substr($cleanPhone, 1);
+        } elseif (!empty($cleanPhone) && !str_starts_with($cleanPhone, '62')) {
+            $cleanPhone = '62' . $cleanPhone;
+        }
+
+        if (empty($cleanPhone)) {
+            $cleanPhone = '6281383885600';
+        }
+
+        $greeting = !empty($name) ? "Halo Kak {$name}" : "Halo Panitia";
+        $message = "{$greeting}, saya ingin bertanya seputar informasi lomba untuk PMR Tingkat {$level} di Sua Bhakti Berkarya.";
+        return "https://wa.me/{$cleanPhone}?text=" . rawurlencode($message);
     }
 
     /**
@@ -286,11 +406,12 @@ class CompetitionInfoMenu extends Model
                 'category_badge' => 'Hotline 24/7',
                 'icon' => 'fa-brands fa-whatsapp',
                 'color_theme' => 'emerald',
-                'description' => 'Layanan konsultasi resmi narahubung panitia lomba untuk pertanyaan dan konfirmasi.',
+                'description' => 'Layanan konsultasi narahubung panitia untuk PMR Mula, PMR Madya, dan PMR Wira.',
                 'action_type' => 'whatsapp',
                 'file_path' => null,
-                'url_link' => 'https://wa.me/6281383885600?text=Halo%20Panitia%20Sua%20Bhakti%20Berkarya%2C%20saya%20ingin%20bertanya%20seputar%20informasi%20lomba',
-                'button_text' => 'Chat WhatsApp Panitia',
+                'url_link' => 'https://wa.me/6281383885600',
+                'contacts_data' => self::defaultContacts(),
+                'button_text' => 'Hubungi Contact Person',
                 'order_position' => 8,
                 'is_active' => true,
             ],

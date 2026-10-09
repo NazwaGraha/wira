@@ -23,11 +23,27 @@ class CompetitionInfoMenuController extends Controller
                 Artisan::call('migrate', ['--force' => true]);
             }
 
+            // Ensure contacts_data column exists
+            if (Schema::hasTable('competition_info_menus') && !Schema::hasColumn('competition_info_menus', 'contacts_data')) {
+                Schema::table('competition_info_menus', function (\Illuminate\Database\Schema\Blueprint $table) {
+                    $table->json('contacts_data')->nullable()->after('url_link');
+                });
+            }
+
             if (Schema::hasTable('competition_info_menus') && CompetitionInfoMenu::count() === 0) {
                 $activeEvent = CompetitionEvent::where('is_active', true)->first() ?: CompetitionEvent::first();
                 foreach (CompetitionInfoMenu::defaultItems() as $item) {
                     $item['competition_event_id'] = $activeEvent ? $activeEvent->id : null;
                     CompetitionInfoMenu::create($item);
+                }
+            } else {
+                // Ensure existing Contact Person item has contacts_data
+                $contactItem = CompetitionInfoMenu::where('title', 'like', '%Contact Person%')->first();
+                if ($contactItem && (empty($contactItem->contacts_data) || count($contactItem->contacts_data) === 0)) {
+                    $contactItem->contacts_data = CompetitionInfoMenu::defaultContacts();
+                    $contactItem->button_text = 'Hubungi Contact Person';
+                    $contactItem->description = 'Layanan konsultasi narahubung panitia untuk PMR Mula, PMR Madya, dan PMR Wira.';
+                    $contactItem->save();
                 }
             }
         } catch (\Throwable $e) {
@@ -102,6 +118,7 @@ class CompetitionInfoMenuController extends Controller
             'action_type' => 'required|in:file,link,whatsapp,notice',
             'file_upload' => 'nullable|file|mimes:pdf,doc,docx,xls,xlsx,zip,jpg,jpeg,png|max:20480',
             'url_link' => 'nullable|string|max:500',
+            'contacts_data' => 'nullable|array',
             'button_text' => 'required|string|max:100',
             'order_position' => 'nullable|integer',
             'is_active' => 'nullable',
@@ -116,6 +133,12 @@ class CompetitionInfoMenuController extends Controller
         $validated['file_path'] = $filePath;
         $validated['is_active'] = $request->has('is_active');
         $validated['order_position'] = $validated['order_position'] ?? ((CompetitionInfoMenu::max('order_position') ?? 0) + 1);
+
+        if ($request->has('contacts_data') && is_array($request->input('contacts_data'))) {
+            $validated['contacts_data'] = array_values(array_filter($request->input('contacts_data'), function($c) {
+                return !empty($c['name']) || !empty($c['phone']);
+            }));
+        }
 
         unset($validated['file_upload']);
 
@@ -152,6 +175,7 @@ class CompetitionInfoMenuController extends Controller
             'action_type' => 'required|in:file,link,whatsapp,notice',
             'file_upload' => 'nullable|file|mimes:pdf,doc,docx,xls,xlsx,zip,jpg,jpeg,png|max:20480',
             'url_link' => 'nullable|string|max:500',
+            'contacts_data' => 'nullable|array',
             'button_text' => 'required|string|max:100',
             'order_position' => 'nullable|integer',
             'is_active' => 'nullable',
@@ -176,6 +200,12 @@ class CompetitionInfoMenuController extends Controller
 
         $validated['is_active'] = $request->has('is_active');
         $validated['order_position'] = $validated['order_position'] ?? $infoMenu->order_position;
+
+        if ($request->has('contacts_data') && is_array($request->input('contacts_data'))) {
+            $validated['contacts_data'] = array_values(array_filter($request->input('contacts_data'), function($c) {
+                return !empty($c['name']) || !empty($c['phone']);
+            }));
+        }
 
         unset($validated['file_upload'], $validated['remove_file']);
 

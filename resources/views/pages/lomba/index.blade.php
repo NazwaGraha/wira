@@ -240,6 +240,13 @@
                                 <p class="text-sm text-slate-200 mt-2 leading-relaxed font-medium">
                                     {{ $menu->description }}
                                 </p>
+                                @if($menu->action_type === 'whatsapp' || str_contains(strtolower($menu->title), 'contact'))
+                                    <div class="mt-3 flex items-center gap-1.5 flex-wrap">
+                                        <span class="px-2.5 py-0.5 rounded-md text-[10px] font-black bg-blue-500/20 text-blue-300 border border-blue-500/30">🟢 PMR Mula</span>
+                                        <span class="px-2.5 py-0.5 rounded-md text-[10px] font-black bg-rose-500/20 text-rose-300 border border-rose-500/30">🔵 PMR Madya</span>
+                                        <span class="px-2.5 py-0.5 rounded-md text-[10px] font-black bg-amber-500/20 text-amber-300 border border-amber-500/30">🟠 PMR Wira</span>
+                                    </div>
+                                @endif
                             </div>
                         </div>
                         <div class="pt-5 mt-4 border-t border-slate-700/60">
@@ -248,11 +255,14 @@
                                     <i class="fa-solid fa-file-arrow-down text-sm"></i>
                                     <span>{{ $menu->button_text ?: 'Unduh Berkas' }}</span>
                                 </a>
+                            @elseif($menu->action_type === 'whatsapp' || str_contains(strtolower($menu->title), 'contact'))
+                                <button type="button" onclick="openContactPersonModal()" class="w-full py-3 px-4 rounded-xl {{ $pal['btn_solid'] }} font-black text-xs sm:text-sm transition flex items-center justify-center gap-2 shadow-md cursor-pointer">
+                                    <i class="fa-brands fa-whatsapp text-base"></i>
+                                    <span>{{ $menu->button_text ?: 'Pilih Contact Person' }}</span>
+                                </button>
                             @elseif($isLink)
                                 <a href="{{ $menu->url_link }}" target="_blank" class="w-full py-3 px-4 rounded-xl {{ $pal['btn_bg'] }} {{ $pal['btn_text'] }} font-black text-xs sm:text-sm transition border {{ $pal['btn_border'] }} flex items-center justify-center gap-2 shadow-sm">
-                                    @if($menu->action_type === 'whatsapp')
-                                        <i class="fa-brands fa-whatsapp text-base"></i>
-                                    @elseif(str_contains($menu->url_link, 'maps'))
+                                    @if(str_contains($menu->url_link, 'maps'))
                                         <i class="fa-solid fa-diamond-turn-right text-sm"></i>
                                     @elseif(str_contains($menu->url_link, 'instagram'))
                                         <i class="fa-brands fa-instagram text-sm"></i>
@@ -285,13 +295,118 @@
                 <span class="font-medium">Membutuhkan surat resmi khusus atau konfirmasi berkas? Hubungi sekretariat panitia lomba.</span>
             </div>
             <div class="flex items-center gap-3 w-full sm:w-auto shrink-0">
-                <a href="https://wa.me/6281383885600?text=Halo%20Panitia%20Sua%20Bhakti%20Berkarya%2C%20saya%20ingin%20bertanya%20seputar%20informasi%20lomba" target="_blank" class="flex-1 sm:flex-initial bg-emerald-600 hover:bg-emerald-500 text-white font-black px-5 py-3 rounded-xl transition flex items-center justify-center gap-2 shadow-md text-sm">
-                    <i class="fa-brands fa-whatsapp text-base"></i> Hubungi Panitia
-                </a>
+                <button type="button" onclick="openContactPersonModal()" class="flex-1 sm:flex-initial bg-emerald-600 hover:bg-emerald-500 text-white font-black px-5 py-3 rounded-xl transition flex items-center justify-center gap-2 shadow-md text-sm cursor-pointer">
+                    <i class="fa-brands fa-whatsapp text-base"></i> Hubungi Panitia (3 Tingkat)
+                </button>
                 <button type="button" onclick="closeInfoModal()" class="flex-1 sm:flex-initial bg-slate-800 hover:bg-slate-700 text-slate-200 font-black px-5 py-3 rounded-xl transition border border-slate-700 cursor-pointer text-sm">
                     Tutup
                 </button>
             </div>
+        </div>
+
+    </div>
+</div>
+
+<!-- ============================================================ -->
+<!-- MODAL POPUP: CONTACT PERSON RESMI (3 TINGKAT: MULA, MADYA, WIRA) -->
+<!-- ============================================================ -->
+<div id="modal-contact-person" class="fixed inset-0 z-60 hidden overflow-y-auto bg-slate-950/85 backdrop-blur-md transition-all duration-300 flex items-center justify-center p-4" role="dialog" aria-modal="true">
+    <div class="relative w-full max-w-2xl bg-gradient-to-b from-slate-900 via-slate-900 to-slate-950 border-2 border-slate-700/80 rounded-3xl shadow-2xl overflow-hidden transform transition-all text-white my-6">
+        
+        <!-- Header -->
+        <div class="p-6 border-b border-slate-800 flex items-center justify-between gap-4 bg-slate-900/90 backdrop-blur sticky top-0 z-10">
+            <div class="flex items-center gap-3.5">
+                <div class="w-13 h-13 rounded-2xl bg-gradient-to-br from-emerald-500 to-teal-600 text-white flex items-center justify-center text-2xl shadow-lg shadow-emerald-950/50 shrink-0">
+                    <i class="fa-brands fa-whatsapp"></i>
+                </div>
+                <div>
+                    <span class="px-2.5 py-0.5 rounded-md text-[10px] font-black uppercase tracking-wider bg-emerald-500/20 text-emerald-300 border border-emerald-500/40">
+                        Hotline Resmi Panitia
+                    </span>
+                    <h3 class="text-xl sm:text-2xl font-black text-white mt-1">Contact Person Lomba (3 Tingkat)</h3>
+                </div>
+            </div>
+            <button type="button" onclick="closeContactPersonModal()" class="w-10 h-10 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white flex items-center justify-center transition border border-slate-700 cursor-pointer shrink-0">
+                <i class="fa-solid fa-xmark text-lg"></i>
+            </button>
+        </div>
+
+        <!-- Body: 3 Contact Cards -->
+        <div class="p-6 sm:p-7 space-y-4 max-h-[75vh] overflow-y-auto">
+            <p class="text-xs sm:text-sm text-slate-300 font-medium">
+                Silakan pilih narahubung panitia di bawah ini sesuai dengan tingkatan kontingen PMR sekolah Anda:
+            </p>
+
+            <div class="space-y-3.5">
+                @php
+                    $contactItem = $infoMenus->first(function($m) {
+                        return $m->action_type === 'whatsapp' || str_contains(strtolower($m->title), 'contact');
+                    });
+                    $contactsList = $contactItem ? $contactItem->contacts_list : \App\Models\CompetitionInfoMenu::defaultContacts();
+                @endphp
+
+                @foreach($contactsList as $ct)
+                    @php
+                        $lvl = $ct['level'] ?? 'Lomba';
+                        $waUrl = \App\Models\CompetitionInfoMenu::formatWhatsAppUrl($ct['phone'] ?? '', $lvl, $ct['name'] ?? '');
+                        
+                        $cardTheme = match($lvl) {
+                            'Mula' => [
+                                'badge_bg' => 'bg-blue-500/20 text-blue-300 border-blue-500/40',
+                                'title' => 'PMR Mula (Tingkat SD / MI)',
+                                'border' => 'border-blue-500/40 hover:border-blue-400',
+                                'dot' => 'bg-blue-400',
+                            ],
+                            'Madya' => [
+                                'badge_bg' => 'bg-rose-500/20 text-rose-300 border-rose-500/40',
+                                'title' => 'PMR Madya (Tingkat SMP / MTs)',
+                                'border' => 'border-rose-500/40 hover:border-rose-400',
+                                'dot' => 'bg-rose-400',
+                            ],
+                            default => [
+                                'badge_bg' => 'bg-amber-500/20 text-amber-300 border-amber-500/40',
+                                'title' => 'PMR Wira (Tingkat SMA / SMK / MA)',
+                                'border' => 'border-amber-500/40 hover:border-amber-400',
+                                'dot' => 'bg-amber-400',
+                            ],
+                        };
+                    @endphp
+
+                    <div class="p-5 rounded-2xl bg-slate-800/80 border-2 {{ $cardTheme['border'] }} transition-all flex flex-col sm:flex-row sm:items-center justify-between gap-4 group hover:bg-slate-800/95 shadow-sm">
+                        <div class="space-y-1.5">
+                            <div class="flex items-center gap-2">
+                                <span class="w-2.5 h-2.5 rounded-full {{ $cardTheme['dot'] }} animate-pulse"></span>
+                                <span class="px-2.5 py-0.5 rounded-md text-[10px] font-black uppercase tracking-wider {{ $cardTheme['badge_bg'] }} border">
+                                    {{ $cardTheme['title'] }}
+                                </span>
+                            </div>
+                            <div class="text-base sm:text-lg font-black text-white group-hover:text-emerald-300 transition">
+                                {{ $ct['name'] ?? 'Panitia ' . $lvl }}
+                            </div>
+                            <div class="text-xs text-slate-300 font-medium flex items-center gap-2 flex-wrap">
+                                <span><i class="fa-solid fa-phone text-xs text-slate-400 mr-1"></i>{{ $ct['phone'] ?? '081383885600' }}</span>
+                                @if(!empty($ct['role']))
+                                    <span class="text-slate-500">•</span>
+                                    <span class="text-slate-400">{{ $ct['role'] }}</span>
+                                @endif
+                            </div>
+                        </div>
+
+                        <a href="{{ $waUrl }}" target="_blank" class="px-5 py-3 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-black text-xs sm:text-sm transition flex items-center justify-center gap-2 shadow-lg shadow-emerald-950/40 shrink-0">
+                            <i class="fa-brands fa-whatsapp text-lg"></i>
+                            <span>Chat WA {{ $lvl }}</span>
+                        </a>
+                    </div>
+                @endforeach
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="p-4 sm:p-5 bg-slate-950/90 border-t border-slate-800 flex items-center justify-between gap-3 text-xs text-slate-400">
+            <span class="text-[11px] font-medium">Panitia siap melayani pertanyaan seputar teknis, berkas, dan pendaftaran lomba.</span>
+            <button type="button" onclick="closeContactPersonModal()" class="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold text-xs transition border border-slate-700 cursor-pointer shrink-0">
+                Tutup
+            </button>
         </div>
 
     </div>
@@ -338,6 +453,25 @@
         }
     }
 
+    function openContactPersonModal() {
+        const modal = document.getElementById('modal-contact-person');
+        if (modal) {
+            modal.classList.remove('hidden');
+            document.body.style.overflow = 'hidden';
+        }
+    }
+
+    function closeContactPersonModal() {
+        const modal = document.getElementById('modal-contact-person');
+        if (modal) {
+            modal.classList.add('hidden');
+            const infoModal = document.getElementById('modal-informasi-lomba');
+            if (!infoModal || infoModal.classList.contains('hidden')) {
+                document.body.style.overflow = '';
+            }
+        }
+    }
+
     function handleDocumentAction(docTitle, docType) {
         const noticeModal = document.getElementById('modal-doc-notice');
         const titleEl = document.getElementById('notice-doc-title');
@@ -364,7 +498,7 @@
         }
     }
 
-    // Close on backdrop click
+    // Close on backdrop click & ESC
     document.addEventListener('DOMContentLoaded', function() {
         const modal = document.getElementById('modal-informasi-lomba');
         if (modal) {
@@ -384,10 +518,20 @@
             });
         }
 
+        const contactModal = document.getElementById('modal-contact-person');
+        if (contactModal) {
+            contactModal.addEventListener('click', function(e) {
+                if (e.target === contactModal) {
+                    closeContactPersonModal();
+                }
+            });
+        }
+
         // Close on ESC
         document.addEventListener('keydown', function(e) {
             if (e.key === 'Escape') {
                 closeDocNotice();
+                closeContactPersonModal();
                 closeInfoModal();
             }
         });
