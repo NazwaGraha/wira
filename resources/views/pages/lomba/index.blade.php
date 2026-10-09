@@ -307,34 +307,34 @@
 <!-- ============================================================ -->
 <!-- MODAL POPUP: CONTACT PERSON RESMI (3 TINGKAT: MULA, MADYA, WIRA) -->
 <!-- ============================================================ -->
-<div id="modal-contact-person" class="fixed inset-0 hidden overflow-y-auto bg-slate-950/90 backdrop-blur-md transition-all duration-300 flex items-center justify-center p-4" style="z-index: 99999;" role="dialog" aria-modal="true">
-    <div class="relative w-full max-w-2xl bg-gradient-to-b from-slate-900 via-slate-900 to-slate-950 border-2 border-slate-700/80 rounded-3xl shadow-2xl overflow-hidden transform transition-all text-white my-6">
+<div id="modal-contact-person" class="fixed inset-0 hidden overflow-y-auto bg-slate-950/90 backdrop-blur-md transition-all duration-300 flex items-center justify-center p-3 sm:p-6" style="z-index: 99999;" role="dialog" aria-modal="true">
+    <div class="relative w-full max-w-4xl bg-gradient-to-b from-slate-900 via-slate-900 to-slate-950 border-2 border-slate-700/80 rounded-3xl shadow-2xl overflow-hidden transform transition-all text-white my-4 sm:my-8">
         
         <!-- Header -->
-        <div class="p-6 border-b border-slate-800 flex items-center justify-between gap-4 bg-slate-900/90 backdrop-blur sticky top-0 z-10">
-            <div class="flex items-center gap-3.5">
-                <div class="w-13 h-13 rounded-2xl bg-gradient-to-br from-emerald-500 to-teal-600 text-white flex items-center justify-center text-2xl shadow-lg shadow-emerald-950/50 shrink-0">
+        <div class="p-6 sm:p-8 border-b border-slate-800 flex items-center justify-between gap-4 bg-slate-900/90 backdrop-blur sticky top-0 z-10">
+            <div class="flex items-center gap-4">
+                <div class="w-14 h-14 sm:w-16 sm:h-16 rounded-2xl bg-gradient-to-br from-emerald-500 to-teal-600 text-white flex items-center justify-center text-2xl sm:text-3xl shadow-xl shadow-emerald-950/50 shrink-0">
                     <i class="fa-brands fa-whatsapp"></i>
                 </div>
                 <div>
-                    <span class="px-2.5 py-0.5 rounded-md text-[10px] font-black uppercase tracking-wider bg-emerald-500/20 text-emerald-300 border border-emerald-500/40">
-                        Hotline Resmi Panitia
+                    <span class="px-3 py-1 rounded-lg text-xs font-black uppercase tracking-wider bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 inline-flex items-center gap-1.5">
+                        <i class="fa-solid fa-headset"></i> Hotline Resmi Panitia
                     </span>
-                    <h3 class="text-xl sm:text-2xl font-black text-white mt-1">Contact Person Lomba (3 Tingkat)</h3>
+                    <h3 class="text-2xl sm:text-3xl font-black text-white mt-1.5 tracking-tight">Contact Person Lomba (3 Tingkat)</h3>
                 </div>
             </div>
-            <button type="button" onclick="closeContactPersonModal()" class="w-10 h-10 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white flex items-center justify-center transition border border-slate-700 cursor-pointer shrink-0">
-                <i class="fa-solid fa-xmark text-lg"></i>
+            <button type="button" onclick="closeContactPersonModal()" class="w-12 h-12 rounded-2xl bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white flex items-center justify-center transition border border-slate-700 cursor-pointer shrink-0 shadow-md" title="Tutup (ESC)">
+                <i class="fa-solid fa-xmark text-xl"></i>
             </button>
         </div>
 
         <!-- Body: 3 Contact Cards -->
-        <div class="p-6 sm:p-7 space-y-4 max-h-[75vh] overflow-y-auto">
-            <p class="text-xs sm:text-sm text-slate-300 font-medium">
-                Silakan pilih narahubung panitia di bawah ini sesuai dengan tingkatan kontingen PMR sekolah Anda:
+        <div class="p-6 sm:p-8 md:p-10 space-y-6 max-h-[78vh] overflow-y-auto">
+            <p class="text-sm sm:text-base text-slate-200 font-medium leading-relaxed">
+                Silakan pilih narahubung panitia di bawah ini sesuai dengan tingkatan kontingen PMR sekolah Anda untuk berkonsultasi langsung via WhatsApp:
             </p>
 
-            <div class="space-y-3.5">
+            <div class="space-y-4 sm:space-y-5">
                 @php
                     $contactItem = $infoMenus->first(function($m) {
                         return $m->action_type === 'whatsapp' || str_contains(strtolower($m->title), 'contact');
@@ -350,47 +350,56 @@
                         $cardTheme = match($lvl) {
                             'Mula' => [
                                 'badge_bg' => 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40',
-                                'title' => 'PMR Mula (Tingkat SD / MI)',
-                                'border' => 'border-emerald-500/40 hover:border-emerald-400',
+                                'title' => 'PMR MULA (Tingkat SD / MI)',
+                                'border' => 'border-emerald-500/50 hover:border-emerald-400',
                                 'dot' => 'bg-emerald-400',
+                                'name_hover' => 'group-hover:text-emerald-300',
+                                'btn_bg' => 'bg-emerald-600 hover:bg-emerald-500 text-white shadow-emerald-950/60 border border-emerald-400/30',
+                                'icon_color' => 'text-white',
                             ],
                             'Madya' => [
                                 'badge_bg' => 'bg-blue-500/20 text-blue-300 border-blue-500/40',
-                                'title' => 'PMR Madya (Tingkat SMP / MTs)',
-                                'border' => 'border-blue-500/40 hover:border-blue-400',
+                                'title' => 'PMR MADYA (Tingkat SMP / MTs)',
+                                'border' => 'border-blue-500/50 hover:border-blue-400',
                                 'dot' => 'bg-blue-400',
+                                'name_hover' => 'group-hover:text-blue-300',
+                                'btn_bg' => 'bg-blue-600 hover:bg-blue-500 text-white shadow-blue-950/60 border border-blue-400/30',
+                                'icon_color' => 'text-white',
                             ],
                             default => [
                                 'badge_bg' => 'bg-amber-500/20 text-amber-300 border-amber-500/40',
-                                'title' => 'PMR Wira (Tingkat SMA / SMK / MA)',
-                                'border' => 'border-amber-500/40 hover:border-amber-400',
+                                'title' => 'PMR WIRA (Tingkat SMA / SMK / MA)',
+                                'border' => 'border-amber-500/50 hover:border-amber-400',
                                 'dot' => 'bg-amber-400',
+                                'name_hover' => 'group-hover:text-amber-300',
+                                'btn_bg' => 'bg-amber-400 hover:bg-amber-300 text-slate-950 shadow-amber-950/60 border border-amber-300',
+                                'icon_color' => 'text-slate-950',
                             ],
                         };
                     @endphp
 
-                    <div class="p-5 rounded-2xl bg-slate-800/80 border-2 {{ $cardTheme['border'] }} transition-all flex flex-col sm:flex-row sm:items-center justify-between gap-4 group hover:bg-slate-800/95 shadow-sm">
-                        <div class="space-y-1.5">
-                            <div class="flex items-center gap-2">
-                                <span class="w-2.5 h-2.5 rounded-full {{ $cardTheme['dot'] }} animate-pulse"></span>
-                                <span class="px-2.5 py-0.5 rounded-md text-[10px] font-black uppercase tracking-wider {{ $cardTheme['badge_bg'] }} border">
+                    <div class="p-6 sm:p-7 rounded-3xl bg-slate-800/85 border-2 {{ $cardTheme['border'] }} transition-all flex flex-col md:flex-row md:items-center justify-between gap-5 group hover:bg-slate-800 shadow-md">
+                        <div class="space-y-2">
+                            <div class="flex items-center gap-2.5">
+                                <span class="w-3 h-3 rounded-full {{ $cardTheme['dot'] }} animate-pulse shrink-0"></span>
+                                <span class="px-3.5 py-1 rounded-lg text-xs font-black uppercase tracking-wider {{ $cardTheme['badge_bg'] }} border">
                                     {{ $cardTheme['title'] }}
                                 </span>
                             </div>
-                            <div class="text-base sm:text-lg font-black text-white group-hover:text-emerald-300 transition">
+                            <div class="text-xl sm:text-2xl font-black text-white {{ $cardTheme['name_hover'] }} transition">
                                 {{ $ct['name'] ?? 'Panitia ' . $lvl }}
                             </div>
-                            <div class="text-xs text-slate-300 font-medium flex items-center gap-2 flex-wrap">
-                                <span><i class="fa-solid fa-phone text-xs text-slate-400 mr-1"></i>{{ $ct['phone'] ?? '081383885600' }}</span>
+                            <div class="text-sm sm:text-base text-slate-300 font-medium flex items-center gap-3 flex-wrap">
+                                <span class="inline-flex items-center gap-1.5"><i class="fa-solid fa-phone text-xs text-slate-400"></i><span class="font-bold text-white">{{ $ct['phone'] ?? '081383885600' }}</span></span>
                                 @if(!empty($ct['role']))
-                                    <span class="text-slate-500">•</span>
-                                    <span class="text-slate-400">{{ $ct['role'] }}</span>
+                                    <span class="text-slate-500 hidden sm:inline">•</span>
+                                    <span class="text-slate-300">{{ $ct['role'] }}</span>
                                 @endif
                             </div>
                         </div>
 
-                        <a href="{{ $waUrl }}" target="_blank" class="px-5 py-3 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-black text-xs sm:text-sm transition flex items-center justify-center gap-2 shadow-lg shadow-emerald-950/40 shrink-0">
-                            <i class="fa-brands fa-whatsapp text-lg"></i>
+                        <a href="{{ $waUrl }}" target="_blank" class="px-6 py-4 rounded-2xl {{ $cardTheme['btn_bg'] }} font-black text-sm sm:text-base transition-all flex items-center justify-center gap-2.5 shadow-xl shrink-0 cursor-pointer hover:scale-[1.02] active:scale-[0.98]">
+                            <i class="fa-brands fa-whatsapp text-xl sm:text-2xl {{ $cardTheme['icon_color'] }}"></i>
                             <span>Chat WA PMR {{ $lvl }}</span>
                         </a>
                     </div>
@@ -399,9 +408,9 @@
         </div>
 
         <!-- Footer -->
-        <div class="p-4 sm:p-5 bg-slate-950/90 border-t border-slate-800 flex items-center justify-between gap-3 text-xs text-slate-400">
-            <span class="text-[11px] font-medium">Panitia siap melayani pertanyaan seputar teknis, berkas, dan pendaftaran lomba.</span>
-            <button type="button" onclick="closeContactPersonModal()" class="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold text-xs transition border border-slate-700 cursor-pointer shrink-0">
+        <div class="p-5 sm:p-6 bg-slate-950/95 border-t border-slate-800 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs sm:text-sm text-slate-300">
+            <span class="font-medium text-center sm:text-left">Panitia siap melayani pertanyaan seputar teknis perlombaan, verifikasi berkas, dan pendaftaran.</span>
+            <button type="button" onclick="closeContactPersonModal()" class="w-full sm:w-auto px-6 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold text-xs sm:text-sm transition border border-slate-700 cursor-pointer shrink-0">
                 Tutup
             </button>
         </div>
