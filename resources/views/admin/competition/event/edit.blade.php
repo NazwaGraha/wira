@@ -82,13 +82,13 @@
                 </div>
 
                 <div class="bg-slate-800/80 border border-slate-700/80 p-3 rounded-xl flex items-center gap-3">
-                    <div class="w-9 h-9 rounded-lg bg-amber-500/10 text-amber-400 flex items-center justify-center text-sm shrink-0">
-                        <i class="fa-solid fa-money-bill-wave"></i>
+                    <div class="w-9 h-9 rounded-lg bg-red-500/10 text-red-400 flex items-center justify-center text-sm shrink-0">
+                        <i class="fa-solid fa-folder-open"></i>
                     </div>
                     <div>
-                        <div class="text-[10px] text-slate-400 font-semibold">Biaya Registrasi</div>
-                        <div class="text-xs font-bold text-white" id="preview-fee">
-                            Rp {{ number_format($event->registration_fee ?: 150000, 0, ',', '.') }} / Tim
+                        <div class="text-[10px] text-red-400 font-semibold uppercase tracking-wider">Pusat Informasi</div>
+                        <div class="text-xs font-bold text-white">
+                            Menu Informasi Lomba <span class="text-[10px] text-slate-400 font-normal">(8 Sub Menu)</span>
                         </div>
                     </div>
                 </div>
