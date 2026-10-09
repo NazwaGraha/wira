@@ -60,6 +60,49 @@ class CompetitionController extends Controller
             'payment_proof' => 'required|image|mimes:jpeg,png,jpg,pdf|max:5120',
         ]);
 
+        $schoolNameClean = strtoupper(trim($validated['school_name']));
+        $categoriesMap = CompetitionCategory::whereIn('id', $validated['categories'])->get()->keyBy('id');
+
+        // Validasi batasan kuota: 1 regu Putra dan 1 regu Putri per sekolah (kecuali Cuci Tangan & Olimpiade)
+        foreach ($validated['categories'] as $catId) {
+            $cat = $categoriesMap->get($catId);
+            if (!$cat) continue;
+
+            $labels = $request->input("team_labels.{$catId}");
+            $count = is_array($labels) ? count(array_filter($labels, fn($l) => $l !== null && trim($l) !== '')) : 1;
+
+            if ($count > 1 && !$cat->isMultiTeamAllowed()) {
+                $genderLabel = $cat->gender_category !== 'Umum' ? " {$cat->gender_category}" : '';
+                return redirect()->back()
+                    ->withInput()
+                    ->withErrors([
+                        'categories' => "Cabang lomba '{$cat->name}{$genderLabel}' dibatasi maksimal 1 regu per sekolah. Pendaftaran lebih dari 1 regu hanya diperbolehkan khusus untuk cabang Ketangkasan Cuci Tangan dan Olimpiade."
+                    ]);
+            }
+        }
+
+        // Cek apakah sekolah sudah pernah terdaftar di kategori yang sama pada event ini
+        $existingReg = CompetitionRegistration::where('competition_event_id', $event->id)
+            ->where('school_name', $schoolNameClean)
+            ->where('status', '!=', 'rejected')
+            ->with('teams.category')
+            ->first();
+
+        if ($existingReg) {
+            $existingCatIds = $existingReg->teams->pluck('competition_category_id')->toArray();
+            foreach ($validated['categories'] as $catId) {
+                $cat = $categoriesMap->get($catId);
+                if ($cat && in_array($catId, $existingCatIds) && !$cat->isMultiTeamAllowed()) {
+                    $genderLabel = $cat->gender_category !== 'Umum' ? " {$cat->gender_category}" : '';
+                    return redirect()->back()
+                        ->withInput()
+                        ->withErrors([
+                            'categories' => "Sekolah {$schoolNameClean} sudah terdaftar pada cabang '{$cat->name}{$genderLabel}' di nomor pendaftaran sebelumnya ({$existingReg->registration_code}). Masing-masing sekolah dibatasi maksimal 1 regu Putra dan 1 regu Putri (kecuali Cuci Tangan dan Olimpiade)."
+                        ]);
+                }
+            }
+        }
+
         $code = CompetitionRegistration::generateRegistrationCode($validated['level'] ?? null);
 
         $proofPath = null;
@@ -71,11 +114,16 @@ class CompetitionController extends Controller
 
         $teamsToCreate = [];
         foreach ($validated['categories'] as $catId) {
+            $cat = $categoriesMap->get($catId);
             $labels = $request->input("team_labels.{$catId}");
             if (is_array($labels)) {
                 $filtered = array_values(array_filter($labels, fn($l) => $l !== null && trim($l) !== ''));
                 if (empty($filtered)) {
                     $filtered = [''];
+                }
+                // Jika tidak diizinkan multi-regu, batasi tepat 1 regu
+                if ($cat && !$cat->isMultiTeamAllowed()) {
+                    $filtered = array_slice($filtered, 0, 1);
                 }
                 foreach ($filtered as $lbl) {
                     $teamsToCreate[] = [
@@ -91,8 +139,6 @@ class CompetitionController extends Controller
                 ];
             }
         }
-
-        $categoriesMap = CompetitionCategory::whereIn('id', $validated['categories'])->get()->keyBy('id');
 
         $totalTeams = count($teamsToCreate);
         $totalPayment = 0;

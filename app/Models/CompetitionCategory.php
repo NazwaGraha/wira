@@ -61,4 +61,15 @@ class CompetitionCategory extends Model
     {
         return $value !== null ? $value : 150000;
     }
+
+    /**
+     * Check if a school is allowed to register multiple teams for this category.
+     * Restriction rule: maximum 1 team Putra and 1 team Putri per school,
+     * except for Cuci Tangan and Olimpiade.
+     */
+    public function isMultiTeamAllowed(): bool
+    {
+        $name = strtolower($this->name ?? '');
+        return str_contains($name, 'cuci tangan') || str_contains($name, 'olimpiade') || str_contains($name, 'olympiade');
+    }
 }

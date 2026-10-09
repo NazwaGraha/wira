@@ -730,6 +730,16 @@ class CompetitionScoreController extends Controller
             $label = trim($validated['team_label'] ?? '');
             $teamName = $registration->school_name . ($label ? " {$label}" : '');
 
+            if (!$category->isMultiTeamAllowed()) {
+                $existingTeam = CompetitionParticipantTeam::where('competition_category_id', $category->id)
+                    ->where('competition_registration_id', $registration->id)
+                    ->first();
+                if ($existingTeam) {
+                    $genderLabel = $category->gender_category !== 'Umum' ? " {$category->gender_category}" : '';
+                    return redirect()->back()->with('error', "Sekolah '{$registration->school_name}' sudah memiliki 1 regu ({$existingTeam->team_name}) di cabang {$category->name}{$genderLabel}. Masing-masing sekolah dibatasi maksimal 1 regu Putra dan 1 regu Putri (kecuali Cuci Tangan dan Olimpiade).");
+                }
+            }
+
             // Check if exact team name already exists in this category
             $existing = CompetitionParticipantTeam::where('competition_category_id', $category->id)
                 ->where('competition_registration_id', $registration->id)

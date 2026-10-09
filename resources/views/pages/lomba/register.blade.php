@@ -154,16 +154,16 @@
                         <span class="w-6 h-6 rounded-full bg-red-600 text-white text-xs flex items-center justify-center font-bold">3</span>
                         Pilih Cabang Lomba & Jumlah Regu
                     </h3>
-                    <p class="text-xs text-slate-500 mb-3">Centang cabang lomba yang ingin diikuti. Anda dapat mendaftarkan <strong>lebih dari 1 regu</strong> (Regu A, Regu B, dst.) untuk masing-masing cabang lomba baik putra maupun putri.</p>
+                    <p class="text-xs text-slate-500 mb-3">Centang cabang lomba yang ingin diikuti. Masing-masing sekolah dibatasi <strong>maksimal 1 regu Putra dan 1 regu Putri</strong>, kecuali khusus cabang <strong>Ketangkasan Cuci Tangan</strong> dan <strong>Olimpiade</strong> yang diperbolehkan mendaftarkan lebih dari 1 regu.</p>
 
-                    <div class="bg-blue-50 border border-blue-200 text-blue-900 p-4 rounded-2xl text-xs flex items-start gap-3 mb-4 shadow-2xs">
-                        <i class="fa-solid fa-circle-info text-blue-600 text-base mt-0.5 shrink-0"></i>
-                        <div class="leading-relaxed">
-                            <strong>Informasi Pendaftaran Multi-Regu:</strong>
-                            <ul class="list-disc pl-4 mt-1 space-y-0.5 text-blue-800">
-                                <li>Sekolah diperbolehkan mendaftarkan <strong>lebih dari 1 regu</strong> untuk setiap cabang lomba (Putra, Putri, maupun Campuran).</li>
-                                <li>Klik tombol <strong class="text-red-700 bg-red-100/80 px-1.5 py-0.5 rounded">+ Tambah Regu</strong> pada cabang lomba yang ingin dikirimkan 2 regu atau lebih.</li>
-                                <li>Biaya registrasi dihitung secara otomatis berdasarkan total seluruh regu yang didaftarkan.</li>
+                    <div class="bg-amber-50 border border-amber-200 text-amber-950 p-4 rounded-2xl text-xs flex items-start gap-3 mb-4 shadow-2xs">
+                        <i class="fa-solid fa-shield-halved text-amber-600 text-base mt-0.5 shrink-0"></i>
+                        <div class="leading-relaxed space-y-1">
+                            <strong class="text-amber-900 text-xs">Ketentuan Kuota Regu per Sekolah:</strong>
+                            <ul class="list-disc pl-4 space-y-0.5 text-amber-900/90">
+                                <li>Setiap sekolah dibatasi <strong>maksimal 1 regu Putra dan 1 regu Putri</strong> untuk masing-masing cabang lomba.</li>
+                                <li>Pengecualian khusus: Pendaftaran <strong>lebih dari 1 regu (Multi-Regu)</strong> hanya diperbolehkan untuk cabang <strong>Ketangkasan Cuci Tangan</strong> dan <strong>Olimpiade Kepalangmerahan</strong>.</li>
+                                <li>Pada cabang lomba dengan kuota 1 regu, kuota regu terkunci otomatis agar mencegah pendaftaran ganda dari sekolah yang sama.</li>
                             </ul>
                         </div>
                     </div>
@@ -174,9 +174,10 @@
                                 @php
                                     $isPa = $cat->gender_category === 'Putra';
                                     $isPi = $cat->gender_category === 'Putri';
+                                    $isMulti = $cat->isMultiTeamAllowed();
                                     $isChecked = in_array($cat->id, old('categories', []));
                                 @endphp
-                                <div class="border {{ $isPa ? 'border-blue-200 bg-blue-50/20' : ($isPi ? 'border-rose-200 bg-rose-50/20' : 'border-slate-200 bg-slate-50/40') }} rounded-2xl p-4 hover:border-red-400 hover:shadow-xs transition space-y-3" id="cat-card-{{ $cat->id }}">
+                                <div class="border {{ $isPa ? 'border-blue-200 bg-blue-50/20' : ($isPi ? 'border-rose-200 bg-rose-50/20' : 'border-slate-200 bg-slate-50/40') }} rounded-2xl p-4 hover:border-red-400 hover:shadow-xs transition space-y-3" id="cat-card-{{ $cat->id }}" data-multi="{{ $isMulti ? 'true' : 'false' }}">
                                     <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                                         <label class="flex items-start sm:items-center gap-3 cursor-pointer flex-grow select-none">
                                             <input type="checkbox" name="categories[]" value="{{ $cat->id }}" data-fee="{{ intval($cat->registration_fee ?: ($event->registration_fee ?: 150000)) }}" class="cat-checkbox mt-1 sm:mt-0 w-5 h-5 text-red-600 rounded border-slate-300 focus:ring-red-500" {{ $isChecked ? 'checked' : '' }} onchange="onCategoryToggle({{ $cat->id }})">
@@ -196,6 +197,16 @@
                                                             <i class="fa-solid fa-users text-slate-500"></i> Umum / Campuran
                                                         </span>
                                                     @endif
+
+                                                    @if($isMulti)
+                                                        <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-black uppercase tracking-wider bg-emerald-100 text-emerald-800 border border-emerald-300">
+                                                            <i class="fa-solid fa-layer-group text-emerald-600"></i> Multi-Regu Diperbolehkan
+                                                        </span>
+                                                    @else
+                                                        <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-bold uppercase tracking-wider bg-slate-100 text-slate-700 border border-slate-200" title="Dibatasi 1 regu per sekolah">
+                                                            <i class="fa-solid fa-user-check text-slate-500"></i> Kuota: Maks. 1 Regu
+                                                        </span>
+                                                    @endif
                                                 </div>
                                                 <div class="text-xs text-slate-500 mt-1">
                                                     Tingkat: <span class="font-bold text-slate-700">PMR {{ $cat->level }}</span> &bull; Biaya: <strong class="text-red-600 font-bold font-mono">Rp {{ number_format($cat->registration_fee ?: ($event->registration_fee ?: 150000), 0, ',', '.') }}</strong> <span class="text-[11px] text-slate-400">/ Regu</span>
@@ -203,25 +214,33 @@
                                             </div>
                                         </label>
 
-                                        <button type="button" onclick="addTeamRow({{ $cat->id }})" id="btn-add-team-{{ $cat->id }}" class="btn-add-team {{ $isChecked ? '' : 'hidden' }} shrink-0 text-xs font-bold text-red-600 hover:text-red-700 bg-red-50 hover:bg-red-100 border border-red-200 px-3.5 py-1.5 rounded-xl transition flex items-center gap-1.5 shadow-2xs">
-                                            <i class="fa-solid fa-plus-circle"></i> + Tambah Regu
-                                        </button>
+                                        @if($isMulti)
+                                            <button type="button" onclick="addTeamRow({{ $cat->id }})" id="btn-add-team-{{ $cat->id }}" class="btn-add-team {{ $isChecked ? '' : 'hidden' }} shrink-0 text-xs font-bold text-red-600 hover:text-red-700 bg-red-50 hover:bg-red-100 border border-red-200 px-3.5 py-1.5 rounded-xl transition flex items-center gap-1.5 shadow-2xs">
+                                                <i class="fa-solid fa-plus-circle"></i> + Tambah Regu
+                                            </button>
+                                        @else
+                                            <div id="btn-add-team-{{ $cat->id }}" class="hidden"></div>
+                                        @endif
                                     </div>
 
                                     <!-- Dynamic Team Inputs Container -->
                                     <div id="teams-container-{{ $cat->id }}" class="teams-container space-y-2 pt-2.5 border-t border-slate-200/60 {{ $isChecked ? '' : 'hidden' }}">
                                         @php
-                                            $oldLabels = old('team_labels.'.$cat->id, ['Regu A']);
+                                            $defaultLabel = $isPa ? 'Regu Putra' : ($isPi ? 'Regu Putri' : 'Regu A');
+                                            $oldLabels = old('team_labels.'.$cat->id, [$defaultLabel]);
                                             if (!is_array($oldLabels)) $oldLabels = [$oldLabels];
-                                            if (empty($oldLabels)) $oldLabels = ['Regu A'];
+                                            if (empty($oldLabels)) $oldLabels = [$defaultLabel];
+                                            if (!$isMulti) $oldLabels = array_slice($oldLabels, 0, 1);
                                         @endphp
                                         @foreach($oldLabels as $idx => $lbl)
                                             <div class="team-input-row flex items-center gap-2">
-                                                <span class="text-[11px] font-bold text-slate-500 w-16 shrink-0 row-index-label">Regu {{ chr(65 + $idx) }}:</span>
-                                                <input type="text" name="team_labels[{{ $cat->id }}][]" value="{{ $lbl }}" placeholder="Label Regu, misal: Regu {{ chr(65 + $idx) }}" class="team-label-input flex-grow text-xs bg-white border border-slate-200 px-3 py-2 rounded-xl focus:outline-none focus:border-red-500 shadow-2xs font-semibold text-slate-800" oninput="calculateFee()">
-                                                <button type="button" onclick="removeTeamRow(this, {{ $cat->id }})" class="btn-remove-team {{ count($oldLabels) > 1 ? '' : 'hidden' }} text-slate-400 hover:text-rose-600 hover:bg-rose-50 p-2 rounded-lg transition" title="Hapus Regu Ini">
-                                                    <i class="fa-solid fa-trash-can text-xs"></i>
-                                                </button>
+                                                <span class="text-[11px] font-bold text-slate-500 w-24 shrink-0 row-index-label">{{ $isMulti ? 'Regu ' . chr(65 + $idx) . ':' : ($isPa ? 'Regu Putra:' : ($isPi ? 'Regu Putri:' : 'Nama Regu:')) }}</span>
+                                                <input type="text" name="team_labels[{{ $cat->id }}][]" value="{{ $lbl }}" placeholder="Label Regu" class="team-label-input flex-grow text-xs bg-white border border-slate-200 px-3 py-2 rounded-xl focus:outline-none focus:border-red-500 shadow-2xs font-semibold text-slate-800" oninput="calculateFee()" {{ !$isMulti ? '' : '' }}>
+                                                @if($isMulti)
+                                                    <button type="button" onclick="removeTeamRow(this, {{ $cat->id }})" class="btn-remove-team {{ count($oldLabels) > 1 ? '' : 'hidden' }} text-slate-400 hover:text-rose-600 hover:bg-rose-50 p-2 rounded-lg transition" title="Hapus Regu Ini">
+                                                        <i class="fa-solid fa-trash-can text-xs"></i>
+                                                    </button>
+                                                @endif
                                             </div>
                                         @endforeach
                                     </div>
@@ -370,6 +389,15 @@
     }
 
     function addTeamRow(catId) {
+        const card = document.getElementById('cat-card-' + catId);
+        const isMulti = card ? card.dataset.multi === 'true' : true;
+        const container = document.getElementById('teams-container-' + catId);
+        const count = container ? container.querySelectorAll('.team-input-row').length : 0;
+
+        if (!isMulti && count >= 1) {
+            return; // Dibatasi maksimal 1 regu untuk cabang ini
+        }
+
         const cb = document.querySelector(`input[name="categories[]"][value="${catId}"]`);
         if (cb && !cb.checked) {
             cb.checked = true;
@@ -377,18 +405,19 @@
             return;
         }
 
-        const container = document.getElementById('teams-container-' + catId);
-        const count = container.querySelectorAll('.team-input-row').length;
         const letter = String.fromCharCode(65 + count);
+        const labelText = isMulti ? `Regu ${letter}:` : 'Nama Regu:';
+        const defaultVal = isMulti ? `Regu ${letter}` : 'Regu Utama';
 
         const row = document.createElement('div');
         row.className = 'team-input-row flex items-center gap-2';
         row.innerHTML = `
-            <span class="text-[11px] font-bold text-slate-500 w-16 shrink-0 row-index-label">Regu ${letter}:</span>
-            <input type="text" name="team_labels[${catId}][]" value="Regu ${letter}" placeholder="Label Regu, misal: Regu ${letter}" class="team-label-input flex-grow text-xs bg-white border border-slate-200 px-3 py-2 rounded-xl focus:outline-none focus:border-red-500 shadow-2xs font-semibold text-slate-800" oninput="calculateFee()">
+            <span class="text-[11px] font-bold text-slate-500 w-24 shrink-0 row-index-label">${labelText}</span>
+            <input type="text" name="team_labels[${catId}][]" value="${defaultVal}" placeholder="Label Regu" class="team-label-input flex-grow text-xs bg-white border border-slate-200 px-3 py-2 rounded-xl focus:outline-none focus:border-red-500 shadow-2xs font-semibold text-slate-800" oninput="calculateFee()">
+            ${isMulti ? `
             <button type="button" onclick="removeTeamRow(this, ${catId})" class="btn-remove-team text-slate-400 hover:text-rose-600 hover:bg-rose-50 p-2 rounded-lg transition" title="Hapus Regu Ini">
                 <i class="fa-solid fa-trash-can text-xs"></i>
-            </button>
+            </button>` : ''}
         `;
         container.appendChild(row);
         updateRemoveButtons(catId);
