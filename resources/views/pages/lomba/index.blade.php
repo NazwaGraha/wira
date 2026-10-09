@@ -30,9 +30,6 @@
                 <a href="{{ route('lomba.scoreboard') }}" class="bg-amber-500/20 hover:bg-amber-500/30 border border-amber-500/40 text-amber-300 px-7 py-3.5 rounded-xl font-bold transition flex items-center gap-2">
                     <i class="fa-solid fa-square-poll-vertical"></i> Live Klasemen Juara
                 </a>
-                <button type="button" onclick="openInfoModal()" class="bg-red-600/20 hover:bg-red-600/30 border border-red-500/40 text-red-300 hover:text-white px-7 py-3.5 rounded-xl font-bold transition flex items-center gap-2 cursor-pointer shadow-lg shadow-red-950/20">
-                    <i class="fa-solid fa-folder-open text-amber-400"></i> Menu Informasi Lomba
-                </button>
                 @if($event && $event->handbook_file)
                     <a href="{{ asset('storage/' . $event->handbook_file) }}" target="_blank" class="bg-indigo-600/20 hover:bg-indigo-600/30 border border-indigo-500/40 text-indigo-300 px-7 py-3.5 rounded-xl font-bold transition flex items-center gap-2">
                         <i class="fa-solid fa-file-pdf"></i> Unduh Juklak Juknis
