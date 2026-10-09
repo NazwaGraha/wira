@@ -164,6 +164,7 @@ Route::prefix('admin')->name('admin.')->group(function () {
         // Pengelolaan Menu Informasi Lomba (CRUD Sub Menu & Dokumen Berkas)
         Route::resource('competition-info-menus', \App\Http\Controllers\Admin\CompetitionInfoMenuController::class)->names('competition-info-menus');
         Route::post('/competition-info-menus/{id}/toggle-active', [\App\Http\Controllers\Admin\CompetitionInfoMenuController::class, 'toggleActive'])->name('competition-info-menus.toggle-active');
+        Route::post('/competition-info-menus/{id}/quick-upload', [\App\Http\Controllers\Admin\CompetitionInfoMenuController::class, 'quickUpload'])->name('competition-info-menus.quick-upload');
         Route::post('/competition-info-menus-reset-defaults', [\App\Http\Controllers\Admin\CompetitionInfoMenuController::class, 'resetDefaults'])->name('competition-info-menus.reset-defaults');
 
         // System Utility: Bersihkan Cache & Sinkronisasi Server

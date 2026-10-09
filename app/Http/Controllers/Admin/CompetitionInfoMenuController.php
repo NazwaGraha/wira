@@ -61,6 +61,7 @@ class CompetitionInfoMenuController extends Controller
         $totalMenus = $infoMenus->count();
         $activeCount = $infoMenus->where('is_active', true)->count();
         $fileCount = $infoMenus->where('action_type', 'file')->count();
+        $uploadedFileCount = $infoMenus->whereNotNull('file_path')->count();
         $linkCount = $infoMenus->whereIn('action_type', ['link', 'whatsapp'])->count();
 
         return view('admin.competition.info-menus.index', compact(
@@ -70,6 +71,7 @@ class CompetitionInfoMenuController extends Controller
             'totalMenus',
             'activeCount',
             'fileCount',
+            'uploadedFileCount',
             'linkCount'
         ));
     }
@@ -233,5 +235,28 @@ class CompetitionInfoMenuController extends Controller
 
         return redirect()->route('admin.competition-info-menus.index')
             ->with('success', '8 Sub Menu default Informasi Lomba berhasil dipulihkan!');
+    }
+
+    /**
+     * Quick upload file for a menu item directly from index card modal.
+     */
+    public function quickUpload(Request $request, $id)
+    {
+        $infoMenu = CompetitionInfoMenu::findOrFail($id);
+
+        $request->validate([
+            'file_upload' => 'required|file|mimes:pdf,doc,docx,xls,xlsx,zip,jpg,jpeg,png|max:25600',
+        ]);
+
+        if ($infoMenu->file_path && Storage::disk('public')->exists($infoMenu->file_path)) {
+            Storage::disk('public')->delete($infoMenu->file_path);
+        }
+
+        $filePath = $request->file('file_upload')->store('competition/info-docs', 'public');
+        $infoMenu->file_path = $filePath;
+        $infoMenu->action_type = 'file';
+        $infoMenu->save();
+
+        return redirect()->back()->with('success', 'Berkas untuk menu "' . $infoMenu->title . '" berhasil diunggah!');
     }
 }

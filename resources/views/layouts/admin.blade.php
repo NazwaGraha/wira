@@ -149,9 +149,9 @@
                 <i class="fa-solid fa-paper-plane w-5 text-center text-indigo-400"></i>
                 <span>Siaran Email / Informasi</span>
             </a>
-            <a href="{{ route('admin.competition-info-menus.index') }}" class="flex items-center gap-3 px-3 py-2.5 rounded-xl font-medium text-sm transition {{ request()->routeIs('admin.competition-info-menus.*') ? 'bg-pmr-primary text-white shadow-md shadow-red-950/40' : 'hover:bg-slate-800 text-slate-300' }}">
+            <a href="{{ route('admin.competition-info-menus.index') }}" class="flex items-center gap-3 px-3 py-2.5 rounded-xl font-medium text-sm transition {{ request()->routeIs('admin.competition-info-menus.*') ? 'bg-pmr-primary text-white shadow-md shadow-red-950/40' : 'hover:bg-slate-800 text-slate-300' }}" title="Kelola Menu Informasi Lomba (Surat, Juklak, Grid, Denah, Kontak)">
                 <i class="fa-solid fa-folder-open w-5 text-center text-pink-400"></i>
-                <span>Menu Informasi Lomba</span>
+                <span class="truncate">Informasi Lomba</span>
             </a>
 
             <!-- Submenu Donor Darah -->
