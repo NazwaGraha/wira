@@ -294,11 +294,8 @@
                 <i class="fa-solid fa-circle-question text-amber-400 text-base sm:text-lg shrink-0"></i>
                 <span class="font-medium">Membutuhkan surat resmi khusus atau konfirmasi berkas? Hubungi sekretariat panitia lomba.</span>
             </div>
-            <div class="flex items-center gap-3 w-full sm:w-auto shrink-0">
-                <button type="button" onclick="openContactPersonModal()" class="flex-1 sm:flex-initial bg-emerald-600 hover:bg-emerald-500 text-white font-black px-5 py-3 rounded-xl transition flex items-center justify-center gap-2 shadow-md text-sm cursor-pointer">
-                    <i class="fa-brands fa-whatsapp text-base"></i> Hubungi Panitia (3 Tingkat)
-                </button>
-                <button type="button" onclick="closeInfoModal()" class="flex-1 sm:flex-initial bg-slate-800 hover:bg-slate-700 text-slate-200 font-black px-5 py-3 rounded-xl transition border border-slate-700 cursor-pointer text-sm">
+            <div class="flex items-center gap-3 w-full sm:w-auto shrink-0 justify-end">
+                <button type="button" onclick="closeInfoModal()" class="w-full sm:w-auto bg-slate-800 hover:bg-slate-700 text-slate-200 font-black px-7 py-3 rounded-xl transition border border-slate-700 cursor-pointer text-sm">
                     Tutup
                 </button>
             </div>
@@ -310,7 +307,7 @@
 <!-- ============================================================ -->
 <!-- MODAL POPUP: CONTACT PERSON RESMI (3 TINGKAT: MULA, MADYA, WIRA) -->
 <!-- ============================================================ -->
-<div id="modal-contact-person" class="fixed inset-0 z-60 hidden overflow-y-auto bg-slate-950/85 backdrop-blur-md transition-all duration-300 flex items-center justify-center p-4" role="dialog" aria-modal="true">
+<div id="modal-contact-person" class="fixed inset-0 hidden overflow-y-auto bg-slate-950/90 backdrop-blur-md transition-all duration-300 flex items-center justify-center p-4" style="z-index: 99999;" role="dialog" aria-modal="true">
     <div class="relative w-full max-w-2xl bg-gradient-to-b from-slate-900 via-slate-900 to-slate-950 border-2 border-slate-700/80 rounded-3xl shadow-2xl overflow-hidden transform transition-all text-white my-6">
         
         <!-- Header -->
@@ -394,7 +391,7 @@
 
                         <a href="{{ $waUrl }}" target="_blank" class="px-5 py-3 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-black text-xs sm:text-sm transition flex items-center justify-center gap-2 shadow-lg shadow-emerald-950/40 shrink-0">
                             <i class="fa-brands fa-whatsapp text-lg"></i>
-                            <span>Chat WA {{ $lvl }}</span>
+                            <span>Chat WA PMR {{ $lvl }}</span>
                         </a>
                     </div>
                 @endforeach
@@ -413,7 +410,7 @@
 </div>
 
 <!-- Mini Notice Dialog for Pending Upload Documents -->
-<div id="modal-doc-notice" class="fixed inset-0 z-60 hidden overflow-y-auto bg-slate-950/80 backdrop-blur-md transition-all duration-200 flex items-center justify-center p-4">
+<div id="modal-doc-notice" class="fixed inset-0 hidden overflow-y-auto bg-slate-950/90 backdrop-blur-md transition-all duration-200 flex items-center justify-center p-4" style="z-index: 99999;">
     <div class="bg-slate-900 border border-slate-700 rounded-2xl max-w-md w-full p-6 text-white text-center space-y-4 shadow-2xl">
         <div class="w-14 h-14 rounded-full bg-amber-500/10 text-amber-400 border border-amber-500/30 flex items-center justify-center text-2xl mx-auto">
             <i class="fa-solid fa-clock-rotate-left"></i>
@@ -441,6 +438,7 @@
         const modal = document.getElementById('modal-informasi-lomba');
         if (modal) {
             modal.classList.remove('hidden');
+            modal.style.display = 'flex';
             document.body.style.overflow = 'hidden';
         }
     }
@@ -449,6 +447,7 @@
         const modal = document.getElementById('modal-informasi-lomba');
         if (modal) {
             modal.classList.add('hidden');
+            modal.style.display = 'none';
             document.body.style.overflow = '';
         }
     }
@@ -457,6 +456,7 @@
         const modal = document.getElementById('modal-contact-person');
         if (modal) {
             modal.classList.remove('hidden');
+            modal.style.display = 'flex';
             document.body.style.overflow = 'hidden';
         }
     }
@@ -465,6 +465,7 @@
         const modal = document.getElementById('modal-contact-person');
         if (modal) {
             modal.classList.add('hidden');
+            modal.style.display = 'none';
             const infoModal = document.getElementById('modal-informasi-lomba');
             if (!infoModal || infoModal.classList.contains('hidden')) {
                 document.body.style.overflow = '';
@@ -488,6 +489,7 @@
 
         if (noticeModal) {
             noticeModal.classList.remove('hidden');
+            noticeModal.style.display = 'flex';
         }
     }
 
@@ -495,6 +497,7 @@
         const noticeModal = document.getElementById('modal-doc-notice');
         if (noticeModal) {
             noticeModal.classList.add('hidden');
+            noticeModal.style.display = 'none';
         }
     }
 
