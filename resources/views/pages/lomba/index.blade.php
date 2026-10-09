@@ -258,7 +258,7 @@
                             @elseif($menu->action_type === 'whatsapp' || str_contains(strtolower($menu->title), 'contact'))
                                 <button type="button" onclick="openContactPersonModal()" class="w-full py-3 px-4 rounded-xl {{ $pal['btn_solid'] }} font-black text-xs sm:text-sm transition flex items-center justify-center gap-2 shadow-md cursor-pointer">
                                     <i class="fa-brands fa-whatsapp text-base"></i>
-                                    <span>{{ $menu->button_text ?: 'Pilih Contact Person' }}</span>
+                                    <span>{{ ($menu->button_text && !in_array($menu->button_text, ['Hubungi Contact Person', 'Pilih Contact Person', 'Chat WhatsApp Panitia'])) ? $menu->button_text : 'Hubungi Panitia' }}</span>
                                 </button>
                             @elseif($isLink)
                                 <a href="{{ $menu->url_link }}" target="_blank" class="w-full py-3 px-4 rounded-xl {{ $pal['btn_bg'] }} {{ $pal['btn_text'] }} font-black text-xs sm:text-sm transition border {{ $pal['btn_border'] }} flex items-center justify-center gap-2 shadow-sm">

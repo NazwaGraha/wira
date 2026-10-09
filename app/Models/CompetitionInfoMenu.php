@@ -411,7 +411,7 @@ class CompetitionInfoMenu extends Model
                 'file_path' => null,
                 'url_link' => 'https://wa.me/6281383885600',
                 'contacts_data' => self::defaultContacts(),
-                'button_text' => 'Hubungi Contact Person',
+                'button_text' => 'Hubungi Panitia',
                 'order_position' => 8,
                 'is_active' => true,
             ],

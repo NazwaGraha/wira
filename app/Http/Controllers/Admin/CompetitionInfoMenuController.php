@@ -37,13 +37,21 @@ class CompetitionInfoMenuController extends Controller
                     CompetitionInfoMenu::create($item);
                 }
             } else {
-                // Ensure existing Contact Person item has contacts_data
+                // Ensure existing Contact Person item has contacts_data and updated button_text
                 $contactItem = CompetitionInfoMenu::where('title', 'like', '%Contact Person%')->first();
-                if ($contactItem && (empty($contactItem->contacts_data) || count($contactItem->contacts_data) === 0)) {
-                    $contactItem->contacts_data = CompetitionInfoMenu::defaultContacts();
-                    $contactItem->button_text = 'Hubungi Contact Person';
-                    $contactItem->description = 'Layanan konsultasi narahubung panitia untuk PMR Mula, PMR Madya, dan PMR Wira.';
-                    $contactItem->save();
+                if ($contactItem) {
+                    $needSave = false;
+                    if (empty($contactItem->contacts_data) || count($contactItem->contacts_data) === 0) {
+                        $contactItem->contacts_data = CompetitionInfoMenu::defaultContacts();
+                        $needSave = true;
+                    }
+                    if ($contactItem->button_text === 'Hubungi Contact Person' || $contactItem->button_text === 'Pilih Contact Person') {
+                        $contactItem->button_text = 'Hubungi Panitia';
+                        $needSave = true;
+                    }
+                    if ($needSave) {
+                        $contactItem->save();
+                    }
                 }
             }
         } catch (\Throwable $e) {
