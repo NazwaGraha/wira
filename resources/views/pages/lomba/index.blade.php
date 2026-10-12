@@ -16,7 +16,7 @@
     <!-- =================================================================== -->
     <!-- KONDISI 3: BELUM ADA JADWAL LOMBA (OFF-SEASON / EMPTY STATE)         -->
     <!-- =================================================================== -->
-    <section class="relative bg-slate-900 text-white pt-28 sm:pt-32 pb-16 sm:pb-24 overflow-hidden">
+    <section class="relative bg-slate-900 text-white pt-36 sm:pt-40 pb-16 sm:pb-24 overflow-hidden">
         <!-- Ambient Grid & Glow Background -->
         <div class="absolute inset-0 opacity-20 bg-[radial-gradient(#ef4444_1px,transparent_1px)] [background-size:16px_16px]"></div>
         <div class="absolute -top-32 -left-32 w-80 h-80 bg-red-600/15 rounded-full blur-3xl pointer-events-none"></div>
@@ -55,17 +55,12 @@
 
                 <!-- Action Buttons (Ultra Mobile Friendly) -->
                 <div class="flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4 max-w-md sm:max-w-none mx-auto">
-                    <button type="button" onclick="openContactPersonModal()" class="w-full sm:w-auto bg-emerald-600 hover:bg-emerald-500 text-white px-7 py-3.5 rounded-xl font-bold shadow-lg shadow-emerald-950/40 transition flex items-center justify-center gap-2 text-sm sm:text-base cursor-pointer">
-                        <i class="fa-brands fa-whatsapp text-lg"></i>
-                        <span>Chat Admin Lomba via WhatsApp</span>
-                    </button>
-
-                    <a href="{{ route('home') }}" class="w-full sm:w-auto bg-slate-800 hover:bg-slate-700 border border-slate-700 text-white px-6 py-3.5 rounded-xl font-bold transition flex items-center justify-center gap-2 text-sm sm:text-base">
+                    <a href="{{ route('home') }}" class="w-full sm:w-auto bg-red-600 hover:bg-red-700 text-white px-7 py-3.5 rounded-xl font-bold shadow-lg shadow-red-900/40 transition flex items-center justify-center gap-2 text-sm sm:text-base">
                         <i class="fa-solid fa-house"></i>
                         <span>Kembali ke Beranda</span>
                     </a>
 
-                    <button type="button" onclick="openInfoModal()" class="w-full sm:w-auto bg-slate-800/80 hover:bg-slate-700/80 border border-slate-700 text-slate-300 hover:text-white px-5 py-3.5 rounded-xl font-bold transition flex items-center justify-center gap-2 text-sm sm:text-base cursor-pointer">
+                    <button type="button" onclick="openInfoModal()" class="w-full sm:w-auto bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-200 hover:text-white px-6 py-3.5 rounded-xl font-bold transition flex items-center justify-center gap-2 text-sm sm:text-base cursor-pointer">
                         <i class="fa-solid fa-folder-open"></i>
                         <span>Arsip Informasi</span>
                     </button>
