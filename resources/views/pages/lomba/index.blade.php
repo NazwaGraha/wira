@@ -282,27 +282,19 @@
 
                         <!-- Teaser Action Buttons (Mobile: full width stack, Desktop: flex row) -->
                         <div class="pt-4 flex flex-col sm:flex-row items-center justify-center gap-3">
-                            @php
-                                $waReminderText = urlencode("Halo Panitia " . ($event->title ?? 'Sua Bhakti Berkarya') . ", saya dari perwakilan sekolah ingin mendaftarkan kontak kami agar mendapatkan undangan resmi & informasi awal saat pendaftaran dibuka.");
-                            @endphp
-                            <a href="https://wa.me/6281383885600?text={{ $waReminderText }}" target="_blank" class="w-full sm:w-auto bg-emerald-600 hover:bg-emerald-500 text-white px-6 py-3.5 rounded-xl font-bold shadow-lg shadow-emerald-950/40 transition flex items-center justify-center gap-2 text-xs sm:text-sm">
-                                <i class="fa-brands fa-whatsapp text-base"></i>
-                                <span>Ingatkan Saya via WhatsApp</span>
-                            </a>
-
                             @if($event && $event->handbook_file)
-                                <a href="{{ asset('storage/' . $event->handbook_file) }}" target="_blank" class="w-full sm:w-auto bg-indigo-600/30 hover:bg-indigo-600/40 border border-indigo-400/40 text-indigo-200 px-6 py-3.5 rounded-xl font-bold transition flex items-center justify-center gap-2 text-xs sm:text-sm">
+                                <a href="{{ asset('storage/' . $event->handbook_file) }}" target="_blank" class="w-full sm:w-auto bg-red-600 hover:bg-red-700 text-white px-7 py-3.5 rounded-xl font-bold shadow-lg shadow-red-900/40 transition flex items-center justify-center gap-2 text-xs sm:text-sm">
                                     <i class="fa-solid fa-file-pdf"></i>
                                     <span>Unduh Surat Pemberitahuan</span>
                                 </a>
                             @else
-                                <button type="button" onclick="handleDocumentAction('Surat Pemberitahuan Lomba', 'notice')" class="w-full sm:w-auto bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-300 px-6 py-3.5 rounded-xl font-bold transition flex items-center justify-center gap-2 text-xs sm:text-sm cursor-pointer">
+                                <button type="button" onclick="handleDocumentAction('Surat Pemberitahuan Lomba', 'notice')" class="w-full sm:w-auto bg-red-600/90 hover:bg-red-600 text-white px-7 py-3.5 rounded-xl font-bold shadow-lg shadow-red-900/30 transition flex items-center justify-center gap-2 text-xs sm:text-sm cursor-pointer">
                                     <i class="fa-solid fa-file-lines"></i>
                                     <span>Unduh Surat Pemberitahuan</span>
                                 </button>
                             @endif
 
-                            <button type="button" onclick="openInfoModal()" class="w-full sm:w-auto bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-300 hover:text-white px-5 py-3.5 rounded-xl font-bold transition flex items-center justify-center gap-2 text-xs sm:text-sm cursor-pointer">
+                            <button type="button" onclick="openInfoModal()" class="w-full sm:w-auto bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-300 hover:text-white px-6 py-3.5 rounded-xl font-bold transition flex items-center justify-center gap-2 text-xs sm:text-sm cursor-pointer">
                                 <i class="fa-solid fa-folder-open"></i>
                                 <span>Pusat Informasi</span>
                             </button>
