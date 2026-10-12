@@ -110,6 +110,35 @@
                 </div>
             </div>
         </div>
+
+        <!-- Banner Status & Pengaturan 2 Gelombang -->
+        <div class="bg-gradient-to-r from-amber-500/10 via-orange-500/10 to-red-500/10 border-2 border-amber-500/40 rounded-2xl p-5 flex flex-col md:flex-row items-center justify-between gap-4 shadow-xs">
+            <div class="flex items-center gap-4">
+                <div class="w-12 h-12 rounded-xl bg-amber-500 text-slate-950 flex items-center justify-center text-xl font-black shrink-0 shadow-sm">
+                    <i class="fa-solid fa-clock-rotate-left"></i>
+                </div>
+                <div>
+                    <div class="flex items-center gap-2 flex-wrap">
+                        <span class="text-xs font-black uppercase tracking-wider text-amber-900">Pengaturan Pendaftaran 2 Gelombang (Wave System)</span>
+                        <span class="text-[10px] bg-amber-500 text-slate-950 font-black px-2.5 py-0.5 rounded-full uppercase">
+                            {{ $activeEvent->getActiveWaveLabel() }}
+                        </span>
+                    </div>
+                    <div class="text-xs text-slate-600 mt-1">
+                        @if($activeEvent->is_waves_enabled)
+                            <span><strong>Gelombang 1:</strong> {{ $activeEvent->wave1_start_date ? $activeEvent->wave1_start_date->translatedFormat('d M') : '-' }} s/d {{ $activeEvent->wave1_end_date ? $activeEvent->wave1_end_date->translatedFormat('d M Y') : '-' }}</span> &bull;
+                            <span><strong>Gelombang 2:</strong> {{ $activeEvent->wave2_start_date ? $activeEvent->wave2_start_date->translatedFormat('d M') : '-' }} s/d {{ $activeEvent->wave2_end_date ? $activeEvent->wave2_end_date->translatedFormat('d M Y') : '-' }}</span>
+                        @else
+                            <span>Sistem 2 Gelombang dan hitung mundur otomatis dapat Anda atur tanggal & biayanya di sini.</span>
+                        @endif
+                    </div>
+                </div>
+            </div>
+            <a href="{{ route('admin.competition-fees.index', ['event_id' => $activeEvent->id]) }}" class="bg-gradient-to-r from-amber-600 to-red-600 hover:from-amber-700 hover:to-red-700 text-white px-5 py-2.5 rounded-xl font-black text-xs transition flex items-center gap-2 shadow-sm shrink-0">
+                <i class="fa-solid fa-sliders"></i>
+                <span>Atur Jadwal & Biaya Gelombang 1 & 2 &rarr;</span>
+            </a>
+        </div>
     @endif
 
     <!-- 2. Tabel Database & History Seluruh Edisi SUA BHAKTI BERKARYA -->
