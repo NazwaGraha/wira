@@ -90,9 +90,10 @@
                         <select name="level" id="level" required onchange="handleLevelChange(this.value)" class="w-full px-4 py-2.5 rounded-xl border border-slate-300 text-sm font-semibold focus:ring-2 focus:ring-pmr-primary focus:border-pmr-primary transition bg-white">
                             <option value="1" {{ old('level') == 1 ? 'selected' : '' }}>Tingkat 1 &mdash; Pembina PMR</option>
                             <option value="2" {{ old('level') == 2 ? 'selected' : '' }}>Tingkat 2 &mdash; Ketua Umum / Pimpinan</option>
-                            <option value="3" {{ old('level') == 3 ? 'selected' : '' }}>Tingkat 3 &mdash; Pengurus Harian (BPH: Sekretaris / Bendahara)</option>
-                            <option value="4" {{ old('level', 4) == 4 ? 'selected' : '' }}>Tingkat 4 &mdash; 5 Bidang Utama (Markas, Pelayanan, Diklat, Humas, Kreasi)</option>
-                            <option value="5" {{ old('level') == 5 ? 'selected' : '' }}>Tingkat 5 &mdash; Anggota / Divisi Tambahan</option>
+                            <option value="3" {{ old('level') == 3 ? 'selected' : '' }}>Tingkat 3 &mdash; Wakil Ketua</option>
+                            <option value="4" {{ old('level') == 4 ? 'selected' : '' }}>Tingkat 4 &mdash; Pengurus Harian (BPH: Sekretaris / Bendahara)</option>
+                            <option value="5" {{ old('level', 5) == 5 ? 'selected' : '' }}>Tingkat 5 &mdash; 5 Bidang Utama (Markas, Pelayanan, Diklat, Humas, Kreasi)</option>
+                            <option value="6" {{ old('level') == 6 ? 'selected' : '' }}>Tingkat 6 &mdash; Anggota / Divisi Tambahan</option>
                         </select>
                     </div>
 
@@ -107,14 +108,15 @@
                         
                         <!-- Quick Presets -->
                         <div class="flex flex-wrap gap-1.5 mt-2">
-                            <button type="button" onclick="setPresetPosition('Bidang Markas', 4, 'fa-solid fa-boxes-stacked')" class="text-[10px] bg-slate-100 hover:bg-red-50 hover:text-pmr-primary font-bold px-2 py-0.5 rounded-md text-slate-600 transition">Bidang Markas</button>
-                            <button type="button" onclick="setPresetPosition('Bidang Pelayanan', 4, 'fa-solid fa-hand-holding-heart')" class="text-[10px] bg-slate-100 hover:bg-red-50 hover:text-pmr-primary font-bold px-2 py-0.5 rounded-md text-slate-600 transition">Bidang Pelayanan</button>
-                            <button type="button" onclick="setPresetPosition('Bidang Diklat', 4, 'fa-solid fa-graduation-cap')" class="text-[10px] bg-slate-100 hover:bg-red-50 hover:text-pmr-primary font-bold px-2 py-0.5 rounded-md text-slate-600 transition">Bidang Diklat</button>
-                            <button type="button" onclick="setPresetPosition('Bidang Humas', 4, 'fa-solid fa-bullhorn')" class="text-[10px] bg-slate-100 hover:bg-red-50 hover:text-pmr-primary font-bold px-2 py-0.5 rounded-md text-slate-600 transition">Bidang Humas</button>
-                            <button type="button" onclick="setPresetPosition('Bidang Kreasi', 4, 'fa-solid fa-wand-magic-sparkles')" class="text-[10px] bg-slate-100 hover:bg-red-50 hover:text-pmr-primary font-bold px-2 py-0.5 rounded-md text-slate-600 transition">Bidang Kreasi</button>
                             <button type="button" onclick="setPresetPosition('Ketua Umum 2026/2027', 2, 'fa-solid fa-crown')" class="text-[10px] bg-slate-100 hover:bg-red-50 hover:text-pmr-primary font-bold px-2 py-0.5 rounded-md text-slate-600 transition">Ketua Umum</button>
-                            <button type="button" onclick="setPresetPosition('Sekretaris', 3, 'fa-solid fa-file-signature')" class="text-[10px] bg-slate-100 hover:bg-red-50 hover:text-pmr-primary font-bold px-2 py-0.5 rounded-md text-slate-600 transition">Sekretaris</button>
-                            <button type="button" onclick="setPresetPosition('Bendahara', 3, 'fa-solid fa-wallet')" class="text-[10px] bg-slate-100 hover:bg-red-50 hover:text-pmr-primary font-bold px-2 py-0.5 rounded-md text-slate-600 transition">Bendahara</button>
+                            <button type="button" onclick="setPresetPosition('Wakil Ketua', 3, 'fa-solid fa-user-shield')" class="text-[10px] bg-amber-50 text-amber-800 border border-amber-200 hover:bg-amber-100 font-bold px-2 py-0.5 rounded-md transition">Wakil Ketua</button>
+                            <button type="button" onclick="setPresetPosition('Sekretaris', 4, 'fa-solid fa-file-signature')" class="text-[10px] bg-slate-100 hover:bg-red-50 hover:text-pmr-primary font-bold px-2 py-0.5 rounded-md text-slate-600 transition">Sekretaris</button>
+                            <button type="button" onclick="setPresetPosition('Bendahara', 4, 'fa-solid fa-wallet')" class="text-[10px] bg-slate-100 hover:bg-red-50 hover:text-pmr-primary font-bold px-2 py-0.5 rounded-md text-slate-600 transition">Bendahara</button>
+                            <button type="button" onclick="setPresetPosition('Bidang Markas', 5, 'fa-solid fa-boxes-stacked')" class="text-[10px] bg-slate-100 hover:bg-red-50 hover:text-pmr-primary font-bold px-2 py-0.5 rounded-md text-slate-600 transition">Bidang Markas</button>
+                            <button type="button" onclick="setPresetPosition('Bidang Pelayanan', 5, 'fa-solid fa-hand-holding-heart')" class="text-[10px] bg-slate-100 hover:bg-red-50 hover:text-pmr-primary font-bold px-2 py-0.5 rounded-md text-slate-600 transition">Bidang Pelayanan</button>
+                            <button type="button" onclick="setPresetPosition('Bidang Diklat', 5, 'fa-solid fa-graduation-cap')" class="text-[10px] bg-slate-100 hover:bg-red-50 hover:text-pmr-primary font-bold px-2 py-0.5 rounded-md text-slate-600 transition">Bidang Diklat</button>
+                            <button type="button" onclick="setPresetPosition('Bidang Humas', 5, 'fa-solid fa-bullhorn')" class="text-[10px] bg-slate-100 hover:bg-red-50 hover:text-pmr-primary font-bold px-2 py-0.5 rounded-md text-slate-600 transition">Bidang Humas</button>
+                            <button type="button" onclick="setPresetPosition('Bidang Kreasi', 5, 'fa-solid fa-wand-magic-sparkles')" class="text-[10px] bg-slate-100 hover:bg-red-50 hover:text-pmr-primary font-bold px-2 py-0.5 rounded-md text-slate-600 transition">Bidang Kreasi</button>
                         </div>
                     </div>
                 </div>
@@ -414,8 +416,16 @@
         if (iconInput) iconInput.value = icon;
         if (iconPreview) iconPreview.className = icon + ' text-sm';
 
-        if (subtitleInput && (!subtitleInput.value || subtitleInput.value.trim() === '' || subtitleInput.value.startsWith('Ketua '))) {
-            subtitleInput.value = 'Ketua ' + pos;
+        if (subtitleInput && (!subtitleInput.value || subtitleInput.value.trim() === '' || subtitleInput.value.startsWith('Ketua ') || subtitleInput.value.includes('PMR Wira'))) {
+            if (pos === 'Wakil Ketua') {
+                subtitleInput.value = 'Wakil Ketua PMR Wira';
+            } else if (pos.startsWith('Ketua Umum')) {
+                subtitleInput.value = 'Masa Bakti Ragana Dwi Pantara';
+            } else if (pos === 'Sekretaris' || pos === 'Bendahara') {
+                subtitleInput.value = pos + ' PMR Wira';
+            } else {
+                subtitleInput.value = 'Ketua ' + pos;
+            }
         }
     }
 

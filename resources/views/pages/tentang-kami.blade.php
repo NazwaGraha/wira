@@ -292,9 +292,18 @@
             @php
                 $pembina = $organizationMembers->get(1, collect());
                 $ketua = $organizationMembers->get(2, collect());
-                $bph = $organizationMembers->get(3, collect());
-                $seksi = $organizationMembers->get(4, collect());
-                $others = $organizationMembers->get(5, collect());
+                $wakil = $organizationMembers->get(3, collect());
+                $bph = $organizationMembers->get(4, collect());
+                $seksi = $organizationMembers->get(5, collect());
+                $others = $organizationMembers->get(6, collect());
+
+                // Fallback kompatibilitas: jika DB lama belum digeser levelnya (level 3 masih BPH dan bukan wakil ketua)
+                if ($wakil->isNotEmpty() && $bph->isEmpty() && !$wakil->contains(fn($item) => stripos($item->position, 'wakil') !== false)) {
+                    $bph = $wakil;
+                    $seksi = $organizationMembers->get(4, collect());
+                    $others = $organizationMembers->get(5, collect());
+                    $wakil = collect();
+                }
             @endphp
 
             <!-- Level 1: Pembina PMR -->
@@ -344,7 +353,7 @@
                 </div>
             @endif
 
-            @if($pembina->isNotEmpty() && ($ketua->isNotEmpty() || $bph->isNotEmpty() || $seksi->isNotEmpty()))
+            @if($pembina->isNotEmpty() && ($ketua->isNotEmpty() || $wakil->isNotEmpty() || $bph->isNotEmpty() || $seksi->isNotEmpty() || $others->isNotEmpty()))
                 <div class="w-0.5 h-12 bg-slate-300 my-2"></div>
             @endif
 
@@ -395,11 +404,62 @@
                 </div>
             @endif
 
-            @if($ketua->isNotEmpty() && ($bph->isNotEmpty() || $seksi->isNotEmpty()))
+            @if($ketua->isNotEmpty() && ($wakil->isNotEmpty() || $bph->isNotEmpty() || $seksi->isNotEmpty() || $others->isNotEmpty()))
                 <div class="w-0.5 h-12 bg-slate-300 my-2"></div>
             @endif
 
-            <!-- Level 3: Pengurus Harian / BPH (Sekretaris & Bendahara) -->
+            <!-- Level 3: Wakil Ketua (Dedicated Level) -->
+            @if($wakil->isNotEmpty())
+                <div class="flex flex-wrap justify-center gap-6">
+                    @foreach($wakil as $m)
+                        @php
+                            $mem = $m->member ?? ($allMembers->get($m->name) ?? null);
+                            $photoUrl = $m->photo_url ?: ($mem?->photo_url ?: 'https://ui-avatars.com/api/?name=' . urlencode($m->name) . '&background=dc2626&color=ffffff&bold=true&size=300');
+                            $biodata = [
+                                'name' => $m->name,
+                                'position' => $m->position,
+                                'subtitle' => $m->subtitle,
+                                'class_grade' => $mem?->class_grade ?? ($m->subtitle ?: 'Kelas XI'),
+                                'nis' => $mem?->nis ?? '-',
+                                'gender' => $mem?->gender ?? '-',
+                                'birth_place' => $mem?->birth_place ?? '',
+                                'birth_date' => $mem?->birth_date ? \Carbon\Carbon::parse($mem->birth_date)->translatedFormat('d F Y') : '',
+                                'address' => $mem?->address ?? '',
+                                'phone' => $mem?->phone ?? '',
+                                'email' => $mem?->email ?? '',
+                                'motto' => $mem?->motto ?? '',
+                                'photo' => $photoUrl,
+                            ];
+                        @endphp
+                        <div class="bg-gradient-to-br from-slate-900 via-red-950 to-slate-900 text-white p-6 sm:p-8 rounded-3xl shadow-xl flex flex-col sm:flex-row items-center gap-6 min-w-[320px] max-w-xl border border-amber-500/30 hover:shadow-2xl transition duration-300 group">
+                            <div class="relative cursor-pointer group/photo flex-shrink-0" onclick="openBiodataModal({!! htmlspecialchars(json_encode($biodata), ENT_QUOTES, 'UTF-8') !!})">
+                                <img src="{{ $photoUrl }}" alt="{{ $m->name }}" class="w-28 h-28 sm:w-32 sm:h-32 rounded-3xl object-cover border-4 border-amber-400 shadow-xl group-hover/photo:scale-105 transition-transform duration-300">
+                                <div class="absolute inset-0 rounded-3xl bg-black/40 opacity-0 group-hover/photo:opacity-100 flex items-center justify-center transition text-white text-xs font-bold gap-1.5 backdrop-blur-xs">
+                                    <i class="fa-solid fa-id-card"></i> Biodata
+                                </div>
+                            </div>
+                            <div class="text-center sm:text-left">
+                                <div class="inline-flex items-center gap-2 bg-amber-500/20 text-amber-300 border border-amber-500/30 backdrop-blur-xs px-3 py-1 rounded-full text-xs uppercase tracking-wider font-extrabold mb-1">
+                                    <i class="fa-solid fa-user-shield text-amber-300 text-xs"></i> {{ $m->position }}
+                                </div>
+                                <div class="text-xl sm:text-2xl font-black mt-1 text-white leading-tight cursor-pointer hover:text-amber-200 transition" onclick="openBiodataModal({!! htmlspecialchars(json_encode($biodata), ENT_QUOTES, 'UTF-8') !!})">{{ $m->name }}</div>
+                                @if($m->subtitle)
+                                    <div class="text-xs sm:text-sm text-slate-300 mt-1 font-medium">{{ $m->subtitle }}</div>
+                                @endif
+                                <button type="button" onclick="openBiodataModal({!! htmlspecialchars(json_encode($biodata), ENT_QUOTES, 'UTF-8') !!})" class="mt-3 inline-flex items-center gap-1.5 text-xs font-bold text-amber-200 bg-white/10 hover:bg-amber-500 hover:text-slate-950 px-3.5 py-1.5 rounded-full transition shadow-xs">
+                                    <i class="fa-solid fa-address-card text-xs"></i> Lihat Biodata
+                                </button>
+                            </div>
+                        </div>
+                    @endforeach
+                </div>
+            @endif
+
+            @if($wakil->isNotEmpty() && ($bph->isNotEmpty() || $seksi->isNotEmpty() || $others->isNotEmpty()))
+                <div class="w-0.5 h-12 bg-slate-300 my-2"></div>
+            @endif
+
+            <!-- Level 4: Pengurus Harian / BPH (Sekretaris & Bendahara) -->
             @if($bph->isNotEmpty())
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6 w-full max-w-4xl">
                     @foreach($bph as $m)
@@ -450,7 +510,7 @@
                 <div class="w-0.5 h-12 bg-slate-300 my-2"></div>
             @endif
 
-            <!-- Level 4: 5 Bidang Utama (Semua Foto Ukuran Sama Besar & Jelas) -->
+            <!-- Level 5: 5 Bidang Utama (Semua Foto Ukuran Sama Besar & Jelas) -->
             @if($seksi->isNotEmpty())
                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6 sm:gap-7 w-full mt-2">
                     @foreach($seksi as $m)
@@ -578,7 +638,7 @@
                 </div>
             @endif
 
-            <!-- Level 5: Divisi / Anggota Tambahan (jika ada) -->
+            <!-- Level 6: Divisi / Anggota Tambahan (jika ada) -->
             @if($others->isNotEmpty())
                 <div class="w-0.5 h-12 bg-slate-300 my-2"></div>
                 <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 w-full max-w-5xl">

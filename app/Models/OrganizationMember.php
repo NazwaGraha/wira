@@ -69,9 +69,10 @@ class OrganizationMember extends Model
         return match ($level) {
             1 => 'Tingkat 1: Pembina PMR',
             2 => 'Tingkat 2: Ketua Umum / Pimpinan',
-            3 => 'Tingkat 3: Pengurus Harian (BPH)',
-            4 => 'Tingkat 4: 5 Bidang Utama',
-            default => 'Tingkat 5: Anggota / Divisi Lainnya',
+            3 => 'Tingkat 3: Wakil Ketua',
+            4 => 'Tingkat 4: Pengurus Harian (BPH)',
+            5 => 'Tingkat 5: 5 Bidang Utama',
+            default => 'Tingkat 6: Anggota / Divisi Lainnya',
         };
     }
 }

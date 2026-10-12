@@ -139,16 +139,20 @@
                                         <i class="fa-solid fa-crown text-[10px]"></i> Tingkat 2: Ketua
                                     </span>
                                 @elseif($m->level === 3)
-                                    <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold bg-blue-50 text-blue-700">
-                                        <i class="fa-solid fa-users text-[10px]"></i> Tingkat 3: BPH
+                                    <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold bg-amber-100 text-amber-800">
+                                        <i class="fa-solid fa-user-shield text-[10px]"></i> Tingkat 3: Wakil Ketua
                                     </span>
                                 @elseif($m->level === 4)
+                                    <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold bg-blue-50 text-blue-700">
+                                        <i class="fa-solid fa-users text-[10px]"></i> Tingkat 4: BPH
+                                    </span>
+                                @elseif($m->level === 5)
                                     <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold bg-emerald-50 text-emerald-700">
-                                        <i class="fa-solid fa-shapes text-[10px]"></i> Tingkat 4: Bidang
+                                        <i class="fa-solid fa-shapes text-[10px]"></i> Tingkat 5: Bidang
                                     </span>
                                 @else
                                     <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold bg-slate-100 text-slate-700">
-                                        <i class="fa-solid fa-user text-[10px]"></i> Tingkat 5: Lainnya
+                                        <i class="fa-solid fa-user text-[10px]"></i> Tingkat 6: Lainnya
                                     </span>
                                 @endif
                             </td>
