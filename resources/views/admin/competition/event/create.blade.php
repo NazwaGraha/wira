@@ -186,6 +186,24 @@
                         <div class="w-11 h-6 bg-slate-300 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-600"></div>
                     </label>
                 </div>
+
+                <!-- Mode Tampilan Halaman Lomba -->
+                <div class="p-4 rounded-xl border border-slate-200 bg-slate-50/70 space-y-2">
+                    <label class="block text-xs font-bold text-slate-900 uppercase tracking-wider">
+                        <i class="fa-solid fa-desktop text-red-500 mr-1"></i> Mode Tampilan Halaman Web (/lomba)
+                    </label>
+                    <select name="display_mode" class="w-full px-3 py-2.5 rounded-xl border border-slate-300 bg-white text-xs font-bold text-slate-800 focus:outline-none focus:border-red-500">
+                        <option value="auto" {{ old('display_mode', 'auto') === 'auto' ? 'selected' : '' }}>
+                            ⚙️ Otomatis Sesuai Jadwal (Teaser jika masih lama, Aktif jika buka)
+                        </option>
+                        <option value="active" {{ old('display_mode') === 'active' ? 'selected' : '' }}>
+                            🟢 Paksa Mode Aktif (Buka Pendaftaran / Countdown Gelombang)
+                        </option>
+                        <option value="teaser" {{ old('display_mode') === 'teaser' ? 'selected' : '' }}>
+                            🟡 Paksa Mode Akan Datang (Teaser / Save the Date Beberapa Bulan Lagi)
+                        </option>
+                    </select>
+                </div>
             </div>
         </div>
 

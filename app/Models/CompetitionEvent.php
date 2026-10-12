@@ -33,7 +33,56 @@ class CompetitionEvent extends Model
         'wave2_start_date',
         'wave2_end_date',
         'is_waves_enabled',
+        'display_mode',
     ];
+
+    /**
+     * Get the display state for competition landing page:
+     * - 'empty': no active event or off-season
+     * - 'teaser': upcoming event, still months away or forced teaser
+     * - 'active': active event with registration open / short-term countdown
+     */
+    public function getDisplayState(): string
+    {
+        if (!$this->is_active) {
+            return 'empty';
+        }
+
+        $mode = $this->display_mode ?? 'auto';
+
+        if ($mode === 'teaser') {
+            return 'teaser';
+        }
+
+        if ($mode === 'active') {
+            return 'active';
+        }
+
+        // Auto mode logic
+        // If registration is currently open, it is definitely active
+        if ($this->is_registration_open) {
+            return 'active';
+        }
+
+        $now = now();
+
+        // If wave 1 start date is in the future (> 7 days), show teaser
+        if ($this->wave1_start_date && $now->lt($this->wave1_start_date)) {
+            if ($now->diffInDays($this->wave1_start_date, false) >= 7) {
+                return 'teaser';
+            }
+            return 'active';
+        }
+
+        // If event start date is in the future (> 14 days) and registration is closed
+        if ($this->start_date && $now->lt($this->start_date)) {
+            if ($now->diffInDays($this->start_date, false) >= 14) {
+                return 'teaser';
+            }
+        }
+
+        return 'active';
+    }
 
     protected $casts = [
         'start_date' => 'date',
@@ -105,6 +154,10 @@ class CompetitionEvent extends Model
      */
     public function getCountdownTarget(): ?\Carbon\Carbon
     {
+        if ($this->getDisplayState() === 'teaser') {
+            return $this->wave1_start_date ?? ($this->start_date ? $this->start_date->copy()->startOfDay() : null);
+        }
+
         $activeWave = $this->getActiveWave();
 
         if ($activeWave === 'upcoming') {

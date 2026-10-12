@@ -372,6 +372,27 @@
                         </div>
                     </div>
 
+                    <!-- Mode Tampilan Halaman Lomba (3 Kondisi) -->
+                    <div class="p-4 rounded-xl border border-slate-200 bg-slate-50/70 space-y-2">
+                        <label class="block text-xs font-bold text-slate-900 uppercase tracking-wider">
+                            <i class="fa-solid fa-desktop text-red-500 mr-1"></i> Mode Tampilan Halaman Web (/lomba)
+                        </label>
+                        <select name="display_mode" class="w-full px-3 py-2.5 rounded-xl border border-slate-300 bg-white text-xs font-bold text-slate-800 focus:outline-none focus:border-red-500">
+                            <option value="auto" {{ old('display_mode', $event->display_mode ?? 'auto') === 'auto' ? 'selected' : '' }}>
+                                ⚙️ Otomatis Sesuai Jadwal (Teaser jika masih lama, Aktif jika buka)
+                            </option>
+                            <option value="active" {{ old('display_mode', $event->display_mode ?? 'auto') === 'active' ? 'selected' : '' }}>
+                                🟢 Paksa Mode Aktif (Buka Pendaftaran / Countdown Gelombang)
+                            </option>
+                            <option value="teaser" {{ old('display_mode', $event->display_mode ?? 'auto') === 'teaser' ? 'selected' : '' }}>
+                                🟡 Paksa Mode Akan Datang (Teaser / Save the Date Beberapa Bulan Lagi)
+                            </option>
+                        </select>
+                        <p class="text-[11px] text-slate-500 leading-relaxed">
+                            Bila "Status Event Aktif" di atas dimatikan, web akan otomatis beralih ke <strong>Kondisi Belum Ada Jadwal (Off-Season)</strong>.
+                        </p>
+                    </div>
+
                     <!-- Biaya Default per Tim -->
                     <div>
                         <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">

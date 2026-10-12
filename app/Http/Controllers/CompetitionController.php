@@ -18,20 +18,27 @@ class CompetitionController extends Controller
             $q->where('is_active', true)->orderBy('order_position');
         }])->first();
 
-        if (!$event) {
-            $event = CompetitionEvent::first();
+        $pageState = 'empty';
+        $pastEvent = null;
+
+        if ($event) {
+            $pageState = $event->getDisplayState();
+        } else {
+            // Find most recent previous event to display in history/hall of fame
+            $pastEvent = CompetitionEvent::latest()->first();
         }
 
-        $categoriesByLevel = $event ? $event->categories->groupBy('level') : collect();
+        $categoriesByLevel = $event ? $event->categories->groupBy('level') : ($pastEvent ? $pastEvent->categories()->where('is_active', true)->get()->groupBy('level') : collect());
 
         // Load Menu Informasi Lomba (Backoffice Managed)
         $infoMenus = collect();
+        $targetEvent = $event ?: $pastEvent;
         try {
             if (\Illuminate\Support\Facades\Schema::hasTable('competition_info_menus')) {
                 $infoMenus = \App\Models\CompetitionInfoMenu::where('is_active', true)
-                    ->when($event, function($q) use ($event) {
-                        $q->where(function($sub) use ($event) {
-                            $sub->where('competition_event_id', $event->id)
+                    ->when($targetEvent, function($q) use ($targetEvent) {
+                        $q->where(function($sub) use ($targetEvent) {
+                            $sub->where('competition_event_id', $targetEvent->id)
                                 ->orWhereNull('competition_event_id');
                         });
                     })
@@ -46,16 +53,29 @@ class CompetitionController extends Controller
         // Fallback to default 8 items if database records are empty
         if ($infoMenus->isEmpty()) {
             $defaultItems = \App\Models\CompetitionInfoMenu::defaultItems();
-            $infoMenus = collect(array_map(function($item) use ($event) {
-                if ($event && $event->handbook_file && in_array($item['title'], ['Juklak Juknis', 'Buku Panduan Lomba'])) {
+            $infoMenus = collect(array_map(function($item) use ($targetEvent) {
+                if ($targetEvent && $targetEvent->handbook_file && in_array($item['title'], ['Juklak Juknis', 'Buku Panduan Lomba'])) {
                     $item['action_type'] = 'file';
-                    $item['file_path'] = $event->handbook_file;
+                    $item['file_path'] = $targetEvent->handbook_file;
                 }
                 return new \App\Models\CompetitionInfoMenu($item);
             }, $defaultItems));
         }
 
-        return view('pages.lomba.index', compact('event', 'categoriesByLevel', 'infoMenus'));
+        // Past galleries / highlight documentation
+        $pastGalleries = collect();
+        try {
+            if (\Illuminate\Support\Facades\Schema::hasTable('galleries')) {
+                $pastGalleries = \App\Models\Gallery::where('is_active', true)
+                    ->latest()
+                    ->take(6)
+                    ->get();
+            }
+        } catch (\Throwable $e) {
+            $pastGalleries = collect();
+        }
+
+        return view('pages.lomba.index', compact('event', 'pastEvent', 'pageState', 'categoriesByLevel', 'infoMenus', 'pastGalleries'));
     }
 
     public function register()
