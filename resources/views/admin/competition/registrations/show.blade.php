@@ -17,7 +17,12 @@
         <div class="bg-white p-6 sm:p-8 rounded-2xl shadow-sm border border-slate-200">
             <div class="flex justify-between items-start gap-4 pb-6 border-b border-slate-100">
                 <div>
-                    <span class="font-mono text-xs font-bold text-slate-500 bg-slate-100 px-2.5 py-1 rounded">{{ $registration->registration_code }}</span>
+                    <div class="flex items-center gap-2 flex-wrap">
+                        <span class="font-mono text-xs font-bold text-slate-500 bg-slate-100 px-2.5 py-1 rounded">{{ $registration->registration_code }}</span>
+                        <span class="px-2.5 py-0.5 rounded text-xs font-extrabold {{ $registration->registration_wave == 2 ? 'bg-emerald-100 text-emerald-800 border border-emerald-300' : 'bg-amber-100 text-amber-800 border border-amber-300' }}">
+                            {{ $registration->registration_wave == 2 ? ($registration->event->wave2_name ?: 'Gelombang 2') : ($registration->event->wave1_name ?: 'Gelombang 1') }}
+                        </span>
+                    </div>
                     <h2 class="text-2xl font-black text-slate-900 mt-2 uppercase">{{ $registration->school_name }}</h2>
                     <div class="text-xs text-slate-500 font-semibold mt-1">
                         Tingkat: <span class="text-red-600 font-bold">PMR {{ $registration->level }}</span> &bull; Terdaftar: {{ $registration->created_at ? $registration->created_at->translatedFormat('d F Y, H:i') . ' WIB' : '-' }}
@@ -72,7 +77,7 @@
                                 <div class="text-xs text-slate-500 mt-0.5">Nama Regu: <strong>{{ $team->team_name }}</strong></div>
                             </div>
                             <span class="bg-white border border-slate-200 text-slate-700 font-mono text-xs font-bold px-3 py-1 rounded-lg">
-                                Rp {{ number_format($team->category->registration_fee ?: ($registration->event->registration_fee ?: 150000), 0, ',', '.') }}
+                                Rp {{ number_format($team->category ? $team->category->getFeeForWave($registration->registration_wave ?: 1) : floatval($registration->event->registration_fee ?: 150000), 0, ',', '.') }}
                             </span>
                         </div>
                     @endforeach

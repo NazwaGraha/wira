@@ -38,6 +38,50 @@
             </div>
         @endif
 
+        @php
+            $wave = $activeWave ?? ($event ? $event->getActiveWave() : 1);
+            $waveLabelText = $waveLabel ?? ($event ? $event->getActiveWaveLabel() : 'Gelombang 1');
+            $targetCountdown = $countdownTarget ?? ($event ? $event->getCountdownTarget() : null);
+        @endphp
+
+        <!-- Wave Status & Live Countdown Banner -->
+        @if($event && ($event->is_waves_enabled || $event->wave1_end_date))
+            <div class="mb-6 bg-gradient-to-r {{ $wave == 1 ? 'from-amber-600 via-orange-600 to-red-600' : 'from-emerald-700 via-teal-700 to-cyan-700' }} text-white rounded-2xl p-5 sm:p-6 shadow-md flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div class="flex items-center gap-4">
+                    <div class="w-12 h-12 rounded-xl bg-white/20 backdrop-blur flex items-center justify-center text-xl shrink-0">
+                        <i class="fa-solid {{ $wave == 1 ? 'fa-fire text-yellow-300 animate-pulse' : 'fa-bolt-lightning text-yellow-200 animate-pulse' }}"></i>
+                    </div>
+                    <div>
+                        <div class="flex items-center gap-2">
+                            <span class="bg-white/25 text-white text-[10px] font-black uppercase px-2.5 py-0.5 rounded-full border border-white/20">
+                                Periode Aktif
+                            </span>
+                            <span class="text-sm font-black tracking-wide">{{ $waveLabelText }}</span>
+                        </div>
+                        <div class="text-xs text-white/90 mt-1">
+                            @if($wave == 1 && $event->wave1_end_date)
+                                Tarif Gelombang 1 berlaku hingga <strong>{{ $event->wave1_end_date->translatedFormat('d F Y, H:i') }} WIB</strong>. Setelah itu tarif otomatis beralih ke {{ $event->wave2_name ?: 'Gelombang 2' }}.
+                            @elseif($wave == 2 && $event->wave2_end_date)
+                                Pendaftaran Gelombang 2 ditutup pada <strong>{{ $event->wave2_end_date->translatedFormat('d F Y, H:i') }} WIB</strong>.
+                            @endif
+                        </div>
+                    </div>
+                </div>
+
+                @if($targetCountdown)
+                    <div class="bg-black/25 backdrop-blur px-4 py-3 rounded-xl border border-white/10 flex items-center justify-between sm:justify-start gap-3">
+                        <div class="text-[11px] text-white/80 font-bold uppercase tracking-wider">Sisa Waktu:</div>
+                        <div id="register-countdown-timer" class="font-mono font-black text-sm sm:text-base text-yellow-300 flex items-center gap-1.5" data-target="{{ $targetCountdown->toIso8601String() }}">
+                            <span id="reg-days">00</span><span class="text-[10px] text-white/70">h</span> :
+                            <span id="reg-hours">00</span><span class="text-[10px] text-white/70">j</span> :
+                            <span id="reg-minutes">00</span><span class="text-[10px] text-white/70">m</span> :
+                            <span id="reg-seconds">00</span><span class="text-[10px] text-white/70">d</span>
+                        </div>
+                    </div>
+                @endif
+            </div>
+        @endif
+
         <form action="{{ route('lomba.store') }}" method="POST" enctype="multipart/form-data" class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden" id="registration-form">
             @csrf
             
@@ -177,11 +221,12 @@
                                     $isMulti = $cat->isMultiTeamAllowed();
                                     $maxAllowed = $cat->maxTeamsPerSchool();
                                     $isChecked = in_array($cat->id, old('categories', []));
+                                    $currentCatFee = $cat->getFeeForWave($wave ?? 1);
                                 @endphp
                                 <div class="border {{ $isPa ? 'border-blue-200 bg-blue-50/20' : ($isPi ? 'border-rose-200 bg-rose-50/20' : 'border-slate-200 bg-slate-50/40') }} rounded-2xl p-4 hover:border-red-400 hover:shadow-xs transition space-y-3" id="cat-card-{{ $cat->id }}" data-multi="{{ $isMulti ? 'true' : 'false' }}" data-max-teams="{{ $maxAllowed }}">
                                     <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                                         <label class="flex items-start sm:items-center gap-3 cursor-pointer flex-grow select-none">
-                                            <input type="checkbox" name="categories[]" value="{{ $cat->id }}" data-fee="{{ intval($cat->registration_fee ?: ($event->registration_fee ?: 150000)) }}" class="cat-checkbox mt-1 sm:mt-0 w-5 h-5 text-red-600 rounded border-slate-300 focus:ring-red-500" {{ $isChecked ? 'checked' : '' }} onchange="onCategoryToggle({{ $cat->id }})">
+                                            <input type="checkbox" name="categories[]" value="{{ $cat->id }}" data-fee="{{ intval($currentCatFee) }}" class="cat-checkbox mt-1 sm:mt-0 w-5 h-5 text-red-600 rounded border-slate-300 focus:ring-red-500" {{ $isChecked ? 'checked' : '' }} onchange="onCategoryToggle({{ $cat->id }})">
                                             <div>
                                                 <div class="flex items-center flex-wrap gap-2">
                                                     <span class="font-black text-slate-900 text-sm">{{ $cat->name }}</span>
@@ -209,8 +254,19 @@
                                                         </span>
                                                     @endif
                                                 </div>
-                                                <div class="text-xs text-slate-500 mt-1">
-                                                    Tingkat: <span class="font-bold text-slate-700">PMR {{ $cat->level }}</span> &bull; Biaya: <strong class="text-red-600 font-bold font-mono">Rp {{ number_format($cat->registration_fee ?: ($event->registration_fee ?: 150000), 0, ',', '.') }}</strong> <span class="text-[11px] text-slate-400">/ Regu</span>
+                                                <div class="text-xs text-slate-500 mt-1 flex items-center gap-2 flex-wrap">
+                                                    <span>Tingkat: <span class="font-bold text-slate-700">PMR {{ $cat->level }}</span></span>
+                                                    <span>&bull;</span>
+                                                    <span>Biaya ({{ $wave == 2 ? ($event->wave2_name ?: 'Gel. 2') : ($event->wave1_name ?: 'Gel. 1') }}): <strong class="text-red-600 font-bold font-mono">Rp {{ number_format($currentCatFee, 0, ',', '.') }}</strong> <span class="text-[11px] text-slate-400">/ Regu</span></span>
+                                                    @if($cat->registration_fee_wave1 !== null && $cat->registration_fee_wave2 !== null && $cat->registration_fee_wave1 != $cat->registration_fee_wave2)
+                                                        <span class="text-[10px] text-slate-400 font-medium">
+                                                            @if($wave == 1)
+                                                                (Tarif Gel. 2: Rp {{ number_format($cat->registration_fee_wave2, 0, ',', '.') }})
+                                                            @else
+                                                                (Tarif Gel. 1: Rp {{ number_format($cat->registration_fee_wave1, 0, ',', '.') }})
+                                                            @endif
+                                                        </span>
+                                                    @endif
                                                 </div>
                                             </div>
                                         </label>
@@ -269,8 +325,8 @@
                             <div class="text-xs text-slate-300 font-medium">a.n {{ $event->bank_account_holder ?? 'PMR WIRA SMAN 1 CIAWI' }}</div>
                             
                             <div class="mt-4 pt-4 border-t border-slate-700 flex justify-between items-center text-xs">
-                                <span class="text-slate-400">Biaya per Regu:</span>
-                                <span class="font-bold text-white">Rp {{ number_format($event->registration_fee, 0, ',', '.') }}</span>
+                                <span class="text-slate-400">Periode Pendaftaran:</span>
+                                <span class="font-bold text-amber-300">{{ $waveLabelText }}</span>
                             </div>
                         </div>
 
@@ -501,6 +557,50 @@
             updateRemoveButtons(cb.value);
         });
         calculateFee();
+
+        // Live Countdown Timer for registration page
+        (function initRegisterCountdown() {
+            const timerEl = document.getElementById('register-countdown-timer');
+            if (!timerEl) return;
+            const targetStr = timerEl.getAttribute('data-target');
+            if (!targetStr) return;
+
+            const targetTime = new Date(targetStr).getTime();
+            const daysEl = document.getElementById('reg-days');
+            const hoursEl = document.getElementById('reg-hours');
+            const minutesEl = document.getElementById('reg-minutes');
+            const secondsEl = document.getElementById('reg-seconds');
+
+            function updateTimer() {
+                const now = new Date().getTime();
+                const diff = targetTime - now;
+
+                if (diff <= 0) {
+                    if (daysEl) daysEl.textContent = '00';
+                    if (hoursEl) hoursEl.textContent = '00';
+                    if (minutesEl) minutesEl.textContent = '00';
+                    if (secondsEl) secondsEl.textContent = '00';
+                    // Auto reload to fetch updated wave tariff
+                    setTimeout(() => {
+                        window.location.reload();
+                    }, 1200);
+                    return;
+                }
+
+                const d = Math.floor(diff / (1000 * 60 * 60 * 24));
+                const h = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                const m = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+                const s = Math.floor((diff % (1000 * 60)) / 1000);
+
+                if (daysEl) daysEl.textContent = String(d).padStart(2, '0');
+                if (hoursEl) hoursEl.textContent = String(h).padStart(2, '0');
+                if (minutesEl) minutesEl.textContent = String(m).padStart(2, '0');
+                if (secondsEl) secondsEl.textContent = String(s).padStart(2, '0');
+            }
+
+            updateTimer();
+            setInterval(updateTimer, 1000);
+        })();
     });
 </script>
 @endpush

@@ -21,6 +21,8 @@ class CompetitionCategory extends Model
         'point_tier',
         'criteria_schema',
         'registration_fee',
+        'registration_fee_wave1',
+        'registration_fee_wave2',
         'max_team_members',
         'has_rounds',
         'order_position',
@@ -30,11 +32,24 @@ class CompetitionCategory extends Model
     protected $casts = [
         'criteria_schema' => 'array',
         'registration_fee' => 'decimal:2',
+        'registration_fee_wave1' => 'decimal:2',
+        'registration_fee_wave2' => 'decimal:2',
         'max_team_members' => 'integer',
         'has_rounds' => 'boolean',
         'order_position' => 'integer',
         'is_active' => 'boolean',
     ];
+
+    /**
+     * Get fee for a specific wave with fallback.
+     */
+    public function getFeeForWave(int|string $wave = 1): float
+    {
+        if ($wave == 2) {
+            return floatval($this->registration_fee_wave2 !== null ? $this->registration_fee_wave2 : ($this->registration_fee ?? 150000));
+        }
+        return floatval($this->registration_fee_wave1 !== null ? $this->registration_fee_wave1 : ($this->registration_fee ?? 150000));
+    }
 
     public function event(): BelongsTo
     {

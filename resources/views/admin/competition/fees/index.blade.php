@@ -1,7 +1,7 @@
 @extends('layouts.admin')
 
-@section('title', 'Setup Biaya Pendaftaran Lomba')
-@section('page_title', 'Setup Biaya Pendaftaran Cabang Lomba')
+@section('title', 'Setup Jadwal & Biaya Pendaftaran Lomba')
+@section('page_title', 'Setup Jadwal & Biaya Pendaftaran Lomba (Gelombang 1 & 2)')
 
 @section('top_actions')
     <a href="{{ route('lomba.register') }}" target="_blank" class="bg-slate-800 hover:bg-slate-900 text-white px-4 py-2.5 rounded-xl font-bold text-xs transition flex items-center gap-2">
@@ -22,56 +22,158 @@
         </div>
     @endif
 
-    <!-- Information & Bulk Setting Box -->
-    <div class="bg-gradient-to-r from-slate-900 to-slate-800 text-white p-6 rounded-2xl shadow-sm border border-slate-700 flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
-        <div class="space-y-1">
-            <span class="px-2.5 py-0.5 rounded-md text-[10px] font-black uppercase tracking-wider bg-emerald-500 text-slate-950">
-                <i class="fa-solid fa-coins mr-1"></i> Setup Biaya Fleksibel
-            </span>
-            <h2 class="text-lg font-black text-white">Atur Biaya Pendaftaran Per Cabang Lomba</h2>
-            <p class="text-xs text-slate-300 max-w-xl">
-                Biaya yang diatur di bawah ini akan otomatis menjadi acuan tarif per regu pada <strong>Formulir Pendaftaran Peserta</strong>, kalkulasi total tagihan, e-Kwitansi resmi, dan kartu peserta.
+    @php
+        $activeWave = $event ? $event->getActiveWave() : 1;
+        $activeLabel = $event ? $event->getActiveWaveLabel() : 'Gelombang 1';
+        $targetDate = $event ? $event->getCountdownTarget() : null;
+    @endphp
+
+    <!-- Live Status Banner -->
+    <div class="bg-gradient-to-r from-slate-900 via-slate-800 to-slate-900 text-white p-6 rounded-2xl shadow-sm border border-slate-700 flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
+        <div class="space-y-2">
+            <div class="flex items-center gap-2 flex-wrap">
+                <span class="px-3 py-1 rounded-full text-xs font-black uppercase tracking-wider {{ $activeWave === 1 ? 'bg-emerald-500 text-slate-950' : ($activeWave === 2 ? 'bg-amber-400 text-slate-950' : ($activeWave === 'upcoming' ? 'bg-blue-400 text-slate-950' : 'bg-rose-500 text-white')) }}">
+                    <i class="fa-solid {{ $activeWave === 1 || $activeWave === 2 ? 'fa-clock' : 'fa-circle-info' }} mr-1"></i>
+                    Status: {{ $activeLabel }}
+                </span>
+                @if($targetDate)
+                    <span class="text-xs text-slate-300 font-mono bg-white/10 px-2.5 py-1 rounded-lg border border-white/10">
+                        Target: {{ $targetDate->translatedFormat('d F Y H:i') }} WIB
+                    </span>
+                @endif
+            </div>
+            <h2 class="text-lg font-black text-white">Setup Jadwal & Biaya Pendaftaran Lomba 2 Gelombang</h2>
+            <p class="text-xs text-slate-300 max-w-2xl leading-relaxed">
+                Atur rentang tanggal pendaftaran untuk <strong>Gelombang 1</strong> dan <strong>Gelombang 2</strong> beserta biaya masing-masing gelombang. Sistem otomatis mengalihkan harga pendaftaran dan menjalankan waktu hitung mundur (countdown) secara *real-time*.
             </p>
         </div>
 
-        <!-- Quick Bulk Applier -->
-        <div class="bg-white/10 backdrop-blur-md p-4 rounded-xl border border-white/15 w-full md:w-auto shrink-0">
-            <div class="text-[11px] font-bold text-slate-300 uppercase tracking-wider mb-2">Terapkan Cepat (Semua Input)</div>
-            <div class="flex items-center gap-2">
-                <div class="relative">
-                    <span class="absolute left-3 top-1/2 -translate-y-1/2 text-xs font-bold text-slate-400">Rp</span>
-                    <input type="number" id="bulk-fee-input" placeholder="150000" value="150000" class="w-36 pl-9 pr-3 py-2 bg-slate-900 border border-slate-700 rounded-lg text-xs font-bold text-white focus:outline-none focus:border-emerald-500 font-mono">
-                </div>
-                <button type="button" onclick="applyBulkFee()" class="bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs px-3.5 py-2 rounded-lg transition flex items-center gap-1.5 shadow-sm">
-                    <i class="fa-solid fa-wand-magic-sparkles"></i> Terapkan
-                </button>
+        <!-- Quick Bulk Applier (Gelombang 1 & Gelombang 2) -->
+        <div class="bg-white/10 backdrop-blur-md p-4 rounded-2xl border border-white/15 w-full md:w-auto shrink-0 space-y-3">
+            <div class="text-[11px] font-black text-slate-300 uppercase tracking-wider flex items-center gap-1.5">
+                <i class="fa-solid fa-wand-magic-sparkles text-amber-400"></i>
+                Terapkan Cepat ke Semua Cabang
             </div>
+            <div class="grid grid-cols-2 gap-2">
+                <div>
+                    <label class="block text-[10px] text-emerald-300 font-bold mb-1">Gelombang 1 (Rp)</label>
+                    <input type="number" id="bulk-fee-g1" placeholder="130000" value="130000" class="w-full px-2.5 py-1.5 bg-slate-900 border border-slate-700 rounded-lg text-xs font-bold text-white focus:outline-none focus:border-emerald-500 font-mono">
+                </div>
+                <div>
+                    <label class="block text-[10px] text-amber-300 font-bold mb-1">Gelombang 2 (Rp)</label>
+                    <input type="number" id="bulk-fee-g2" placeholder="150000" value="150000" class="w-full px-2.5 py-1.5 bg-slate-900 border border-slate-700 rounded-lg text-xs font-bold text-white focus:outline-none focus:border-amber-500 font-mono">
+                </div>
+            </div>
+            <button type="button" onclick="applyBulkFees()" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs py-2 rounded-xl transition flex items-center justify-center gap-1.5 shadow-sm">
+                <i class="fa-solid fa-check-double"></i> Terapkan ke Seluruh Input
+            </button>
         </div>
     </div>
 
-    <!-- Level Filter Tabs -->
-    <div class="flex flex-wrap gap-2">
-        <a href="{{ route('admin.competition-fees.index', request()->except('level')) }}" class="px-5 py-2.5 rounded-xl font-extrabold text-xs transition {{ !$level ? 'bg-slate-900 text-white shadow-md' : 'bg-white text-slate-700 hover:bg-slate-100 border border-slate-200' }}">
-            Semua Tingkatan
-        </a>
-        <a href="{{ route('admin.competition-fees.index', array_merge(request()->query(), ['level' => 'Mula'])) }}" class="px-5 py-2.5 rounded-xl font-extrabold text-xs transition {{ $level == 'Mula' ? 'bg-emerald-600 text-white shadow-md' : 'bg-white text-slate-700 hover:bg-slate-100 border border-slate-200' }}">
-            <i class="fa-solid fa-child-reaching mr-1"></i> PMR MULA (SD)
-        </a>
-        <a href="{{ route('admin.competition-fees.index', array_merge(request()->query(), ['level' => 'Madya'])) }}" class="px-5 py-2.5 rounded-xl font-extrabold text-xs transition {{ $level == 'Madya' ? 'bg-blue-600 text-white shadow-md' : 'bg-white text-slate-700 hover:bg-slate-100 border border-slate-200' }}">
-            <i class="fa-solid fa-user-group mr-1"></i> PMR MADYA (SMP)
-        </a>
-        <a href="{{ route('admin.competition-fees.index', array_merge(request()->query(), ['level' => 'Wira'])) }}" class="px-5 py-2.5 rounded-xl font-extrabold text-xs transition {{ $level == 'Wira' ? 'bg-amber-600 text-white shadow-md' : 'bg-white text-slate-700 hover:bg-slate-100 border border-slate-200' }}">
-            <i class="fa-solid fa-graduation-cap mr-1"></i> PMR WIRA (SMA)
-        </a>
-    </div>
-
-    <!-- Main Setup Form -->
-    <form action="{{ route('admin.competition-fees.update') }}" method="POST" id="fee-setup-form">
+    <!-- Main Form for Schedule & Fees -->
+    <form action="{{ route('admin.competition-fees.update') }}" method="POST" id="fee-setup-form" class="space-y-6">
         @csrf
         @if(isset($event))
             <input type="hidden" name="event_id" value="{{ $event->id }}">
         @endif
 
+        <!-- Card 1: Pengaturan Jadwal 2 Gelombang -->
+        <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+            <div class="p-5 bg-slate-50 border-b border-slate-200 flex items-center justify-between">
+                <div class="flex items-center gap-3">
+                    <span class="w-8 h-8 rounded-xl bg-red-100 text-pmr-primary flex items-center justify-center font-bold text-sm">
+                        <i class="fa-solid fa-calendar-days"></i>
+                    </span>
+                    <div>
+                        <h3 class="font-extrabold text-slate-900 text-sm">Jadwal & Periode 2 Gelombang Pendaftaran</h3>
+                        <p class="text-xs text-slate-500">Tentukan tanggal dan jam buka/tutup Gelombang 1 dan Gelombang 2</p>
+                    </div>
+                </div>
+
+                <label class="flex items-center gap-2 cursor-pointer select-none bg-white px-3 py-1.5 rounded-xl border border-slate-200 shadow-2xs hover:bg-slate-50 transition">
+                    <input type="checkbox" name="is_waves_enabled" value="1" {{ ($event && $event->is_waves_enabled) ? 'checked' : '' }} class="w-4 h-4 text-pmr-primary rounded border-slate-300 focus:ring-pmr-primary">
+                    <span class="text-xs font-bold text-slate-700">Aktifkan 2 Gelombang</span>
+                </label>
+            </div>
+
+            <div class="p-6 grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- Gelombang 1 -->
+                <div class="bg-emerald-50/40 border border-emerald-200/80 rounded-2xl p-5 space-y-4">
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center gap-2">
+                            <span class="w-3 h-3 rounded-full bg-emerald-500 animate-pulse"></span>
+                            <span class="text-xs font-black uppercase tracking-wider text-emerald-800">Gelombang 1 (Early Bird / Pembukaan Awal)</span>
+                        </div>
+                        @if($activeWave === 1)
+                            <span class="text-[10px] font-black bg-emerald-600 text-white px-2 py-0.5 rounded-full uppercase">Sedang Berjalan</span>
+                        @endif
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 mb-1">Nama / Label Gelombang 1</label>
+                        <input type="text" name="wave1_name" value="{{ old('wave1_name', $event->wave1_name ?? 'Gelombang 1') }}" class="w-full text-xs font-bold bg-white border border-slate-200 px-3.5 py-2.5 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:outline-none" placeholder="Contoh: Gelombang 1 (Early Bird)">
+                    </div>
+
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        <div>
+                            <label class="block text-xs font-bold text-slate-700 mb-1">Mulai Buka Pendaftaran</label>
+                            <input type="datetime-local" name="wave1_start_date" value="{{ old('wave1_start_date', $event && $event->wave1_start_date ? $event->wave1_start_date->format('Y-m-d\TH:i') : '') }}" class="w-full text-xs font-semibold bg-white border border-slate-200 px-3 py-2 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:outline-none">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-slate-700 mb-1">Batas Akhir Gelombang 1</label>
+                            <input type="datetime-local" name="wave1_end_date" value="{{ old('wave1_end_date', $event && $event->wave1_end_date ? $event->wave1_end_date->format('Y-m-d\TH:i') : '') }}" class="w-full text-xs font-semibold bg-white border border-slate-200 px-3 py-2 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:outline-none">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Gelombang 2 -->
+                <div class="bg-amber-50/40 border border-amber-200/80 rounded-2xl p-5 space-y-4">
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center gap-2">
+                            <span class="w-3 h-3 rounded-full bg-amber-500 animate-pulse"></span>
+                            <span class="text-xs font-black uppercase tracking-wider text-amber-800">Gelombang 2 (Reguler / Lanjutan)</span>
+                        </div>
+                        @if($activeWave === 2)
+                            <span class="text-[10px] font-black bg-amber-600 text-white px-2 py-0.5 rounded-full uppercase">Sedang Berjalan</span>
+                        @endif
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 mb-1">Nama / Label Gelombang 2</label>
+                        <input type="text" name="wave2_name" value="{{ old('wave2_name', $event->wave2_name ?? 'Gelombang 2') }}" class="w-full text-xs font-bold bg-white border border-slate-200 px-3.5 py-2.5 rounded-xl focus:ring-2 focus:ring-amber-500 focus:outline-none" placeholder="Contoh: Gelombang 2 (Reguler)">
+                    </div>
+
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        <div>
+                            <label class="block text-xs font-bold text-slate-700 mb-1">Mulai Buka Gelombang 2</label>
+                            <input type="datetime-local" name="wave2_start_date" value="{{ old('wave2_start_date', $event && $event->wave2_start_date ? $event->wave2_start_date->format('Y-m-d\TH:i') : '') }}" class="w-full text-xs font-semibold bg-white border border-slate-200 px-3 py-2 rounded-xl focus:ring-2 focus:ring-amber-500 focus:outline-none">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-slate-700 mb-1">Batas Akhir Gelombang 2 (Tutup)</label>
+                            <input type="datetime-local" name="wave2_end_date" value="{{ old('wave2_end_date', $event && $event->wave2_end_date ? $event->wave2_end_date->format('Y-m-d\TH:i') : '') }}" class="w-full text-xs font-semibold bg-white border border-slate-200 px-3 py-2 rounded-xl focus:ring-2 focus:ring-amber-500 focus:outline-none">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Level Filter Tabs -->
+        <div class="flex flex-wrap gap-2">
+            <a href="{{ route('admin.competition-fees.index', request()->except('level')) }}" class="px-5 py-2.5 rounded-xl font-extrabold text-xs transition {{ !$level ? 'bg-slate-900 text-white shadow-md' : 'bg-white text-slate-700 hover:bg-slate-100 border border-slate-200' }}">
+                Semua Tingkatan
+            </a>
+            <a href="{{ route('admin.competition-fees.index', array_merge(request()->query(), ['level' => 'Mula'])) }}" class="px-5 py-2.5 rounded-xl font-extrabold text-xs transition {{ $level == 'Mula' ? 'bg-emerald-600 text-white shadow-md' : 'bg-white text-slate-700 hover:bg-slate-100 border border-slate-200' }}">
+                <i class="fa-solid fa-child-reaching mr-1"></i> PMR MULA (SD)
+            </a>
+            <a href="{{ route('admin.competition-fees.index', array_merge(request()->query(), ['level' => 'Madya'])) }}" class="px-5 py-2.5 rounded-xl font-extrabold text-xs transition {{ $level == 'Madya' ? 'bg-blue-600 text-white shadow-md' : 'bg-white text-slate-700 hover:bg-slate-100 border border-slate-200' }}">
+                <i class="fa-solid fa-user-group mr-1"></i> PMR MADYA (SMP)
+            </a>
+            <a href="{{ route('admin.competition-fees.index', array_merge(request()->query(), ['level' => 'Wira'])) }}" class="px-5 py-2.5 rounded-xl font-extrabold text-xs transition {{ $level == 'Wira' ? 'bg-amber-600 text-white shadow-md' : 'bg-white text-slate-700 hover:bg-slate-100 border border-slate-200' }}">
+                <i class="fa-solid fa-graduation-cap mr-1"></i> PMR WIRA (SMA)
+            </a>
+        </div>
+
+        <!-- Tabel Tarif Per Cabang Lomba (Single Unified Table - NO DOUBLE INPUT) -->
         @php
             $displayLevels = $level ? [$level] : ['Mula', 'Madya', 'Wira'];
         @endphp
@@ -85,7 +187,7 @@
                 @if($lvlCats->isNotEmpty())
                     <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
                         <!-- Level Header -->
-                        <div class="p-5 border-b border-slate-200 flex items-center justify-between {{ $lvl == 'Mula' ? 'bg-emerald-50/50' : ($lvl == 'Madya' ? 'bg-blue-50/50' : 'bg-amber-50/50') }}">
+                        <div class="p-5 border-b border-slate-200 flex flex-col sm:flex-row sm:items-center justify-between gap-3 {{ $lvl == 'Mula' ? 'bg-emerald-50/50' : ($lvl == 'Madya' ? 'bg-blue-50/50' : 'bg-amber-50/50') }}">
                             <div class="flex items-center gap-3">
                                 <span class="w-8 h-8 rounded-xl flex items-center justify-center font-bold text-white text-sm {{ $lvl == 'Mula' ? 'bg-emerald-600' : ($lvl == 'Madya' ? 'bg-blue-600' : 'bg-amber-600') }}">
                                     @if($lvl == 'Mula') <i class="fa-solid fa-child-reaching"></i>
@@ -98,8 +200,8 @@
                                 </div>
                             </div>
 
-                            <button type="button" onclick="setGroupFee('{{ $lvl }}')" class="text-xs font-bold text-slate-600 hover:text-slate-900 bg-white border border-slate-200 px-3 py-1.5 rounded-lg shadow-2xs transition">
-                                Samakan Biaya Jenjang Ini
+                            <button type="button" onclick="setGroupFees('{{ $lvl }}')" class="text-xs font-bold text-slate-700 hover:text-slate-900 bg-white border border-slate-200 px-3 py-1.5 rounded-xl shadow-2xs hover:bg-slate-50 transition self-start sm:self-auto">
+                                <i class="fa-solid fa-clone mr-1 text-slate-400"></i> Samakan Tarif Jenjang Ini
                             </button>
                         </div>
 
@@ -108,11 +210,18 @@
                             <table class="w-full text-left text-xs text-slate-700">
                                 <thead class="bg-slate-50 text-slate-700 uppercase font-black border-b border-slate-200">
                                     <tr>
-                                        <th class="px-5 py-3.5 w-16 text-center">No</th>
+                                        <th class="px-5 py-3.5 w-14 text-center">No</th>
                                         <th class="px-5 py-3.5 min-w-[200px]">Kode & Nama Cabang Lomba</th>
-                                        <th class="px-5 py-3.5 w-40">Kategori Gender</th>
-                                        <th class="px-5 py-3.5 w-48">Model Penilaian</th>
-                                        <th class="px-5 py-3.5 w-60 text-right">Biaya Registrasi Per Regu</th>
+                                        <th class="px-5 py-3.5 w-36">Kategori Gender</th>
+                                        <th class="px-5 py-3.5 w-44">Model Penilaian</th>
+                                        <th class="px-5 py-3.5 w-48 text-right bg-emerald-50/30 border-l border-emerald-100">
+                                            <span class="text-emerald-800 font-black">Biaya Gelombang 1</span>
+                                            <div class="text-[9px] text-emerald-600 font-semibold normal-case">(Tarif Awal)</div>
+                                        </th>
+                                        <th class="px-5 py-3.5 w-48 text-right bg-amber-50/30 border-l border-amber-100">
+                                            <span class="text-amber-800 font-black">Biaya Gelombang 2</span>
+                                            <div class="text-[9px] text-amber-600 font-semibold normal-case">(Tarif Reguler)</div>
+                                        </th>
                                     </tr>
                                 </thead>
                                 <tbody class="divide-y divide-slate-100">
@@ -120,6 +229,8 @@
                                         @php
                                             $isPa = $cat->gender_category === 'Putra';
                                             $isPi = $cat->gender_category === 'Putri';
+                                            $feeG1 = intval($cat->registration_fee_wave1 !== null ? $cat->registration_fee_wave1 : ($cat->registration_fee ?: 130000));
+                                            $feeG2 = intval($cat->registration_fee_wave2 !== null ? $cat->registration_fee_wave2 : ($cat->registration_fee ?: 150000));
                                         @endphp
                                         <tr class="hover:bg-slate-50/80 transition">
                                             <!-- Number -->
@@ -159,11 +270,19 @@
                                                 {{ ucwords(str_replace('_', ' ', $cat->scoring_type)) }}
                                             </td>
 
-                                            <!-- Fee Input -->
-                                            <td class="px-5 py-4 text-right">
+                                            <!-- Biaya Gelombang 1 Input -->
+                                            <td class="px-5 py-4 text-right bg-emerald-50/20 border-l border-emerald-100">
                                                 <div class="inline-flex items-center relative">
                                                     <span class="absolute left-3 top-1/2 -translate-y-1/2 text-xs font-bold text-slate-400">Rp</span>
-                                                    <input type="number" step="1000" min="0" name="fees[{{ $cat->id }}]" value="{{ intval($cat->registration_fee ?: 150000) }}" data-level="{{ $lvl }}" class="fee-input w-44 pl-9 pr-4 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-xs font-black text-slate-900 font-mono text-right focus:bg-white focus:outline-none focus:border-red-500 shadow-2xs">
+                                                    <input type="number" step="1000" min="0" name="fees_wave1[{{ $cat->id }}]" value="{{ $feeG1 }}" data-level="{{ $lvl }}" class="fee-input-g1 w-36 pl-9 pr-3 py-2 bg-white border border-emerald-300 rounded-xl text-xs font-black text-emerald-950 font-mono text-right focus:ring-2 focus:ring-emerald-500 focus:outline-none shadow-2xs">
+                                                </div>
+                                            </td>
+
+                                            <!-- Biaya Gelombang 2 Input -->
+                                            <td class="px-5 py-4 text-right bg-amber-50/20 border-l border-amber-100">
+                                                <div class="inline-flex items-center relative">
+                                                    <span class="absolute left-3 top-1/2 -translate-y-1/2 text-xs font-bold text-slate-400">Rp</span>
+                                                    <input type="number" step="1000" min="0" name="fees_wave2[{{ $cat->id }}]" value="{{ $feeG2 }}" data-level="{{ $lvl }}" class="fee-input-g2 w-36 pl-9 pr-3 py-2 bg-white border border-amber-300 rounded-xl text-xs font-black text-amber-950 font-mono text-right focus:ring-2 focus:ring-amber-500 focus:outline-none shadow-2xs">
                                                 </div>
                                             </td>
                                         </tr>
@@ -179,10 +298,11 @@
         <!-- Sticky Submit Footer -->
         <div class="mt-8 sticky bottom-4 z-20 bg-white/95 backdrop-blur-md p-5 rounded-2xl shadow-xl border border-slate-200 flex flex-col sm:flex-row items-center justify-between gap-4">
             <div class="text-xs text-slate-500">
-                *Perubahan biaya akan langsung berlaku untuk seluruh pendaftaran baru berikutnya.
+                <i class="fa-solid fa-circle-info text-pmr-primary mr-1"></i>
+                Jadwal dan tarif gelombang yang disimpan akan otomatis aktif sesuai hitungan waktu real-time.
             </div>
             <button type="submit" class="w-full sm:w-auto bg-red-600 hover:bg-red-700 text-white px-8 py-3 rounded-xl font-extrabold text-xs shadow-lg shadow-red-900/20 transition flex items-center justify-center gap-2">
-                <i class="fa-solid fa-floppy-disk"></i> Simpan Pengaturan Biaya
+                <i class="fa-solid fa-floppy-disk"></i> Simpan Jadwal & Biaya 2 Gelombang
             </button>
         </div>
     </form>
@@ -192,31 +312,49 @@
 
 @push('scripts')
 <script>
-    function applyBulkFee() {
-        const val = document.getElementById('bulk-fee-input').value;
-        if (!val || val < 0) {
-            alert('Silakan masukkan nominal biaya yang valid.');
+    function applyBulkFees() {
+        const val1 = document.getElementById('bulk-fee-g1').value;
+        const val2 = document.getElementById('bulk-fee-g2').value;
+
+        if (!val1 || val1 < 0 || !val2 || val2 < 0) {
+            alert('Silakan masukkan nominal tarif yang valid untuk Gelombang 1 dan Gelombang 2.');
             return;
         }
-        if (confirm(`Terapkan biaya Rp ${parseInt(val).toLocaleString('id-ID')} ke seluruh cabang lomba di layar?`)) {
-            document.querySelectorAll('.fee-input').forEach(input => {
-                input.value = val;
+
+        const msg = `Terapkan ke seluruh cabang lomba:\n• Gelombang 1: Rp ${parseInt(val1).toLocaleString('id-ID')}\n• Gelombang 2: Rp ${parseInt(val2).toLocaleString('id-ID')}\nLanjutkan?`;
+        if (confirm(msg)) {
+            document.querySelectorAll('.fee-input-g1').forEach(input => {
+                input.value = val1;
+            });
+            document.querySelectorAll('.fee-input-g2').forEach(input => {
+                input.value = val2;
             });
         }
     }
 
-    function setGroupFee(level) {
-        const nominal = prompt(`Masukkan nominal biaya (Rp) untuk semua cabang PMR ${level}:`, "150000");
-        if (nominal !== null && nominal !== '') {
-            const val = parseInt(nominal);
-            if (!isNaN(val) && val >= 0) {
-                document.querySelectorAll(`.fee-input[data-level="${level}"]`).forEach(input => {
-                    input.value = val;
-                });
-            } else {
-                alert('Nominal tidak valid.');
-            }
+    function setGroupFees(level) {
+        const nominal1 = prompt(`Masukkan tarif Gelombang 1 (Rp) untuk semua cabang PMR ${level}:`, "130000");
+        if (nominal1 === null || nominal1 === '') return;
+        const val1 = parseInt(nominal1);
+        if (isNaN(val1) || val1 < 0) {
+            alert('Nominal Gelombang 1 tidak valid.');
+            return;
         }
+
+        const nominal2 = prompt(`Masukkan tarif Gelombang 2 (Rp) untuk semua cabang PMR ${level}:`, "150000");
+        if (nominal2 === null || nominal2 === '') return;
+        const val2 = parseInt(nominal2);
+        if (isNaN(val2) || val2 < 0) {
+            alert('Nominal Gelombang 2 tidak valid.');
+            return;
+        }
+
+        document.querySelectorAll(`.fee-input-g1[data-level="${level}"]`).forEach(input => {
+            input.value = val1;
+        });
+        document.querySelectorAll(`.fee-input-g2[data-level="${level}"]`).forEach(input => {
+            input.value = val2;
+        });
     }
 </script>
 @endpush

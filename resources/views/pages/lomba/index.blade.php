@@ -38,8 +38,136 @@
             </div>
         </div>
 
+        @php
+            $activeWave = $event ? $event->getActiveWave() : 1;
+            $activeWaveLabel = $event ? $event->getActiveWaveLabel() : 'Gelombang 1';
+            $countdownTarget = $event ? $event->getCountdownTarget() : null;
+            $isWavesEnabled = $event && $event->is_waves_enabled;
+        @endphp
+
+        @if($event && ($isWavesEnabled || $event->wave1_end_date))
+            <!-- Countdown & Wave Schedule Card -->
+            <div class="mt-12 max-w-4xl mx-auto bg-gradient-to-br from-slate-800/95 via-slate-800/80 to-slate-900/95 border-2 border-red-500/40 rounded-3xl p-6 sm:p-7 shadow-2xl backdrop-blur relative overflow-hidden">
+                <div class="absolute -right-16 -top-16 w-48 h-48 bg-red-600/10 rounded-full blur-3xl pointer-events-none"></div>
+                <div class="absolute -left-16 -bottom-16 w-48 h-48 bg-amber-500/10 rounded-full blur-3xl pointer-events-none"></div>
+                
+                <div class="relative z-10 flex flex-col md:flex-row items-center justify-between gap-6">
+                    <!-- Status & Information -->
+                    <div class="text-center md:text-left space-y-2 max-w-md">
+                        <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-black uppercase tracking-wider {{ $activeWave == 1 ? 'bg-amber-500/20 text-amber-300 border border-amber-500/40' : ($activeWave == 2 ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/40' : ($activeWave === 'upcoming' ? 'bg-blue-500/20 text-blue-300 border border-blue-500/40' : 'bg-slate-700 text-slate-300')) }}">
+                            @if($activeWave == 1)
+                                <i class="fa-solid fa-fire text-amber-400 animate-pulse"></i>
+                                <span>Sedang Dibuka: {{ $event->wave1_name ?: 'Gelombang 1' }}</span>
+                            @elseif($activeWave == 2)
+                                <i class="fa-solid fa-bolt-lightning text-emerald-400 animate-pulse"></i>
+                                <span>Sedang Dibuka: {{ $event->wave2_name ?: 'Gelombang 2' }}</span>
+                            @elseif($activeWave === 'upcoming')
+                                <i class="fa-solid fa-clock text-blue-400"></i>
+                                <span>Segera Dibuka: {{ $event->wave1_name ?: 'Gelombang 1' }}</span>
+                            @else
+                                <i class="fa-solid fa-lock text-slate-400"></i>
+                                <span>Pendaftaran Telah Ditutup</span>
+                            @endif
+                        </div>
+                        <h3 class="text-xl sm:text-2xl font-black text-white tracking-tight">
+                            @if($activeWave == 1)
+                                Hitung Mundur {{ $event->wave1_name ?: 'Gelombang 1' }}
+                            @elseif($activeWave == 2)
+                                Hitung Mundur Penutupan Pendaftaran
+                            @elseif($activeWave === 'upcoming')
+                                Menuju Pembukaan Pendaftaran
+                            @else
+                                Pendaftaran Telah Selesai
+                            @endif
+                        </h3>
+                        <p class="text-xs text-slate-300 leading-relaxed">
+                            @if($activeWave == 1)
+                                Daftar sekarang dengan tarif Early Bird! Begitu waktu habis, sistem otomatis beralih ke tarif {{ $event->wave2_name ?: 'Gelombang 2' }}.
+                            @elseif($activeWave == 2)
+                                Periode pendaftaran {{ $event->wave2_name ?: 'Gelombang 2' }} sedang dibuka. Segera lengkapi formulir pendaftaran sebelum batas akhir.
+                            @elseif($activeWave === 'upcoming')
+                                Pendaftaran dibuka resmi pada {{ $event->wave1_start_date ? $event->wave1_start_date->translatedFormat('d F Y, H:i') : '-' }} WIB.
+                            @else
+                                Periode pendaftaran lomba telah berakhir. Terima kasih atas antusiasme seluruh kontingen.
+                            @endif
+                        </p>
+                    </div>
+
+                    <!-- Countdown Digital Clock -->
+                    @if($countdownTarget && in_array($activeWave, [1, 2, 'upcoming']))
+                        <div class="flex items-center gap-2 sm:gap-3 text-center" id="index-countdown-clock" data-target="{{ $countdownTarget->toIso8601String() }}">
+                            <div class="bg-slate-900/90 border border-slate-700/80 px-3.5 sm:px-4 py-2.5 sm:py-3 rounded-2xl min-w-[64px] sm:min-w-[72px] shadow-inner">
+                                <span class="font-mono text-2xl sm:text-3xl font-black text-yellow-400" id="idx-days">00</span>
+                                <span class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mt-0.5">Hari</span>
+                            </div>
+                            <span class="text-xl font-bold text-slate-500">:</span>
+                            <div class="bg-slate-900/90 border border-slate-700/80 px-3.5 sm:px-4 py-2.5 sm:py-3 rounded-2xl min-w-[64px] sm:min-w-[72px] shadow-inner">
+                                <span class="font-mono text-2xl sm:text-3xl font-black text-yellow-400" id="idx-hours">00</span>
+                                <span class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mt-0.5">Jam</span>
+                            </div>
+                            <span class="text-xl font-bold text-slate-500">:</span>
+                            <div class="bg-slate-900/90 border border-slate-700/80 px-3.5 sm:px-4 py-2.5 sm:py-3 rounded-2xl min-w-[64px] sm:min-w-[72px] shadow-inner">
+                                <span class="font-mono text-2xl sm:text-3xl font-black text-yellow-400" id="idx-minutes">00</span>
+                                <span class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mt-0.5">Menit</span>
+                            </div>
+                            <span class="text-xl font-bold text-slate-500">:</span>
+                            <div class="bg-slate-900/90 border border-slate-700/80 px-3.5 sm:px-4 py-2.5 sm:py-3 rounded-2xl min-w-[64px] sm:min-w-[72px] shadow-inner">
+                                <span class="font-mono text-2xl sm:text-3xl font-black text-yellow-400" id="idx-seconds">00</span>
+                                <span class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mt-0.5">Detik</span>
+                            </div>
+                        </div>
+                    @else
+                        <div class="bg-slate-900/70 border border-slate-700 px-5 py-3 rounded-2xl text-center">
+                            <span class="text-sm font-bold text-slate-300">Periode Terjadwal</span>
+                        </div>
+                    @endif
+                </div>
+
+                <!-- Wave 1 & Wave 2 Timeline Badges -->
+                <div class="mt-5 pt-4 border-t border-slate-700/60 grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
+                    <div class="flex items-center justify-between p-2.5 rounded-xl {{ $activeWave == 1 ? 'bg-amber-500/15 border border-amber-500/30 text-amber-200' : 'bg-slate-900/40 border border-slate-800 text-slate-400' }}">
+                        <div class="flex items-center gap-2">
+                            <i class="fa-solid fa-flag-checkered {{ $activeWave == 1 ? 'text-amber-400' : 'text-slate-500' }}"></i>
+                            <span class="font-bold">{{ $event->wave1_name ?: 'Gelombang 1' }}</span>
+                            @if($activeWave == 1)
+                                <span class="text-[9px] bg-amber-500 text-slate-950 font-black px-1.5 py-0.2 rounded-full uppercase">Aktif</span>
+                            @endif
+                        </div>
+                        <span class="font-mono text-[11px]">
+                            @if($event->wave1_start_date && $event->wave1_end_date)
+                                {{ $event->wave1_start_date->translatedFormat('d M') }} - {{ $event->wave1_end_date->translatedFormat('d M Y') }}
+                            @elseif($event->wave1_end_date)
+                                s/d {{ $event->wave1_end_date->translatedFormat('d M Y') }}
+                            @else
+                                Sesuai Jadwal
+                            @endif
+                        </span>
+                    </div>
+
+                    <div class="flex items-center justify-between p-2.5 rounded-xl {{ $activeWave == 2 ? 'bg-emerald-500/15 border border-emerald-500/30 text-emerald-200' : 'bg-slate-900/40 border border-slate-800 text-slate-400' }}">
+                        <div class="flex items-center gap-2">
+                            <i class="fa-solid fa-flag-checkered {{ $activeWave == 2 ? 'text-emerald-400' : 'text-slate-500' }}"></i>
+                            <span class="font-bold">{{ $event->wave2_name ?: 'Gelombang 2' }}</span>
+                            @if($activeWave == 2)
+                                <span class="text-[9px] bg-emerald-500 text-slate-950 font-black px-1.5 py-0.2 rounded-full uppercase">Aktif</span>
+                            @endif
+                        </div>
+                        <span class="font-mono text-[11px]">
+                            @if($event->wave2_start_date && $event->wave2_end_date)
+                                {{ $event->wave2_start_date->translatedFormat('d M') }} - {{ $event->wave2_end_date->translatedFormat('d M Y') }}
+                            @elseif($event->wave2_end_date)
+                                s/d {{ $event->wave2_end_date->translatedFormat('d M Y') }}
+                            @else
+                                Sesuai Jadwal
+                            @endif
+                        </span>
+                    </div>
+                </div>
+            </div>
+        @endif
+
         <!-- Quick Info Banner -->
-        <div class="mt-16 grid grid-cols-1 md:grid-cols-3 gap-6 max-w-4xl mx-auto">
+        <div class="mt-12 grid grid-cols-1 md:grid-cols-3 gap-6 max-w-4xl mx-auto">
             <div class="bg-slate-800/80 border border-slate-700/80 backdrop-blur p-5 rounded-2xl flex items-center gap-4">
                 <div class="w-12 h-12 rounded-xl bg-red-500/10 text-red-400 flex items-center justify-center text-xl flex-shrink-0">
                     <i class="fa-solid fa-calendar-days"></i>
@@ -580,6 +708,50 @@
                 closeInfoModal();
             }
         });
+
+        // Live Countdown Timer with Auto-Refresh on Expiry
+        (function initWaveCountdown() {
+            const clockEl = document.getElementById('index-countdown-clock');
+            if (!clockEl) return;
+            const targetStr = clockEl.getAttribute('data-target');
+            if (!targetStr) return;
+
+            const targetTime = new Date(targetStr).getTime();
+            const daysEl = document.getElementById('idx-days');
+            const hoursEl = document.getElementById('idx-hours');
+            const minutesEl = document.getElementById('idx-minutes');
+            const secondsEl = document.getElementById('idx-seconds');
+
+            function updateCountdown() {
+                const now = new Date().getTime();
+                const diff = targetTime - now;
+
+                if (diff <= 0) {
+                    if (daysEl) daysEl.textContent = '00';
+                    if (hoursEl) hoursEl.textContent = '00';
+                    if (minutesEl) minutesEl.textContent = '00';
+                    if (secondsEl) secondsEl.textContent = '00';
+                    // Auto-refresh when wave transitions
+                    setTimeout(() => {
+                        window.location.reload();
+                    }, 1200);
+                    return;
+                }
+
+                const d = Math.floor(diff / (1000 * 60 * 60 * 24));
+                const h = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                const m = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+                const s = Math.floor((diff % (1000 * 60)) / 1000);
+
+                if (daysEl) daysEl.textContent = String(d).padStart(2, '0');
+                if (hoursEl) hoursEl.textContent = String(h).padStart(2, '0');
+                if (minutesEl) minutesEl.textContent = String(m).padStart(2, '0');
+                if (secondsEl) secondsEl.textContent = String(s).padStart(2, '0');
+            }
+
+            updateCountdown();
+            setInterval(updateCountdown, 1000);
+        })();
     });
 </script>
 @endpush

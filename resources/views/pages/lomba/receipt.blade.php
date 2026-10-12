@@ -120,6 +120,14 @@
                 <div class="col-span-12 sm:col-span-8 font-mono font-medium text-slate-800">: {{ $registration->advisor_email ?: '-' }}</div>
             </div>
             <div class="grid grid-cols-12 gap-2">
+                <div class="col-span-12 sm:col-span-4 font-bold text-slate-500 uppercase text-[11px] sm:text-xs">Gelombang Pendaftaran</div>
+                <div class="col-span-12 sm:col-span-8 font-semibold text-slate-800">: 
+                    <span class="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-black {{ ($registration->registration_wave ?? 1) == 2 ? 'bg-emerald-100 text-emerald-800 border border-emerald-300' : 'bg-amber-100 text-amber-900 border border-amber-300' }}">
+                        {{ ($registration->registration_wave ?? 1) == 2 ? ($registration->event->wave2_name ?: 'Gelombang 2') : ($registration->event->wave1_name ?: 'Gelombang 1') }}
+                    </span>
+                </div>
+            </div>
+            <div class="grid grid-cols-12 gap-2">
                 <div class="col-span-12 sm:col-span-4 font-bold text-slate-500 uppercase text-[11px] sm:text-xs">Untuk Pembayaran</div>
                 <div class="col-span-12 sm:col-span-8 font-semibold text-slate-800">: Registrasi Peserta Lomba {{ $registration->event->title ?? 'SUA BHAKTI BERKARYA' }}</div>
             </div>
@@ -138,11 +146,14 @@
                 </thead>
                 <tbody class="divide-y divide-slate-200 font-medium">
                     @foreach($registration->teams as $index => $team)
+                        @php
+                            $teamFee = $team->category ? $team->category->getFeeForWave($registration->registration_wave ?: 1) : floatval($registration->event->registration_fee ?: 150000);
+                        @endphp
                         <tr class="hover:bg-slate-50 transition">
                             <td class="p-2.5 border-r border-slate-200 text-center text-slate-400 font-bold">{{ $index + 1 }}</td>
                             <td class="p-2.5 border-r border-slate-200 font-bold text-slate-900">{{ $team->category->name }} ({{ $team->category->gender_category }})</td>
                             <td class="p-2.5 border-r border-slate-200 text-slate-600">{{ $team->team_name }}</td>
-                            <td class="p-2.5 text-right font-mono font-bold text-slate-800">Rp {{ number_format($team->category->registration_fee ?: ($registration->event->registration_fee ?: 150000), 0, ',', '.') }}</td>
+                            <td class="p-2.5 text-right font-mono font-bold text-slate-800">Rp {{ number_format($teamFee, 0, ',', '.') }}</td>
                         </tr>
                     @endforeach
                 </tbody>

@@ -223,7 +223,10 @@
                     @forelse($registrations as $reg)
                         <tr class="hover:bg-slate-50 transition">
                             <td class="px-6 py-4">
-                                <span class="font-mono text-[11px] font-bold text-slate-600 bg-slate-100 px-2 py-0.5 rounded">{{ $reg->registration_code }}</span>
+                                <div class="flex items-center gap-1.5 flex-wrap">
+                                    <span class="font-mono text-[11px] font-bold text-slate-600 bg-slate-100 px-2 py-0.5 rounded">{{ $reg->registration_code }}</span>
+                                    <span class="px-2 py-0.5 rounded text-[10px] font-bold {{ $reg->registration_wave == 2 ? 'bg-emerald-100 text-emerald-800 border border-emerald-200' : 'bg-amber-100 text-amber-900 border border-amber-200' }}">Gel. {{ $reg->registration_wave ?? 1 }}</span>
+                                </div>
                                 <div class="font-extrabold text-slate-900 text-sm mt-1 uppercase">{{ $reg->school_name }}</div>
                                 <div class="text-[11px] text-slate-400">{{ $reg->created_at ? $reg->created_at->translatedFormat('d M Y, H:i') : '-' }}</div>
                             </td>

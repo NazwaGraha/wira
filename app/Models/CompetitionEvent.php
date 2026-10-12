@@ -26,15 +26,119 @@ class CompetitionEvent extends Model
         'bank_account_holder',
         'is_active',
         'is_registration_open',
+        'wave1_name',
+        'wave1_start_date',
+        'wave1_end_date',
+        'wave2_name',
+        'wave2_start_date',
+        'wave2_end_date',
+        'is_waves_enabled',
     ];
 
     protected $casts = [
         'start_date' => 'date',
         'end_date' => 'date',
+        'wave1_start_date' => 'datetime',
+        'wave1_end_date' => 'datetime',
+        'wave2_start_date' => 'datetime',
+        'wave2_end_date' => 'datetime',
+        'is_waves_enabled' => 'boolean',
         'registration_fee' => 'decimal:2',
         'is_active' => 'boolean',
         'is_registration_open' => 'boolean',
     ];
+
+    /**
+     * Get the currently active wave status.
+     * Returns:
+     * - 'upcoming': before wave 1 starts
+     * - 1: Wave 1 is active
+     * - 2: Wave 2 is active
+     * - 'closed': after wave 2 ends or registration closed
+     */
+    public function getActiveWave(): string|int
+    {
+        if (!$this->is_registration_open) {
+            return 'closed';
+        }
+
+        if (!$this->is_waves_enabled) {
+            return 1;
+        }
+
+        $now = now();
+
+        // If wave 1 start date is set and now is before wave 1 start
+        if ($this->wave1_start_date && $now->lt($this->wave1_start_date)) {
+            return 'upcoming';
+        }
+
+        // If wave 1 is ongoing
+        if ($this->wave1_start_date && $this->wave1_end_date) {
+            if ($now->gte($this->wave1_start_date) && $now->lte($this->wave1_end_date)) {
+                return 1;
+            }
+        } elseif ($this->wave1_end_date && $now->lte($this->wave1_end_date)) {
+            return 1;
+        }
+
+        // If wave 2 is ongoing
+        if ($this->wave2_start_date && $this->wave2_end_date) {
+            if ($now->gte($this->wave2_start_date) && $now->lte($this->wave2_end_date)) {
+                return 2;
+            }
+        } elseif ($this->wave2_end_date && $now->lte($this->wave2_end_date)) {
+            return 2;
+        }
+
+        // If wave 2 has passed
+        if ($this->wave2_end_date && $now->gt($this->wave2_end_date)) {
+            return 'closed';
+        }
+
+        // Default fallback
+        return 1;
+    }
+
+    /**
+     * Get the target datetime for countdown timer.
+     */
+    public function getCountdownTarget(): ?\Carbon\Carbon
+    {
+        $activeWave = $this->getActiveWave();
+
+        if ($activeWave === 'upcoming') {
+            return $this->wave1_start_date;
+        }
+
+        if ($activeWave === 1) {
+            return $this->wave1_end_date;
+        }
+
+        if ($activeWave === 2) {
+            return $this->wave2_end_date;
+        }
+
+        return null;
+    }
+
+    /**
+     * Get human-friendly label for current active wave.
+     */
+    public function getActiveWaveLabel(): string
+    {
+        $wave = $this->getActiveWave();
+        if ($wave === 'upcoming') {
+            return 'Segera Dibuka: ' . ($this->wave1_name ?: 'Gelombang 1');
+        }
+        if ($wave === 1) {
+            return $this->wave1_name ?: 'Gelombang 1';
+        }
+        if ($wave === 2) {
+            return $this->wave2_name ?: 'Gelombang 2';
+        }
+        return 'Pendaftaran Ditutup';
+    }
 
     public function categories(): HasMany
     {

@@ -22,6 +22,7 @@ class CompetitionRegistration extends Model
         'school_address',
         'payment_proof',
         'total_payment',
+        'registration_wave',
         'status',
         'rejection_reason',
         'verified_at',
@@ -34,6 +35,7 @@ class CompetitionRegistration extends Model
 
     protected $casts = [
         'total_payment' => 'decimal:2',
+        'registration_wave' => 'integer',
         'verified_at' => 'datetime',
         'is_checked_in' => 'boolean',
         'checked_in_at' => 'datetime',

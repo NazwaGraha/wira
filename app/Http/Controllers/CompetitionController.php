@@ -68,14 +68,34 @@ class CompetitionController extends Controller
             return redirect()->route('lomba.index')->with('error', 'Pendaftaran lomba saat ini sedang ditutup.');
         }
 
-        $categoriesByLevel = $event->categories->groupBy('level');
+        $activeWave = $event->getActiveWave();
+        if ($activeWave === 'closed') {
+            return redirect()->route('lomba.index')->with('error', 'Pendaftaran lomba saat ini sudah ditutup (Periode pendaftaran telah berakhir).');
+        }
 
-        return view('pages.lomba.register', compact('event', 'categoriesByLevel'));
+        if ($activeWave === 'upcoming') {
+            $startDate = $event->wave1_start_date ? $event->wave1_start_date->translatedFormat('d F Y, H:i') : 'segera';
+            return redirect()->route('lomba.index')->with('info', "Pendaftaran lomba baru akan dibuka pada {$startDate} WIB.");
+        }
+
+        $categoriesByLevel = $event->categories->groupBy('level');
+        $waveLabel = $event->getActiveWaveLabel();
+        $countdownTarget = $event->getCountdownTarget();
+
+        return view('pages.lomba.register', compact('event', 'categoriesByLevel', 'activeWave', 'waveLabel', 'countdownTarget'));
     }
 
     public function store(Request $request)
     {
         $event = CompetitionEvent::where('is_active', true)->firstOrFail();
+
+        $activeWave = $event->getActiveWave();
+        if ($activeWave === 'closed' || !$event->is_registration_open) {
+            return redirect()->route('lomba.index')->with('error', 'Pendaftaran lomba saat ini sudah ditutup.');
+        }
+        if ($activeWave === 'upcoming') {
+            return redirect()->route('lomba.index')->with('info', 'Pendaftaran lomba belum dibuka.');
+        }
 
         $validated = $request->validate([
             'school_name' => 'required|string|max:255',
@@ -200,9 +220,10 @@ class CompetitionController extends Controller
 
         $totalTeams = count($teamsToCreate);
         $totalPayment = 0;
+        $waveInt = is_numeric($activeWave) ? intval($activeWave) : 1;
         foreach ($teamsToCreate as $teamData) {
             $cat = $categoriesMap->get($teamData['category_id']);
-            $fee = $cat ? floatval($cat->registration_fee ?: ($event->registration_fee ?: 150000)) : floatval($event->registration_fee ?: 150000);
+            $fee = $cat ? $cat->getFeeForWave($waveInt) : floatval($event->registration_fee ?: 150000);
             $totalPayment += $fee;
         }
 
@@ -217,6 +238,7 @@ class CompetitionController extends Controller
             'school_address' => $validated['school_address'] ?? null,
             'payment_proof' => $proofPath,
             'total_payment' => $totalPayment,
+            'registration_wave' => $waveInt,
             'status' => 'pending',
         ]);
 

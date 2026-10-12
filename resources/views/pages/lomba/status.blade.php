@@ -52,6 +52,8 @@
                         <div class="text-xs text-slate-600 font-semibold mt-1 flex items-center gap-2 flex-wrap">
                             <span>Tingkat: <span class="px-2.5 py-0.5 rounded-md font-black text-xs {{ $levelColorClass }}">PMR {{ $registration->level }}</span></span>
                             <span>&bull;</span>
+                            <span>Periode: <span class="px-2 py-0.5 rounded-md font-bold text-xs {{ ($registration->registration_wave ?? 1) == 2 ? 'bg-emerald-100 text-emerald-800 border border-emerald-200' : 'bg-amber-100 text-amber-800 border border-amber-200' }}">{{ ($registration->registration_wave ?? 1) == 2 ? ($registration->event->wave2_name ?: 'Gelombang 2') : ($registration->event->wave1_name ?: 'Gelombang 1') }}</span></span>
+                            <span>&bull;</span>
                             <span>Pembina: {{ $registration->advisor_name }} ({{ $registration->advisor_phone }})</span>
                         </div>
                     </div>
