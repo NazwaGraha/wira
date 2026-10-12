@@ -19,10 +19,6 @@ class CompetitionFeeController extends Controller
             // 1. Ensure competition tables exist
             if (!Schema::hasTable('competition_events') || !Schema::hasTable('competition_categories')) {
                 Artisan::call('migrate', ['--force' => true]);
-                Artisan::call('db:seed', [
-                    '--class' => 'Database\\Seeders\\CompetitionSeeder',
-                    '--force' => true
-                ]);
             }
 
             // 2. Ensure registration_fee and wave columns exist
@@ -58,23 +54,41 @@ class CompetitionFeeController extends Controller
                 });
             }
 
-            // 3. Ensure default competition categories are seeded if empty
-            if (Schema::hasTable('competition_categories') && CompetitionCategory::count() === 0) {
-                Artisan::call('db:seed', [
-                    '--class' => 'Database\\Seeders\\CompetitionSeeder',
-                    '--force' => true
-                ]);
-            }
+            // Note: Never auto-seed default dummy events on request to allow permanent deletion of old editions.
 
             $allEvents = collect();
             $event = null;
             if (Schema::hasTable('competition_events')) {
-                $allEvents = CompetitionEvent::orderByDesc('id')->get();
+                $today = now()->startOfDay()->toDateString();
+
+                // Hanya ambil event yang sedang aktif ATAU belum selesai / akan diselenggarakan di masa depan
+                $allEvents = CompetitionEvent::query()
+                    ->where(function ($query) use ($today) {
+                        $query->where('is_active', true)
+                              ->orWhere(function ($q) use ($today) {
+                                  $q->whereNotNull('end_date')
+                                    ->where('end_date', '>=', $today);
+                              })
+                              ->orWhere(function ($q) use ($today) {
+                                  $q->whereNull('end_date')
+                                    ->whereNotNull('start_date')
+                                    ->where('start_date', '>=', $today);
+                              })
+                              ->orWhere(function ($q) {
+                                  $q->whereNull('start_date')
+                                    ->whereNull('end_date');
+                              });
+                    })
+                    ->orderByDesc('is_active')
+                    ->orderBy('start_date')
+                    ->orderByDesc('id')
+                    ->get();
+
                 $selectedEventId = $request->query('event_id');
                 if ($selectedEventId) {
-                    $event = CompetitionEvent::find($selectedEventId) ?: CompetitionEvent::where('is_active', true)->first();
+                    $event = $allEvents->firstWhere('id', $selectedEventId) ?: CompetitionEvent::find($selectedEventId);
                 } else {
-                    $event = CompetitionEvent::where('is_active', true)->first() ?: $allEvents->first();
+                    $event = $allEvents->firstWhere('is_active', true) ?: $allEvents->first();
                 }
             }
 
@@ -88,6 +102,8 @@ class CompetitionFeeController extends Controller
                         $q->where('competition_event_id', $event->id)
                           ->orWhereNull('competition_event_id');
                     });
+                } else {
+                    $query->whereRaw('1 = 0');
                 }
 
                 if ($level && in_array($level, ['Mula', 'Madya', 'Wira'])) {
