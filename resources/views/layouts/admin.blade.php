@@ -142,8 +142,8 @@
                 <span>Rekap Juara Umum</span>
             </a>
             <a href="{{ route('admin.competition-fees.index') }}" class="flex items-center gap-3 px-3 py-2.5 rounded-xl font-medium text-sm transition {{ request()->routeIs('admin.competition-fees.*') ? 'bg-pmr-primary text-white shadow-md shadow-red-950/40' : 'hover:bg-slate-800 text-slate-300' }}">
-                <i class="fa-solid fa-coins w-5 text-center text-emerald-400"></i>
-                <span>Setup Biaya Lomba</span>
+                <i class="fa-solid fa-calendar-check w-5 text-center text-amber-400"></i>
+                <span>Jadwal & Biaya Gelombang</span>
             </a>
             <a href="{{ route('admin.competition-broadcast.index') }}" class="flex items-center gap-3 px-3 py-2.5 rounded-xl font-medium text-sm transition {{ request()->routeIs('admin.competition-broadcast.*') ? 'bg-pmr-primary text-white shadow-md shadow-red-950/40' : 'hover:bg-slate-800 text-slate-300' }}">
                 <i class="fa-solid fa-paper-plane w-5 text-center text-indigo-400"></i>

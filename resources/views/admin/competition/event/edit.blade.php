@@ -204,6 +204,98 @@
                     </div>
                 </div>
 
+                <!-- 2b. Pengaturan Pendaftaran 2 Gelombang & Hitung Mundur -->
+                <div class="bg-gradient-to-br from-slate-900 to-slate-800 rounded-2xl p-6 shadow-md border border-slate-700 text-white space-y-5">
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between pb-4 border-b border-slate-700 gap-3">
+                        <div class="flex items-center gap-3">
+                            <div class="w-10 h-10 rounded-xl bg-amber-500/20 text-amber-400 flex items-center justify-center font-bold text-lg border border-amber-500/30">
+                                <i class="fa-solid fa-clock-rotate-left"></i>
+                            </div>
+                            <div>
+                                <h3 class="font-extrabold text-white text-base flex items-center gap-2">
+                                    <span>Pendaftaran 2 Gelombang & Hitung Mundur</span>
+                                    <span class="text-[10px] bg-amber-500 text-slate-950 font-black px-2 py-0.5 rounded-full uppercase">Wave System</span>
+                                </h3>
+                                <p class="text-xs text-slate-300">Jadwal pembukaan Gelombang 1 & 2 beserta live timer hitung mundur otomatis di website publik</p>
+                            </div>
+                        </div>
+
+                        <!-- Toggle Aktifkan Sistem Gelombang -->
+                        <div class="flex items-center gap-3 bg-slate-800/80 px-3.5 py-2 rounded-xl border border-slate-600">
+                            <span class="text-xs font-bold text-slate-200">Aktifkan 2 Gelombang:</span>
+                            <label class="relative inline-flex items-center cursor-pointer">
+                                <input type="checkbox" name="is_waves_enabled" value="1" class="sr-only peer" {{ old('is_waves_enabled', $event->is_waves_enabled) ? 'checked' : '' }}>
+                                <div class="w-11 h-6 bg-slate-600 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-amber-500"></div>
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                        <!-- Gelombang 1 Box -->
+                        <div class="bg-slate-800/70 border border-slate-700 p-4 rounded-xl space-y-3">
+                            <div class="flex items-center justify-between">
+                                <div class="flex items-center gap-2">
+                                    <span class="w-2.5 h-2.5 rounded-full bg-amber-400 animate-pulse"></span>
+                                    <span class="text-xs font-black uppercase text-amber-300 tracking-wider">Gelombang 1 (Early Bird)</span>
+                                </div>
+                            </div>
+
+                            <div>
+                                <label class="block text-[11px] font-bold text-slate-300 uppercase mb-1">Nama Label Gelombang 1</label>
+                                <input type="text" name="wave1_name" value="{{ old('wave1_name', $event->wave1_name ?: 'Gelombang 1') }}" class="w-full px-3 py-2 bg-slate-900 border border-slate-600 rounded-lg text-xs font-semibold text-white focus:outline-none focus:border-amber-400" placeholder="Gelombang 1">
+                            </div>
+
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                                <div>
+                                    <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Mulai Gelombang 1</label>
+                                    <input type="datetime-local" name="wave1_start_date" value="{{ old('wave1_start_date', $event->wave1_start_date ? $event->wave1_start_date->format('Y-m-d\TH:i') : '') }}" class="w-full px-2.5 py-1.5 bg-slate-900 border border-slate-600 rounded-lg text-xs font-semibold text-white focus:outline-none focus:border-amber-400">
+                                </div>
+                                <div>
+                                    <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Berakhir Gelombang 1</label>
+                                    <input type="datetime-local" name="wave1_end_date" value="{{ old('wave1_end_date', $event->wave1_end_date ? $event->wave1_end_date->format('Y-m-d\TH:i') : '') }}" class="w-full px-2.5 py-1.5 bg-slate-900 border border-slate-600 rounded-lg text-xs font-semibold text-white focus:outline-none focus:border-amber-400">
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Gelombang 2 Box -->
+                        <div class="bg-slate-800/70 border border-slate-700 p-4 rounded-xl space-y-3">
+                            <div class="flex items-center justify-between">
+                                <div class="flex items-center gap-2">
+                                    <span class="w-2.5 h-2.5 rounded-full bg-emerald-400"></span>
+                                    <span class="text-xs font-black uppercase text-emerald-300 tracking-wider">Gelombang 2 (Reguler)</span>
+                                </div>
+                            </div>
+
+                            <div>
+                                <label class="block text-[11px] font-bold text-slate-300 uppercase mb-1">Nama Label Gelombang 2</label>
+                                <input type="text" name="wave2_name" value="{{ old('wave2_name', $event->wave2_name ?: 'Gelombang 2') }}" class="w-full px-3 py-2 bg-slate-900 border border-slate-600 rounded-lg text-xs font-semibold text-white focus:outline-none focus:border-emerald-400" placeholder="Gelombang 2">
+                            </div>
+
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                                <div>
+                                    <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Mulai Gelombang 2</label>
+                                    <input type="datetime-local" name="wave2_start_date" value="{{ old('wave2_start_date', $event->wave2_start_date ? $event->wave2_start_date->format('Y-m-d\TH:i') : '') }}" class="w-full px-2.5 py-1.5 bg-slate-900 border border-slate-600 rounded-lg text-xs font-semibold text-white focus:outline-none focus:border-emerald-400">
+                                </div>
+                                <div>
+                                    <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Berakhir Gelombang 2</label>
+                                    <input type="datetime-local" name="wave2_end_date" value="{{ old('wave2_end_date', $event->wave2_end_date ? $event->wave2_end_date->format('Y-m-d\TH:i') : '') }}" class="w-full px-2.5 py-1.5 bg-slate-900 border border-slate-600 rounded-lg text-xs font-semibold text-white focus:outline-none focus:border-emerald-400">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="pt-2 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs bg-slate-950/40 p-3 rounded-xl border border-slate-700/60">
+                        <div class="text-slate-300 flex items-center gap-2">
+                            <i class="fa-solid fa-circle-info text-amber-400 text-sm"></i>
+                            <span>Atur tarif biaya per cabang lomba untuk masing-masing gelombang:</span>
+                        </div>
+                        <a href="{{ route('admin.competition-fees.index', ['event_id' => $event->id]) }}" class="inline-flex items-center gap-2 bg-amber-500 hover:bg-amber-400 text-slate-950 px-3.5 py-1.5 rounded-lg font-black transition shrink-0">
+                            <i class="fa-solid fa-coins"></i>
+                            <span>Menu Jadwal & Biaya Gelombang &rarr;</span>
+                        </a>
+                    </div>
+                </div>
+
                 <!-- 3. Rekening Pembayaran -->
                 <div class="bg-white rounded-2xl p-6 shadow-xs border border-slate-200">
                     <div class="flex items-center gap-3 pb-4 mb-5 border-b border-slate-100">

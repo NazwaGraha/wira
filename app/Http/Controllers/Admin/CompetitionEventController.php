@@ -52,11 +52,19 @@ class CompetitionEventController extends Controller
             'bank_account_holder' => 'nullable|string|max:150',
             'banner_image' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:3072',
             'handbook_file' => 'nullable|file|mimes:pdf|max:15360',
+            'is_waves_enabled' => 'nullable|boolean',
+            'wave1_name' => 'nullable|string|max:100',
+            'wave1_start_date' => 'nullable|date',
+            'wave1_end_date' => 'nullable|date',
+            'wave2_name' => 'nullable|string|max:100',
+            'wave2_start_date' => 'nullable|date',
+            'wave2_end_date' => 'nullable|date',
         ]);
 
         $validated['slug'] = Str::slug($validated['title']) . '-' . time();
         $validated['is_active'] = $request->boolean('is_active');
         $validated['is_registration_open'] = $request->boolean('is_registration_open');
+        $validated['is_waves_enabled'] = $request->boolean('is_waves_enabled');
 
         // Handle File Uploads
         if ($request->hasFile('banner_image')) {
@@ -139,10 +147,18 @@ class CompetitionEventController extends Controller
             'bank_account_holder' => 'nullable|string|max:150',
             'banner_image' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:3072',
             'handbook_file' => 'nullable|file|mimes:pdf|max:15360',
+            'is_waves_enabled' => 'nullable|boolean',
+            'wave1_name' => 'nullable|string|max:100',
+            'wave1_start_date' => 'nullable|date',
+            'wave1_end_date' => 'nullable|date',
+            'wave2_name' => 'nullable|string|max:100',
+            'wave2_start_date' => 'nullable|date',
+            'wave2_end_date' => 'nullable|date',
         ]);
 
         $validated['is_active'] = $request->boolean('is_active');
         $validated['is_registration_open'] = $request->boolean('is_registration_open');
+        $validated['is_waves_enabled'] = $request->boolean('is_waves_enabled');
 
         // Update slug if title changed
         if ($event->title !== $validated['title']) {

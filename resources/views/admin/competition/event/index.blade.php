@@ -99,6 +99,10 @@
                         <i class="fa-solid fa-pen-to-square"></i>
                         <span>Edit Pengaturan Edisi Ini</span>
                     </a>
+                    <a href="{{ route('admin.competition-fees.index', ['event_id' => $activeEvent->id]) }}" class="bg-amber-600 hover:bg-amber-500 text-white px-5 py-2.5 rounded-xl font-bold text-xs transition flex items-center justify-center gap-2 shadow-md">
+                        <i class="fa-solid fa-calendar-check"></i>
+                        <span>Jadwal & Biaya Gelombang</span>
+                    </a>
                     <a href="{{ route('admin.competition-event.show', $activeEvent->id) }}" class="bg-slate-800 hover:bg-slate-700 border border-slate-700 text-white px-5 py-2.5 rounded-xl font-bold text-xs transition flex items-center justify-center gap-2">
                         <i class="fa-solid fa-folder-open text-sky-400"></i>
                         <span>Detail & History Data</span>
