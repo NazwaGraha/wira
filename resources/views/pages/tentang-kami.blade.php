@@ -510,129 +510,155 @@
                 <div class="w-0.5 h-12 bg-slate-300 my-2"></div>
             @endif
 
-            <!-- Level 5: 5 Bidang Utama (Semua Foto Ukuran Sama Besar & Jelas) -->
+            <!-- Level 5: 5 Bidang Utama & Staf Anggota (Formasi Simetris 3 + 2) -->
             @if($seksi->isNotEmpty())
-                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6 sm:gap-7 w-full mt-2">
-                    @foreach($seksi as $m)
-                        @php
-                            $mem = $m->member ?? ($allMembers->get($m->name) ?? null);
-                            $photoUrl = $m->photo_url ?: ($mem?->photo_url ?: 'https://ui-avatars.com/api/?name=' . urlencode($m->name) . '&background=dc2626&color=ffffff&bold=true&size=300');
-                            $staffList = is_array($m->staff_members) ? $m->staff_members : [];
-                            $workProg = trim($m->work_program ?? '');
-                            $leaderBiodata = [
-                                'name' => $m->name,
-                                'position' => $m->subtitle ?: 'Ketua ' . $m->position,
-                                'subtitle' => $m->position,
-                                'class_grade' => $mem?->class_grade ?? ($m->subtitle ?: 'Kelas XI'),
-                                'nis' => $mem?->nis ?? '-',
-                                'gender' => $mem?->gender ?? '-',
-                                'birth_place' => $mem?->birth_place ?? '',
-                                'birth_date' => $mem?->birth_date ? \Carbon\Carbon::parse($mem->birth_date)->translatedFormat('d F Y') : '',
-                                'address' => $mem?->address ?? '',
-                                'phone' => $mem?->phone ?? '',
-                                'email' => $mem?->email ?? '',
-                                'motto' => $mem?->motto ?? '',
-                                'photo' => $photoUrl,
-                            ];
-                        @endphp
-                        <div class="bg-white rounded-3xl shadow-lg border border-slate-200 overflow-hidden flex flex-col hover:shadow-2xl hover:border-pmr-primary transition-all duration-300 group">
-                            
-                            <!-- Header Bidang -->
-                            <div class="bg-gradient-to-r from-red-50 via-rose-50 to-white px-5 py-4 border-b border-red-100 flex items-center gap-3">
-                                <div class="w-10 h-10 rounded-2xl bg-pmr-primary text-white flex items-center justify-center text-base font-bold flex-shrink-0 shadow-md">
-                                    <i class="{{ $m->icon ?: 'fa-solid fa-shapes' }}"></i>
-                                </div>
-                                <h3 class="font-black text-sm sm:text-base text-slate-900 uppercase tracking-tight group-hover:text-pmr-primary transition">
-                                    {{ $m->position }}
-                                </h3>
-                            </div>
+                @php
+                    $seksiChunks = $seksi->chunk(3);
+                @endphp
 
-                            <!-- Ketua Bidang (Foto Ukuran Sama Besar) -->
-                            <div class="p-6 flex flex-col items-center text-center border-b border-slate-100 bg-white">
-                                <div class="relative cursor-pointer group/photo" onclick="openBiodataModal({!! htmlspecialchars(json_encode($leaderBiodata), ENT_QUOTES, 'UTF-8') !!})">
-                                    <img src="{{ $photoUrl }}" alt="{{ $m->name }}" class="w-28 h-28 sm:w-32 sm:h-32 rounded-3xl object-cover border-4 border-red-100 ring-2 ring-pmr-primary/40 shadow-lg flex-shrink-0 group-hover/photo:scale-105 transition-transform duration-300">
-                                    <span class="absolute -bottom-2 -right-2 bg-pmr-primary text-white text-[10px] font-black px-2.5 py-0.5 rounded-full shadow border-2 border-white">Ketua</span>
-                                    <div class="absolute inset-0 rounded-3xl bg-black/40 opacity-0 group-hover/photo:opacity-100 flex items-center justify-center transition text-white text-xs font-bold gap-1 backdrop-blur-xs">
-                                        <i class="fa-solid fa-id-card"></i> Biodata
-                                    </div>
-                                </div>
-                                <div class="mt-4">
-                                    <div class="font-extrabold text-slate-900 text-base sm:text-lg leading-snug cursor-pointer hover:text-pmr-primary transition" onclick="openBiodataModal({!! htmlspecialchars(json_encode($leaderBiodata), ENT_QUOTES, 'UTF-8') !!})" title="{{ $m->name }}">{{ $m->name }}</div>
-                                    <div class="text-xs text-pmr-primary font-bold mt-1 inline-block bg-red-50 px-2.5 py-0.5 rounded-full border border-red-100">
-                                        {{ $m->subtitle ?: 'Ketua ' . $m->position }}
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- Bagian Staf (Semua Foto Ukuran Sama Besar) -->
-                            <div class="p-5 bg-slate-50/80 flex-grow space-y-4">
-                                <div class="flex items-center justify-between pb-1 border-b border-slate-200/60">
-                                    <span class="text-xs font-black uppercase tracking-wider text-slate-700 flex items-center gap-1.5">
-                                        <i class="fa-solid fa-users text-slate-400"></i> Staf Bidang
-                                    </span>
-                                    <span class="text-xs font-extrabold px-2.5 py-0.5 rounded-full bg-slate-200 text-slate-700">{{ count($staffList) }} Orang</span>
-                                </div>
-
-                                @if(!empty($staffList) && count($staffList) > 0)
-                                    <div class="space-y-4">
-                                        @foreach($staffList as $st)
-                                            @php
-                                                $stName = $st['name'] ?? '';
-                                                $stMem = $allMembers->get($stName);
-                                                $stClass = $st['class_grade'] ?? ($stMem?->class_grade ?? '');
-                                                $stPhoto = $st['photo'] ?? ($stMem?->photo_url ?? ('https://ui-avatars.com/api/?name=' . urlencode($stName) . '&background=dc2626&color=ffffff&bold=true&size=300'));
-                                                $stBiodata = [
-                                                    'name' => $stName,
-                                                    'position' => 'Staf ' . $m->position,
-                                                    'subtitle' => 'Staf Operasional Bidang',
-                                                    'class_grade' => $stClass ?: 'Kelas X/XI',
-                                                    'nis' => $stMem?->nis ?? '-',
-                                                    'gender' => $stMem?->gender ?? '-',
-                                                    'birth_place' => $stMem?->birth_place ?? '',
-                                                    'birth_date' => $stMem?->birth_date ? \Carbon\Carbon::parse($stMem->birth_date)->translatedFormat('d F Y') : '',
-                                                    'address' => $stMem?->address ?? '',
-                                                    'phone' => $stMem?->phone ?? '',
-                                                    'email' => $stMem?->email ?? '',
-                                                    'motto' => $stMem?->motto ?? '',
-                                                    'photo' => $stPhoto,
-                                                ];
-                                            @endphp
-                                            <div class="bg-white p-3.5 rounded-2xl border border-slate-200/90 shadow-sm flex flex-col items-center text-center sm:flex-row sm:text-left gap-4 hover:border-pmr-primary hover:shadow-md transition group/staf">
-                                                <div class="relative cursor-pointer group/photo flex-shrink-0" onclick="openBiodataModal({!! htmlspecialchars(json_encode($stBiodata), ENT_QUOTES, 'UTF-8') !!})">
-                                                    <img src="{{ $stPhoto }}" alt="{{ $stName }}" class="w-24 h-24 sm:w-28 sm:h-28 rounded-2xl object-cover border-2 border-slate-200 shadow-sm group-hover/photo:scale-105 transition-transform duration-300">
-                                                    <div class="absolute inset-0 rounded-2xl bg-black/40 opacity-0 group-hover/photo:opacity-100 flex items-center justify-center transition text-white text-[10px] font-bold gap-1 backdrop-blur-xs">
-                                                        <i class="fa-solid fa-id-card"></i> Biodata
-                                                    </div>
-                                                </div>
-                                                <div class="min-w-0">
-                                                    <div class="text-sm font-extrabold text-slate-900 leading-snug cursor-pointer hover:text-pmr-primary transition" onclick="openBiodataModal({!! htmlspecialchars(json_encode($stBiodata), ENT_QUOTES, 'UTF-8') !!})" title="{{ $stName }}">{{ $stName }}</div>
-                                                    <div class="text-xs text-pmr-primary font-bold mt-0.5">Staf {{ $m->position }}</div>
-                                                    @if($stClass)
-                                                        <div class="text-xs text-slate-500 font-medium truncate mt-0.5">{{ $stClass }}</div>
-                                                    @endif
-                                                    <button type="button" onclick="openBiodataModal({!! htmlspecialchars(json_encode($stBiodata), ENT_QUOTES, 'UTF-8') !!})" class="mt-2 text-[11px] font-bold text-slate-600 hover:text-pmr-primary inline-flex items-center gap-1 transition">
-                                                        <i class="fa-solid fa-user-circle text-xs text-pmr-primary"></i> Biodata Lengkap &rarr;
-                                                    </button>
-                                                </div>
+                <div class="w-full space-y-6 sm:space-y-7 mt-2">
+                    @foreach($seksiChunks as $chunkIndex => $chunk)
+                        <div class="{{ $chunk->count() === 2 ? 'grid grid-cols-1 md:grid-cols-2 gap-6 sm:gap-7 w-full max-w-4xl mx-auto justify-center' : ($chunk->count() === 1 ? 'flex justify-center w-full max-w-md mx-auto' : 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-7 w-full max-w-7xl mx-auto') }}">
+                            @foreach($chunk as $m)
+                                @php
+                                    $mem = $m->member ?? ($allMembers->get($m->name) ?? null);
+                                    $photoUrl = $m->photo_url ?: ($mem?->photo_url ?: 'https://ui-avatars.com/api/?name=' . urlencode($m->name) . '&background=dc2626&color=ffffff&bold=true&size=300');
+                                    $staffList = is_array($m->staff_members) ? $m->staff_members : [];
+                                    $workProg = trim($m->work_program ?? '');
+                                    $leaderBiodata = [
+                                        'name' => $m->name,
+                                        'position' => $m->subtitle ?: 'Ketua ' . $m->position,
+                                        'subtitle' => $m->position,
+                                        'class_grade' => $mem?->class_grade ?? ($m->subtitle ?: 'Kelas XI'),
+                                        'nis' => $mem?->nis ?? '-',
+                                        'gender' => $mem?->gender ?? '-',
+                                        'birth_place' => $mem?->birth_place ?? '',
+                                        'birth_date' => $mem?->birth_date ? \Carbon\Carbon::parse($mem->birth_date)->translatedFormat('d F Y') : '',
+                                        'address' => $mem?->address ?? '',
+                                        'phone' => $mem?->phone ?? '',
+                                        'email' => $mem?->email ?? '',
+                                        'motto' => $mem?->motto ?? '',
+                                        'photo' => $photoUrl,
+                                    ];
+                                @endphp
+                                <div class="bg-white rounded-3xl shadow-lg border border-slate-200 overflow-hidden flex flex-col hover:shadow-2xl hover:border-pmr-primary transition-all duration-300 group {{ $chunk->count() === 1 ? 'w-full' : '' }}">
+                                    
+                                    <!-- Header Bidang -->
+                                    <div class="bg-gradient-to-r from-red-700 via-pmr-primary to-red-800 text-white px-5 py-3.5 border-b border-red-900/30 flex items-center justify-between shadow-xs">
+                                        <div class="flex items-center gap-2.5 min-w-0">
+                                            <div class="w-8 h-8 rounded-xl bg-white/15 backdrop-blur-xs text-white flex items-center justify-center text-sm font-bold flex-shrink-0">
+                                                <i class="{{ $m->icon ?: 'fa-solid fa-shapes' }}"></i>
                                             </div>
-                                        @endforeach
+                                            <h3 class="font-black text-sm sm:text-base text-white uppercase tracking-tight truncate">
+                                                {{ $m->position }}
+                                            </h3>
+                                        </div>
+                                        <span class="text-[11px] font-extrabold bg-white/20 text-white px-2.5 py-0.5 rounded-full flex-shrink-0">
+                                            {{ count($staffList) }} Staf
+                                        </span>
                                     </div>
-                                @else
-                                    <div class="text-xs text-slate-400 italic py-4 text-center">Staf operasional bidang</div>
-                                @endif
-                            </div>
 
-                            <!-- Tombol Klik Disini Untuk Melihat Program Kerja -->
-                            <div class="p-4 bg-white border-t border-slate-100 mt-auto">
-                                <button type="button" 
-                                    onclick="openProgramModal('{{ addslashes($m->position) }}', '{{ addslashes($m->name) }}', '{{ addslashes($m->subtitle ?: 'Ketua ' . $m->position) }}', '{{ addslashes($photoUrl ?? '') }}', '{{ addslashes($m->icon ?: 'fa-solid fa-shapes') }}', {!! htmlspecialchars(json_encode($workProg), ENT_QUOTES, 'UTF-8') !!})"
-                                    class="w-full text-center py-3.5 px-3 rounded-2xl bg-red-50 hover:bg-pmr-primary text-pmr-primary hover:text-white font-black text-xs sm:text-sm transition-all duration-200 flex items-center justify-center gap-2 shadow-xs group/btn">
-                                    <i class="fa-solid fa-clipboard-list text-sm group-hover/btn:scale-110 transition"></i>
-                                    <span>Program Kerja</span>
-                                    <i class="fa-solid fa-arrow-right text-xs"></i>
-                                </button>
-                            </div>
+                                    <!-- Ketua Bidang -->
+                                    <div class="p-5 flex flex-col items-center text-center bg-gradient-to-b from-red-50/40 via-white to-white border-b border-slate-100">
+                                        <div class="relative cursor-pointer group/photo" onclick="openBiodataModal({!! htmlspecialchars(json_encode($leaderBiodata), ENT_QUOTES, 'UTF-8') !!})">
+                                            <img src="{{ $photoUrl }}" alt="{{ $m->name }}" class="w-20 h-20 sm:w-24 sm:h-24 rounded-full object-cover border-4 border-white ring-2 ring-red-400 shadow-md group-hover/photo:scale-105 transition-transform duration-300">
+                                            <span class="absolute -bottom-1 -right-1 bg-pmr-primary text-white text-[10px] font-black px-2 py-0.5 rounded-full shadow border-2 border-white flex items-center gap-1">
+                                                <i class="fa-solid fa-crown text-[8px] text-amber-300"></i> Ketua
+                                            </span>
+                                            <div class="absolute inset-0 rounded-full bg-black/40 opacity-0 group-hover/photo:opacity-100 flex items-center justify-center transition text-white text-[10px] font-bold gap-1 backdrop-blur-xs">
+                                                <i class="fa-solid fa-id-card"></i> Biodata
+                                            </div>
+                                        </div>
+                                        <div class="mt-3">
+                                            <div class="font-extrabold text-slate-900 text-sm sm:text-base leading-snug cursor-pointer hover:text-pmr-primary transition" onclick="openBiodataModal({!! htmlspecialchars(json_encode($leaderBiodata), ENT_QUOTES, 'UTF-8') !!})" title="{{ $m->name }}">
+                                                {{ $m->name }}
+                                            </div>
+                                            <div class="text-xs text-pmr-primary font-bold mt-0.5">
+                                                {{ $m->subtitle ?: 'Ketua ' . $m->position }}
+                                            </div>
+                                            <button type="button" onclick="openBiodataModal({!! htmlspecialchars(json_encode($leaderBiodata), ENT_QUOTES, 'UTF-8') !!})" class="mt-1.5 text-[11px] font-bold text-slate-500 hover:text-pmr-primary inline-flex items-center gap-1 transition">
+                                                <i class="fa-solid fa-address-card text-xs text-pmr-primary"></i> Biodata Ketua &rarr;
+                                            </button>
+                                        </div>
+                                    </div>
 
+                                    <!-- Area Staf Anggota (Mini-Grid Avatars yang Rapi & Muat Banyak) -->
+                                    <div class="p-4 bg-slate-50/70 flex-grow flex flex-col justify-between">
+                                        <div class="flex items-center justify-between pb-2 mb-3 border-b border-slate-200/70">
+                                            <span class="text-[11px] font-black uppercase tracking-wider text-slate-600 flex items-center gap-1.5">
+                                                <i class="fa-solid fa-users text-pmr-primary text-xs"></i> Staf Anggota Bidang
+                                            </span>
+                                            <span class="text-[10px] font-bold text-slate-400">
+                                                Klik foto untuk biodata
+                                            </span>
+                                        </div>
+
+                                        @if(!empty($staffList) && count($staffList) > 0)
+                                            <div class="grid grid-cols-3 sm:grid-cols-4 gap-2.5 sm:gap-3">
+                                                @foreach($staffList as $st)
+                                                    @php
+                                                        $stName = $st['name'] ?? '';
+                                                        $stMem = $allMembers->get($stName);
+                                                        $stClass = $st['class_grade'] ?? ($stMem?->class_grade ?? '');
+                                                        $stPhoto = $st['photo'] ?? ($stMem?->photo_url ?? ('https://ui-avatars.com/api/?name=' . urlencode($stName) . '&background=dc2626&color=ffffff&bold=true&size=300'));
+                                                        $stBiodata = [
+                                                            'name' => $stName,
+                                                            'position' => 'Staf ' . $m->position,
+                                                            'subtitle' => 'Staf Operasional Bidang',
+                                                            'class_grade' => $stClass ?: 'Kelas X/XI',
+                                                            'nis' => $stMem?->nis ?? '-',
+                                                            'gender' => $stMem?->gender ?? '-',
+                                                            'birth_place' => $stMem?->birth_place ?? '',
+                                                            'birth_date' => $stMem?->birth_date ? \Carbon\Carbon::parse($stMem->birth_date)->translatedFormat('d F Y') : '',
+                                                            'address' => $stMem?->address ?? '',
+                                                            'phone' => $stMem?->phone ?? '',
+                                                            'email' => $stMem?->email ?? '',
+                                                            'motto' => $stMem?->motto ?? '',
+                                                            'photo' => $stPhoto,
+                                                        ];
+                                                    @endphp
+                                                    <div class="group/staf flex flex-col items-center text-center cursor-pointer p-1.5 rounded-xl hover:bg-white hover:shadow-xs transition"
+                                                         onclick="openBiodataModal({!! htmlspecialchars(json_encode($stBiodata), ENT_QUOTES, 'UTF-8') !!})"
+                                                         title="Klik untuk melihat biodata {{ $stName }}">
+                                                        <div class="relative w-14 h-14 sm:w-16 sm:h-16 flex-shrink-0">
+                                                            <img src="{{ $stPhoto }}" alt="{{ $stName }}" class="w-full h-full rounded-full object-cover border-2 border-white ring-2 ring-red-200 shadow-xs group-hover/staf:scale-105 group-hover/staf:ring-pmr-primary transition-transform duration-200">
+                                                            <div class="absolute inset-0 rounded-full bg-black/40 opacity-0 group-hover/staf:opacity-100 flex items-center justify-center transition text-white text-[9px] font-bold backdrop-blur-xs">
+                                                                <i class="fa-solid fa-id-card"></i>
+                                                            </div>
+                                                        </div>
+                                                        <div class="mt-1.5 w-full">
+                                                            <div class="text-[11px] font-bold text-slate-800 group-hover/staf:text-pmr-primary truncate leading-tight transition" title="{{ $stName }}">
+                                                                {{ $stName }}
+                                                            </div>
+                                                            @if($stClass)
+                                                                <div class="text-[9px] text-slate-400 font-medium truncate mt-0.5">
+                                                                    {{ $stClass }}
+                                                                </div>
+                                                            @endif
+                                                        </div>
+                                                    </div>
+                                                @endforeach
+                                            </div>
+                                        @else
+                                            <div class="text-xs text-slate-400 italic py-6 text-center">
+                                                Belum ada staf operasional terdaftar
+                                            </div>
+                                        @endif
+                                    </div>
+
+                                    <!-- Tombol Program Kerja -->
+                                    <div class="p-4 bg-white border-t border-slate-100 mt-auto">
+                                        <button type="button" 
+                                            onclick="openProgramModal('{{ addslashes($m->position) }}', '{{ addslashes($m->name) }}', '{{ addslashes($m->subtitle ?: 'Ketua ' . $m->position) }}', '{{ addslashes($photoUrl ?? '') }}', '{{ addslashes($m->icon ?: 'fa-solid fa-shapes') }}', {!! htmlspecialchars(json_encode($workProg), ENT_QUOTES, 'UTF-8') !!})"
+                                            class="w-full text-center py-2.5 px-3 rounded-xl bg-red-50 hover:bg-pmr-primary text-pmr-primary hover:text-white font-extrabold text-xs transition duration-200 flex items-center justify-center gap-2 shadow-xs group/btn">
+                                            <i class="fa-solid fa-clipboard-list text-xs group-hover/btn:scale-110 transition"></i>
+                                            <span>Lihat Program Kerja</span>
+                                            <i class="fa-solid fa-arrow-right text-[10px]"></i>
+                                        </button>
+                                    </div>
+
+                                </div>
+                            @endforeach
                         </div>
                     @endforeach
                 </div>
