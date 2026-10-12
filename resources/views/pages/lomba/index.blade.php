@@ -7,12 +7,27 @@
 <section class="relative bg-slate-900 text-white pt-32 pb-20 overflow-hidden">
     <div class="absolute inset-0 opacity-20 bg-[radial-gradient(#ef4444_1px,transparent_1px)] [background-size:16px_16px]"></div>
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-        <div class="text-center max-w-3xl mx-auto">
+        <div class="text-center max-w-4xl lg:max-w-5xl mx-auto">
             <div class="inline-flex items-center gap-2 bg-red-500/10 border border-red-500/30 text-red-400 px-4 py-1.5 rounded-full text-xs font-bold tracking-wider uppercase mb-6">
                 <i class="fa-solid fa-trophy"></i> {{ $event->theme ?: 'AJANG PRESTASI RELAWAN MUDA PMR WIRA CIAWI' }}
             </div>
-            <h1 class="text-4xl md:text-5xl font-extrabold tracking-tight mb-4">
-                {{ $event->title ?? 'SUA BHAKTI BERKARYA III TAHUN 2025' }}
+            @php
+                $titleRaw = $event->title ?? 'SUA BHAKTI BERKARYA IV TAHUN 2026';
+                if (preg_match('/^(.*?)\s+(TAHUN\s+\d+.*)$/i', $titleRaw, $m)) {
+                    $eventMainTitle = trim($m[1]);
+                    $eventYearTitle = trim($m[2]);
+                } else {
+                    $eventMainTitle = $titleRaw;
+                    $eventYearTitle = '';
+                }
+            @endphp
+            <h1 class="text-3xl sm:text-4xl md:text-5xl font-black tracking-tight mb-4 leading-tight">
+                @if($eventYearTitle)
+                    <span class="inline-block">{{ $eventMainTitle }}</span>
+                    <span class="inline-block whitespace-nowrap"> {{ $eventYearTitle }}</span>
+                @else
+                    {{ $titleRaw }}
+                @endif
             </h1>
             <p class="text-slate-300 text-base md:text-lg mb-8 leading-relaxed">
                 {{ $event->description ?? 'Ajang kompetisi kepalangmerahan bergengsi tingkat Mula (SD), Madya (SMP), dan Wira (SMA/SMK/MA) se-Jabodetabek dan sekitarnya.' }}
