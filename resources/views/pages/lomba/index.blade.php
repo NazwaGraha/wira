@@ -25,22 +25,105 @@
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
             <div class="text-center max-w-3xl mx-auto">
                 <!-- Status Badge -->
-                <div class="inline-flex items-center gap-2 bg-slate-800/90 border border-slate-700/80 text-amber-300 px-4 py-1.5 rounded-full text-xs font-bold tracking-wider uppercase mb-6 shadow-sm">
-                    <i class="fa-solid fa-hourglass-half text-amber-400"></i>
-                    <span>Agenda Perlombaan PMR Wira</span>
+                <div class="inline-flex items-center gap-2 bg-red-500/10 border border-red-500/30 text-red-400 px-4 py-1.5 rounded-full text-xs font-bold tracking-wider uppercase mb-5">
+                    <i class="fa-solid fa-trophy"></i>
+                    <span>AGENDA LOMBA PMR WIRA CIAWI</span>
                 </div>
 
-                <!-- Modern Trophy & Calendar Illustration -->
-                <div class="relative w-28 h-28 sm:w-36 sm:h-36 mx-auto mb-6 flex items-center justify-center">
-                    <div class="absolute inset-0 bg-gradient-to-tr from-amber-500/20 via-red-500/20 to-rose-600/20 rounded-3xl blur-xl animate-pulse"></div>
-                    <div class="relative w-full h-full rounded-3xl bg-slate-800/90 border-2 border-slate-700/80 flex items-center justify-center shadow-2xl backdrop-blur">
-                        <div class="relative flex items-center justify-center">
-                            <i class="fa-solid fa-trophy text-amber-400 text-4xl sm:text-5xl drop-shadow-md"></i>
-                            <span class="absolute -bottom-1 -right-2 bg-red-600 text-white text-[10px] sm:text-xs font-black px-2 py-0.5 rounded-full border border-slate-900 shadow">
-                                <i class="fa-solid fa-calendar-days mr-1"></i> Off-Season
-                            </span>
-                        </div>
-                    </div>
+                <!-- Modern Vector Illustration: Gold Trophy & Red Calendar -->
+                <div class="w-60 sm:w-72 mx-auto mb-6 relative">
+                    <div class="absolute inset-0 bg-gradient-to-tr from-amber-500/20 via-red-500/15 to-transparent rounded-full blur-2xl pointer-events-none"></div>
+                    <svg class="w-full h-auto drop-shadow-2xl relative z-10" viewBox="0 0 320 185" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <defs>
+                            <linearGradient id="trophyGold" x1="0%" y1="0%" x2="100%" y2="100%">
+                                <stop offset="0%" stop-color="#FDE047" />
+                                <stop offset="45%" stop-color="#F59E0B" />
+                                <stop offset="100%" stop-color="#D97706" />
+                            </linearGradient>
+                            <linearGradient id="trophyBase" x1="0%" y1="0%" x2="100%" y2="100%">
+                                <stop offset="0%" stop-color="#475569" />
+                                <stop offset="100%" stop-color="#1E293B" />
+                            </linearGradient>
+                            <linearGradient id="calHeader" x1="0%" y1="0%" x2="100%" y2="0%">
+                                <stop offset="0%" stop-color="#EF4444" />
+                                <stop offset="100%" stop-color="#DC2626" />
+                            </linearGradient>
+                        </defs>
+
+                        <!-- Soft Ground Shadow -->
+                        <ellipse cx="160" cy="168" rx="100" ry="10" fill="#020617" opacity="0.6" />
+
+                        <!-- CALENDAR (Right / Background) -->
+                        <g transform="translate(142, 32)">
+                            <!-- Calendar Shadow & Body -->
+                            <rect x="0" y="0" width="116" height="126" rx="16" fill="#1E293B" stroke="#334155" stroke-width="2" />
+                            <!-- Red PMR Header -->
+                            <path d="M0 16C0 7.16344 7.16344 0 16 0H100C108.837 0 116 7.16344 116 16V36H0V16Z" fill="url(#calHeader)" />
+                            
+                            <!-- Spiral Rings -->
+                            <rect x="20" y="-6" width="6" height="13" rx="3" fill="#F8FAFC" />
+                            <rect x="55" y="-6" width="6" height="13" rx="3" fill="#F8FAFC" />
+                            <rect x="90" y="-6" width="6" height="13" rx="3" fill="#F8FAFC" />
+
+                            <!-- Calendar Date Dots -->
+                            <!-- Header Dots -->
+                            <circle cx="23" cy="50" r="3" fill="#64748B" />
+                            <circle cx="46" cy="50" r="3" fill="#64748B" />
+                            <circle cx="70" cy="50" r="3" fill="#64748B" />
+                            <circle cx="93" cy="50" r="3" fill="#64748B" />
+
+                            <!-- Row 1 -->
+                            <circle cx="23" cy="68" r="4" fill="#475569" />
+                            <circle cx="46" cy="68" r="4" fill="#475569" />
+                            <circle cx="70" cy="68" r="4" fill="#475569" />
+                            <circle cx="93" cy="68" r="4" fill="#475569" />
+
+                            <!-- Row 2 (Highlighted Date) -->
+                            <circle cx="23" cy="86" r="4" fill="#475569" />
+                            <circle cx="46" cy="86" r="4" fill="#475569" />
+                            <rect x="62" y="78" width="16" height="16" rx="4" fill="#EF4444" />
+                            <circle cx="70" cy="86" r="3" fill="#FFFFFF" />
+                            <circle cx="93" cy="86" r="4" fill="#475569" />
+
+                            <!-- Row 3 -->
+                            <circle cx="23" cy="104" r="4" fill="#334155" />
+                            <circle cx="46" cy="104" r="4" fill="#334155" />
+                            <circle cx="70" cy="104" r="4" fill="#334155" />
+                            <circle cx="93" cy="104" r="4" fill="#334155" />
+                        </g>
+
+                        <!-- GOLDEN TROPHY (Left / Foreground) -->
+                        <g transform="translate(58, 22)">
+                            <!-- Trophy Left Handle -->
+                            <path d="M22 45 C4 45, 4 82, 32 87" stroke="url(#trophyGold)" stroke-width="7" stroke-linecap="round" fill="none" />
+                            <!-- Trophy Right Handle -->
+                            <path d="M78 45 C96 45, 96 82, 68 87" stroke="url(#trophyGold)" stroke-width="7" stroke-linecap="round" fill="none" />
+
+                            <!-- Trophy Main Cup -->
+                            <path d="M22 30 H78 V62 C78 78, 64 93, 50 93 C36 93, 22 78, 22 62 Z" fill="url(#trophyGold)" />
+                            <!-- Trophy Inner Rim -->
+                            <ellipse cx="50" cy="30" rx="28" ry="7" fill="#FDE047" />
+
+                            <!-- Star Embossed on Cup -->
+                            <path d="M50 49 L52.5 55.5 L59 56 L54 60.5 L55.5 67 L50 63.5 L44.5 67 L46 60.5 L41 56 L47.5 55.5 Z" fill="#FFFFFF" opacity="0.9" />
+
+                            <!-- Stem -->
+                            <rect x="44" y="93" width="12" height="23" rx="2" fill="url(#trophyGold)" />
+                            <ellipse cx="50" cy="106" rx="9" ry="3" fill="#FDE047" />
+
+                            <!-- Base / Pedestal -->
+                            <path d="M30 116 H70 L76 138 H24 Z" fill="url(#trophyBase)" stroke="#475569" stroke-width="1.5" />
+                            <rect x="18" y="138" width="64" height="8" rx="3" fill="#0F172A" stroke="#334155" stroke-width="1" />
+                            <rect x="34" y="122" width="32" height="10" rx="2" fill="url(#trophyGold)" />
+                        </g>
+
+                        <!-- Sparkles -->
+                        <path d="M272 25 L274 31 L280 33 L274 35 L272 41 L270 35 L264 33 L270 31 Z" fill="#FDE047" />
+                        <path d="M42 50 L43.5 54.5 L48 56 L43.5 57.5 L42 62 L40.5 57.5 L36 56 L40.5 54.5 Z" fill="#F87171" opacity="0.8" />
+                        <path d="M148 16 L149.5 20 L154 21.5 L149.5 23 L148 27 L146.5 23 L142 21.5 L146.5 20 Z" fill="#38BDF8" opacity="0.8" />
+                        <circle cx="288" cy="72" r="2.5" fill="#FDE047" opacity="0.6" />
+                        <circle cx="34" cy="105" r="2" fill="#38BDF8" opacity="0.6" />
+                    </svg>
                 </div>
 
                 <!-- Main Heading -->
