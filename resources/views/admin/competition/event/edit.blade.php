@@ -13,6 +13,14 @@
             <i class="fa-solid fa-folder-open"></i>
             <span>Detail & History Data</span>
         </a>
+        <form action="{{ route('admin.competition-event.destroy', $event->id) }}" method="POST" class="inline-block" onsubmit="return confirm('{{ $event->is_active ? 'Peringatan: Edisi ini saat ini sedang AKTIF di website publik. Yakin ingin menghapus edisi lomba ini?' : 'Yakin ingin menghapus edisi lomba \'' . addslashes($event->title) . '\' beserta seluruh datanya?' }}')">
+            @csrf
+            @method('DELETE')
+            <button type="submit" class="bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 px-3.5 py-2 rounded-xl font-bold text-xs transition flex items-center gap-2 shadow-xs cursor-pointer">
+                <i class="fa-solid fa-trash-can text-rose-600"></i>
+                <span>Hapus Edisi</span>
+            </button>
+        </form>
     </div>
 @endsection
 

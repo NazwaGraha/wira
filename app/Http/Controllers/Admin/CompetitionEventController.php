@@ -209,26 +209,27 @@ class CompetitionEventController extends Controller
     }
 
     /**
-     * Delete an event if it has no verified registrations.
+     * Delete a competition event.
      */
     public function destroy(CompetitionEvent $event)
     {
-        if ($event->registrations()->count() > 0) {
-            return redirect()->route('admin.competition-event.index')
-                ->with('error', 'Edisi lomba tidak dapat dihapus karena sudah memiliki data pendaftaran sekolah!');
-        }
-
-        if ($event->is_active) {
-            return redirect()->route('admin.competition-event.index')
-                ->with('error', 'Edisi yang sedang AKTIF tidak dapat dihapus! Silakan aktifkan edisi lain terlebih dahulu.');
-        }
-
         $title = $event->title;
+
+        // Clean up uploaded banner or handbook file if stored
+        if ($event->banner_image && Storage::disk('public')->exists($event->banner_image)) {
+            Storage::disk('public')->delete($event->banner_image);
+        }
+        if ($event->handbook_file && Storage::disk('public')->exists($event->handbook_file)) {
+            Storage::disk('public')->delete($event->handbook_file);
+        }
+
+        // Delete associated categories & registrations (cascades teams & scores)
+        $event->registrations()->delete();
         $event->categories()->delete();
         $event->delete();
 
         return redirect()->route('admin.competition-event.index')
-            ->with('success', 'Edisi lomba "' . $title . '" berhasil dihapus dari database.');
+            ->with('success', 'Edisi lomba "' . $title . '" beserta seluruh datanya berhasil dihapus dari database.');
     }
 
     /**

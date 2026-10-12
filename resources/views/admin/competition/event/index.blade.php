@@ -250,16 +250,15 @@
                                     </form>
                                 @endif
 
-                                <!-- Hapus (Hanya jika belum ada pendaftar & tidak aktif) -->
-                                @if(!$event->is_active && $event->registrations_count === 0)
-                                    <form action="{{ route('admin.competition-event.destroy', $event->id) }}" method="POST" class="inline-block" onsubmit="return confirm('Hapus edisi lomba ini dari database?')">
-                                        @csrf
-                                        @method('DELETE')
-                                        <button type="submit" class="inline-flex items-center justify-center w-7 h-7 bg-rose-50 hover:bg-rose-100 text-rose-600 rounded-lg transition" title="Hapus">
-                                            <i class="fa-solid fa-trash-can text-xs"></i>
-                                        </button>
-                                    </form>
-                                @endif
+                                <!-- Hapus Edisi Lomba (Delete) -->
+                                <form action="{{ route('admin.competition-event.destroy', $event->id) }}" method="POST" class="inline-block" onsubmit="return confirm('{{ $event->is_active ? 'Peringatan: Edisi ini saat ini sedang AKTIF di website publik. Jika dihapus, website akan beralih ke mode Belum Ada Jadwal (Off-Season). Yakin ingin menghapus edisi lomba ini?' : ($event->registrations_count > 0 ? 'Peringatan: Edisi ini memiliki ' . $event->registrations_count . ' data pendaftaran sekolah. Menghapus edisi ini akan menghapus seluruh data terkait secara permanen. Yakin ingin menghapus?' : 'Yakin ingin menghapus edisi lomba \'' . addslashes($event->title) . '\' dari database?') }}')">
+                                    @csrf
+                                    @method('DELETE')
+                                    <button type="submit" class="inline-flex items-center gap-1 bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 font-bold px-2.5 py-1.5 rounded-lg text-xs transition cursor-pointer" title="Hapus Edisi Lomba">
+                                        <i class="fa-solid fa-trash-can text-rose-600"></i>
+                                        <span>Hapus</span>
+                                    </button>
+                                </form>
                             </td>
                         </tr>
                     @empty
