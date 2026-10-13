@@ -84,6 +84,11 @@
                 <span class="ml-auto bg-slate-800 text-slate-300 text-[10px] font-bold px-2 py-0.5 rounded-full">Active</span>
             </a>
 
+            <a href="{{ route('admin.categories.index') }}" class="flex items-center gap-3 px-3 py-2.5 rounded-xl font-medium text-sm transition {{ request()->routeIs('admin.categories.*') ? 'bg-pmr-primary text-white shadow-md shadow-red-950/40' : 'hover:bg-slate-800 text-slate-300' }}">
+                <i class="fa-solid fa-tags w-5 text-center"></i>
+                <span>Kategori Artikel</span>
+            </a>
+
             <a href="{{ route('admin.hero-slides.index') }}" class="flex items-center gap-3 px-3 py-2.5 rounded-xl font-medium text-sm transition {{ request()->routeIs('admin.hero-slides.*') ? 'bg-pmr-primary text-white shadow-md shadow-red-950/40' : 'hover:bg-slate-800 text-slate-300' }}">
                 <i class="fa-solid fa-sliders w-5 text-center"></i>
                 <span>Slider Hero Banner</span>

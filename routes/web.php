@@ -57,6 +57,17 @@ Route::prefix('admin')->name('admin.')->group(function () {
             'destroy' => 'articles.destroy',
         ]);
 
+        // Manajemen Kategori Artikel
+        Route::resource('kategori-artikel', \App\Http\Controllers\Admin\CategoryController::class)->names([
+            'index' => 'categories.index',
+            'create' => 'categories.create',
+            'store' => 'categories.store',
+            'edit' => 'categories.edit',
+            'update' => 'categories.update',
+            'destroy' => 'categories.destroy',
+        ]);
+        Route::post('kategori-artikel/quick-store', [\App\Http\Controllers\Admin\CategoryController::class, 'quickStore'])->name('categories.quick-store');
+
         // Pengaturan Slider Hero Banner
         Route::resource('hero-slides', \App\Http\Controllers\Admin\HeroSlideController::class)->names([
             'index' => 'hero-slides.index',

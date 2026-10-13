@@ -4,9 +4,14 @@
 @section('page_title', 'Manajemen Artikel & Konten Edukasi')
 
 @section('top_actions')
-    <a href="{{ route('admin.articles.create') }}" class="bg-pmr-primary hover:bg-pmr-dark text-white font-bold text-xs uppercase tracking-wider px-5 py-2.5 rounded-xl shadow-md transition flex items-center gap-2">
-        <i class="fa-solid fa-plus"></i> Tulis Artikel Baru
-    </a>
+    <div class="flex items-center gap-2">
+        <a href="{{ route('admin.categories.index') }}" class="bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 font-bold text-xs uppercase tracking-wider px-4 py-2.5 rounded-xl shadow-2xs transition flex items-center gap-2">
+            <i class="fa-solid fa-tags text-pmr-primary"></i> Kelola Kategori
+        </a>
+        <a href="{{ route('admin.articles.create') }}" class="bg-pmr-primary hover:bg-pmr-dark text-white font-bold text-xs uppercase tracking-wider px-5 py-2.5 rounded-xl shadow-md transition flex items-center gap-2">
+            <i class="fa-solid fa-plus"></i> Tulis Artikel Baru
+        </a>
+    </div>
 @endsection
 
 @section('content')
