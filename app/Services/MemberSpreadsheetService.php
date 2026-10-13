@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Models\Member;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Schema;
 use SimpleXMLElement;
 use ZipArchive;
 
@@ -273,15 +274,16 @@ class MemberSpreadsheetService
                     }
                 }
 
+                $hasNri = Schema::hasColumn('members', 'nri');
+                $hasNis = Schema::hasColumn('members', 'nis');
+                $hasEntryYear = Schema::hasColumn('members', 'entry_year');
+                $hasMemberStatus = Schema::hasColumn('members', 'member_status');
+
                 $memberData = [
-                    'nri' => $nri,
-                    'nis' => $nri,
                     'name' => $name,
                     'position' => $position ?: 'Anggota',
                     'gender' => $gender,
                     'class_grade' => $classGrade,
-                    'entry_year' => $entryYear,
-                    'member_status' => $memberStatus,
                     'birth_place' => $birthPlace,
                     'birth_date' => $birthDate,
                     'email' => $email,
@@ -293,9 +295,31 @@ class MemberSpreadsheetService
                     'is_active' => true,
                 ];
 
+                if ($hasNri) {
+                    $memberData['nri'] = $nri;
+                }
+                if ($hasNis) {
+                    $memberData['nis'] = $nri;
+                }
+                if ($hasEntryYear) {
+                    $memberData['entry_year'] = $entryYear;
+                }
+                if ($hasMemberStatus) {
+                    $memberData['member_status'] = $memberStatus;
+                }
+
                 // 1. Cek apakah NRI unik sudah ada di database (Update data jika ada)
-                $existingMember = Member::where(function ($q) use ($nri) {
-                    $q->where('nri', $nri)->orWhere('nis', $nri);
+                $existingMember = Member::where(function ($q) use ($nri, $hasNri, $hasNis) {
+                    if ($hasNri) {
+                        $q->where('nri', $nri);
+                    }
+                    if ($hasNis) {
+                        if ($hasNri) {
+                            $q->orWhere('nis', $nri);
+                        } else {
+                            $q->where('nis', $nri);
+                        }
+                    }
                 })->first();
 
                 if ($existingMember) {
@@ -306,8 +330,17 @@ class MemberSpreadsheetService
                 }
 
                 // 2. Pemulihan otomatis (Self-Healing): Cek jika ada anggota dengan nama sama tapi NRI/NIS korup ('Laki-laki' / 'Perempuan') akibat bug versi sebelumnya
-                $corruptedMember = Member::where('name', $name)->where(function ($q) {
-                    $q->whereIn('nri', ['Laki-laki', 'Perempuan'])->orWhereIn('nis', ['Laki-laki', 'Perempuan']);
+                $corruptedMember = Member::where('name', $name)->where(function ($q) use ($hasNri, $hasNis) {
+                    if ($hasNri) {
+                        $q->whereIn('nri', ['Laki-laki', 'Perempuan']);
+                    }
+                    if ($hasNis) {
+                        if ($hasNri) {
+                            $q->orWhereIn('nis', ['Laki-laki', 'Perempuan']);
+                        } else {
+                            $q->whereIn('nis', ['Laki-laki', 'Perempuan']);
+                        }
+                    }
                 })->first();
 
                 if ($corruptedMember) {

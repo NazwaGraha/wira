@@ -462,6 +462,8 @@ class MemberController extends Controller
      */
     public function import(Request $request, MemberSpreadsheetService $spreadsheetService)
     {
+        $this->ensureColumnsExist();
+
         $request->validate([
             'excel_file' => 'required|file|max:10240',
         ], [
