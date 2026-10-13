@@ -230,7 +230,17 @@ class MemberController extends Controller
 
             $message = "Berhasil memproses {$result['total']} data anggota (Baru: {$result['success']}, Diperbarui: {$result['updated']}).";
             if ($result['skipped'] > 0) {
-                $message .= " {$result['skipped']} baris dilewati karena kosong atau tidak valid.";
+                $message .= " <br><span class=\"text-xs text-amber-800 font-normal\">Catatan ({$result['skipped']} baris dilewati): ";
+                if (!empty($result['errors'])) {
+                    $detailErrors = array_slice($result['errors'], 0, 5);
+                    $message .= implode(' | ', $detailErrors);
+                    if (count($result['errors']) > 5) {
+                        $message .= ' ...dan ' . (count($result['errors']) - 5) . ' lainnya.';
+                    }
+                } else {
+                    $message .= "Baris kosong atau data tidak valid.";
+                }
+                $message .= "</span>";
             }
 
             return redirect()->route('admin.members.index')->with('success', $message);

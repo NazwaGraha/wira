@@ -149,6 +149,7 @@ class MemberSpreadsheetService
         $updatedCount = 0;
         $skippedCount = 0;
         $errors = [];
+        $seenNisInFile = [];
         $currentYear = (int) date('Y');
 
         foreach ($rows as $index => $row) {
@@ -183,111 +184,133 @@ class MemberSpreadsheetService
                 continue;
             }
 
-            // Normalisasi Gender
-            if ($gender) {
-                $genderLower = strtolower($gender);
-                if (str_contains($genderLower, 'laki') || $genderLower === 'l' || $genderLower === 'pria') {
-                    $gender = 'Laki-laki';
-                } elseif (str_contains($genderLower, 'perempuan') || $genderLower === 'p' || $genderLower === 'wanita') {
-                    $gender = 'Perempuan';
-                }
+            // Validasi NIS: 1 anggota wajib 1 NIS dan tidak boleh kosong
+            if (empty($nis)) {
+                $errors[] = "Baris {$rowNumber} ({$name}): NIS wajib diisi (1 anggota 1 NIS tidak boleh kosong).";
+                $skippedCount++;
+                continue;
             }
 
-            // Normalisasi Kelas
-            if ($classGrade) {
-                $cgUpper = strtoupper(trim($classGrade));
-                if (in_array($cgUpper, ['X', '10', 'SEPULUH'])) {
-                    $classGrade = 'X';
-                } elseif (in_array($cgUpper, ['XI', '11', 'SEBELAS'])) {
-                    $classGrade = 'XI';
-                } elseif (in_array($cgUpper, ['XII', '12', 'DUA BELAS'])) {
-                    $classGrade = 'XII';
-                } elseif (str_contains(strtolower($classGrade), 'alumni')) {
-                    $classGrade = 'Alumni';
-                }
+            // Validasi Duplikasi NIS di dalam file Excel yang sama
+            if (isset($seenNisInFile[$nis])) {
+                $errors[] = "Baris {$rowNumber} ({$name}): NIS '{$nis}' duplikat dengan baris {$seenNisInFile[$nis]} dalam file (dilewati).";
+                $skippedCount++;
+                continue;
             }
+            $seenNisInFile[$nis] = $rowNumber;
 
-            // Normalisasi Tahun Masuk
-            $entryYear = null;
-            if (!empty($entryYearRaw) && is_numeric($entryYearRaw)) {
-                $entryYear = (int) $entryYearRaw;
-            }
-
-            // Normalisasi Status Anggota
-            if (!empty($memberStatus)) {
-                $statusLower = strtolower($memberStatus);
-                if (str_contains($statusLower, 'purna') || str_contains($statusLower, 'alumni')) {
-                    $memberStatus = 'Purna';
-                } else {
-                    $memberStatus = 'Aktif';
-                }
-            } else {
-                // Logika Otomatis: jika tahun masuk + 3 <= tahun sekarang -> Purna
-                if ($entryYear) {
-                    $memberStatus = ($currentYear >= ($entryYear + 3)) ? 'Purna' : 'Aktif';
-                } else {
-                    $memberStatus = 'Aktif';
-                }
-            }
-
-            // Normalisasi Tanggal Lahir
-            $birthDate = null;
-            if (!empty($birthDateRaw)) {
-                try {
-                    // Cek jika numeric Excel date serial number (misal 39582)
-                    if (is_numeric($birthDateRaw) && (int) $birthDateRaw > 10000 && (int) $birthDateRaw < 60000) {
-                        $timestamp = ((int) $birthDateRaw - 25569) * 86400;
-                        $birthDate = gmdate('Y-m-d', $timestamp);
+            // Bungkus proses penyimpanan per baris agar kesalahan satu baris tidak menggugurkan baris lainnya
+            try {
+                // Normalisasi Gender
+                if ($gender) {
+                    $genderLower = strtolower($gender);
+                    if (str_contains($genderLower, 'laki') || $genderLower === 'l' || $genderLower === 'pria') {
+                        $gender = 'Laki-laki';
+                    } elseif (str_contains($genderLower, 'perempuan') || $genderLower === 'p' || $genderLower === 'wanita') {
+                        $gender = 'Perempuan';
                     } else {
-                        $parsedDate = date('Y-m-d', strtotime(str_replace('/', '-', $birthDateRaw)));
-                        if ($parsedDate && $parsedDate !== '1970-01-01') {
-                            $birthDate = $parsedDate;
-                        }
+                        $gender = null;
                     }
-                } catch (\Throwable $e) {
-                    $birthDate = null;
                 }
-            }
 
-            $memberData = [
-                'name' => $name,
-                'position' => $position ?: 'Anggota',
-                'gender' => $gender,
-                'class_grade' => $classGrade,
-                'entry_year' => $entryYear,
-                'member_status' => $memberStatus,
-                'birth_place' => $birthPlace,
-                'birth_date' => $birthDate,
-                'email' => $email,
-                'phone' => $phone,
-                'address' => $address,
-                'motto' => $motto,
-                'vision' => $vision,
-                'mission' => $mission,
-                'is_active' => true,
-            ];
+                // Normalisasi Kelas
+                if ($classGrade) {
+                    $cgUpper = strtoupper(trim($classGrade));
+                    if (in_array($cgUpper, ['X', '10', 'SEPULUH'])) {
+                        $classGrade = 'X';
+                    } elseif (in_array($cgUpper, ['XI', '11', 'SEBELAS'])) {
+                        $classGrade = 'XI';
+                    } elseif (in_array($cgUpper, ['XII', '12', 'DUA BELAS'])) {
+                        $classGrade = 'XII';
+                    } elseif (str_contains(strtolower($classGrade), 'alumni')) {
+                        $classGrade = 'Alumni';
+                    }
+                }
 
-            // Cek apakah NIS sudah ada untuk update atau insert
-            if (!empty($nis)) {
+                // Normalisasi Tahun Masuk
+                $entryYear = null;
+                if (!empty($entryYearRaw) && is_numeric($entryYearRaw)) {
+                    $entryYear = (int) $entryYearRaw;
+                }
+
+                // Normalisasi Status Anggota
+                if (!empty($memberStatus)) {
+                    $statusLower = strtolower($memberStatus);
+                    if (str_contains($statusLower, 'purna') || str_contains($statusLower, 'alumni')) {
+                        $memberStatus = 'Purna';
+                    } else {
+                        $memberStatus = 'Aktif';
+                    }
+                } else {
+                    // Logika Otomatis: jika tahun masuk + 3 <= tahun sekarang -> Purna
+                    if ($entryYear) {
+                        $memberStatus = ($currentYear >= ($entryYear + 3)) ? 'Purna' : 'Aktif';
+                    } else {
+                        $memberStatus = 'Aktif';
+                    }
+                }
+
+                // Normalisasi Tanggal Lahir
+                $birthDate = null;
+                if (!empty($birthDateRaw)) {
+                    try {
+                        // Cek jika numeric Excel date serial number (misal 39582)
+                        if (is_numeric($birthDateRaw) && (int) $birthDateRaw > 10000 && (int) $birthDateRaw < 60000) {
+                            $timestamp = ((int) $birthDateRaw - 25569) * 86400;
+                            $birthDate = gmdate('Y-m-d', $timestamp);
+                        } else {
+                            $parsedDate = date('Y-m-d', strtotime(str_replace('/', '-', $birthDateRaw)));
+                            if ($parsedDate && $parsedDate !== '1970-01-01') {
+                                $birthDate = $parsedDate;
+                            }
+                        }
+                    } catch (\Throwable $e) {
+                        $birthDate = null;
+                    }
+                }
+
+                $memberData = [
+                    'nis' => $nis,
+                    'name' => $name,
+                    'position' => $position ?: 'Anggota',
+                    'gender' => $gender,
+                    'class_grade' => $classGrade,
+                    'entry_year' => $entryYear,
+                    'member_status' => $memberStatus,
+                    'birth_place' => $birthPlace,
+                    'birth_date' => $birthDate,
+                    'email' => $email,
+                    'phone' => $phone,
+                    'address' => $address,
+                    'motto' => $motto,
+                    'vision' => $vision,
+                    'mission' => $mission,
+                    'is_active' => true,
+                ];
+
+                // 1. Cek apakah NIS unik sudah ada di database (Update data jika ada)
                 $existingMember = Member::where('nis', $nis)->first();
                 if ($existingMember) {
                     $existingMember->update($memberData);
                     $updatedCount++;
                     continue;
                 }
-                $memberData['nis'] = $nis;
-            } else {
-                // Jika tanpa NIS, cari berdasarkan nama sama persis jika ada
-                $existingByName = Member::where('name', $name)->whereNull('nis')->first();
-                if ($existingByName) {
-                    $existingByName->update($memberData);
+
+                // 2. Pemulihan otomatis (Self-Healing): Cek jika ada anggota dengan nama sama tapi NIS korup ('Laki-laki' / 'Perempuan') akibat bug versi sebelumnya
+                $corruptedMember = Member::where('name', $name)->whereIn('nis', ['Laki-laki', 'Perempuan'])->first();
+                if ($corruptedMember) {
+                    $corruptedMember->update($memberData);
                     $updatedCount++;
                     continue;
                 }
-            }
 
-            Member::create($memberData);
-            $successCount++;
+                // 3. Tambah anggota baru jika NIS belum pernah terdaftar
+                Member::create($memberData);
+                $successCount++;
+            } catch (\Throwable $e) {
+                $errors[] = "Baris {$rowNumber} ({$name}): " . $e->getMessage();
+                $skippedCount++;
+            }
         }
 
         return [
@@ -309,13 +332,14 @@ class MemberSpreadsheetService
             $h = strtolower(trim((string) $cellText));
             if (empty($h)) continue;
 
-            if (str_contains($h, 'nis')) {
+            // Prioritaskan NIS: pastikan BUKAN kata 'jenis' (seperti 'jenis kelamin')
+            if (!str_contains($h, 'jenis') && (preg_match('/\bnis\b/i', $h) || str_contains($h, 'induk') || $h === 'nis')) {
                 $map['nis'] = $idx;
             } elseif (str_contains($h, 'nama')) {
                 $map['name'] = $idx;
             } elseif (str_contains($h, 'jabatan') || str_contains($h, 'posisi')) {
                 $map['position'] = $idx;
-            } elseif (str_contains($h, 'kelamin') || str_contains($h, 'gender')) {
+            } elseif (str_contains($h, 'kelamin') || str_contains($h, 'gender') || str_contains($h, 'jenis')) {
                 $map['gender'] = $idx;
             } elseif (str_contains($h, 'kelas') || str_contains($h, 'tingkat')) {
                 $map['class_grade'] = $idx;
@@ -325,7 +349,7 @@ class MemberSpreadsheetService
                 $map['member_status'] = $idx;
             } elseif (str_contains($h, 'tempat')) {
                 $map['birth_place'] = $idx;
-            } elseif (str_contains($h, 'tanggal') || str_contains($h, 'tgl') || str_contains($h, 'lahir')) {
+            } elseif (str_contains($h, 'tanggal') || str_contains($h, 'tgl') || (str_contains($h, 'lahir') && !str_contains($h, 'tempat'))) {
                 $map['birth_date'] = $idx;
             } elseif (str_contains($h, 'email')) {
                 $map['email'] = $idx;
@@ -373,16 +397,16 @@ class MemberSpreadsheetService
             $xml = @simplexml_load_string($sstXml);
             if ($xml && isset($xml->si)) {
                 foreach ($xml->si as $si) {
-                    if (isset($si->t)) {
-                        $sharedStrings[] = (string) $si->t;
-                    } elseif (isset($si->r)) {
+                    if (isset($si->r)) {
                         $text = '';
                         foreach ($si->r as $r) {
-                            $text .= (string) $r->t;
+                            $text .= (string) ($r->t ?? '');
                         }
                         $sharedStrings[] = $text;
+                    } elseif (isset($si->t)) {
+                        $sharedStrings[] = (string) $si->t;
                     } else {
-                        $sharedStrings[] = '';
+                        $sharedStrings[] = trim((string) $si);
                     }
                 }
             }
@@ -414,10 +438,17 @@ class MemberSpreadsheetService
         $rows = [];
         foreach ($sheetXml->sheetData->row as $row) {
             $rowCells = [];
+            $nextColIdx = 0;
             foreach ($row->c as $c) {
-                $ref = (string) $c['r'];
-                $colIdx = $this->columnRefToIndex($ref);
-                $type = (string) $c['t'];
+                $ref = (string) ($c['r'] ?? '');
+                if ($ref !== '') {
+                    $colIdx = $this->columnRefToIndex($ref);
+                    $nextColIdx = $colIdx + 1;
+                } else {
+                    $colIdx = $nextColIdx++;
+                }
+
+                $type = (string) ($c['t'] ?? '');
                 $val = '';
 
                 if ($type === 's') {
