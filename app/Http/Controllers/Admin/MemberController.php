@@ -13,26 +13,54 @@ use Illuminate\Support\Str;
 
 class MemberController extends Controller
 {
-    public function index(Request $request)
+    /**
+     * Pastikan kolom-kolom baru tersedia di tabel members secara aman (self-healing)
+     */
+    protected function ensureColumnsExist(): void
     {
-        // Pastikan kolom baru tersedia secara aman
         if (Schema::hasTable('members')) {
             if (! Schema::hasColumn('members', 'nri')) {
-                Schema::table('members', function (Blueprint $table) {
-                    $table->string('nri', 50)->nullable()->unique()->after('id');
-                });
+                try {
+                    Schema::table('members', function (Blueprint $table) {
+                        $table->string('nri', 50)->nullable()->unique()->after('id');
+                    });
+                } catch (\Throwable $e) {
+                    // Ignore
+                }
+            }
+            if (! Schema::hasColumn('members', 'nip')) {
+                try {
+                    Schema::table('members', function (Blueprint $table) {
+                        $table->string('nip', 50)->nullable()->after('nri');
+                    });
+                } catch (\Throwable $e) {
+                    // Ignore
+                }
             }
             if (! Schema::hasColumn('members', 'entry_year')) {
-                Schema::table('members', function (Blueprint $table) {
-                    $table->unsignedSmallInteger('entry_year')->nullable()->after('class_grade');
-                });
+                try {
+                    Schema::table('members', function (Blueprint $table) {
+                        $table->unsignedSmallInteger('entry_year')->nullable()->after('class_grade');
+                    });
+                } catch (\Throwable $e) {
+                    // Ignore
+                }
             }
             if (! Schema::hasColumn('members', 'member_status')) {
-                Schema::table('members', function (Blueprint $table) {
-                    $table->string('member_status', 20)->default('Aktif')->after('entry_year');
-                });
+                try {
+                    Schema::table('members', function (Blueprint $table) {
+                        $table->string('member_status', 20)->default('Aktif')->after('entry_year');
+                    });
+                } catch (\Throwable $e) {
+                    // Ignore
+                }
             }
         }
+    }
+
+    public function index(Request $request)
+    {
+        $this->ensureColumnsExist();
 
         $search = $request->query('q');
         $status = $request->query('status');
@@ -120,6 +148,8 @@ class MemberController extends Controller
 
     public function create()
     {
+        $this->ensureColumnsExist();
+
         $positions = OrganizationMember::select('position')->distinct()->pluck('position')->toArray();
 
         return view('admin.members.create', compact('positions'));
@@ -127,6 +157,8 @@ class MemberController extends Controller
 
     public function store(Request $request)
     {
+        $this->ensureColumnsExist();
+
         $nriInput = trim((string) $request->input('nri', $request->input('nis', '')));
 
         // Validasi keunikan NRI jika diisi
@@ -169,36 +201,73 @@ class MemberController extends Controller
             'is_active' => 'nullable|boolean',
         ]);
 
-        $validated['nri'] = $nriInput ?: null;
-        $validated['nip'] = $request->input('nip') ? trim($request->input('nip')) : null;
-        $validated['nis'] = $nriInput ?: null;
+        $dataToSave = [];
+
+        if (Schema::hasColumn('members', 'nri')) {
+            $dataToSave['nri'] = $nriInput ?: null;
+        }
+        if (Schema::hasColumn('members', 'nis')) {
+            $dataToSave['nis'] = $nriInput ?: null;
+        }
+        if (Schema::hasColumn('members', 'nip')) {
+            $dataToSave['nip'] = $request->input('nip') ? trim($request->input('nip')) : null;
+        }
+
+        $dataToSave['name'] = $validated['name'];
+        $dataToSave['position'] = $validated['position'] ?? null;
+        $dataToSave['address'] = $validated['address'] ?? null;
+        $dataToSave['birth_place'] = $validated['birth_place'] ?? null;
+        $dataToSave['birth_date'] = $validated['birth_date'] ?? null;
+        $dataToSave['gender'] = ! empty($validated['gender']) ? $validated['gender'] : null;
+        $dataToSave['class_grade'] = $validated['class_grade'] ?? null;
+        $dataToSave['email'] = $validated['email'] ?? null;
+        $dataToSave['phone'] = $validated['phone'] ?? null;
+        $dataToSave['motto'] = $validated['motto'] ?? null;
+        $dataToSave['vision'] = $validated['vision'] ?? null;
+        $dataToSave['mission'] = $validated['mission'] ?? null;
+        $dataToSave['is_active'] = $request->has('is_active');
+
+        if (Schema::hasColumn('members', 'entry_year')) {
+            $dataToSave['entry_year'] = ! empty($validated['entry_year']) ? (int) $validated['entry_year'] : null;
+        }
+
+        if (Schema::hasColumn('members', 'member_status')) {
+            if (! empty($dataToSave['entry_year'])) {
+                $currentYear = (int) date('Y');
+                $dataToSave['member_status'] = ! empty($validated['member_status'])
+                    ? $validated['member_status']
+                    : (($currentYear >= ($dataToSave['entry_year'] + 3)) ? 'Purna' : 'Aktif');
+            } else {
+                $dataToSave['member_status'] = $validated['member_status'] ?? 'Aktif';
+            }
+        }
 
         if ($request->hasFile('photo')) {
-            $file = $request->file('photo');
-            $filename = time().'_'.Str::random(8).'.'.$file->getClientOriginalExtension();
-            $path = $file->storeAs('members', $filename, 'public');
-            $validated['photo'] = 'members/'.$filename;
-        }
-
-        $validated['is_active'] = $request->has('is_active');
-
-        // Otomatisasi Status Anggota: jika tahun masuk + 3 <= tahun sekarang -> Purna
-        if (! empty($validated['entry_year'])) {
-            $currentYear = (int) date('Y');
-            if (empty($validated['member_status'])) {
-                $validated['member_status'] = ($currentYear >= ((int) $validated['entry_year'] + 3)) ? 'Purna' : 'Aktif';
+            try {
+                $file = $request->file('photo');
+                $filename = time().'_'.Str::random(8).'.'.$file->getClientOriginalExtension();
+                $path = $file->storeAs('members', $filename, 'public');
+                $dataToSave['photo'] = 'members/'.$filename;
+            } catch (\Throwable $e) {
+                // Jangan gagalkan simpan data jika upload storage mengalami kendala
             }
-        } else {
-            $validated['member_status'] = $validated['member_status'] ?? 'Aktif';
         }
 
-        Member::create($validated);
+        try {
+            Member::create($dataToSave);
+        } catch (\Throwable $e) {
+            return redirect()->back()->withInput()->withErrors([
+                'error' => 'Gagal menyimpan data anggota: '.$e->getMessage(),
+            ]);
+        }
 
         return redirect()->route('admin.members.index')->with('success', "Data anggota '{$validated['name']}' berhasil ditambahkan!");
     }
 
     public function edit(Member $member)
     {
+        $this->ensureColumnsExist();
+
         $positions = OrganizationMember::select('position')->distinct()->pluck('position')->toArray();
 
         return view('admin.members.edit', compact('member', 'positions'));
@@ -206,6 +275,8 @@ class MemberController extends Controller
 
     public function update(Request $request, Member $member)
     {
+        $this->ensureColumnsExist();
+
         $nriInput = trim((string) $request->input('nri', $request->input('nis', '')));
 
         // Validasi keunikan NRI jika diisi
@@ -249,30 +320,65 @@ class MemberController extends Controller
             'is_active' => 'nullable|boolean',
         ]);
 
-        $validated['nri'] = $nriInput ?: null;
-        $validated['nip'] = $request->input('nip') ? trim($request->input('nip')) : null;
-        $validated['nis'] = $nriInput ?: null;
+        $dataToUpdate = [];
+
+        if (Schema::hasColumn('members', 'nri')) {
+            $dataToUpdate['nri'] = $nriInput ?: null;
+        }
+        if (Schema::hasColumn('members', 'nis')) {
+            $dataToUpdate['nis'] = $nriInput ?: null;
+        }
+        if (Schema::hasColumn('members', 'nip')) {
+            $dataToUpdate['nip'] = $request->input('nip') ? trim($request->input('nip')) : null;
+        }
+
+        $dataToUpdate['name'] = $validated['name'];
+        $dataToUpdate['position'] = $validated['position'] ?? null;
+        $dataToUpdate['address'] = $validated['address'] ?? null;
+        $dataToUpdate['birth_place'] = $validated['birth_place'] ?? null;
+        $dataToUpdate['birth_date'] = $validated['birth_date'] ?? null;
+        $dataToUpdate['gender'] = ! empty($validated['gender']) ? $validated['gender'] : null;
+        $dataToUpdate['class_grade'] = $validated['class_grade'] ?? null;
+        $dataToUpdate['email'] = $validated['email'] ?? null;
+        $dataToUpdate['phone'] = $validated['phone'] ?? null;
+        $dataToUpdate['motto'] = $validated['motto'] ?? null;
+        $dataToUpdate['vision'] = $validated['vision'] ?? null;
+        $dataToUpdate['mission'] = $validated['mission'] ?? null;
+        $dataToUpdate['is_active'] = $request->has('is_active');
+
+        if (Schema::hasColumn('members', 'entry_year')) {
+            $dataToUpdate['entry_year'] = ! empty($validated['entry_year']) ? (int) $validated['entry_year'] : null;
+        }
+
+        if (Schema::hasColumn('members', 'member_status')) {
+            if (! empty($dataToUpdate['entry_year'])) {
+                $currentYear = (int) date('Y');
+                $dataToUpdate['member_status'] = ! empty($validated['member_status'])
+                    ? $validated['member_status']
+                    : (($currentYear >= ($dataToUpdate['entry_year'] + 3)) ? 'Purna' : 'Aktif');
+            } else {
+                $dataToUpdate['member_status'] = $validated['member_status'] ?? 'Aktif';
+            }
+        }
 
         if ($request->hasFile('photo')) {
-            $file = $request->file('photo');
-            $filename = time().'_'.Str::random(8).'.'.$file->getClientOriginalExtension();
-            $path = $file->storeAs('members', $filename, 'public');
-            $validated['photo'] = 'members/'.$filename;
-        }
-
-        $validated['is_active'] = $request->has('is_active');
-
-        // Otomatisasi Status Anggota: jika tahun masuk + 3 <= tahun sekarang -> Purna
-        if (! empty($validated['entry_year'])) {
-            $currentYear = (int) date('Y');
-            if (empty($validated['member_status'])) {
-                $validated['member_status'] = ($currentYear >= ((int) $validated['entry_year'] + 3)) ? 'Purna' : 'Aktif';
+            try {
+                $file = $request->file('photo');
+                $filename = time().'_'.Str::random(8).'.'.$file->getClientOriginalExtension();
+                $path = $file->storeAs('members', $filename, 'public');
+                $dataToUpdate['photo'] = 'members/'.$filename;
+            } catch (\Throwable $e) {
+                // Jangan gagalkan update data jika upload storage mengalami kendala
             }
-        } else {
-            $validated['member_status'] = $validated['member_status'] ?? 'Aktif';
         }
 
-        $member->update($validated);
+        try {
+            $member->update($dataToUpdate);
+        } catch (\Throwable $e) {
+            return redirect()->back()->withInput()->withErrors([
+                'error' => 'Gagal memperbarui data anggota: '.$e->getMessage(),
+            ]);
+        }
 
         return redirect()->route('admin.members.index')->with('success', "Data anggota '{$member->name}' berhasil diperbarui!");
     }
