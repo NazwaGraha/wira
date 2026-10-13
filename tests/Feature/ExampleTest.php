@@ -2,11 +2,12 @@
 
 namespace Tests\Feature;
 
+use App\Models\Activity;
+use App\Models\Article;
+use App\Models\Category;
+use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
-use App\Models\User;
-use App\Models\Category;
-use App\Models\Article;
 
 class ExampleTest extends TestCase
 {
@@ -178,7 +179,7 @@ class ExampleTest extends TestCase
         $response->assertSee('Lapangan Utama SMAN 1 Ciawi');
 
         // 5. Access Edit form and check Rich Text Editor
-        $activity = \App\Models\Activity::where('title', 'Simulasi Mitigasi Kebakaran dan Evakuasi Cepat')->first();
+        $activity = Activity::where('title', 'Simulasi Mitigasi Kebakaran dan Evakuasi Cepat')->first();
         $response = $this->actingAs($user)->get("/admin/kegiatan/{$activity->id}/edit");
         $response->assertStatus(200);
         $response->assertSee('quill-editor');

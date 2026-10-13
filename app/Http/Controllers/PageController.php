@@ -2,11 +2,18 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Article;
 use App\Models\Activity;
+use App\Models\Article;
+use App\Models\BloodDonationEvent;
+use App\Models\BloodDonorRegistration;
 use App\Models\BloodStock;
-use App\Models\MemberRegistration;
+use App\Models\Gallery;
+use App\Models\GalleryCategory;
 use App\Models\HeroSlide;
+use App\Models\Member;
+use App\Models\MemberRegistration;
+use App\Models\OrganizationMember;
+use App\Models\OrganizationSetting;
 use Illuminate\Http\Request;
 
 class PageController extends Controller
@@ -16,13 +23,13 @@ class PageController extends Controller
         $heroSlides = HeroSlide::where('is_active', true)->orderBy('order_position')->get();
 
         $featuredArticle = Article::with('category')->where('status', 'published')->where('is_featured', true)->latest('published_at')->first();
-        if (!$featuredArticle) {
+        if (! $featuredArticle) {
             $featuredArticle = Article::with('category')->where('status', 'published')->latest('published_at')->first();
         }
 
         $latestArticles = Article::with('category')
             ->where('status', 'published')
-            ->when($featuredArticle, fn($q) => $q->where('id', '!=', $featuredArticle->id))
+            ->when($featuredArticle, fn ($q) => $q->where('id', '!=', $featuredArticle->id))
             ->latest('published_at')
             ->take(3)
             ->get();
@@ -35,7 +42,7 @@ class PageController extends Controller
 
     public function tentangKami()
     {
-        $organizationSetting = \App\Models\OrganizationSetting::firstOrCreate(
+        $organizationSetting = OrganizationSetting::firstOrCreate(
             ['id' => 1],
             [
                 'badge' => 'Bagan Kepengurusan',
@@ -44,14 +51,14 @@ class PageController extends Controller
             ]
         );
 
-        $organizationMembers = \App\Models\OrganizationMember::with('member')
+        $organizationMembers = OrganizationMember::with('member')
             ->where('is_active', true)
             ->orderBy('level')
             ->orderBy('order_position')
             ->get()
             ->groupBy('level');
 
-        $allMembers = \App\Models\Member::all()->keyBy('name');
+        $allMembers = Member::all()->keyBy('name');
 
         return view('pages.tentang-kami', compact('organizationSetting', 'organizationMembers', 'allMembers'));
     }
@@ -74,27 +81,28 @@ class PageController extends Controller
     public function kegiatanShow($slug)
     {
         $activity = Activity::where('slug', $slug)->firstOrFail();
-        
+
         // Find other recent activities to show as related
         $relatedActivities = Activity::where('id', '!=', $activity->id)
             ->latest('event_date')
             ->take(3)
             ->get();
-            
+
         return view('pages.kegiatan-show', compact('activity', 'relatedActivities'));
     }
 
     public function galeri()
     {
-        $galleries = \App\Models\Gallery::with('galleryCategory')->where('is_active', true)->orderBy('created_at', 'desc')->get();
-        $categories = \App\Models\GalleryCategory::orderBy('name')->get();
+        $galleries = Gallery::with('galleryCategory')->where('is_active', true)->orderBy('created_at', 'desc')->get();
+        $categories = GalleryCategory::orderBy('name')->get();
+
         return view('pages.galeri', compact('galleries', 'categories'));
     }
 
     public function donorDarah()
     {
         $bloodStocks = BloodStock::all();
-        $activeEvent = \App\Models\BloodDonationEvent::where('is_active', true)->first();
+        $activeEvent = BloodDonationEvent::where('is_active', true)->first();
 
         return view('pages.donor-darah', compact('bloodStocks', 'activeEvent'));
     }
@@ -110,7 +118,7 @@ class PageController extends Controller
             'blood_donation_event_id' => 'nullable|exists:blood_donation_events,id',
         ]);
 
-        \App\Models\BloodDonorRegistration::create($data);
+        BloodDonorRegistration::create($data);
 
         return back()->with('success', 'Pendaftaran berhasil dikirim! Silakan datang sesuai jadwal.');
     }

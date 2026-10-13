@@ -32,7 +32,7 @@ class RegistrationVerifiedMail extends Mailable
         $fromAddress = config('mail.from.address', 'noreply@pmrwira.com');
         $fromName = config('mail.from.name', 'Panitia SUA BHAKTI BERKARYA - PMR WIRA');
 
-        $subject = 'Bukti Pembayaran (e-Kwitansi) & Kartu Peserta Lomba [' . $this->registration->registration_code . '] - ' . $this->registration->school_name;
+        $subject = 'Bukti Pembayaran (e-Kwitansi) & Kartu Peserta Lomba ['.$this->registration->registration_code.'] - '.$this->registration->school_name;
 
         return new Envelope(
             from: new Address($fromAddress, $fromName),

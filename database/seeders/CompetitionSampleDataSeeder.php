@@ -2,19 +2,21 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Seeder;
-use App\Models\CompetitionEvent;
 use App\Models\CompetitionCategory;
-use App\Models\CompetitionRegistration;
+use App\Models\CompetitionEvent;
 use App\Models\CompetitionParticipantTeam;
+use App\Models\CompetitionRegistration;
 use App\Models\CompetitionScore;
+use Illuminate\Database\Seeder;
 
 class CompetitionSampleDataSeeder extends Seeder
 {
     public function run(): void
     {
         $event = CompetitionEvent::where('slug', 'sua-bhakti-berkarya-iii-2025')->first();
-        if (!$event) return;
+        if (! $event) {
+            return;
+        }
 
         // Sample Registration 1: MTSN Kota Bogor (Madya)
         $reg1 = CompetitionRegistration::updateOrCreate(

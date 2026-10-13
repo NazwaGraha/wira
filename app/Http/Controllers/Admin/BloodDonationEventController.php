@@ -5,12 +5,14 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\BloodDonationEvent;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 
 class BloodDonationEventController extends Controller
 {
     public function index()
     {
         $events = BloodDonationEvent::orderBy('event_date', 'desc')->get();
+
         return view('admin.blood-donation-events.index', compact('events'));
     }
 
@@ -75,8 +77,8 @@ class BloodDonationEventController extends Controller
         $data['is_registration_link_active'] = $request->has('is_registration_link_active');
 
         if ($request->hasFile('banner_image')) {
-            if ($bloodDonationEvent->banner_image && \Illuminate\Support\Facades\Storage::disk('public')->exists($bloodDonationEvent->banner_image)) {
-                \Illuminate\Support\Facades\Storage::disk('public')->delete($bloodDonationEvent->banner_image);
+            if ($bloodDonationEvent->banner_image && Storage::disk('public')->exists($bloodDonationEvent->banner_image)) {
+                Storage::disk('public')->delete($bloodDonationEvent->banner_image);
             }
             $data['banner_image'] = $request->file('banner_image')->store('donor-banners', 'public');
         }
@@ -93,6 +95,7 @@ class BloodDonationEventController extends Controller
     public function destroy(BloodDonationEvent $bloodDonationEvent)
     {
         $bloodDonationEvent->delete();
+
         return back()->with('success', 'Jadwal dihapus.');
     }
 }

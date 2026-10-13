@@ -2,9 +2,9 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Seeder;
-use App\Models\CompetitionEvent;
 use App\Models\CompetitionCategory;
+use App\Models\CompetitionEvent;
+use Illuminate\Database\Seeder;
 
 class CompetitionSeeder extends Seeder
 {
@@ -272,7 +272,7 @@ class CompetitionSeeder extends Seeder
             CompetitionCategory::updateOrCreate(
                 [
                     'competition_event_id' => $event->id,
-                    'code' => $cat['code']
+                    'code' => $cat['code'],
                 ],
                 array_merge([
                     'registration_fee' => 150000,

@@ -43,7 +43,7 @@ class CompetitionCheckinController extends Controller
         $query = (clone $baseQuery)->with(['event', 'teams.category'])->latest('checked_in_at')->latest('id');
 
         if ($tab === 'pending') {
-            $query->where(function($q) {
+            $query->where(function ($q) {
                 $q->whereNull('is_checked_in')->orWhere('is_checked_in', false);
             });
         } elseif ($tab === 'checked_in') {
@@ -55,11 +55,11 @@ class CompetitionCheckinController extends Controller
         }
 
         if ($search) {
-            $query->where(function($q) use ($search) {
+            $query->where(function ($q) use ($search) {
                 $q->where('school_name', 'like', "%{$search}%")
-                  ->orWhere('registration_code', 'like', "%{$search}%")
-                  ->orWhere('advisor_name', 'like', "%{$search}%")
-                  ->orWhere('advisor_phone', 'like', "%{$search}%");
+                    ->orWhere('registration_code', 'like', "%{$search}%")
+                    ->orWhere('advisor_name', 'like', "%{$search}%")
+                    ->orWhere('advisor_phone', 'like', "%{$search}%");
             });
         }
 
@@ -89,7 +89,7 @@ class CompetitionCheckinController extends Controller
         if (empty($rawCode)) {
             return response()->json([
                 'success' => false,
-                'message' => 'Nomor registrasi pendaftaran tidak boleh kosong.'
+                'message' => 'Nomor registrasi pendaftaran tidak boleh kosong.',
             ], 400);
         }
 
@@ -116,10 +116,10 @@ class CompetitionCheckinController extends Controller
             ->where('registration_code', $cleanCode)
             ->first();
 
-        if (!$registration) {
+        if (! $registration) {
             return response()->json([
                 'success' => false,
-                'message' => "Nomor Registrasi '{$cleanCode}' tidak ditemukan dalam database."
+                'message' => "Nomor Registrasi '{$cleanCode}' tidak ditemukan dalam database.",
             ], 404);
         }
 
@@ -132,7 +132,7 @@ class CompetitionCheckinController extends Controller
             return response()->json([
                 'success' => false,
                 'registration' => $registration,
-                'message' => "Pendaftaran sekolah {$registration->school_name} belum diverifikasi lunas! Status: {$statusLabel}."
+                'message' => "Pendaftaran sekolah {$registration->school_name} belum diverifikasi lunas! Status: {$statusLabel}.",
             ], 422);
         }
 
@@ -147,12 +147,12 @@ class CompetitionCheckinController extends Controller
                 'advisor_phone' => $registration->advisor_phone,
                 'advisor_email' => $registration->advisor_email,
                 'total_fee' => number_format($registration->total_fee, 0, ',', '.'),
-                'is_checked_in' => (bool)$registration->is_checked_in,
+                'is_checked_in' => (bool) $registration->is_checked_in,
                 'checked_in_at' => $registration->checked_in_at ? $registration->checked_in_at->format('d M Y, H:i') : null,
                 'checked_in_by' => $registration->checked_in_by,
                 'checkin_notes' => $registration->checkin_notes,
                 'teams_count' => $registration->teams->count(),
-                'teams' => $registration->teams->map(function($team) {
+                'teams' => $registration->teams->map(function ($team) {
                     return [
                         'id' => $team->id,
                         'name' => $team->team_name,
@@ -161,7 +161,7 @@ class CompetitionCheckinController extends Controller
                         'members_count' => is_array($team->members) ? count($team->members) : 0,
                     ];
                 }),
-            ]
+            ],
         ]);
     }
 
@@ -181,9 +181,10 @@ class CompetitionCheckinController extends Controller
             if ($request->ajax()) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'Hanya pendaftaran yang berstatus terverifikasi/lunas yang dapat melakukan daftar ulang.'
+                    'message' => 'Hanya pendaftaran yang berstatus terverifikasi/lunas yang dapat melakukan daftar ulang.',
                 ], 422);
             }
+
             return back()->with('error', 'Pendaftaran belum berstatus lunas.');
         }
 
@@ -200,7 +201,7 @@ class CompetitionCheckinController extends Controller
             return response()->json([
                 'success' => true,
                 'message' => "Berhasil! Kontingen {$registration->school_name} ({$registration->registration_code}) telah berhasil daftar ulang.",
-                'registration' => $registration
+                'registration' => $registration,
             ]);
         }
 
@@ -224,7 +225,7 @@ class CompetitionCheckinController extends Controller
         if ($request->ajax()) {
             return response()->json([
                 'success' => true,
-                'message' => "Status daftar ulang kontingen {$registration->school_name} telah dibatalkan."
+                'message' => "Status daftar ulang kontingen {$registration->school_name} telah dibatalkan.",
             ]);
         }
 

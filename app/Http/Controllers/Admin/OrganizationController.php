@@ -3,9 +3,9 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\Member;
 use App\Models\OrganizationMember;
 use App\Models\OrganizationSetting;
-use App\Models\Member;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 
@@ -53,11 +53,12 @@ class OrganizationController extends Controller
 
         $membersJson = $members->map(function ($m) {
             $photoUrl = null;
-            if (!empty($m->photo)) {
+            if (! empty($m->photo)) {
                 $photoUrl = str_starts_with($m->photo, 'http') || str_starts_with($m->photo, '/')
                     ? $m->photo
-                    : asset('storage/' . $m->photo);
+                    : asset('storage/'.$m->photo);
             }
+
             return [
                 'id' => $m->id,
                 'name' => $m->name,
@@ -88,25 +89,25 @@ class OrganizationController extends Controller
         ]);
 
         // Auto-populate from Member if member_id is selected
-        if (!empty($validated['member_id'])) {
+        if (! empty($validated['member_id'])) {
             $memberObj = Member::find($validated['member_id']);
             if ($memberObj) {
                 $validated['name'] = $memberObj->name;
-                if (empty($validated['photo']) && !empty($memberObj->photo)) {
+                if (empty($validated['photo']) && ! empty($memberObj->photo)) {
                     $validated['photo'] = $memberObj->photo;
                 }
             }
         }
 
         if (empty($validated['name'])) {
-            $validated['name'] = 'Pejabat ' . $validated['position'];
+            $validated['name'] = 'Pejabat '.$validated['position'];
         }
 
         $validated['order_position'] = $validated['order_position'] ?? 0;
         $validated['is_active'] = $request->has('is_active');
 
         // Clean and auto-populate staff_members from Member
-        if (!empty($validated['staff_members'])) {
+        if (! empty($validated['staff_members'])) {
             $cleanedStaff = [];
             foreach ($validated['staff_members'] as $staff) {
                 $stMemberId = $staff['member_id'] ?? null;
@@ -123,7 +124,7 @@ class OrganizationController extends Controller
                     }
                 }
 
-                if (!empty($stName)) {
+                if (! empty($stName)) {
                     $cleanedStaff[] = [
                         'member_id' => $stMemberId,
                         'name' => $stName,
@@ -153,11 +154,12 @@ class OrganizationController extends Controller
 
         $membersJson = $members->map(function ($m) {
             $photoUrl = null;
-            if (!empty($m->photo)) {
+            if (! empty($m->photo)) {
                 $photoUrl = str_starts_with($m->photo, 'http') || str_starts_with($m->photo, '/')
                     ? $m->photo
-                    : asset('storage/' . $m->photo);
+                    : asset('storage/'.$m->photo);
             }
+
             return [
                 'id' => $m->id,
                 'name' => $m->name,
@@ -188,25 +190,25 @@ class OrganizationController extends Controller
         ]);
 
         // Auto-populate from Member if member_id is selected
-        if (!empty($validated['member_id'])) {
+        if (! empty($validated['member_id'])) {
             $memberObj = Member::find($validated['member_id']);
             if ($memberObj) {
                 $validated['name'] = $memberObj->name;
-                if (!empty($memberObj->photo)) {
+                if (! empty($memberObj->photo)) {
                     $validated['photo'] = $memberObj->photo;
                 }
             }
         }
 
         if (empty($validated['name'])) {
-            $validated['name'] = $member->name ?: ('Pejabat ' . $validated['position']);
+            $validated['name'] = $member->name ?: ('Pejabat '.$validated['position']);
         }
 
         $validated['order_position'] = $validated['order_position'] ?? 0;
         $validated['is_active'] = $request->has('is_active');
 
         // Clean and auto-populate staff_members from Member
-        if (!empty($validated['staff_members'])) {
+        if (! empty($validated['staff_members'])) {
             $cleanedStaff = [];
             foreach ($validated['staff_members'] as $staff) {
                 $stMemberId = $staff['member_id'] ?? null;
@@ -223,7 +225,7 @@ class OrganizationController extends Controller
                     }
                 }
 
-                if (!empty($stName)) {
+                if (! empty($stName)) {
                     $cleanedStaff[] = [
                         'member_id' => $stMemberId,
                         'name' => $stName,

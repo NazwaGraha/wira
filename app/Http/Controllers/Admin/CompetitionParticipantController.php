@@ -8,7 +8,6 @@ use App\Models\CompetitionEvent;
 use App\Models\CompetitionParticipantTeam;
 use App\Models\CompetitionRegistration;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Schema;
 
 class CompetitionParticipantController extends Controller
 {
@@ -31,9 +30,9 @@ class CompetitionParticipantController extends Controller
         // Query all categories for filter options
         $categoriesQuery = CompetitionCategory::orderBy('order_position');
         if ($event) {
-            $categoriesQuery->where(function($q) use ($event) {
+            $categoriesQuery->where(function ($q) use ($event) {
                 $q->where('competition_event_id', $event->id)
-                  ->orWhereNull('competition_event_id');
+                    ->orWhereNull('competition_event_id');
             });
         }
         if ($level && in_array($level, ['Mula', 'Madya', 'Wira'])) {
@@ -43,17 +42,17 @@ class CompetitionParticipantController extends Controller
 
         // Main participant teams query (verified only)
         $teamsQuery = CompetitionParticipantTeam::where('is_active', true)
-            ->where(function($q) use ($event) {
-                $q->whereHas('registration', function($rq) use ($event) {
+            ->where(function ($q) use ($event) {
+                $q->whereHas('registration', function ($rq) use ($event) {
                     $rq->where('status', 'verified');
                     if ($event) {
                         $rq->where('competition_event_id', $event->id);
                     }
                 });
                 if ($event) {
-                    $q->orWhere(function($sq) use ($event) {
+                    $q->orWhere(function ($sq) use ($event) {
                         $sq->whereNull('competition_registration_id')
-                           ->whereHas('category', fn($cq) => $cq->where('competition_event_id', $event->id));
+                            ->whereHas('category', fn ($cq) => $cq->where('competition_event_id', $event->id));
                     });
                 } else {
                     $q->orWhereNull('competition_registration_id');
@@ -63,7 +62,7 @@ class CompetitionParticipantController extends Controller
 
         // Filter by Level
         if ($level && in_array($level, ['Mula', 'Madya', 'Wira'])) {
-            $teamsQuery->whereHas('category', function($q) use ($level) {
+            $teamsQuery->whereHas('category', function ($q) use ($level) {
                 $q->where('level', $level);
             });
         }
@@ -75,46 +74,47 @@ class CompetitionParticipantController extends Controller
 
         // Filter by Gender Category (Putra / Putri / Umum)
         if ($gender && in_array($gender, ['Putra', 'Putri', 'Umum', 'Campuran'])) {
-            $teamsQuery->whereHas('category', function($q) use ($gender) {
+            $teamsQuery->whereHas('category', function ($q) use ($gender) {
                 $q->where('gender_category', $gender);
             });
         }
 
         // Search by keyword
         if ($search) {
-            $teamsQuery->where(function($q) use ($search) {
+            $teamsQuery->where(function ($q) use ($search) {
                 $q->where('team_name', 'like', "%{$search}%")
-                  ->orWhere('order_number', 'like', "%{$search}%")
-                  ->orWhere('team_label', 'like', "%{$search}%")
-                  ->orWhereHas('registration', function($rq) use ($search) {
-                      $rq->where('school_name', 'like', "%{$search}%")
-                        ->orWhere('registration_code', 'like', "%{$search}%")
-                        ->orWhere('advisor_name', 'like', "%{$search}%");
-                  });
+                    ->orWhere('order_number', 'like', "%{$search}%")
+                    ->orWhere('team_label', 'like', "%{$search}%")
+                    ->orWhereHas('registration', function ($rq) use ($search) {
+                        $rq->where('school_name', 'like', "%{$search}%")
+                            ->orWhere('registration_code', 'like', "%{$search}%")
+                            ->orWhere('advisor_name', 'like', "%{$search}%");
+                    });
             });
         }
 
         // Order by category order, gender, order_number, team_name
-        $teams = $teamsQuery->get()->sortBy(function($team) {
+        $teams = $teamsQuery->get()->sortBy(function ($team) {
             $catPos = $team->category ? str_pad($team->category->order_position, 3, '0', STR_PAD_LEFT) : '999';
             $genderOrder = $team->category && $team->category->gender_category === 'Putra' ? '1' : ($team->category && $team->category->gender_category === 'Putri' ? '2' : '3');
             $orderNum = $team->order_number ? str_pad($team->order_number, 4, '0', STR_PAD_LEFT) : '9999';
+
             return "{$catPos}-{$genderOrder}-{$orderNum}-{$team->team_name}";
         });
 
         // Summary counts
         $allVerifiedTeams = CompetitionParticipantTeam::where('is_active', true)
-            ->where(function($q) use ($event) {
-                $q->whereHas('registration', function($rq) use ($event) {
+            ->where(function ($q) use ($event) {
+                $q->whereHas('registration', function ($rq) use ($event) {
                     $rq->where('status', 'verified');
                     if ($event) {
                         $rq->where('competition_event_id', $event->id);
                     }
                 });
                 if ($event) {
-                    $q->orWhere(function($sq) use ($event) {
+                    $q->orWhere(function ($sq) use ($event) {
                         $sq->whereNull('competition_registration_id')
-                           ->whereHas('category', fn($cq) => $cq->where('competition_event_id', $event->id));
+                            ->whereHas('category', fn ($cq) => $cq->where('competition_event_id', $event->id));
                     });
                 } else {
                     $q->orWhereNull('competition_registration_id');
@@ -130,12 +130,12 @@ class CompetitionParticipantController extends Controller
 
         $stats = [
             'total_teams' => $allVerifiedTeams->count(),
-            'putra_teams' => $allVerifiedTeams->filter(fn($t) => $t->category?->gender_category === 'Putra')->count(),
-            'putri_teams' => $allVerifiedTeams->filter(fn($t) => $t->category?->gender_category === 'Putri')->count(),
-            'umum_teams'  => $allVerifiedTeams->filter(fn($t) => in_array($t->category?->gender_category, ['Umum', 'Campuran']))->count(),
-            'mula_teams'  => $allVerifiedTeams->filter(fn($t) => $t->category?->level === 'Mula')->count(),
-            'madya_teams' => $allVerifiedTeams->filter(fn($t) => $t->category?->level === 'Madya')->count(),
-            'wira_teams'  => $allVerifiedTeams->filter(fn($t) => $t->category?->level === 'Wira')->count(),
+            'putra_teams' => $allVerifiedTeams->filter(fn ($t) => $t->category?->gender_category === 'Putra')->count(),
+            'putri_teams' => $allVerifiedTeams->filter(fn ($t) => $t->category?->gender_category === 'Putri')->count(),
+            'umum_teams' => $allVerifiedTeams->filter(fn ($t) => in_array($t->category?->gender_category, ['Umum', 'Campuran']))->count(),
+            'mula_teams' => $allVerifiedTeams->filter(fn ($t) => $t->category?->level === 'Mula')->count(),
+            'madya_teams' => $allVerifiedTeams->filter(fn ($t) => $t->category?->level === 'Madya')->count(),
+            'wira_teams' => $allVerifiedTeams->filter(fn ($t) => $t->category?->level === 'Wira')->count(),
             'total_schools' => $schoolsCountQuery->count(),
         ];
 
@@ -168,7 +168,7 @@ class CompetitionParticipantController extends Controller
 
         $members = [];
         if ($request->filled('members_raw')) {
-            $lines = explode("\n", str_replace("\r", "", $request->input('members_raw')));
+            $lines = explode("\n", str_replace("\r", '', $request->input('members_raw')));
             foreach ($lines as $line) {
                 $trimmed = trim($line);
                 if ($trimmed) {
@@ -214,8 +214,8 @@ class CompetitionParticipantController extends Controller
         $level = $request->input('level');
 
         $query = CompetitionParticipantTeam::where('is_active', true)
-            ->where(function($q) {
-                $q->whereHas('registration', function($rq) {
+            ->where(function ($q) {
+                $q->whereHas('registration', function ($rq) {
                     $rq->where('status', 'verified');
                 })->orWhereNull('competition_registration_id');
             });
@@ -223,7 +223,7 @@ class CompetitionParticipantController extends Controller
         if ($categoryId) {
             $query->where('competition_category_id', $categoryId);
         } elseif ($level) {
-            $query->whereHas('category', function($q) use ($level) {
+            $query->whereHas('category', function ($q) use ($level) {
                 $q->where('level', $level);
             });
         }
@@ -260,17 +260,17 @@ class CompetitionParticipantController extends Controller
         $selectedCategory = $categoryId ? CompetitionCategory::find($categoryId) : null;
 
         $query = CompetitionParticipantTeam::where('is_active', true)
-            ->where(function($q) use ($event) {
-                $q->whereHas('registration', function($rq) use ($event) {
+            ->where(function ($q) use ($event) {
+                $q->whereHas('registration', function ($rq) use ($event) {
                     $rq->where('status', 'verified');
                     if ($event) {
                         $rq->where('competition_event_id', $event->id);
                     }
                 });
                 if ($event) {
-                    $q->orWhere(function($sq) use ($event) {
+                    $q->orWhere(function ($sq) use ($event) {
                         $sq->whereNull('competition_registration_id')
-                           ->whereHas('category', fn($cq) => $cq->where('competition_event_id', $event->id));
+                            ->whereHas('category', fn ($cq) => $cq->where('competition_event_id', $event->id));
                     });
                 } else {
                     $q->orWhereNull('competition_registration_id');
@@ -281,21 +281,22 @@ class CompetitionParticipantController extends Controller
         if ($categoryId) {
             $query->where('competition_category_id', $categoryId);
         } elseif ($level) {
-            $query->whereHas('category', function($q) use ($level) {
+            $query->whereHas('category', function ($q) use ($level) {
                 $q->where('level', $level);
             });
         }
 
         if ($gender) {
-            $query->whereHas('category', function($q) use ($gender) {
+            $query->whereHas('category', function ($q) use ($gender) {
                 $q->where('gender_category', $gender);
             });
         }
 
-        $teams = $query->get()->sortBy(function($team) {
+        $teams = $query->get()->sortBy(function ($team) {
             $catPos = $team->category ? str_pad($team->category->order_position, 3, '0', STR_PAD_LEFT) : '999';
             $genderOrder = $team->category && $team->category->gender_category === 'Putra' ? '1' : ($team->category && $team->category->gender_category === 'Putri' ? '2' : '3');
             $orderNum = $team->order_number ? str_pad($team->order_number, 4, '0', STR_PAD_LEFT) : '9999';
+
             return "{$catPos}-{$genderOrder}-{$orderNum}-{$team->team_name}";
         });
 

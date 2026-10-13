@@ -9,6 +9,7 @@ use App\Models\CompetitionParticipantTeam;
 use App\Models\CompetitionRegistration;
 use App\Models\CompetitionScore;
 use Illuminate\Http\Request;
+use Illuminate\Support\Str;
 
 class CompetitionScoreController extends Controller
 {
@@ -28,9 +29,9 @@ class CompetitionScoreController extends Controller
         $categories = CompetitionCategory::where('competition_event_id', $event?->id)
             ->where('level', $level)
             ->where('is_active', true)
-            ->withCount(['teams' => function($q) use ($event) {
-                $q->where('is_active', true)->where(function($sq) use ($event) {
-                    $sq->whereHas('registration', function($rq) use ($event) {
+            ->withCount(['teams' => function ($q) use ($event) {
+                $q->where('is_active', true)->where(function ($sq) use ($event) {
+                    $sq->whereHas('registration', function ($rq) use ($event) {
                         $rq->where('status', 'verified');
                         if ($event) {
                             $rq->where('competition_event_id', $event->id);
@@ -51,8 +52,8 @@ class CompetitionScoreController extends Controller
         // Fetch verified participant teams for this specific competition category
         $teams = CompetitionParticipantTeam::where('competition_category_id', $category->id)
             ->where('is_active', true)
-            ->where(function($q) {
-                $q->whereHas('registration', function($rq) {
+            ->where(function ($q) {
+                $q->whereHas('registration', function ($rq) {
                     $rq->where('status', 'verified');
                 })->orWhereNull('competition_registration_id');
             })
@@ -62,13 +63,13 @@ class CompetitionScoreController extends Controller
 
         // Get all verified registrations for this event / level
         $availableRegistrations = CompetitionRegistration::where('status', 'verified')
-            ->when($category->level, function($q) use ($category) {
+            ->when($category->level, function ($q) use ($category) {
                 $q->where('level', $category->level);
             })
-            ->when($category->competition_event_id, function($q) use ($category) {
+            ->when($category->competition_event_id, function ($q) use ($category) {
                 $q->where('competition_event_id', $category->competition_event_id);
             })
-            ->with(['teams' => function($tq) use ($category) {
+            ->with(['teams' => function ($tq) use ($category) {
                 $tq->where('competition_category_id', $category->id)->where('is_active', true);
             }])
             ->orderBy('school_name')
@@ -80,7 +81,7 @@ class CompetitionScoreController extends Controller
             ->keyBy('competition_participant_team_id');
 
         $isSemiFinal = str_contains(strtolower($round), 'semi final') || str_contains(strtolower($round), 'semifinal');
-        $isFinal = (str_contains(strtolower($round), 'final') && !$isSemiFinal) || str_contains(strtolower($round), 'babak 3');
+        $isFinal = (str_contains(strtolower($round), 'final') && ! $isSemiFinal) || str_contains(strtolower($round), 'babak 3');
 
         // Fetch Prelim scores & qualified teams if in Semifinal
         $prelimScores = collect();
@@ -99,7 +100,7 @@ class CompetitionScoreController extends Controller
             $prelimScores = CompetitionScore::where('competition_category_id', $category->id)
                 ->where(function ($q) {
                     $q->where('round_name', 'like', '%Penyisihan%')
-                      ->orWhere('round_name', 'like', '%Babak 1%');
+                        ->orWhere('round_name', 'like', '%Babak 1%');
                 })
                 ->where('is_disqualified', false)
                 ->orderByRaw('`rank` IS NULL, `rank` ASC')
@@ -156,8 +157,8 @@ class CompetitionScoreController extends Controller
             // Babak 3 - Final Selection Modes:
             // Opsi A: 'termin_winners' (Juara 1 dari masing-masing Termin 1, 2, 3 - Sesuai Excel Panitia)
             // Opsi B: 'top_scores' (Top 3 Nilai Akhir Tertinggi Semifinal secara Global)
-            $finalMode = $request->input('final_mode', session('final_mode_' . $category->id, 'termin_winners'));
-            session(['final_mode_' . $category->id => $finalMode]);
+            $finalMode = $request->input('final_mode', session('final_mode_'.$category->id, 'termin_winners'));
+            session(['final_mode_'.$category->id => $finalMode]);
 
             $finalistOptionA = collect();
             $finalistOptionB = collect();
@@ -165,8 +166,8 @@ class CompetitionScoreController extends Controller
             $semiScores = CompetitionScore::where('competition_category_id', $category->id)
                 ->where(function ($q) {
                     $q->where('round_name', 'like', '%Semi Final%')
-                      ->orWhere('round_name', 'like', '%Semifinal%')
-                      ->orWhere('round_name', 'like', '%Babak 2%');
+                        ->orWhere('round_name', 'like', '%Semifinal%')
+                        ->orWhere('round_name', 'like', '%Babak 2%');
                 })
                 ->where('is_disqualified', false)
                 ->get();
@@ -182,12 +183,12 @@ class CompetitionScoreController extends Controller
                     $winnerScore = $tGroup->where('rank', 1)->first()
                         ?? $tGroup->sortByDesc('final_score')->first();
 
-                    if ($winnerScore && ($winnerScore->final_score > 0 || !empty($winnerScore->score_details['score']) || $winnerScore->rank == 1)) {
+                    if ($winnerScore && ($winnerScore->final_score > 0 || ! empty($winnerScore->score_details['score']) || $winnerScore->rank == 1)) {
                         $tModel = $teams->firstWhere('id', $winnerScore->competition_participant_team_id);
                         if ($tModel) {
                             $f = clone $tModel;
                             $f->final_desk = chr(64 + $tNum); // 1 -> A, 2 -> B, 3 -> C
-                            $f->qualification_badge = 'Juara Termin ' . $tNum;
+                            $f->qualification_badge = 'Juara Termin '.$tNum;
                             $f->semi_termin = $tNum;
                             $f->semi_score = $winnerScore->final_score;
                             $f->semi_rank = $winnerScore->rank ?? 1;
@@ -199,13 +200,14 @@ class CompetitionScoreController extends Controller
 
             // === OPSI B: Top 3 Nilai Tertinggi Seluruh Semifinal ===
             $sortedSemi = $semiScores->filter(function ($s) {
-                return $s->final_score > 0 || !empty($s->score_details['score']);
+                return $s->final_score > 0 || ! empty($s->score_details['score']);
             })->sort(function ($a, $b) {
                 if ($a->final_score != $b->final_score) {
                     return $b->final_score <=> $a->final_score;
                 }
                 $secA = $a->score_details['time_seconds'] ?? self::parseTimeToSeconds($a->time_recorded) ?? 999999;
                 $secB = $b->score_details['time_seconds'] ?? self::parseTimeToSeconds($b->time_recorded) ?? 999999;
+
                 return $secA <=> $secB;
             })->take(3)->values();
 
@@ -214,7 +216,7 @@ class CompetitionScoreController extends Controller
                 if ($tModel) {
                     $f = clone $tModel;
                     $f->final_desk = chr(65 + $bIdx); // 0 -> A, 1 -> B, 2 -> C
-                    $f->qualification_badge = 'Rank ' . ($bIdx + 1) . ' Semifinal (Skor: ' . $bScore->final_score . ')';
+                    $f->qualification_badge = 'Rank '.($bIdx + 1).' Semifinal (Skor: '.$bScore->final_score.')';
                     $f->semi_termin = $bScore->score_details['termin'] ?? null;
                     $f->semi_score = $bScore->final_score;
                     $f->semi_rank = $bIdx + 1;
@@ -232,7 +234,7 @@ class CompetitionScoreController extends Controller
             // Also include any teams that already have scores recorded in this Final round
             if ($scores->isNotEmpty()) {
                 foreach ($scores as $fTeamId => $fScore) {
-                    if (!$finalistTeams->contains('id', $fTeamId)) {
+                    if (! $finalistTeams->contains('id', $fTeamId)) {
                         $exTeam = $teams->firstWhere('id', $fTeamId);
                         if ($exTeam) {
                             $finalist = clone $exTeam;
@@ -331,7 +333,7 @@ class CompetitionScoreController extends Controller
                 case 'standard_time':
                 case 'tandu_standard_time':
                 default:
-                    if ($isTandu || $category->scoring_type === 'tandu_standard_time' || (!empty($timeRecorded) && !empty($data['technical_score'] ?? $data['score'] ?? null))) {
+                    if ($isTandu || $category->scoring_type === 'tandu_standard_time' || (! empty($timeRecorded) && ! empty($data['technical_score'] ?? $data['score'] ?? null))) {
                         // Ketangkasan Tandu Reguler Formula (Excel Exact):
                         // Total = Nilai Teknis + [300 - IF(Waktu <= 06:55; 0; ROUNDUP((Waktu - 06:55) / 15s; 0) * 10)]
                         $technicalScore = floatval($data['technical_score'] ?? ($data['score'] ?? 0));
@@ -393,12 +395,16 @@ class CompetitionScoreController extends Controller
      */
     public static function parseTimeToSeconds(?string $timeStr): ?int
     {
-        if (!$timeStr) return null;
+        if (! $timeStr) {
+            return null;
+        }
         $timeStr = trim($timeStr);
-        if ($timeStr === '') return null;
+        if ($timeStr === '') {
+            return null;
+        }
 
         // Raw numeric seconds
-        if (is_numeric($timeStr) && !str_contains($timeStr, ':') && !str_contains($timeStr, '.')) {
+        if (is_numeric($timeStr) && ! str_contains($timeStr, ':') && ! str_contains($timeStr, '.')) {
             return (int) $timeStr;
         }
 
@@ -409,22 +415,23 @@ class CompetitionScoreController extends Controller
             $parts = explode(':', $cleanStr);
             if (count($parts) === 2) {
                 // MM:SS
-                return ((int)$parts[0] * 60) + (int)$parts[1];
+                return ((int) $parts[0] * 60) + (int) $parts[1];
             } elseif (count($parts) === 3) {
                 // HH:MM:SS (in Excel 12:05:44 AM -> hour 0, 5 min, 44 sec)
-                $h = (int)$parts[0];
-                $m = (int)$parts[1];
-                $s = (int)$parts[2];
+                $h = (int) $parts[0];
+                $m = (int) $parts[1];
+                $s = (int) $parts[2];
                 if ($isAmPm && $h === 12) {
                     $h = 0;
                 }
+
                 return ($h * 3600) + ($m * 60) + $s;
             }
         } elseif (str_contains($cleanStr, '.')) {
             // MM.SS
             $parts = explode('.', $cleanStr);
             if (count($parts) === 2) {
-                return ((int)$parts[0] * 60) + (int)$parts[1];
+                return ((int) $parts[0] * 60) + (int) $parts[1];
             }
         }
 
@@ -486,6 +493,7 @@ class CompetitionScoreController extends Controller
 
             $byTermin = $scores->groupBy(function ($s) {
                 $details = is_array($s->score_details) ? $s->score_details : (json_decode($s->score_details ?? '', true) ?? []);
+
                 return $details['termin'] ?? 1;
             });
 
@@ -499,6 +507,7 @@ class CompetitionScoreController extends Controller
                     $detailsB = is_array($b->score_details) ? $b->score_details : (json_decode($b->score_details ?? '', true) ?? []);
                     $secA = $detailsA['time_seconds'] ?? self::parseTimeToSeconds($a->time_recorded) ?? 999999;
                     $secB = $detailsB['time_seconds'] ?? self::parseTimeToSeconds($b->time_recorded) ?? 999999;
+
                     return $secA <=> $secB;
                 });
 
@@ -518,6 +527,7 @@ class CompetitionScoreController extends Controller
                     $dq->update(['rank' => null]);
                 }
             }
+
             return;
         }
 
@@ -536,6 +546,7 @@ class CompetitionScoreController extends Controller
             $detailsB = is_array($b->score_details) ? $b->score_details : (json_decode($b->score_details ?? '', true) ?? []);
             $secA = $detailsA['time_seconds'] ?? self::parseTimeToSeconds($a->time_recorded) ?? 999999;
             $secB = $detailsB['time_seconds'] ?? self::parseTimeToSeconds($b->time_recorded) ?? 999999;
+
             return $secA <=> $secB;
         });
 
@@ -565,7 +576,7 @@ class CompetitionScoreController extends Controller
         $prelimScores = CompetitionScore::where('competition_category_id', $category->id)
             ->where(function ($q) {
                 $q->where('round_name', 'like', '%Penyisihan%')
-                  ->orWhere('round_name', 'like', '%Babak 1%');
+                    ->orWhere('round_name', 'like', '%Babak 1%');
             })
             ->where('is_disqualified', false)
             ->orderByRaw('`rank` IS NULL, `rank` ASC')
@@ -606,7 +617,9 @@ class CompetitionScoreController extends Controller
         // Save assignments to CompetitionScore for Babak 2 - Semi Final
         foreach ($assignments as $teamId => $terminNum) {
             $terminNum = (int) $terminNum;
-            if ($terminNum < 1 || $terminNum > 3) continue;
+            if ($terminNum < 1 || $terminNum > 3) {
+                continue;
+            }
 
             $score = CompetitionScore::firstOrNew([
                 'competition_category_id' => $category->id,
@@ -661,9 +674,15 @@ class CompetitionScoreController extends Controller
         $assignments = [];
         for ($i = 0; $i < 3; $i++) {
             $termin = $i + 1;
-            if (isset($pot1[$i])) $assignments[$pot1[$i]->id] = $termin;
-            if (isset($pot2[$i])) $assignments[$pot2[$i]->id] = $termin;
-            if (isset($pot3[$i])) $assignments[$pot3[$i]->id] = $termin;
+            if (isset($pot1[$i])) {
+                $assignments[$pot1[$i]->id] = $termin;
+            }
+            if (isset($pot2[$i])) {
+                $assignments[$pot2[$i]->id] = $termin;
+            }
+            if (isset($pot3[$i])) {
+                $assignments[$pot3[$i]->id] = $termin;
+            }
         }
 
         return $this->resolveSchoolProtection($teams, $assignments);
@@ -692,11 +711,13 @@ class CompetitionScoreController extends Controller
                     if (isset($seenSchools[$sch])) {
                         $hasCollision = true;
                         foreach ([1, 2, 3] as $targetTNum) {
-                            if ($targetTNum == $tNum) continue;
+                            if ($targetTNum == $tNum) {
+                                continue;
+                            }
                             foreach ($termins[$targetTNum] as $candId) {
                                 $candSch = $teamSchools[$candId] ?? $candId;
-                                $safeForCurrent = !in_array($candSch, array_map(fn($id) => $teamSchools[$id], array_diff($tIds, [$tId])));
-                                $safeForTarget = !in_array($sch, array_map(fn($id) => $teamSchools[$id], array_diff($termins[$targetTNum], [$candId])));
+                                $safeForCurrent = ! in_array($candSch, array_map(fn ($id) => $teamSchools[$id], array_diff($tIds, [$tId])));
+                                $safeForTarget = ! in_array($sch, array_map(fn ($id) => $teamSchools[$id], array_diff($termins[$targetTNum], [$candId])));
 
                                 if ($safeForCurrent && $safeForTarget) {
                                     $assignments[$tId] = $targetTNum;
@@ -710,7 +731,9 @@ class CompetitionScoreController extends Controller
                 }
             }
 
-            if (!$hasCollision) break;
+            if (! $hasCollision) {
+                break;
+            }
         }
 
         return $assignments;
@@ -725,10 +748,10 @@ class CompetitionScoreController extends Controller
             'team_label' => 'nullable|string|max:50',
         ]);
 
-        if (!empty($validated['registration_id'])) {
+        if (! empty($validated['registration_id'])) {
             $registration = CompetitionRegistration::findOrFail($validated['registration_id']);
             $label = trim($validated['team_label'] ?? '');
-            $teamName = $registration->school_name . ($label ? " {$label}" : '');
+            $teamName = $registration->school_name.($label ? " {$label}" : '');
 
             $existingCount = CompetitionParticipantTeam::where('competition_category_id', $category->id)
                 ->where('competition_registration_id', $registration->id)
@@ -767,8 +790,8 @@ class CompetitionScoreController extends Controller
         } else {
             // Walk-in OTS
             $schoolName = strtoupper(trim($validated['school_name'] ?? ''));
-            if (!$schoolName) {
-                return redirect()->back()->with('error', "Silakan pilih sekolah dari daftar terverifikasi atau masukkan nama sekolah OTS.");
+            if (! $schoolName) {
+                return redirect()->back()->with('error', 'Silakan pilih sekolah dari daftar terverifikasi atau masukkan nama sekolah OTS.');
             }
 
             $registration = CompetitionRegistration::firstOrCreate(
@@ -777,7 +800,7 @@ class CompetitionScoreController extends Controller
                     'school_name' => $schoolName,
                 ],
                 [
-                    'registration_code' => 'WALKIN-' . strtoupper(\Illuminate\Support\Str::random(5)),
+                    'registration_code' => 'WALKIN-'.strtoupper(Str::random(5)),
                     'level' => $category->level,
                     'advisor_name' => 'Pembina OTS',
                     'advisor_phone' => '-',
@@ -786,7 +809,7 @@ class CompetitionScoreController extends Controller
             );
 
             $label = trim($validated['team_label'] ?? '');
-            $teamName = $registration->school_name . ($label ? " {$label}" : '');
+            $teamName = $registration->school_name.($label ? " {$label}" : '');
 
             CompetitionParticipantTeam::create([
                 'competition_registration_id' => $registration->id,

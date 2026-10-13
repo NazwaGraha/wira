@@ -58,21 +58,21 @@ class Article extends Model
             return $this->thumbnail;
         }
 
-        return asset('storage/' . $this->thumbnail);
+        return asset('storage/'.$this->thumbnail);
     }
 
     public function getEffectiveMetaTitleAttribute(): string
     {
-        return $this->meta_title ?: ($this->title . ' - PMR Wira SMAN 1 Ciawi');
+        return $this->meta_title ?: ($this->title.' - PMR Wira SMAN 1 Ciawi');
     }
 
     public function getEffectiveMetaDescriptionAttribute(): string
     {
-        if (!empty($this->meta_description)) {
+        if (! empty($this->meta_description)) {
             return $this->meta_description;
         }
 
-        if (!empty($this->excerpt)) {
+        if (! empty($this->excerpt)) {
             return $this->excerpt;
         }
 
@@ -81,11 +81,12 @@ class Article extends Model
 
     public function getEffectiveOgImageAttribute(): string
     {
-        if (!empty($this->og_image)) {
+        if (! empty($this->og_image)) {
             if (str_starts_with($this->og_image, 'http://') || str_starts_with($this->og_image, 'https://') || str_starts_with($this->og_image, '/')) {
                 return $this->og_image;
             }
-            return asset('storage/' . $this->og_image);
+
+            return asset('storage/'.$this->og_image);
         }
 
         return $this->thumbnail_url;
@@ -95,7 +96,8 @@ class Article extends Model
     {
         $words = str_word_count(strip_tags($this->body));
         $minutes = ceil($words / 200);
-        return max(1, $minutes) . ' min baca';
+
+        return max(1, $minutes).' min baca';
     }
 
     protected static function boot()
@@ -104,7 +106,7 @@ class Article extends Model
 
         static::creating(function ($article) {
             if (empty($article->slug)) {
-                $article->slug = Str::slug($article->title) . '-' . Str::random(5);
+                $article->slug = Str::slug($article->title).'-'.Str::random(5);
             }
             if ($article->status === 'published' && empty($article->published_at)) {
                 $article->published_at = now();

@@ -5,8 +5,8 @@ namespace App\Services;
 use App\Models\Member;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Collection;
-use ZipArchive;
 use SimpleXMLElement;
+use ZipArchive;
 
 class MemberSpreadsheetService
 {
@@ -175,12 +175,14 @@ class MemberSpreadsheetService
             // Skip completely empty rows
             if (empty($name) && empty($nri)) {
                 $skippedCount++;
+
                 continue;
             }
 
             if (empty($name)) {
                 $errors[] = "Baris {$rowNumber}: Nama Lengkap wajib diisi (dilewati).";
                 $skippedCount++;
+
                 continue;
             }
 
@@ -188,6 +190,7 @@ class MemberSpreadsheetService
             if (empty($nri)) {
                 $errors[] = "Baris {$rowNumber} ({$name}): NRI wajib diisi (1 anggota 1 NRI tidak boleh kosong).";
                 $skippedCount++;
+
                 continue;
             }
 
@@ -195,6 +198,7 @@ class MemberSpreadsheetService
             if (isset($seenNriInFile[$nri])) {
                 $errors[] = "Baris {$rowNumber} ({$name}): NRI '{$nri}' duplikat dengan baris {$seenNriInFile[$nri]} dalam file (dilewati).";
                 $skippedCount++;
+
                 continue;
             }
             $seenNriInFile[$nri] = $rowNumber;
@@ -229,12 +233,12 @@ class MemberSpreadsheetService
 
                 // Normalisasi Tahun Masuk
                 $entryYear = null;
-                if (!empty($entryYearRaw) && is_numeric($entryYearRaw)) {
+                if (! empty($entryYearRaw) && is_numeric($entryYearRaw)) {
                     $entryYear = (int) $entryYearRaw;
                 }
 
                 // Normalisasi Status Anggota
-                if (!empty($memberStatus)) {
+                if (! empty($memberStatus)) {
                     $statusLower = strtolower($memberStatus);
                     if (str_contains($statusLower, 'purna') || str_contains($statusLower, 'alumni')) {
                         $memberStatus = 'Purna';
@@ -252,7 +256,7 @@ class MemberSpreadsheetService
 
                 // Normalisasi Tanggal Lahir
                 $birthDate = null;
-                if (!empty($birthDateRaw)) {
+                if (! empty($birthDateRaw)) {
                     try {
                         // Cek jika numeric Excel date serial number (misal 39582)
                         if (is_numeric($birthDateRaw) && (int) $birthDateRaw > 10000 && (int) $birthDateRaw < 60000) {
@@ -290,24 +294,26 @@ class MemberSpreadsheetService
                 ];
 
                 // 1. Cek apakah NRI unik sudah ada di database (Update data jika ada)
-                $existingMember = Member::where(function($q) use ($nri) {
+                $existingMember = Member::where(function ($q) use ($nri) {
                     $q->where('nri', $nri)->orWhere('nis', $nri);
                 })->first();
 
                 if ($existingMember) {
                     $existingMember->update($memberData);
                     $updatedCount++;
+
                     continue;
                 }
 
                 // 2. Pemulihan otomatis (Self-Healing): Cek jika ada anggota dengan nama sama tapi NRI/NIS korup ('Laki-laki' / 'Perempuan') akibat bug versi sebelumnya
-                $corruptedMember = Member::where('name', $name)->where(function($q) {
+                $corruptedMember = Member::where('name', $name)->where(function ($q) {
                     $q->whereIn('nri', ['Laki-laki', 'Perempuan'])->orWhereIn('nis', ['Laki-laki', 'Perempuan']);
                 })->first();
 
                 if ($corruptedMember) {
                     $corruptedMember->update($memberData);
                     $updatedCount++;
+
                     continue;
                 }
 
@@ -315,7 +321,7 @@ class MemberSpreadsheetService
                 Member::create($memberData);
                 $successCount++;
             } catch (\Throwable $e) {
-                $errors[] = "Baris {$rowNumber} ({$name}): " . $e->getMessage();
+                $errors[] = "Baris {$rowNumber} ({$name}): ".$e->getMessage();
                 $skippedCount++;
             }
         }
@@ -337,10 +343,12 @@ class MemberSpreadsheetService
         $map = [];
         foreach ($headerRow as $idx => $cellText) {
             $h = strtolower(trim((string) $cellText));
-            if (empty($h)) continue;
+            if (empty($h)) {
+                continue;
+            }
 
             // Prioritaskan NRI / NIS: pastikan BUKAN kata 'jenis' (seperti 'jenis kelamin')
-            if (!str_contains($h, 'jenis') && (preg_match('/\b(nri|nis)\b/i', $h) || str_contains($h, 'registrasi') || str_contains($h, 'induk') || $h === 'nri' || $h === 'nis')) {
+            if (! str_contains($h, 'jenis') && (preg_match('/\b(nri|nis)\b/i', $h) || str_contains($h, 'registrasi') || str_contains($h, 'induk') || $h === 'nri' || $h === 'nis')) {
                 $map['nri'] = $idx;
                 $map['nis'] = $idx;
             } elseif (str_contains($h, 'nama')) {
@@ -357,7 +365,7 @@ class MemberSpreadsheetService
                 $map['member_status'] = $idx;
             } elseif (str_contains($h, 'tempat')) {
                 $map['birth_place'] = $idx;
-            } elseif (str_contains($h, 'tanggal') || str_contains($h, 'tgl') || (str_contains($h, 'lahir') && !str_contains($h, 'tempat'))) {
+            } elseif (str_contains($h, 'tanggal') || str_contains($h, 'tgl') || (str_contains($h, 'lahir') && ! str_contains($h, 'tempat'))) {
                 $map['birth_date'] = $idx;
             } elseif (str_contains($h, 'email')) {
                 $map['email'] = $idx;
@@ -373,6 +381,7 @@ class MemberSpreadsheetService
                 $map['mission'] = $idx;
             }
         }
+
         return $map;
     }
 
@@ -384,8 +393,10 @@ class MemberSpreadsheetService
         $idx = $colMap[$key] ?? $defaultIdx;
         if (isset($row[$idx])) {
             $val = trim((string) $row[$idx]);
+
             return $val !== '' ? $val : null;
         }
+
         return null;
     }
 
@@ -394,7 +405,7 @@ class MemberSpreadsheetService
      */
     protected function readXlsx(string $filePath): array
     {
-        $zip = new ZipArchive();
+        $zip = new ZipArchive;
         if ($zip->open($filePath) !== true) {
             return [];
         }
@@ -422,7 +433,7 @@ class MemberSpreadsheetService
 
         // 2. Read Sheet 1 XML
         $sheetXmlContent = $zip->getFromName('xl/worksheets/sheet1.xml');
-        if (!$sheetXmlContent) {
+        if (! $sheetXmlContent) {
             for ($i = 0; $i < $zip->numFiles; $i++) {
                 $filename = $zip->getNameIndex($i);
                 if (str_starts_with($filename, 'xl/worksheets/sheet') && str_ends_with($filename, '.xml')) {
@@ -434,12 +445,12 @@ class MemberSpreadsheetService
 
         $zip->close();
 
-        if (!$sheetXmlContent) {
+        if (! $sheetXmlContent) {
             return [];
         }
 
         $sheetXml = @simplexml_load_string($sheetXmlContent);
-        if (!$sheetXml || !isset($sheetXml->sheetData->row)) {
+        if (! $sheetXml || ! isset($sheetXml->sheetData->row)) {
             return [];
         }
 
@@ -471,7 +482,7 @@ class MemberSpreadsheetService
                 $rowCells[$colIdx] = trim($val);
             }
 
-            if (!empty($rowCells)) {
+            if (! empty($rowCells)) {
                 $maxCol = max(array_keys($rowCells));
                 $normalizedRow = [];
                 for ($col = 0; $col <= $maxCol; $col++) {
@@ -491,7 +502,7 @@ class MemberSpreadsheetService
     {
         $rows = [];
         $handle = fopen($filePath, 'r');
-        if (!$handle) {
+        if (! $handle) {
             return [];
         }
 
@@ -505,6 +516,7 @@ class MemberSpreadsheetService
         }
 
         fclose($handle);
+
         return $rows;
     }
 
@@ -514,7 +526,7 @@ class MemberSpreadsheetService
     protected function createXlsxFile(array $rows, string $sheetTitle = 'Data'): string
     {
         $tempFile = tempnam(sys_get_temp_dir(), 'pmr_xlsx_');
-        $zip = new ZipArchive();
+        $zip = new ZipArchive;
         $zip->open($tempFile, ZipArchive::CREATE | ZipArchive::OVERWRITE);
 
         // 1. Content types
@@ -547,7 +559,7 @@ class MemberSpreadsheetService
         $safeSheetTitle = htmlspecialchars(substr($sheetTitle, 0, 31), ENT_XML1);
         $workbook = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships">
-<sheets><sheet name="' . $safeSheetTitle . '" sheetId="1" r:id="rId1"/></sheets>
+<sheets><sheet name="'.$safeSheetTitle.'" sheetId="1" r:id="rId1"/></sheets>
 </workbook>';
         $zip->addFromString('xl/workbook.xml', $workbook);
 
@@ -614,7 +626,7 @@ class MemberSpreadsheetService
         $colIdx = 1;
         foreach (self::COLUMNS as $colMeta) {
             $w = $colMeta['width'] ?? 20;
-            $colsXml .= '<col min="' . $colIdx . '" max="' . $colIdx . '" width="' . $w . '" customWidth="1"/>';
+            $colsXml .= '<col min="'.$colIdx.'" max="'.$colIdx.'" width="'.$w.'" customWidth="1"/>';
             $colIdx++;
         }
         $colsXml .= '</cols>';
@@ -627,12 +639,12 @@ class MemberSpreadsheetService
             $rNum = $rowIndex + 1;
             $isHeader = ($rNum === 1);
             $rowHeight = $isHeader ? ' ht="28" customHeight="1"' : ' ht="22" customHeight="1"';
-            $isZebra = (!$isHeader && $rNum % 2 === 1);
+            $isZebra = (! $isHeader && $rNum % 2 === 1);
 
-            $sheetDataXml .= '<row r="' . $rNum . '"' . $rowHeight . '>';
+            $sheetDataXml .= '<row r="'.$rNum.'"'.$rowHeight.'>';
             foreach ($cols as $colIndex => $val) {
                 $colLetter = $this->indexToColumnLetter($colIndex);
-                $cellRef = $colLetter . $rNum;
+                $cellRef = $colLetter.$rNum;
 
                 if ($isHeader) {
                     $styleId = 1; // Header red
@@ -645,9 +657,9 @@ class MemberSpreadsheetService
                     }
                 }
 
-                $styleAttr = ' s="' . $styleId . '"';
+                $styleAttr = ' s="'.$styleId.'"';
                 $safeVal = htmlspecialchars((string) $val, ENT_XML1);
-                $sheetDataXml .= '<c r="' . $cellRef . '"' . $styleAttr . ' t="inlineStr"><is><t>' . $safeVal . '</t></is></c>';
+                $sheetDataXml .= '<c r="'.$cellRef.'"'.$styleAttr.' t="inlineStr"><is><t>'.$safeVal.'</t></is></c>';
             }
             $sheetDataXml .= '</row>';
         }
@@ -662,12 +674,13 @@ class MemberSpreadsheetService
 </sheetView>
 </sheetViews>
 <sheetFormatPr defaultRowHeight="20"/>
-' . $colsXml . '
-' . $sheetDataXml . '
+'.$colsXml.'
+'.$sheetDataXml.'
 </worksheet>';
         $zip->addFromString('xl/worksheets/sheet1.xml', $worksheet);
 
         $zip->close();
+
         return $tempFile;
     }
 
@@ -683,6 +696,7 @@ class MemberSpreadsheetService
         for ($i = 0; $i < $len; $i++) {
             $num = $num * 26 + (ord($letters[$i]) - ord('A') + 1);
         }
+
         return max(0, $num - 1);
     }
 
@@ -695,9 +709,10 @@ class MemberSpreadsheetService
         $index++;
         while ($index > 0) {
             $mod = ($index - 1) % 26;
-            $letter = chr(65 + $mod) . $letter;
+            $letter = chr(65 + $mod).$letter;
             $index = intval(($index - $mod) / 26);
         }
+
         return $letter;
     }
 }

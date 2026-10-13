@@ -4,10 +4,12 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Member;
-use Illuminate\Http\Request;
-use Illuminate\Support\Str;
-use Illuminate\Support\Facades\Schema;
+use App\Models\OrganizationMember;
+use App\Services\MemberSpreadsheetService;
 use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Str;
 
 class MemberController extends Controller
 {
@@ -15,17 +17,17 @@ class MemberController extends Controller
     {
         // Pastikan kolom baru tersedia secara aman
         if (Schema::hasTable('members')) {
-            if (!Schema::hasColumn('members', 'nri')) {
+            if (! Schema::hasColumn('members', 'nri')) {
                 Schema::table('members', function (Blueprint $table) {
                     $table->string('nri', 50)->nullable()->unique()->after('id');
                 });
             }
-            if (!Schema::hasColumn('members', 'entry_year')) {
+            if (! Schema::hasColumn('members', 'entry_year')) {
                 Schema::table('members', function (Blueprint $table) {
                     $table->unsignedSmallInteger('entry_year')->nullable()->after('class_grade');
                 });
             }
-            if (!Schema::hasColumn('members', 'member_status')) {
+            if (! Schema::hasColumn('members', 'member_status')) {
                 Schema::table('members', function (Blueprint $table) {
                     $table->string('member_status', 20)->default('Aktif')->after('entry_year');
                 });
@@ -38,10 +40,10 @@ class MemberController extends Controller
         $query = Member::query();
 
         if ($search) {
-            $query->where(function($q) use ($search) {
+            $query->where(function ($q) use ($search) {
                 $q->where('name', 'like', "%{$search}%")
-                  ->orWhere('class_grade', 'like', "%{$search}%")
-                  ->orWhere('entry_year', 'like', "%{$search}%");
+                    ->orWhere('class_grade', 'like', "%{$search}%")
+                    ->orWhere('entry_year', 'like', "%{$search}%");
 
                 if (Schema::hasColumn('members', 'nri')) {
                     $q->orWhere('nri', 'like', "%{$search}%");
@@ -74,11 +76,11 @@ class MemberController extends Controller
     public function lookup(Request $request)
     {
         $nri = trim((string) $request->query('nri', $request->query('q', '')));
-        if (!$nri) {
+        if (! $nri) {
             return response()->json(['found' => false, 'message' => 'Parameter NRI tidak boleh kosong.'], 400);
         }
 
-        $member = Member::where(function($q) use ($nri) {
+        $member = Member::where(function ($q) use ($nri) {
             if (Schema::hasColumn('members', 'nri')) {
                 $q->where('nri', $nri);
             }
@@ -87,10 +89,10 @@ class MemberController extends Controller
             }
         })->first();
 
-        if (!$member) {
+        if (! $member) {
             return response()->json([
-                'found' => false, 
-                'message' => "Data anggota dengan NRI '{$nri}' tidak ditemukan."
+                'found' => false,
+                'message' => "Data anggota dengan NRI '{$nri}' tidak ditemukan.",
             ], 404);
         }
 
@@ -112,13 +114,14 @@ class MemberController extends Controller
                 'phone' => $member->phone,
                 'address' => $member->address,
                 'photo_url' => $member->photo_url,
-            ]
+            ],
         ]);
     }
 
     public function create()
     {
-        $positions = \App\Models\OrganizationMember::select('position')->distinct()->pluck('position')->toArray();
+        $positions = OrganizationMember::select('position')->distinct()->pluck('position')->toArray();
+
         return view('admin.members.create', compact('positions'));
     }
 
@@ -127,8 +130,8 @@ class MemberController extends Controller
         $nriInput = trim((string) $request->input('nri', $request->input('nis', '')));
 
         // Validasi keunikan NRI jika diisi
-        if (!empty($nriInput)) {
-            $duplicate = Member::where(function($q) use ($nriInput) {
+        if (! empty($nriInput)) {
+            $duplicate = Member::where(function ($q) use ($nriInput) {
                 if (Schema::hasColumn('members', 'nri')) {
                     $q->where('nri', $nriInput);
                 }
@@ -139,13 +142,14 @@ class MemberController extends Controller
 
             if ($duplicate) {
                 return redirect()->back()->withInput()->withErrors([
-                    'nri' => "NRI '{$nriInput}' sudah digunakan oleh anggota lain. Satu anggota hanya boleh memiliki 1 NRI unik."
+                    'nri' => "NRI '{$nriInput}' sudah digunakan oleh anggota lain. Satu anggota hanya boleh memiliki 1 NRI unik.",
                 ]);
             }
         }
 
         $validated = $request->validate([
             'nri' => 'nullable|string|max:50',
+            'nip' => 'nullable|string|max:50',
             'nis' => 'nullable|string|max:50',
             'name' => 'required|string|max:255',
             'position' => 'nullable|string|max:100',
@@ -154,7 +158,7 @@ class MemberController extends Controller
             'birth_date' => 'nullable|date',
             'gender' => 'nullable|in:Laki-laki,Perempuan',
             'class_grade' => 'nullable|string|max:50',
-            'entry_year' => 'nullable|integer|min:1990|max:' . ((int)date('Y') + 5),
+            'entry_year' => 'nullable|integer|min:1990|max:'.((int) date('Y') + 5),
             'member_status' => 'nullable|string|in:Aktif,Purna',
             'email' => 'nullable|email|max:255',
             'phone' => 'nullable|string|max:20',
@@ -166,22 +170,23 @@ class MemberController extends Controller
         ]);
 
         $validated['nri'] = $nriInput ?: null;
+        $validated['nip'] = $request->input('nip') ? trim($request->input('nip')) : null;
         $validated['nis'] = $nriInput ?: null;
 
         if ($request->hasFile('photo')) {
             $file = $request->file('photo');
-            $filename = time() . '_' . Str::random(8) . '.' . $file->getClientOriginalExtension();
+            $filename = time().'_'.Str::random(8).'.'.$file->getClientOriginalExtension();
             $path = $file->storeAs('members', $filename, 'public');
-            $validated['photo'] = 'members/' . $filename;
+            $validated['photo'] = 'members/'.$filename;
         }
 
         $validated['is_active'] = $request->has('is_active');
 
         // Otomatisasi Status Anggota: jika tahun masuk + 3 <= tahun sekarang -> Purna
-        if (!empty($validated['entry_year'])) {
+        if (! empty($validated['entry_year'])) {
             $currentYear = (int) date('Y');
             if (empty($validated['member_status'])) {
-                $validated['member_status'] = ($currentYear >= ((int)$validated['entry_year'] + 3)) ? 'Purna' : 'Aktif';
+                $validated['member_status'] = ($currentYear >= ((int) $validated['entry_year'] + 3)) ? 'Purna' : 'Aktif';
             }
         } else {
             $validated['member_status'] = $validated['member_status'] ?? 'Aktif';
@@ -194,7 +199,8 @@ class MemberController extends Controller
 
     public function edit(Member $member)
     {
-        $positions = \App\Models\OrganizationMember::select('position')->distinct()->pluck('position')->toArray();
+        $positions = OrganizationMember::select('position')->distinct()->pluck('position')->toArray();
+
         return view('admin.members.edit', compact('member', 'positions'));
     }
 
@@ -203,9 +209,9 @@ class MemberController extends Controller
         $nriInput = trim((string) $request->input('nri', $request->input('nis', '')));
 
         // Validasi keunikan NRI jika diisi
-        if (!empty($nriInput)) {
+        if (! empty($nriInput)) {
             $duplicate = Member::where('id', '!=', $member->id)
-                ->where(function($q) use ($nriInput) {
+                ->where(function ($q) use ($nriInput) {
                     if (Schema::hasColumn('members', 'nri')) {
                         $q->where('nri', $nriInput);
                     }
@@ -216,13 +222,14 @@ class MemberController extends Controller
 
             if ($duplicate) {
                 return redirect()->back()->withInput()->withErrors([
-                    'nri' => "NRI '{$nriInput}' sudah digunakan oleh anggota lain. Satu anggota hanya boleh memiliki 1 NRI unik."
+                    'nri' => "NRI '{$nriInput}' sudah digunakan oleh anggota lain. Satu anggota hanya boleh memiliki 1 NRI unik.",
                 ]);
             }
         }
 
         $validated = $request->validate([
             'nri' => 'nullable|string|max:50',
+            'nip' => 'nullable|string|max:50',
             'nis' => 'nullable|string|max:50',
             'name' => 'required|string|max:255',
             'position' => 'nullable|string|max:100',
@@ -231,7 +238,7 @@ class MemberController extends Controller
             'birth_date' => 'nullable|date',
             'gender' => 'nullable|in:Laki-laki,Perempuan',
             'class_grade' => 'nullable|string|max:50',
-            'entry_year' => 'nullable|integer|min:1990|max:' . ((int)date('Y') + 5),
+            'entry_year' => 'nullable|integer|min:1990|max:'.((int) date('Y') + 5),
             'member_status' => 'nullable|string|in:Aktif,Purna',
             'email' => 'nullable|email|max:255',
             'phone' => 'nullable|string|max:20',
@@ -243,22 +250,23 @@ class MemberController extends Controller
         ]);
 
         $validated['nri'] = $nriInput ?: null;
+        $validated['nip'] = $request->input('nip') ? trim($request->input('nip')) : null;
         $validated['nis'] = $nriInput ?: null;
 
         if ($request->hasFile('photo')) {
             $file = $request->file('photo');
-            $filename = time() . '_' . Str::random(8) . '.' . $file->getClientOriginalExtension();
+            $filename = time().'_'.Str::random(8).'.'.$file->getClientOriginalExtension();
             $path = $file->storeAs('members', $filename, 'public');
-            $validated['photo'] = 'members/' . $filename;
+            $validated['photo'] = 'members/'.$filename;
         }
 
         $validated['is_active'] = $request->has('is_active');
 
         // Otomatisasi Status Anggota: jika tahun masuk + 3 <= tahun sekarang -> Purna
-        if (!empty($validated['entry_year'])) {
+        if (! empty($validated['entry_year'])) {
             $currentYear = (int) date('Y');
             if (empty($validated['member_status'])) {
-                $validated['member_status'] = ($currentYear >= ((int)$validated['entry_year'] + 3)) ? 'Purna' : 'Aktif';
+                $validated['member_status'] = ($currentYear >= ((int) $validated['entry_year'] + 3)) ? 'Purna' : 'Aktif';
             }
         } else {
             $validated['member_status'] = $validated['member_status'] ?? 'Aktif';
@@ -280,7 +288,7 @@ class MemberController extends Controller
     /**
      * Export member list to Excel XLSX
      */
-    public function export(Request $request, \App\Services\MemberSpreadsheetService $spreadsheetService)
+    public function export(Request $request, MemberSpreadsheetService $spreadsheetService)
     {
         $status = $request->query('status');
         $query = Member::orderBy('name');
@@ -291,7 +299,7 @@ class MemberController extends Controller
 
         $members = $query->get();
         $filePath = $spreadsheetService->export($members);
-        $filename = 'Data_Anggota_PMR_WIRA_' . date('Ymd_His') . '.xlsx';
+        $filename = 'Data_Anggota_PMR_WIRA_'.date('Ymd_His').'.xlsx';
 
         return response()->download($filePath, $filename, [
             'Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
@@ -301,7 +309,7 @@ class MemberController extends Controller
     /**
      * Download Excel template for bulk import
      */
-    public function downloadTemplate(\App\Services\MemberSpreadsheetService $spreadsheetService)
+    public function downloadTemplate(MemberSpreadsheetService $spreadsheetService)
     {
         $filePath = $spreadsheetService->exportTemplate();
         $filename = 'Template_Import_Anggota_PMR_WIRA.xlsx';
@@ -314,7 +322,7 @@ class MemberController extends Controller
     /**
      * Import members from Excel (.xlsx or .csv)
      */
-    public function import(Request $request, \App\Services\MemberSpreadsheetService $spreadsheetService)
+    public function import(Request $request, MemberSpreadsheetService $spreadsheetService)
     {
         $request->validate([
             'excel_file' => 'required|file|max:10240',
@@ -325,35 +333,35 @@ class MemberController extends Controller
 
         $file = $request->file('excel_file');
         $ext = strtolower($file->getClientOriginalExtension());
-        if (!in_array($ext, ['xlsx', 'xls', 'csv', 'txt'])) {
+        if (! in_array($ext, ['xlsx', 'xls', 'csv', 'txt'])) {
             return redirect()->back()->with('error', 'Format file harus berupa file Excel (.xlsx) atau CSV (.csv).');
         }
 
         try {
             $result = $spreadsheetService->import($file);
 
-            if ($result['total'] === 0 && !empty($result['errors'])) {
+            if ($result['total'] === 0 && ! empty($result['errors'])) {
                 return redirect()->back()->with('error', implode('<br>', $result['errors']));
             }
 
             $message = "Berhasil memproses {$result['total']} data anggota (Baru: {$result['success']}, Diperbarui: {$result['updated']}).";
             if ($result['skipped'] > 0) {
                 $message .= " <br><span class=\"text-xs text-amber-800 font-normal\">Catatan ({$result['skipped']} baris dilewati): ";
-                if (!empty($result['errors'])) {
+                if (! empty($result['errors'])) {
                     $detailErrors = array_slice($result['errors'], 0, 5);
                     $message .= implode(' | ', $detailErrors);
                     if (count($result['errors']) > 5) {
-                        $message .= ' ...dan ' . (count($result['errors']) - 5) . ' lainnya.';
+                        $message .= ' ...dan '.(count($result['errors']) - 5).' lainnya.';
                     }
                 } else {
-                    $message .= "Baris kosong atau data tidak valid.";
+                    $message .= 'Baris kosong atau data tidak valid.';
                 }
-                $message .= "</span>";
+                $message .= '</span>';
             }
 
             return redirect()->route('admin.members.index')->with('success', $message);
         } catch (\Throwable $e) {
-            return redirect()->back()->with('error', 'Gagal memproses file Excel: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'Gagal memproses file Excel: '.$e->getMessage());
         }
     }
 }

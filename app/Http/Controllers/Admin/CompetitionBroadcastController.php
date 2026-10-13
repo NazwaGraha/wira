@@ -8,8 +8,9 @@ use App\Models\CompetitionEmailBroadcast;
 use App\Models\CompetitionEvent;
 use App\Models\CompetitionRegistration;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Str;
 
 class CompetitionBroadcastController extends Controller
 {
@@ -21,10 +22,10 @@ class CompetitionBroadcastController extends Controller
             ->where('advisor_email', 'like', '%@%')
             ->get();
 
-        $totalUniqueEmails = $allRegistrationsWithEmail->pluck('advisor_email')->map(fn($e) => strtolower(trim($e)))->unique()->count();
-        $totalMulaEmails = $allRegistrationsWithEmail->where('level', 'Mula')->pluck('advisor_email')->map(fn($e) => strtolower(trim($e)))->unique()->count();
-        $totalMadyaEmails = $allRegistrationsWithEmail->where('level', 'Madya')->pluck('advisor_email')->map(fn($e) => strtolower(trim($e)))->unique()->count();
-        $totalWiraEmails = $allRegistrationsWithEmail->where('level', 'Wira')->pluck('advisor_email')->map(fn($e) => strtolower(trim($e)))->unique()->count();
+        $totalUniqueEmails = $allRegistrationsWithEmail->pluck('advisor_email')->map(fn ($e) => strtolower(trim($e)))->unique()->count();
+        $totalMulaEmails = $allRegistrationsWithEmail->where('level', 'Mula')->pluck('advisor_email')->map(fn ($e) => strtolower(trim($e)))->unique()->count();
+        $totalMadyaEmails = $allRegistrationsWithEmail->where('level', 'Madya')->pluck('advisor_email')->map(fn ($e) => strtolower(trim($e)))->unique()->count();
+        $totalWiraEmails = $allRegistrationsWithEmail->where('level', 'Wira')->pluck('advisor_email')->map(fn ($e) => strtolower(trim($e)))->unique()->count();
 
         // Riwayat Siaran Email
         $broadcasts = CompetitionEmailBroadcast::with('event')->latest()->paginate(10);
@@ -86,7 +87,7 @@ class CompetitionBroadcastController extends Controller
                     'advisor_name' => auth()->user()->name ?? 'Administrator',
                     'level' => 'Test',
                     'event_id' => null,
-                ]
+                ],
             ];
         } else {
             $recipients = $this->resolveRecipients(
@@ -97,12 +98,12 @@ class CompetitionBroadcastController extends Controller
 
             // Tambahkan email manual tambahan bila ada
             $additionalRaw = $request->input('additional_emails', '');
-            if (!empty($additionalRaw)) {
+            if (! empty($additionalRaw)) {
                 $split = preg_split('/[\r\n,;]+/', $additionalRaw);
                 foreach ($split as $em) {
                     $em = strtolower(trim($em));
-                    if (!empty($em) && filter_var($em, FILTER_VALIDATE_EMAIL)) {
-                        if (!isset($recipients[$em])) {
+                    if (! empty($em) && filter_var($em, FILTER_VALIDATE_EMAIL)) {
+                        if (! isset($recipients[$em])) {
                             $recipients[$em] = [
                                 'email' => $em,
                                 'school_name' => 'Kontak Tambahan (Manual / Undangan Khusus)',
@@ -140,13 +141,13 @@ class CompetitionBroadcastController extends Controller
                 $sentCount++;
                 $recipientsData[] = array_merge($item, ['status' => 'sent', 'sent_at' => now()->toDateTimeString()]);
             } catch (\Throwable $e) {
-                Log::error("Gagal mengirim siaran email ke {$item['email']}: " . $e->getMessage());
+                Log::error("Gagal mengirim siaran email ke {$item['email']}: ".$e->getMessage());
                 $failedCount++;
                 $recipientsData[] = array_merge($item, ['status' => 'failed', 'error' => $e->getMessage()]);
             }
         }
 
-        $eventId = ($validated['target_event'] !== 'all' && is_numeric($validated['target_event'])) ? (int)$validated['target_event'] : null;
+        $eventId = ($validated['target_event'] !== 'all' && is_numeric($validated['target_event'])) ? (int) $validated['target_event'] : null;
 
         $broadcast = CompetitionEmailBroadcast::create([
             'competition_event_id' => $eventId,
@@ -165,9 +166,9 @@ class CompetitionBroadcastController extends Controller
             'status' => $sentCount > 0 ? 'sent' : ($failedCount > 0 ? 'failed' : 'sent'),
         ]);
 
-        $statusMsg = $isTestMode 
+        $statusMsg = $isTestMode
             ? "Uji coba siaran email berhasil dikirim ke {$testEmail}!"
-            : "Siaran email berhasil dikirimkan ke {$sentCount} kontak sekolah/pembina terdaftar" . ($failedCount > 0 ? " ({$failedCount} gagal dikirim)" : "") . "!";
+            : "Siaran email berhasil dikirimkan ke {$sentCount} kontak sekolah/pembina terdaftar".($failedCount > 0 ? " ({$failedCount} gagal dikirim)" : '').'!';
 
         return redirect()->route('admin.competition-broadcast.show', $broadcast->id)->with('success', $statusMsg);
     }
@@ -175,6 +176,7 @@ class CompetitionBroadcastController extends Controller
     public function show($id)
     {
         $broadcast = CompetitionEmailBroadcast::with('event')->findOrFail($id);
+
         return view('admin.competition.broadcast.show', compact('broadcast'));
     }
 
@@ -193,7 +195,7 @@ class CompetitionBroadcastController extends Controller
             ->where('advisor_email', 'like', '%@%');
 
         if ($targetEvent !== 'all' && is_numeric($targetEvent)) {
-            $query->where('competition_event_id', (int)$targetEvent);
+            $query->where('competition_event_id', (int) $targetEvent);
         }
 
         if ($targetLevel !== 'all') {
@@ -209,8 +211,8 @@ class CompetitionBroadcastController extends Controller
         $recipients = [];
         foreach ($registrations as $reg) {
             $email = strtolower(trim($reg->advisor_email));
-            if (!empty($email) && filter_var($email, FILTER_VALIDATE_EMAIL)) {
-                if (!isset($recipients[$email])) {
+            if (! empty($email) && filter_var($email, FILTER_VALIDATE_EMAIL)) {
+                if (! isset($recipients[$email])) {
                     $recipients[$email] = [
                         'email' => $email,
                         'school_name' => $reg->school_name,
@@ -235,11 +237,12 @@ class CompetitionBroadcastController extends Controller
 
         if ($request->hasFile('image')) {
             $file = $request->file('image');
-            $filename = 'broadcast_' . time() . '_' . \Illuminate\Support\Str::random(8) . '.' . $file->getClientOriginalExtension();
+            $filename = 'broadcast_'.time().'_'.Str::random(8).'.'.$file->getClientOriginalExtension();
             $path = $file->storeAs('broadcast_images', $filename, 'public');
+
             return response()->json([
                 'success' => true,
-                'url' => asset('storage/' . $path),
+                'url' => asset('storage/'.$path),
             ]);
         }
 

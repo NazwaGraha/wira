@@ -63,6 +63,13 @@
                         <span class="text-[11px] text-slate-400 mt-1 block">Nomor unik registrasi induk anggota PMR.</span>
                     </div>
                     <div>
+                        <label class="flex items-center gap-2 text-sm font-bold text-slate-700 mb-2">
+                            <i class="fa-solid fa-graduation-cap text-slate-400"></i> NIP (Khusus Pembina / Guru)
+                        </label>
+                        <input type="text" name="nip" value="{{ old('nip', $member->nip) }}" class="w-full bg-white border border-slate-200 px-4 py-2.5 rounded-xl focus:outline-none focus:border-red-500 focus:ring-1 focus:ring-red-500 font-semibold text-slate-800" placeholder="Contoh: 198001012005011001">
+                        <span class="text-[11px] text-slate-400 mt-1 block">Nomor Induk Pegawai Pembina (bisa untuk login).</span>
+                    </div>
+                    <div class="md:col-span-2">
                         <label class="block text-sm font-bold text-slate-700 mb-2">Nama Lengkap <span class="text-rose-500">*</span></label>
                         <input type="text" name="name" value="{{ old('name', $member->name) }}" required class="w-full bg-white border border-slate-200 px-4 py-2.5 rounded-xl focus:outline-none focus:border-red-500 focus:ring-1 focus:ring-red-500" placeholder="Contoh: Budi Santoso">
                     </div>

@@ -3,12 +3,13 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Models\Article;
-use App\Models\Category;
 use App\Models\Activity;
+use App\Models\Article;
 use App\Models\BloodStock;
+use App\Models\Category;
 use App\Models\MemberRegistration;
-use Illuminate\Http\Request;
+use App\Models\OrganizationMember;
+use App\Models\OrganizationSetting;
 
 class DashboardController extends Controller
 {
@@ -23,8 +24,8 @@ class DashboardController extends Controller
         $recentArticles = Article::with('category')->latest()->take(5)->get();
         $recentRegistrations = MemberRegistration::latest()->take(5)->get();
         $bloodStocks = BloodStock::all();
-        $totalOrgMembers = \App\Models\OrganizationMember::count();
-        $orgSetting = \App\Models\OrganizationSetting::first();
+        $totalOrgMembers = OrganizationMember::count();
+        $orgSetting = OrganizationSetting::first();
         $totalActivities = Activity::count();
         $recentActivities = Activity::latest('event_date')->take(3)->get();
 

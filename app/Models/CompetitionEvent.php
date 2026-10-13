@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -44,7 +45,7 @@ class CompetitionEvent extends Model
      */
     public function getDisplayState(): string
     {
-        if (!$this->is_active) {
+        if (! $this->is_active) {
             return 'empty';
         }
 
@@ -71,6 +72,7 @@ class CompetitionEvent extends Model
             if ($now->diffInDays($this->wave1_start_date, false) >= 7) {
                 return 'teaser';
             }
+
             return 'active';
         }
 
@@ -107,11 +109,11 @@ class CompetitionEvent extends Model
      */
     public function getActiveWave(): string|int
     {
-        if (!$this->is_registration_open) {
+        if (! $this->is_registration_open) {
             return 'closed';
         }
 
-        if (!$this->is_waves_enabled) {
+        if (! $this->is_waves_enabled) {
             return 1;
         }
 
@@ -152,7 +154,7 @@ class CompetitionEvent extends Model
     /**
      * Get the target datetime for countdown timer.
      */
-    public function getCountdownTarget(): ?\Carbon\Carbon
+    public function getCountdownTarget(): ?Carbon
     {
         if ($this->getDisplayState() === 'teaser') {
             return $this->wave1_start_date ?? ($this->start_date ? $this->start_date->copy()->startOfDay() : null);
@@ -182,7 +184,7 @@ class CompetitionEvent extends Model
     {
         $wave = $this->getActiveWave();
         if ($wave === 'upcoming') {
-            return 'Segera Dibuka: ' . ($this->wave1_name ?: 'Gelombang 1');
+            return 'Segera Dibuka: '.($this->wave1_name ?: 'Gelombang 1');
         }
         if ($wave === 1) {
             return $this->wave1_name ?: 'Gelombang 1';
@@ -190,6 +192,7 @@ class CompetitionEvent extends Model
         if ($wave === 2) {
             return $this->wave2_name ?: 'Gelombang 2';
         }
+
         return 'Pendaftaran Ditutup';
     }
 

@@ -38,6 +38,7 @@ class ArticleController extends Controller
     public function create()
     {
         $categories = Category::all();
+
         return view('admin.articles.create', compact('categories'));
     }
 
@@ -75,13 +76,13 @@ class ArticleController extends Controller
         if ($request->hasFile('image')) {
             $file = $request->file('image');
             $ext = strtolower($file->getClientOriginalExtension());
-            $filename = time() . '_' . Str::random(10) . '.' . $ext;
+            $filename = time().'_'.Str::random(10).'.'.$ext;
             $destinationPath = public_path('uploads/articles');
-            if (!file_exists($destinationPath)) {
+            if (! file_exists($destinationPath)) {
                 mkdir($destinationPath, 0755, true);
             }
             $file->move($destinationPath, $filename);
-            $validated['thumbnail'] = '/uploads/articles/' . $filename;
+            $validated['thumbnail'] = '/uploads/articles/'.$filename;
         } elseif (empty($validated['thumbnail'])) {
             $validated['thumbnail'] = '/mockups/07_artikel.jpg';
         }
@@ -90,24 +91,24 @@ class ArticleController extends Controller
         if ($request->hasFile('og_image_file')) {
             $ogFile = $request->file('og_image_file');
             $ext = strtolower($ogFile->getClientOriginalExtension());
-            $filename = 'og_' . time() . '_' . Str::random(10) . '.' . $ext;
+            $filename = 'og_'.time().'_'.Str::random(10).'.'.$ext;
             $destinationPath = public_path('uploads/articles');
-            if (!file_exists($destinationPath)) {
+            if (! file_exists($destinationPath)) {
                 mkdir($destinationPath, 0755, true);
             }
             $ogFile->move($destinationPath, $filename);
-            $validated['og_image'] = '/uploads/articles/' . $filename;
+            $validated['og_image'] = '/uploads/articles/'.$filename;
         }
 
         // Slug generator yang unik
         $baseSlug = Str::slug($request->filled('slug') ? $request->input('slug') : $validated['title']);
         if (empty($baseSlug)) {
-            $baseSlug = 'artikel-' . Str::random(6);
+            $baseSlug = 'artikel-'.Str::random(6);
         }
         $slug = $baseSlug;
         $counter = 1;
         while (Article::where('slug', $slug)->exists()) {
-            $slug = $baseSlug . '-' . $counter++;
+            $slug = $baseSlug.'-'.$counter++;
         }
         $validated['slug'] = $slug;
 
@@ -131,6 +132,7 @@ class ArticleController extends Controller
     {
         $article = Article::findOrFail($id);
         $categories = Category::all();
+
         return view('admin.articles.edit', compact('article', 'categories'));
     }
 
@@ -170,13 +172,13 @@ class ArticleController extends Controller
         if ($request->hasFile('image')) {
             $file = $request->file('image');
             $ext = strtolower($file->getClientOriginalExtension());
-            $filename = time() . '_' . Str::random(10) . '.' . $ext;
+            $filename = time().'_'.Str::random(10).'.'.$ext;
             $destinationPath = public_path('uploads/articles');
-            if (!file_exists($destinationPath)) {
+            if (! file_exists($destinationPath)) {
                 mkdir($destinationPath, 0755, true);
             }
             $file->move($destinationPath, $filename);
-            $validated['thumbnail'] = '/uploads/articles/' . $filename;
+            $validated['thumbnail'] = '/uploads/articles/'.$filename;
         } elseif (empty($validated['thumbnail'])) {
             $validated['thumbnail'] = $article->thumbnail ?: '/mockups/07_artikel.jpg';
         }
@@ -185,13 +187,13 @@ class ArticleController extends Controller
         if ($request->hasFile('og_image_file')) {
             $ogFile = $request->file('og_image_file');
             $ext = strtolower($ogFile->getClientOriginalExtension());
-            $filename = 'og_' . time() . '_' . Str::random(10) . '.' . $ext;
+            $filename = 'og_'.time().'_'.Str::random(10).'.'.$ext;
             $destinationPath = public_path('uploads/articles');
-            if (!file_exists($destinationPath)) {
+            if (! file_exists($destinationPath)) {
                 mkdir($destinationPath, 0755, true);
             }
             $ogFile->move($destinationPath, $filename);
-            $validated['og_image'] = '/uploads/articles/' . $filename;
+            $validated['og_image'] = '/uploads/articles/'.$filename;
         }
 
         // Slug update jika diedit
@@ -200,7 +202,7 @@ class ArticleController extends Controller
             $slug = $baseSlug;
             $counter = 1;
             while (Article::where('slug', $slug)->where('id', '!=', $article->id)->exists()) {
-                $slug = $baseSlug . '-' . $counter++;
+                $slug = $baseSlug.'-'.$counter++;
             }
             $validated['slug'] = $slug;
         }
@@ -211,7 +213,7 @@ class ArticleController extends Controller
         }
 
         $validated['is_featured'] = $request->has('is_featured');
-        if ($validated['status'] === 'published' && !$article->published_at) {
+        if ($validated['status'] === 'published' && ! $article->published_at) {
             $validated['published_at'] = now();
         }
 

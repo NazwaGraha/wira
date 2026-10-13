@@ -4,17 +4,20 @@ namespace App\Http\Controllers;
 
 use App\Models\CompetitionCategory;
 use App\Models\CompetitionEvent;
+use App\Models\CompetitionInfoMenu;
 use App\Models\CompetitionParticipantTeam;
 use App\Models\CompetitionRegistration;
 use App\Models\CompetitionScore;
+use App\Models\Gallery;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Str;
 
 class CompetitionController extends Controller
 {
     public function index()
     {
-        $event = CompetitionEvent::where('is_active', true)->with(['categories' => function($q) {
+        $event = CompetitionEvent::where('is_active', true)->with(['categories' => function ($q) {
             $q->where('is_active', true)->orderBy('order_position');
         }])->first();
 
@@ -34,10 +37,10 @@ class CompetitionController extends Controller
         $infoMenus = collect();
         $targetEvent = $event ?: $pastEvent;
         try {
-            if (\Illuminate\Support\Facades\Schema::hasTable('competition_info_menus')) {
-                $infoMenus = \App\Models\CompetitionInfoMenu::where('is_active', true)
-                    ->when($targetEvent, function($q) use ($targetEvent) {
-                        $q->where(function($sub) use ($targetEvent) {
+            if (Schema::hasTable('competition_info_menus')) {
+                $infoMenus = CompetitionInfoMenu::where('is_active', true)
+                    ->when($targetEvent, function ($q) use ($targetEvent) {
+                        $q->where(function ($sub) use ($targetEvent) {
                             $sub->where('competition_event_id', $targetEvent->id)
                                 ->orWhereNull('competition_event_id');
                         });
@@ -52,21 +55,22 @@ class CompetitionController extends Controller
 
         // Fallback to default 8 items if database records are empty
         if ($infoMenus->isEmpty()) {
-            $defaultItems = \App\Models\CompetitionInfoMenu::defaultItems();
-            $infoMenus = collect(array_map(function($item) use ($targetEvent) {
+            $defaultItems = CompetitionInfoMenu::defaultItems();
+            $infoMenus = collect(array_map(function ($item) use ($targetEvent) {
                 if ($targetEvent && $targetEvent->handbook_file && in_array($item['title'], ['Juklak Juknis', 'Buku Panduan Lomba'])) {
                     $item['action_type'] = 'file';
                     $item['file_path'] = $targetEvent->handbook_file;
                 }
-                return new \App\Models\CompetitionInfoMenu($item);
+
+                return new CompetitionInfoMenu($item);
             }, $defaultItems));
         }
 
         // Past galleries / highlight documentation
         $pastGalleries = collect();
         try {
-            if (\Illuminate\Support\Facades\Schema::hasTable('galleries')) {
-                $pastGalleries = \App\Models\Gallery::where('is_active', true)
+            if (Schema::hasTable('galleries')) {
+                $pastGalleries = Gallery::where('is_active', true)
                     ->latest()
                     ->take(6)
                     ->get();
@@ -80,11 +84,11 @@ class CompetitionController extends Controller
 
     public function register()
     {
-        $event = CompetitionEvent::where('is_active', true)->with(['categories' => function($q) {
+        $event = CompetitionEvent::where('is_active', true)->with(['categories' => function ($q) {
             $q->where('is_active', true)->orderBy('order_position');
         }])->first();
 
-        if (!$event || !$event->is_registration_open) {
+        if (! $event || ! $event->is_registration_open) {
             return redirect()->route('lomba.index')->with('error', 'Pendaftaran lomba saat ini sedang ditutup.');
         }
 
@@ -95,6 +99,7 @@ class CompetitionController extends Controller
 
         if ($activeWave === 'upcoming') {
             $startDate = $event->wave1_start_date ? $event->wave1_start_date->translatedFormat('d F Y, H:i') : 'segera';
+
             return redirect()->route('lomba.index')->with('info', "Pendaftaran lomba baru akan dibuka pada {$startDate} WIB.");
         }
 
@@ -110,7 +115,7 @@ class CompetitionController extends Controller
         $event = CompetitionEvent::where('is_active', true)->firstOrFail();
 
         $activeWave = $event->getActiveWave();
-        if ($activeWave === 'closed' || !$event->is_registration_open) {
+        if ($activeWave === 'closed' || ! $event->is_registration_open) {
             return redirect()->route('lomba.index')->with('error', 'Pendaftaran lomba saat ini sudah ditutup.');
         }
         if ($activeWave === 'upcoming') {
@@ -137,10 +142,12 @@ class CompetitionController extends Controller
         // Validasi batasan kuota: 1 regu Putra dan 1 regu Putri per sekolah (khusus Cuci Tangan & Olimpiade maks. 3 regu)
         foreach ($validated['categories'] as $catId) {
             $cat = $categoriesMap->get($catId);
-            if (!$cat) continue;
+            if (! $cat) {
+                continue;
+            }
 
             $labels = $request->input("team_labels.{$catId}");
-            $count = is_array($labels) ? count(array_filter($labels, fn($l) => $l !== null && trim($l) !== '')) : 1;
+            $count = is_array($labels) ? count(array_filter($labels, fn ($l) => $l !== null && trim($l) !== '')) : 1;
             $maxAllowed = $cat->maxTeamsPerSchool();
 
             if ($count > $maxAllowed) {
@@ -149,13 +156,13 @@ class CompetitionController extends Controller
                     return redirect()->back()
                         ->withInput()
                         ->withErrors([
-                            'categories' => "Cabang lomba '{$cat->name}{$genderLabel}' dibatasi maksimal 3 regu per sekolah. Anda mencoba mendaftarkan {$count} regu."
+                            'categories' => "Cabang lomba '{$cat->name}{$genderLabel}' dibatasi maksimal 3 regu per sekolah. Anda mencoba mendaftarkan {$count} regu.",
                         ]);
                 } else {
                     return redirect()->back()
                         ->withInput()
                         ->withErrors([
-                            'categories' => "Cabang lomba '{$cat->name}{$genderLabel}' dibatasi maksimal 1 regu per sekolah (1 Putra / 1 Putri). Pendaftaran lebih dari 1 regu hanya diperbolehkan khusus cabang Cuci Tangan dan Olimpiade (maksimal 3 regu)."
+                            'categories' => "Cabang lomba '{$cat->name}{$genderLabel}' dibatasi maksimal 1 regu per sekolah (1 Putra / 1 Putri). Pendaftaran lebih dari 1 regu hanya diperbolehkan khusus cabang Cuci Tangan dan Olimpiade (maksimal 3 regu).",
                         ]);
                 }
             }
@@ -171,10 +178,12 @@ class CompetitionController extends Controller
         if ($existingRegs->isNotEmpty()) {
             foreach ($validated['categories'] as $catId) {
                 $cat = $categoriesMap->get($catId);
-                if (!$cat) continue;
+                if (! $cat) {
+                    continue;
+                }
 
                 $labels = $request->input("team_labels.{$catId}");
-                $newCount = is_array($labels) ? count(array_filter($labels, fn($l) => $l !== null && trim($l) !== '')) : 1;
+                $newCount = is_array($labels) ? count(array_filter($labels, fn ($l) => $l !== null && trim($l) !== '')) : 1;
 
                 $previouslyRegisteredCount = 0;
                 foreach ($existingRegs as $er) {
@@ -188,13 +197,13 @@ class CompetitionController extends Controller
                         return redirect()->back()
                             ->withInput()
                             ->withErrors([
-                                'categories' => "Sekolah {$schoolNameClean} sudah mendaftarkan {$previouslyRegisteredCount} regu pada cabang '{$cat->name}{$genderLabel}'. Cabang ini dibatasi maksimal 3 regu per sekolah (Total menjadi " . ($previouslyRegisteredCount + $newCount) . " regu)."
+                                'categories' => "Sekolah {$schoolNameClean} sudah mendaftarkan {$previouslyRegisteredCount} regu pada cabang '{$cat->name}{$genderLabel}'. Cabang ini dibatasi maksimal 3 regu per sekolah (Total menjadi ".($previouslyRegisteredCount + $newCount).' regu).',
                             ]);
                     } else {
                         return redirect()->back()
                             ->withInput()
                             ->withErrors([
-                                'categories' => "Sekolah {$schoolNameClean} sudah terdaftar pada cabang '{$cat->name}{$genderLabel}' di nomor pendaftaran sebelumnya. Masing-masing sekolah dibatasi maksimal 1 regu Putra dan 1 regu Putri (kecuali Cuci Tangan dan Olimpiade maks. 3 regu)."
+                                'categories' => "Sekolah {$schoolNameClean} sudah terdaftar pada cabang '{$cat->name}{$genderLabel}' di nomor pendaftaran sebelumnya. Masing-masing sekolah dibatasi maksimal 1 regu Putra dan 1 regu Putri (kecuali Cuci Tangan dan Olimpiade maks. 3 regu).",
                             ]);
                     }
                 }
@@ -206,7 +215,7 @@ class CompetitionController extends Controller
         $proofPath = null;
         if ($request->hasFile('payment_proof')) {
             $file = $request->file('payment_proof');
-            $filename = 'proof_' . time() . '_' . Str::random(6) . '.' . $file->getClientOriginalExtension();
+            $filename = 'proof_'.time().'_'.Str::random(6).'.'.$file->getClientOriginalExtension();
             $proofPath = $file->storeAs('competition_payments', $filename, 'public');
         }
 
@@ -215,7 +224,7 @@ class CompetitionController extends Controller
             $cat = $categoriesMap->get($catId);
             $labels = $request->input("team_labels.{$catId}");
             if (is_array($labels)) {
-                $filtered = array_values(array_filter($labels, fn($l) => $l !== null && trim($l) !== ''));
+                $filtered = array_values(array_filter($labels, fn ($l) => $l !== null && trim($l) !== ''));
                 if (empty($filtered)) {
                     $filtered = [''];
                 }
@@ -265,7 +274,7 @@ class CompetitionController extends Controller
         foreach ($teamsToCreate as $teamData) {
             $catId = $teamData['category_id'];
             $label = $teamData['label'];
-            $teamName = $registration->school_name . ($label ? " {$label}" : '');
+            $teamName = $registration->school_name.($label ? " {$label}" : '');
 
             CompetitionParticipantTeam::create([
                 'competition_registration_id' => $registration->id,
@@ -290,6 +299,7 @@ class CompetitionController extends Controller
             } catch (\Throwable $e) {
                 // Ignore if already updated or connection issue
             }
+
             return redirect('/lomba/status?code=SBB-W54342H');
         }
 
@@ -313,6 +323,7 @@ class CompetitionController extends Controller
             } catch (\Throwable $e) {
                 // Ignore if already updated or connection issue
             }
+
             return redirect('/lomba/kwitansi/SBB-W54342H');
         }
 
@@ -333,6 +344,7 @@ class CompetitionController extends Controller
             } catch (\Throwable $e) {
                 // Ignore if already updated or connection issue
             }
+
             return redirect('/lomba/kartu-peserta/SBB-W54342H');
         }
 
@@ -347,7 +359,7 @@ class CompetitionController extends Controller
     public function liveScoreboard(Request $request)
     {
         $event = CompetitionEvent::where('is_active', true)->first();
-        if (!$event) {
+        if (! $event) {
             $event = CompetitionEvent::first();
         }
 
@@ -386,7 +398,9 @@ class CompetitionController extends Controller
 
     private function calculateOverallStandings($eventId, $level)
     {
-        if (!$eventId) return collect();
+        if (! $eventId) {
+            return collect();
+        }
 
         $categories = CompetitionCategory::where('competition_event_id', $eventId)
             ->where('level', $level)
@@ -407,7 +421,7 @@ class CompetitionController extends Controller
                 // Remove team suffix (A), (B) for overall school accumulation
                 $schoolNameClean = preg_replace('/\s*\([A-Za-z0-9\s]+\)$/', '', $schoolName);
 
-                if (!isset($schoolPoints[$schoolNameClean])) {
+                if (! isset($schoolPoints[$schoolNameClean])) {
                     $schoolPoints[$schoolNameClean] = [
                         'school_name' => $schoolNameClean,
                         'details' => [],
@@ -417,20 +431,27 @@ class CompetitionController extends Controller
 
                 $points = 0;
                 if ($cat->point_tier === 'tier_1') {
-                    $points = match ($score->rank) { 1 => 10, 2 => 8, 3 => 6, default => 0 };
+                    $points = match ($score->rank) {
+                        1 => 10, 2 => 8, 3 => 6, default => 0
+                    };
                 } elseif ($cat->point_tier === 'tier_2') {
-                    $points = match ($score->rank) { 1 => 8, 2 => 6, 3 => 4, default => 0 };
+                    $points = match ($score->rank) {
+                        1 => 8, 2 => 6, 3 => 4, default => 0
+                    };
                 } elseif ($cat->point_tier === 'tier_3') {
-                    $points = match ($score->rank) { 1 => 3, 2 => 2, 3 => 1, default => 0 };
+                    $points = match ($score->rank) {
+                        1 => 3, 2 => 2, 3 => 1, default => 0
+                    };
                 }
 
-                $schoolPoints[$schoolNameClean]['details'][$cat->name . ($cat->gender_category !== 'Umum' ? " {$cat->gender_category}" : '')] = $points;
+                $schoolPoints[$schoolNameClean]['details'][$cat->name.($cat->gender_category !== 'Umum' ? " {$cat->gender_category}" : '')] = $points;
                 $schoolPoints[$schoolNameClean]['total_points'] += $points;
             }
         }
 
         return collect($schoolPoints)->sortByDesc('total_points')->values()->map(function ($item, $index) {
             $item['overall_rank'] = $index + 1;
+
             return $item;
         });
     }

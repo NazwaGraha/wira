@@ -15,6 +15,7 @@ class CategoryController extends Controller
     public function index()
     {
         $categories = Category::withCount('articles')->orderBy('name')->get();
+
         return view('admin.categories.index', compact('categories'));
     }
 
@@ -36,13 +37,13 @@ class CategoryController extends Controller
 
         $baseSlug = Str::slug($request->filled('slug') ? $request->input('slug') : $validated['name']);
         if (empty($baseSlug)) {
-            $baseSlug = 'kategori-' . Str::random(5);
+            $baseSlug = 'kategori-'.Str::random(5);
         }
 
         $slug = $baseSlug;
         $counter = 1;
         while (Category::where('slug', $slug)->exists()) {
-            $slug = $baseSlug . '-' . $counter++;
+            $slug = $baseSlug.'-'.$counter++;
         }
         $validated['slug'] = $slug;
 
@@ -63,8 +64,8 @@ class CategoryController extends Controller
         $category = $kategori_artikel;
 
         $validated = $request->validate([
-            'name' => 'required|string|max:100|unique:categories,name,' . $category->id,
-            'slug' => 'nullable|string|max:100|unique:categories,slug,' . $category->id,
+            'name' => 'required|string|max:100|unique:categories,name,'.$category->id,
+            'slug' => 'nullable|string|max:100|unique:categories,slug,'.$category->id,
             'color' => 'nullable|string|max:30',
             'description' => 'nullable|string|max:500',
         ], [
@@ -78,7 +79,7 @@ class CategoryController extends Controller
             $slug = $baseSlug;
             $counter = 1;
             while (Category::where('slug', $slug)->where('id', '!=', $category->id)->exists()) {
-                $slug = $baseSlug . '-' . $counter++;
+                $slug = $baseSlug.'-'.$counter++;
             }
             $validated['slug'] = $slug;
         }
@@ -127,13 +128,13 @@ class CategoryController extends Controller
 
         $baseSlug = Str::slug($validated['name']);
         if (empty($baseSlug)) {
-            $baseSlug = 'kategori-' . Str::random(5);
+            $baseSlug = 'kategori-'.Str::random(5);
         }
 
         $slug = $baseSlug;
         $counter = 1;
         while (Category::where('slug', $slug)->exists()) {
-            $slug = $baseSlug . '-' . $counter++;
+            $slug = $baseSlug.'-'.$counter++;
         }
         $validated['slug'] = $slug;
         $validated['color'] = $validated['color'] ?: '#980000';

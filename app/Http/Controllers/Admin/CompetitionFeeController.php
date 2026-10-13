@@ -5,11 +5,11 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\CompetitionCategory;
 use App\Models\CompetitionEvent;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Schema;
 use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Schema;
 
 class CompetitionFeeController extends Controller
 {
@@ -17,18 +17,18 @@ class CompetitionFeeController extends Controller
     {
         try {
             // 1. Ensure competition tables exist
-            if (!Schema::hasTable('competition_events') || !Schema::hasTable('competition_categories')) {
+            if (! Schema::hasTable('competition_events') || ! Schema::hasTable('competition_categories')) {
                 Artisan::call('migrate', ['--force' => true]);
             }
 
             // 2. Ensure registration_fee and wave columns exist
             if (Schema::hasTable('competition_categories')) {
-                if (!Schema::hasColumn('competition_categories', 'registration_fee')) {
+                if (! Schema::hasColumn('competition_categories', 'registration_fee')) {
                     Schema::table('competition_categories', function (Blueprint $table) {
                         $table->decimal('registration_fee', 12, 2)->default(150000)->after('criteria_schema');
                     });
                 }
-                if (!Schema::hasColumn('competition_categories', 'registration_fee_wave1')) {
+                if (! Schema::hasColumn('competition_categories', 'registration_fee_wave1')) {
                     Schema::table('competition_categories', function (Blueprint $table) {
                         $table->decimal('registration_fee_wave1', 12, 2)->nullable()->after('registration_fee');
                         $table->decimal('registration_fee_wave2', 12, 2)->nullable()->after('registration_fee_wave1');
@@ -36,7 +36,7 @@ class CompetitionFeeController extends Controller
                 }
             }
 
-            if (Schema::hasTable('competition_events') && !Schema::hasColumn('competition_events', 'wave1_start_date')) {
+            if (Schema::hasTable('competition_events') && ! Schema::hasColumn('competition_events', 'wave1_start_date')) {
                 Schema::table('competition_events', function (Blueprint $table) {
                     $table->string('wave1_name')->default('Gelombang 1')->nullable()->after('registration_fee');
                     $table->dateTime('wave1_start_date')->nullable()->after('wave1_name');
@@ -48,7 +48,7 @@ class CompetitionFeeController extends Controller
                 });
             }
 
-            if (Schema::hasTable('competition_registrations') && !Schema::hasColumn('competition_registrations', 'registration_wave')) {
+            if (Schema::hasTable('competition_registrations') && ! Schema::hasColumn('competition_registrations', 'registration_wave')) {
                 Schema::table('competition_registrations', function (Blueprint $table) {
                     $table->unsignedTinyInteger('registration_wave')->default(1)->after('total_payment');
                 });
@@ -65,19 +65,19 @@ class CompetitionFeeController extends Controller
                 $allEvents = CompetitionEvent::query()
                     ->where(function ($query) use ($today) {
                         $query->where('is_active', true)
-                              ->orWhere(function ($q) use ($today) {
-                                  $q->whereNotNull('end_date')
+                            ->orWhere(function ($q) use ($today) {
+                                $q->whereNotNull('end_date')
                                     ->where('end_date', '>=', $today);
-                              })
-                              ->orWhere(function ($q) use ($today) {
-                                  $q->whereNull('end_date')
+                            })
+                            ->orWhere(function ($q) use ($today) {
+                                $q->whereNull('end_date')
                                     ->whereNotNull('start_date')
                                     ->where('start_date', '>=', $today);
-                              })
-                              ->orWhere(function ($q) {
-                                  $q->whereNull('start_date')
+                            })
+                            ->orWhere(function ($q) {
+                                $q->whereNull('start_date')
                                     ->whereNull('end_date');
-                              });
+                            });
                     })
                     ->orderByDesc('is_active')
                     ->orderBy('start_date')
@@ -98,9 +98,9 @@ class CompetitionFeeController extends Controller
             if (Schema::hasTable('competition_categories')) {
                 $query = CompetitionCategory::orderBy('order_position');
                 if ($event) {
-                    $query->where(function($q) use ($event) {
+                    $query->where(function ($q) use ($event) {
                         $q->where('competition_event_id', $event->id)
-                          ->orWhereNull('competition_event_id');
+                            ->orWhereNull('competition_event_id');
                     });
                 } else {
                     $query->whereRaw('1 = 0');
@@ -117,12 +117,12 @@ class CompetitionFeeController extends Controller
 
             return view('admin.competition.fees.index', compact('event', 'allEvents', 'categories', 'categoriesByLevel', 'level'));
         } catch (\Throwable $e) {
-            Log::error('CompetitionFeeController index error: ' . $e->getMessage() . ' | ' . $e->getTraceAsString());
-            
+            Log::error('CompetitionFeeController index error: '.$e->getMessage().' | '.$e->getTraceAsString());
+
             return response("<div style='font-family:sans-serif;padding:40px;max-width:700px;margin:50px auto;background:#fff;border:1px solid #e2e8f0;border-radius:16px;box-shadow:0 10px 25px rgba(0,0,0,0.05);'>
                 <div style='display:inline-block;padding:6px 12px;background:#fee2e2;color:#dc2626;font-size:12px;font-weight:bold;border-radius:6px;margin-bottom:12px;'>KENDALA SERVER TERDETEKSI</div>
                 <h2 style='color:#0f172a;margin-top:0;'>Terjadi Kendala Sinkronisasi Database / Cache</h2>
-                <p style='color:#64748b;font-size:14px;line-height:1.6;'>Pesan Sistem: <strong>" . htmlspecialchars($e->getMessage()) . "</strong></p>
+                <p style='color:#64748b;font-size:14px;line-height:1.6;'>Pesan Sistem: <strong>".htmlspecialchars($e->getMessage())."</strong></p>
                 <div style='margin-top:24px;display:flex;gap:12px;'>
                     <a href='/server-sync-update-pmr' style='display:inline-block;padding:12px 24px;background:#dc2626;color:#fff;text-decoration:none;border-radius:10px;font-weight:bold;font-size:13px;'>⚡ Bersihkan Cache & Migrasi Otomatis</a>
                     <a href='/admin/dashboard' style='display:inline-block;padding:12px 24px;background:#f1f5f9;color:#334155;text-decoration:none;border-radius:10px;font-weight:bold;font-size:13px;'>Kembali ke Dashboard</a>
@@ -197,4 +197,3 @@ class CompetitionFeeController extends Controller
         return redirect()->back()->with('success', "Jadwal pendaftaran 2 gelombang dan biaya untuk {$updatedCount} cabang lomba berhasil diperbarui!");
     }
 }
-

@@ -42,7 +42,7 @@ class CompetitionInfoMenu extends Model
      */
     public function getContactsListAttribute(): array
     {
-        $raw = (!empty($this->contacts_data) && is_array($this->contacts_data) && count($this->contacts_data) > 0)
+        $raw = (! empty($this->contacts_data) && is_array($this->contacts_data) && count($this->contacts_data) > 0)
             ? $this->contacts_data
             : self::defaultContacts();
 
@@ -83,7 +83,7 @@ class CompetitionInfoMenu extends Model
 
             $name = $item['name'] ?? "Kak Panitia {$lvl}";
             $phone = $item['phone'] ?? '081383885600';
-            $role = !empty($item['role']) ? $item['role'] : $meta['role_default'];
+            $role = ! empty($item['role']) ? $item['role'] : $meta['role_default'];
 
             $enriched[] = [
                 'level' => $lvl,
@@ -139,20 +139,21 @@ class CompetitionInfoMenu extends Model
      */
     public static function formatWhatsAppUrl(?string $phone, string $level = 'Lomba', string $name = ''): string
     {
-        $cleanPhone = preg_replace('/[^0-9]/', '', (string)$phone);
+        $cleanPhone = preg_replace('/[^0-9]/', '', (string) $phone);
         if (str_starts_with($cleanPhone, '0')) {
-            $cleanPhone = '62' . substr($cleanPhone, 1);
-        } elseif (!empty($cleanPhone) && !str_starts_with($cleanPhone, '62')) {
-            $cleanPhone = '62' . $cleanPhone;
+            $cleanPhone = '62'.substr($cleanPhone, 1);
+        } elseif (! empty($cleanPhone) && ! str_starts_with($cleanPhone, '62')) {
+            $cleanPhone = '62'.$cleanPhone;
         }
 
         if (empty($cleanPhone)) {
             $cleanPhone = '6281383885600';
         }
 
-        $greeting = !empty($name) ? "Halo Kak {$name}" : "Halo Panitia";
+        $greeting = ! empty($name) ? "Halo Kak {$name}" : 'Halo Panitia';
         $message = "{$greeting}, saya ingin bertanya seputar informasi lomba untuk PMR Tingkat {$level} di Sua Bhakti Berkarya.";
-        return "https://wa.me/{$cleanPhone}?text=" . rawurlencode($message);
+
+        return "https://wa.me/{$cleanPhone}?text=".rawurlencode($message);
     }
 
     /**
@@ -161,7 +162,7 @@ class CompetitionInfoMenu extends Model
     public function getTargetUrlAttribute(): ?string
     {
         if ($this->action_type === 'file' && $this->file_path) {
-            return asset('storage/' . $this->file_path);
+            return asset('storage/'.$this->file_path);
         }
 
         if ($this->action_type === 'link' || $this->action_type === 'whatsapp') {

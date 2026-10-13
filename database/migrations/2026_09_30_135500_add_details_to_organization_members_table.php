@@ -12,16 +12,16 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('organization_members', function (Blueprint $table) {
-            if (!Schema::hasColumn('organization_members', 'member_id')) {
+            if (! Schema::hasColumn('organization_members', 'member_id')) {
                 $table->unsignedBigInteger('member_id')->nullable()->after('id');
             }
-            if (!Schema::hasColumn('organization_members', 'photo')) {
+            if (! Schema::hasColumn('organization_members', 'photo')) {
                 $table->string('photo')->nullable()->after('icon');
             }
-            if (!Schema::hasColumn('organization_members', 'staff_members')) {
+            if (! Schema::hasColumn('organization_members', 'staff_members')) {
                 $table->json('staff_members')->nullable()->after('photo');
             }
-            if (!Schema::hasColumn('organization_members', 'work_program')) {
+            if (! Schema::hasColumn('organization_members', 'work_program')) {
                 $table->longText('work_program')->nullable()->after('staff_members');
             }
         });

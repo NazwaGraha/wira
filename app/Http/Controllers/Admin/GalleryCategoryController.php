@@ -38,13 +38,13 @@ class GalleryCategoryController extends Controller
 
         $baseSlug = Str::slug($request->filled('slug') ? $request->input('slug') : $validated['name']);
         if (empty($baseSlug)) {
-            $baseSlug = 'kategori-' . Str::random(5);
+            $baseSlug = 'kategori-'.Str::random(5);
         }
 
         $slug = $baseSlug;
         $counter = 1;
         while (GalleryCategory::where('slug', $slug)->exists()) {
-            $slug = $baseSlug . '-' . $counter++;
+            $slug = $baseSlug.'-'.$counter++;
         }
         $validated['slug'] = $slug;
 
@@ -59,8 +59,8 @@ class GalleryCategoryController extends Controller
     public function update(Request $request, GalleryCategory $category)
     {
         $validated = $request->validate([
-            'name' => 'required|string|max:100|unique:gallery_categories,name,' . $category->id,
-            'slug' => 'nullable|string|max:100|unique:gallery_categories,slug,' . $category->id,
+            'name' => 'required|string|max:100|unique:gallery_categories,name,'.$category->id,
+            'slug' => 'nullable|string|max:100|unique:gallery_categories,slug,'.$category->id,
             'description' => 'nullable|string|max:500',
         ], [
             'name.required' => 'Nama kategori galeri wajib diisi.',
@@ -73,7 +73,7 @@ class GalleryCategoryController extends Controller
             $slug = $baseSlug;
             $counter = 1;
             while (GalleryCategory::where('slug', $slug)->where('id', '!=', $category->id)->exists()) {
-                $slug = $baseSlug . '-' . $counter++;
+                $slug = $baseSlug.'-'.$counter++;
             }
             $validated['slug'] = $slug;
         }
@@ -116,13 +116,13 @@ class GalleryCategoryController extends Controller
 
         $baseSlug = Str::slug($validated['name']);
         if (empty($baseSlug)) {
-            $baseSlug = 'kategori-' . Str::random(5);
+            $baseSlug = 'kategori-'.Str::random(5);
         }
 
         $slug = $baseSlug;
         $counter = 1;
         while (GalleryCategory::where('slug', $slug)->exists()) {
-            $slug = $baseSlug . '-' . $counter++;
+            $slug = $baseSlug.'-'.$counter++;
         }
         $validated['slug'] = $slug;
 

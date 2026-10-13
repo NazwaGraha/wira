@@ -150,6 +150,7 @@
                                     <a href="{{ route('admin.members.edit', $member->id) }}" class="w-8 h-8 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center hover:bg-emerald-500 hover:text-white transition tooltip" title="Edit Data">
                                         <i class="fa-solid fa-pen-to-square"></i>
                                     </a>
+                                    @if(auth()->user()?->canDelete())
                                     <form action="{{ route('admin.members.destroy', $member->id) }}" method="POST" onsubmit="return confirm('Apakah Anda yakin ingin menghapus data anggota ini?');">
                                         @csrf
                                         @method('DELETE')
@@ -157,6 +158,7 @@
                                             <i class="fa-solid fa-trash"></i>
                                         </button>
                                     </form>
+                                    @endif
                                 </div>
                             </td>
                         </tr>

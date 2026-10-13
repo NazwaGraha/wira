@@ -29,4 +29,29 @@ class User extends Authenticatable
             'password' => 'hashed',
         ];
     }
+
+    public function canAccessBackoffice(): bool
+    {
+        return true;
+    }
+
+    public function canDelete(): bool
+    {
+        return true;
+    }
+
+    public function canOnlyManageArticles(): bool
+    {
+        return false;
+    }
+
+    public function getRoleAttribute(): string
+    {
+        return 'superuser';
+    }
+
+    public function getRoleLabelAttribute(): string
+    {
+        return 'Administrator';
+    }
 }

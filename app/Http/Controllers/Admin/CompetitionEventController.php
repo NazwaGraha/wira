@@ -3,8 +3,8 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Models\CompetitionEvent;
 use App\Models\CompetitionCategory;
+use App\Models\CompetitionEvent;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
@@ -31,6 +31,7 @@ class CompetitionEventController extends Controller
     public function create()
     {
         $activeEvent = CompetitionEvent::where('is_active', true)->first();
+
         return view('admin.competition.event.create', compact('activeEvent'));
     }
 
@@ -62,7 +63,7 @@ class CompetitionEventController extends Controller
             'display_mode' => 'nullable|string|in:auto,active,teaser',
         ]);
 
-        $validated['slug'] = Str::slug($validated['title']) . '-' . time();
+        $validated['slug'] = Str::slug($validated['title']).'-'.time();
         $validated['is_active'] = $request->boolean('is_active');
         $validated['is_registration_open'] = $request->boolean('is_registration_open');
         $validated['is_waves_enabled'] = $request->boolean('is_waves_enabled');
@@ -96,7 +97,7 @@ class CompetitionEventController extends Controller
         }
 
         return redirect()->route('admin.competition-event.index')
-            ->with('success', 'Edisi lomba baru "' . $newEvent->title . '" berhasil dibuat dan tersimpan ke database!');
+            ->with('success', 'Edisi lomba baru "'.$newEvent->title.'" berhasil dibuat dan tersimpan ke database!');
     }
 
     /**
@@ -104,9 +105,9 @@ class CompetitionEventController extends Controller
      */
     public function show(CompetitionEvent $event)
     {
-        $event->load(['categories' => function($q) {
+        $event->load(['categories' => function ($q) {
             $q->orderBy('order_position');
-        }, 'registrations' => function($q) {
+        }, 'registrations' => function ($q) {
             $q->withCount('teams')->latest();
         }]);
 
@@ -118,7 +119,7 @@ class CompetitionEventController extends Controller
      */
     public function edit(CompetitionEvent $event)
     {
-        $event->load(['categories' => function($q) {
+        $event->load(['categories' => function ($q) {
             $q->orderBy('order_position')->orderBy('id');
         }]);
 
@@ -186,14 +187,14 @@ class CompetitionEventController extends Controller
         }
 
         // If marked active, ensure others are deactivated
-        if ($validated['is_active'] && !$event->is_active) {
+        if ($validated['is_active'] && ! $event->is_active) {
             CompetitionEvent::where('id', '!=', $event->id)->update(['is_active' => false]);
         }
 
         $event->update($validated);
 
         return redirect()->route('admin.competition-event.index')
-            ->with('success', 'Data edisi lomba "' . $event->title . '" berhasil diperbarui!');
+            ->with('success', 'Data edisi lomba "'.$event->title.'" berhasil diperbarui!');
     }
 
     /**
@@ -205,7 +206,7 @@ class CompetitionEventController extends Controller
         $event->update(['is_active' => true]);
 
         return redirect()->route('admin.competition-event.index')
-            ->with('success', 'Edisi "' . $event->title . '" sekarang telah diatur sebagai EVENT AKTIF di sistem!');
+            ->with('success', 'Edisi "'.$event->title.'" sekarang telah diatur sebagai EVENT AKTIF di sistem!');
     }
 
     /**
@@ -229,7 +230,7 @@ class CompetitionEventController extends Controller
         $event->delete();
 
         return redirect()->route('admin.competition-event.index')
-            ->with('success', 'Edisi lomba "' . $title . '" beserta seluruh datanya berhasil dihapus dari database.');
+            ->with('success', 'Edisi lomba "'.$title.'" beserta seluruh datanya berhasil dihapus dari database.');
     }
 
     /**
@@ -262,12 +263,12 @@ class CompetitionEventController extends Controller
                 $abbr .= strtoupper(substr($w, 0, 1));
             }
             $abbr = substr($abbr, 0, 4);
-            $genderSuffix = match($validated['gender_category']) {
+            $genderSuffix = match ($validated['gender_category']) {
                 'Putra' => 'PA',
                 'Putri' => 'PI',
                 default => 'UM',
             };
-            $validated['code'] = "L{$abbr}-" . strtoupper($validated['level']) . "-{$genderSuffix}";
+            $validated['code'] = "L{$abbr}-".strtoupper($validated['level'])."-{$genderSuffix}";
         }
 
         if (empty($validated['order_position'])) {
@@ -327,7 +328,7 @@ class CompetitionEventController extends Controller
                 ->with('error', "Cabang lomba '{$category->name}' tidak dapat dihapus karena sudah ada {$teamsCount} regu peserta terdaftar. Silakan nonaktifkan statusnya jika tidak ingin dipertandingkan.");
         }
 
-        $categoryName = $category->name . ' (' . $category->level . ' - ' . $category->gender_category . ')';
+        $categoryName = $category->name.' ('.$category->level.' - '.$category->gender_category.')';
         $category->scores()->delete();
         $category->delete();
 
@@ -341,7 +342,7 @@ class CompetitionEventController extends Controller
     public function addPresetCategories(Request $request, CompetitionEvent $event)
     {
         $presetType = $request->input('preset_type');
-        
+
         $standardList = [
             'mula' => [
                 ['code' => 'LPP-MULA-PA', 'name' => 'Pertolongan Pertama', 'level' => 'Mula', 'gender_category' => 'Putra', 'scoring_type' => 'standard_time', 'point_tier' => 'tier_1'],
@@ -371,7 +372,7 @@ class CompetitionEventController extends Controller
                 ['code' => 'OLIM-WIRA', 'name' => 'Olimpiade Kepalangmerahan', 'level' => 'Wira', 'gender_category' => 'Umum', 'scoring_type' => 'written_practical_time', 'point_tier' => 'tier_2'],
                 ['code' => 'MADING-WIRA', 'name' => 'Mading Kreasi', 'level' => 'Wira', 'gender_category' => 'Umum', 'scoring_type' => 'multi_criteria', 'point_tier' => 'tier_2'],
                 ['code' => 'FAV-WIRA', 'name' => 'PMR Favorite', 'level' => 'Wira', 'gender_category' => 'Umum', 'scoring_type' => 'social_engagement', 'point_tier' => 'tier_3'],
-            ]
+            ],
         ];
 
         $toInsert = [];
@@ -393,7 +394,7 @@ class CompetitionEventController extends Controller
                 ->where('name', $item['name'])
                 ->where('gender_category', $item['gender_category'])
                 ->exists();
-            if (!$exists) {
+            if (! $exists) {
                 $order++;
                 $event->categories()->create(array_merge($item, [
                     'order_position' => $order,

@@ -3,14 +3,14 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Mail\RegistrationVerifiedMail;
 use App\Models\CompetitionEvent;
 use App\Models\CompetitionRegistration;
-use App\Mail\RegistrationVerifiedMail;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Storage;
 
 class CompetitionRegistrationController extends Controller
 {
@@ -44,11 +44,11 @@ class CompetitionRegistrationController extends Controller
         }
 
         if ($search) {
-            $query->where(function($q) use ($search) {
+            $query->where(function ($q) use ($search) {
                 $q->where('school_name', 'like', "%{$search}%")
-                  ->orWhere('registration_code', 'like', "%{$search}%")
-                  ->orWhere('advisor_name', 'like', "%{$search}%")
-                  ->orWhere('advisor_phone', 'like', "%{$search}%");
+                    ->orWhere('registration_code', 'like', "%{$search}%")
+                    ->orWhere('advisor_name', 'like', "%{$search}%")
+                    ->orWhere('advisor_phone', 'like', "%{$search}%");
             });
         }
 
@@ -69,10 +69,10 @@ class CompetitionRegistrationController extends Controller
         // Statistik perbandingan tahunan antar event / edisi
         $eventStats = CompetitionEvent::withCount([
             'registrations as total_registrations',
-            'registrations as verified_registrations' => function($q) {
+            'registrations as verified_registrations' => function ($q) {
                 $q->where('status', 'verified');
             },
-        ])->orderByDesc('id')->get()->map(function($ev) {
+        ])->orderByDesc('id')->get()->map(function ($ev) {
             $totalTeams = DB::table('competition_participant_teams')
                 ->join('competition_registrations', 'competition_participant_teams.competition_registration_id', '=', 'competition_registrations.id')
                 ->where('competition_registrations.competition_event_id', $ev->id)
@@ -100,17 +100,17 @@ class CompetitionRegistrationController extends Controller
 
         // Rekapitulasi daftar sekolah untuk event yang dipilih
         $schoolsSummary = CompetitionRegistration::withCount('teams')
-            ->when($event, fn($q) => $q->where('competition_event_id', $event->id))
+            ->when($event, fn ($q) => $q->where('competition_event_id', $event->id))
             ->orderBy('school_name')
             ->get();
 
         return view('admin.competition.registrations.index', compact(
-            'registrations', 
-            'counts', 
-            'status', 
-            'level', 
-            'search', 
-            'event', 
+            'registrations',
+            'counts',
+            'status',
+            'level',
+            'search',
+            'event',
             'allEvents',
             'eventStats',
             'schoolsSummary'
@@ -120,6 +120,7 @@ class CompetitionRegistrationController extends Controller
     public function show($id)
     {
         $registration = CompetitionRegistration::with(['event', 'teams.category'])->findOrFail($id);
+
         return view('admin.competition.registrations.show', compact('registration'));
     }
 
@@ -134,20 +135,20 @@ class CompetitionRegistrationController extends Controller
 
         // Kirim otomatis email e-Kwitansi & Kartu Peserta ke email pendaftar
         $emailSent = false;
-        if (!empty($registration->advisor_email) && filter_var($registration->advisor_email, FILTER_VALIDATE_EMAIL)) {
+        if (! empty($registration->advisor_email) && filter_var($registration->advisor_email, FILTER_VALIDATE_EMAIL)) {
             try {
                 Mail::to($registration->advisor_email)->send(new RegistrationVerifiedMail($registration));
                 $emailSent = true;
             } catch (\Throwable $e) {
-                Log::error("Gagal mengirim email verifikasi ke {$registration->advisor_email}: " . $e->getMessage());
+                Log::error("Gagal mengirim email verifikasi ke {$registration->advisor_email}: ".$e->getMessage());
             }
         }
 
         $successMsg = "Pendaftaran {$registration->school_name} ({$registration->registration_code}) berhasil diverifikasi! e-Kwitansi & Kartu Peserta kini sudah aktif.";
         if ($emailSent) {
             $successMsg .= " Dokumen e-Kwitansi & Kartu Peserta telah berhasil dikirimkan via email ke {$registration->advisor_email}.";
-        } elseif (!empty($registration->advisor_email)) {
-            $successMsg .= " (Catatan: Pengiriman email notifikasi mengalami kendala koneksi server mail).";
+        } elseif (! empty($registration->advisor_email)) {
+            $successMsg .= ' (Catatan: Pengiriman email notifikasi mengalami kendala koneksi server mail).';
         }
 
         return redirect()->back()->with('success', $successMsg);
@@ -157,16 +158,18 @@ class CompetitionRegistrationController extends Controller
     {
         $registration = CompetitionRegistration::with(['event', 'teams.category'])->findOrFail($id);
 
-        if (empty($registration->advisor_email) || !filter_var($registration->advisor_email, FILTER_VALIDATE_EMAIL)) {
+        if (empty($registration->advisor_email) || ! filter_var($registration->advisor_email, FILTER_VALIDATE_EMAIL)) {
             return redirect()->back()->with('error', "Pendaftaran {$registration->school_name} tidak memiliki alamat email yang valid.");
         }
 
         try {
             Mail::to($registration->advisor_email)->send(new RegistrationVerifiedMail($registration));
+
             return redirect()->back()->with('success', "Dokumen e-Kwitansi & Kartu Peserta berhasil dikirimkan ke {$registration->advisor_email}!");
         } catch (\Throwable $e) {
-            Log::error("Gagal mengirim ulang email verifikasi ke {$registration->advisor_email}: " . $e->getMessage());
-            return redirect()->back()->with('error', "Gagal mengirim email: " . $e->getMessage());
+            Log::error("Gagal mengirim ulang email verifikasi ke {$registration->advisor_email}: ".$e->getMessage());
+
+            return redirect()->back()->with('error', 'Gagal mengirim email: '.$e->getMessage());
         }
     }
 
@@ -192,8 +195,8 @@ class CompetitionRegistrationController extends Controller
     {
         $registration = CompetitionRegistration::find($id);
 
-        if (!$registration) {
-            return redirect()->route('admin.competition-registrations.index')->with('success', "Data pendaftaran telah dihapus.");
+        if (! $registration) {
+            return redirect()->route('admin.competition-registrations.index')->with('success', 'Data pendaftaran telah dihapus.');
         }
 
         $school = $registration->school_name;

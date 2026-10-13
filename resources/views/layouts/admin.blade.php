@@ -89,6 +89,7 @@
                 <span>Kategori Artikel</span>
             </a>
 
+            @if (!auth()->user()?->canOnlyManageArticles())
             <a href="{{ route('admin.hero-slides.index') }}" class="flex items-center gap-3 px-3 py-2.5 rounded-xl font-medium text-sm transition {{ request()->routeIs('admin.hero-slides.*') ? 'bg-pmr-primary text-white shadow-md shadow-red-950/40' : 'hover:bg-slate-800 text-slate-300' }}">
                 <i class="fa-solid fa-sliders w-5 text-center"></i>
                 <span>Slider Hero Banner</span>
@@ -181,6 +182,7 @@
                 <i class="fa-solid fa-users w-5 text-center text-orange-400"></i>
                 <span>Pendaftar Donor</span>
             </a>
+            @endif
 
             <div class="pt-6 text-[11px] font-bold uppercase text-slate-500 tracking-wider px-3 mb-2">Layanan Kemanusiaan</div>
 
@@ -221,7 +223,7 @@
                     </div>
                     <div class="overflow-hidden">
                         <div class="text-xs font-bold text-white truncate">{{ auth()->user()->name ?? 'Admin PMR' }}</div>
-                        <div class="text-[10px] text-slate-400 truncate">{{ auth()->user()->email ?? 'admin@pmr.sch.id' }}</div>
+                        <div class="text-[10px] text-red-400 font-semibold truncate">{{ auth()->user()->role_label ?? 'Administrator' }}</div>
                     </div>
                 </div>
                 <form action="{{ route('admin.logout') }}" method="POST">
@@ -254,10 +256,15 @@
             </div>
 
             <div class="flex items-center gap-2 sm:gap-4 shrink-0">
-                <div class="hidden lg:flex items-center text-xs bg-slate-100 px-3.5 py-2 rounded-xl text-slate-600 gap-2 border border-slate-200">
-                    <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-                    <span>Database Status: <strong>Terkoneksi</strong></span>
-                </div>
+                @auth
+                    <div class="flex items-center gap-2 px-3 py-1.5 bg-slate-100 rounded-xl border border-slate-200 text-xs">
+                        <i class="fa-solid fa-user-shield text-pmr-primary"></i>
+                        <span class="font-bold text-slate-800 hidden sm:inline">{{ auth()->user()->name }}</span>
+                        <span class="px-2 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-red-100 text-red-800">
+                            {{ auth()->user()->role_label }}
+                        </span>
+                    </div>
+                @endauth
 
                 @yield('top_actions')
             </div>
@@ -265,6 +272,13 @@
 
         <!-- Body Scrollable Content -->
         <main class="flex-grow overflow-y-auto p-3.5 sm:p-6 md:p-8">
+            @if (session('error'))
+                <div class="mb-6 bg-rose-50 border border-rose-200 text-rose-800 px-5 py-4 rounded-xl flex items-center gap-3 shadow-sm">
+                    <i class="fa-solid fa-circle-exclamation text-rose-500 text-xl"></i>
+                    <div class="text-sm font-semibold">{{ session('error') }}</div>
+                </div>
+            @endif
+
             @if (session('success'))
                 <div class="mb-6 bg-emerald-50 border border-emerald-200 text-emerald-800 px-5 py-4 rounded-xl flex items-center gap-3 shadow-sm">
                     <i class="fa-solid fa-circle-check text-emerald-500 text-xl"></i>

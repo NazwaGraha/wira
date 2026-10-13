@@ -2,8 +2,8 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Seeder;
 use App\Models\CompetitionEvent;
+use Illuminate\Database\Seeder;
 
 class CompetitionHistorySeeder extends Seeder
 {

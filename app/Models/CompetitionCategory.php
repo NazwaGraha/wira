@@ -48,6 +48,7 @@ class CompetitionCategory extends Model
         if ($wave == 2) {
             return floatval($this->registration_fee_wave2 !== null ? $this->registration_fee_wave2 : ($this->registration_fee ?? 150000));
         }
+
         return floatval($this->registration_fee_wave1 !== null ? $this->registration_fee_wave1 : ($this->registration_fee ?? 150000));
     }
 
@@ -69,6 +70,7 @@ class CompetitionCategory extends Model
     public function getDisplayNameAttribute(): string
     {
         $gender = ($this->gender_category && $this->gender_category !== 'Umum') ? " {$this->gender_category}" : '';
+
         return "{$this->name} - {$this->level}{$gender}";
     }
 
@@ -85,6 +87,7 @@ class CompetitionCategory extends Model
     public function isMultiTeamAllowed(): bool
     {
         $name = strtolower($this->name ?? '');
+
         return str_contains($name, 'cuci tangan') || str_contains($name, 'olimpiade') || str_contains($name, 'olympiade');
     }
 

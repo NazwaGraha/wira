@@ -13,12 +13,14 @@ class GalleryController extends Controller
     public function index()
     {
         $galleries = Gallery::with('galleryCategory')->orderBy('created_at', 'desc')->paginate(20);
+
         return view('admin.gallery.index', compact('galleries'));
     }
 
     public function create()
     {
         $categories = GalleryCategory::orderBy('name')->get();
+
         return view('admin.gallery.create', compact('categories'));
     }
 
@@ -61,12 +63,13 @@ class GalleryController extends Controller
             ]);
         }
 
-        return redirect()->route('admin.gallery.index')->with('success', count($files) . ' Media berhasil ditambahkan ke galeri.');
+        return redirect()->route('admin.gallery.index')->with('success', count($files).' Media berhasil ditambahkan ke galeri.');
     }
 
     public function edit(Gallery $gallery)
     {
         $categories = GalleryCategory::orderBy('name')->get();
+
         return view('admin.gallery.edit', compact('gallery', 'categories'));
     }
 

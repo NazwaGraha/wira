@@ -2,15 +2,18 @@
 
 namespace Database\Seeders;
 
-use App\Models\User;
-use App\Models\Category;
-use App\Models\Article;
 use App\Models\Activity;
+use App\Models\Article;
 use App\Models\BloodStock;
+use App\Models\Category;
+use App\Models\HeroSlide;
+use App\Models\Member;
 use App\Models\MemberRegistration;
+use App\Models\OrganizationMember;
+use App\Models\OrganizationSetting;
+use App\Models\User;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Str;
 
 class DatabaseSeeder extends Seeder
 {
@@ -110,7 +113,7 @@ class DatabaseSeeder extends Seeder
                 'slug' => 'kisah-relawan-jumbara-pmr-2026',
                 'category_id' => $catModels['kisah-relawan']->id,
                 'excerpt' => 'Refleksi kebersamaan, kepemimpinan, dan persaudaraan tanpa batas selama kemah akbar PMR Wira se-Jawa Barat.',
-                'body' => "Jumbara mengajarkan kami bahwa kemanusiaan adalah jembatan yang menghubungkan semua perbedaan. Bertemu dengan ratusan relawan muda dari berbagai kabupaten memberi inspirasi bahwa aksi kecil kita memiliki dampak nyata bagi sesama.",
+                'body' => 'Jumbara mengajarkan kami bahwa kemanusiaan adalah jembatan yang menghubungkan semua perbedaan. Bertemu dengan ratusan relawan muda dari berbagai kabupaten memberi inspirasi bahwa aksi kecil kita memiliki dampak nyata bagi sesama.',
                 'thumbnail' => '/mockups/04_galeri.jpg',
                 'author_name' => 'Muhammad Rizky (Ketua Umum)',
                 'status' => 'published',
@@ -254,11 +257,11 @@ class DatabaseSeeder extends Seeder
         ];
 
         foreach ($slides as $slide) {
-            \App\Models\HeroSlide::updateOrCreate(['title' => $slide['title']], $slide);
+            HeroSlide::updateOrCreate(['title' => $slide['title']], $slide);
         }
 
         // 8. Database Members (Daftar Anggota PMR)
-        \App\Models\Member::truncate();
+        Member::truncate();
 
         $membersData = [
             [
@@ -595,11 +598,11 @@ class DatabaseSeeder extends Seeder
 
         $createdMembers = [];
         foreach ($membersData as $m) {
-            $createdMembers[$m['name']] = \App\Models\Member::create($m);
+            $createdMembers[$m['name']] = Member::create($m);
         }
 
         // 9. Organization Structure Settings & Members (Bagan Kepengurusan)
-        \App\Models\OrganizationSetting::updateOrCreate(
+        OrganizationSetting::updateOrCreate(
             ['id' => 1],
             [
                 'badge' => 'Bagan Kepengurusan',
@@ -608,7 +611,7 @@ class DatabaseSeeder extends Seeder
             ]
         );
 
-        \App\Models\OrganizationMember::truncate();
+        OrganizationMember::truncate();
 
         $orgMembers = [
             [
@@ -741,7 +744,7 @@ class DatabaseSeeder extends Seeder
         ];
 
         foreach ($orgMembers as $member) {
-            \App\Models\OrganizationMember::create($member);
+            OrganizationMember::create($member);
         }
     }
 }

@@ -12,7 +12,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('competition_events', function (Blueprint $table) {
-            if (!Schema::hasColumn('competition_events', 'display_mode')) {
+            if (! Schema::hasColumn('competition_events', 'display_mode')) {
                 $table->string('display_mode')->default('auto')->after('is_waves_enabled');
             }
         });

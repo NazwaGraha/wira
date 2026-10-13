@@ -11,6 +11,7 @@ class BloodDonorRegistrationController extends Controller
     public function index()
     {
         $registrations = BloodDonorRegistration::with('event')->orderBy('created_at', 'desc')->paginate(20);
+
         return view('admin.blood-donor-registrations.index', compact('registrations'));
     }
 
@@ -23,7 +24,7 @@ class BloodDonorRegistrationController extends Controller
     {
         $request->validate([
             'status' => 'required|in:pending,approved,rejected,attended,completed',
-            'medical_notes' => 'nullable|string'
+            'medical_notes' => 'nullable|string',
         ]);
 
         $bloodDonorRegistration->update($request->only('status', 'medical_notes'));
@@ -34,6 +35,7 @@ class BloodDonorRegistrationController extends Controller
     public function destroy(BloodDonorRegistration $bloodDonorRegistration)
     {
         $bloodDonorRegistration->delete();
+
         return back()->with('success', 'Data pendaftar dihapus.');
     }
 }

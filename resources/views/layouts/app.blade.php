@@ -67,12 +67,46 @@
                     <i class="fa-solid fa-droplet text-red-500"></i> <span class="hidden xs:inline">Info </span>Donor Darah
                 </a>
                 <span class="text-stone-600">|</span>
-                <a href="{{ route('admin.login') }}" class="hover:text-white transition flex items-center gap-1 text-[11px] sm:text-xs font-medium">
-                    <i class="fa-solid fa-lock"></i> Backoffice
-                </a>
+                @auth
+                    @if(auth()->user()->canAccessBackoffice())
+                        <a href="{{ route('admin.dashboard') }}" class="text-emerald-400 hover:text-emerald-300 transition flex items-center gap-1 text-[11px] sm:text-xs font-bold">
+                            <i class="fa-solid fa-gauge-high"></i> Backoffice
+                        </a>
+                    @else
+                        <a href="{{ route('member.profile') }}" class="text-amber-300 hover:text-white transition flex items-center gap-1 text-[11px] sm:text-xs font-bold">
+                            <i class="fa-solid fa-user-circle"></i> Area Anggota
+                        </a>
+                    @endif
+                @else
+                    <a href="{{ route('admin.login') }}" class="hover:text-white transition flex items-center gap-1 text-[11px] sm:text-xs font-medium">
+                        <i class="fa-solid fa-lock"></i> Backoffice
+                    </a>
+                @endauth
             </div>
         </div>
     </div>
+
+    <!-- Alert Akses Ditolak Jika Login Gagal -->
+    @if(session('auth_error'))
+        <div id="auth-error-banner" class="bg-red-700 text-white text-xs sm:text-sm py-3 px-4 shadow-lg border-b border-red-800 transition-all duration-300">
+            <div class="max-w-[1720px] mx-auto flex items-center justify-between gap-4">
+                <div class="flex items-center gap-3 font-semibold">
+                    <span class="w-7 h-7 rounded-full bg-white text-red-700 flex items-center justify-center font-black flex-shrink-0">
+                        <i class="fa-solid fa-ban"></i>
+                    </span>
+                    <span><strong>Akses Ditolak:</strong> {{ session('auth_error') }}</span>
+                </div>
+                <div class="flex items-center gap-3">
+                    <a href="{{ route('admin.login') }}" class="px-3 py-1 bg-white text-red-700 hover:bg-red-100 rounded-lg text-xs font-bold transition">
+                        Coba Lagi
+                    </a>
+                    <button type="button" onclick="document.getElementById('auth-error-banner').remove()" class="text-red-200 hover:text-white p-1">
+                        <i class="fa-solid fa-xmark text-base"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    @endif
 
     <!-- Main Navigation Header (Lebar Penuh & Mewah) -->
     <header class="sticky top-0 z-50 bg-pmr-primary text-white shadow-xl border-b border-pmr-dark">

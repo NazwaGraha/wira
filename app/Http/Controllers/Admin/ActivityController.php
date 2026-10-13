@@ -19,8 +19,8 @@ class ActivityController extends Controller
         if ($search) {
             $query->where(function ($q) use ($search) {
                 $q->where('title', 'like', "%{$search}%")
-                  ->orWhere('location', 'like', "%{$search}%")
-                  ->orWhere('description', 'like', "%{$search}%");
+                    ->orWhere('location', 'like', "%{$search}%")
+                    ->orWhere('description', 'like', "%{$search}%");
             });
         }
 
@@ -75,17 +75,17 @@ class ActivityController extends Controller
         $slug = $baseSlug;
         $counter = 1;
         while (Activity::where('slug', $slug)->exists()) {
-            $slug = $baseSlug . '-' . (++$counter);
+            $slug = $baseSlug.'-'.(++$counter);
         }
         $validated['slug'] = $slug;
 
         // Handle Image Upload
         if ($request->hasFile('image')) {
             $file = $request->file('image');
-            $filename = time() . '_' . Str::random(8) . '.' . $file->getClientOriginalExtension();
+            $filename = time().'_'.Str::random(8).'.'.$file->getClientOriginalExtension();
             $file->move(public_path('uploads/activities'), $filename);
-            $validated['image'] = '/uploads/activities/' . $filename;
-        } elseif (!empty($validated['image_url'])) {
+            $validated['image'] = '/uploads/activities/'.$filename;
+        } elseif (! empty($validated['image_url'])) {
             $validated['image'] = $validated['image_url'];
         } else {
             $validated['image'] = '/mockups/03_kegiatan.jpg';
@@ -134,7 +134,7 @@ class ActivityController extends Controller
             $slug = $baseSlug;
             $counter = 1;
             while (Activity::where('slug', $slug)->where('id', '!=', $activity->id)->exists()) {
-                $slug = $baseSlug . '-' . (++$counter);
+                $slug = $baseSlug.'-'.(++$counter);
             }
             $validated['slug'] = $slug;
         }
@@ -142,10 +142,10 @@ class ActivityController extends Controller
         // Handle Image Upload
         if ($request->hasFile('image')) {
             $file = $request->file('image');
-            $filename = time() . '_' . Str::random(8) . '.' . $file->getClientOriginalExtension();
+            $filename = time().'_'.Str::random(8).'.'.$file->getClientOriginalExtension();
             $file->move(public_path('uploads/activities'), $filename);
-            $validated['image'] = '/uploads/activities/' . $filename;
-        } elseif (!empty($validated['image_url'])) {
+            $validated['image'] = '/uploads/activities/'.$filename;
+        } elseif (! empty($validated['image_url'])) {
             $validated['image'] = $validated['image_url'];
         }
 

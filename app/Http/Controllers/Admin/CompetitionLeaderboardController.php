@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\CompetitionCategory;
 use App\Models\CompetitionEvent;
+use App\Models\CompetitionRegistration;
 use App\Models\CompetitionScore;
 use Illuminate\Http\Request;
 
@@ -46,14 +47,20 @@ class CompetitionLeaderboardController extends Controller
 
                 $points = 0;
                 if ($cat->point_tier === 'tier_1') {
-                    $points = match ($score->rank) { 1 => 10, 2 => 8, 3 => 6, default => 0 };
+                    $points = match ($score->rank) {
+                        1 => 10, 2 => 8, 3 => 6, default => 0
+                    };
                 } elseif ($cat->point_tier === 'tier_2') {
-                    $points = match ($score->rank) { 1 => 8, 2 => 6, 3 => 4, default => 0 };
+                    $points = match ($score->rank) {
+                        1 => 8, 2 => 6, 3 => 4, default => 0
+                    };
                 } elseif ($cat->point_tier === 'tier_3') {
-                    $points = match ($score->rank) { 1 => 3, 2 => 2, 3 => 1, default => 0 };
+                    $points = match ($score->rank) {
+                        1 => 3, 2 => 2, 3 => 1, default => 0
+                    };
                 }
 
-                if (!isset($matrix[$cleanSchool])) {
+                if (! isset($matrix[$cleanSchool])) {
                     $matrix[$cleanSchool] = [
                         'school_name' => $cleanSchool,
                         'categories' => [],
@@ -67,14 +74,14 @@ class CompetitionLeaderboardController extends Controller
         }
 
         // Also fetch all schools that registered for this level to show in full table if they scored 0 points
-        $registeredSchools = \App\Models\CompetitionRegistration::where('competition_event_id', $event?->id)
+        $registeredSchools = CompetitionRegistration::where('competition_event_id', $event?->id)
             ->where('level', $level)
             ->pluck('school_name')
             ->unique();
 
         foreach ($registeredSchools as $rSchool) {
             $cleanSchool = preg_replace('/\s*\([A-Za-z0-9\s]+\)$/', '', $rSchool);
-            if (!isset($matrix[$cleanSchool])) {
+            if (! isset($matrix[$cleanSchool])) {
                 $matrix[$cleanSchool] = [
                     'school_name' => $cleanSchool,
                     'categories' => [],
@@ -85,6 +92,7 @@ class CompetitionLeaderboardController extends Controller
 
         $standings = collect($matrix)->sortByDesc('total_points')->values()->map(function ($item, $index) {
             $item['rank'] = $index + 1;
+
             return $item;
         });
 

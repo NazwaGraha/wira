@@ -35,30 +35,30 @@ class OrganizationMember extends Model
 
     public function getPhotoUrlAttribute(): ?string
     {
-        if (!empty($this->photo)) {
+        if (! empty($this->photo)) {
             return str_starts_with($this->photo, 'http') || str_starts_with($this->photo, '/')
                 ? $this->photo
-                : asset('storage/' . $this->photo);
+                : asset('storage/'.$this->photo);
         }
 
-        if ($this->member && !empty($this->member->photo)) {
+        if ($this->member && ! empty($this->member->photo)) {
             return str_starts_with($this->member->photo, 'http') || str_starts_with($this->member->photo, '/')
                 ? $this->member->photo
-                : asset('storage/' . $this->member->photo);
+                : asset('storage/'.$this->member->photo);
         }
 
         // Automatic lookup in Member by name if member_id is not explicitly set
-        if (!empty($this->name)) {
+        if (! empty($this->name)) {
             $matchedMember = Member::where('name', $this->name)->first();
-            if ($matchedMember && !empty($matchedMember->photo)) {
+            if ($matchedMember && ! empty($matchedMember->photo)) {
                 return str_starts_with($matchedMember->photo, 'http') || str_starts_with($matchedMember->photo, '/')
                     ? $matchedMember->photo
-                    : asset('storage/' . $matchedMember->photo);
+                    : asset('storage/'.$matchedMember->photo);
             }
         }
 
-        if (!empty($this->name)) {
-            return 'https://ui-avatars.com/api/?name=' . urlencode($this->name) . '&background=dc2626&color=ffffff&bold=true&size=256';
+        if (! empty($this->name)) {
+            return 'https://ui-avatars.com/api/?name='.urlencode($this->name).'&background=dc2626&color=ffffff&bold=true&size=256';
         }
 
         return null;

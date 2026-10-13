@@ -16,22 +16,22 @@ class ArticleController extends Controller
         $query = Article::with('category')->where('status', 'published');
 
         if ($search) {
-            $query->where(function($q) use ($search) {
+            $query->where(function ($q) use ($search) {
                 $q->where('title', 'like', "%{$search}%")
-                  ->orWhere('excerpt', 'like', "%{$search}%")
-                  ->orWhere('body', 'like', "%{$search}%");
+                    ->orWhere('excerpt', 'like', "%{$search}%")
+                    ->orWhere('body', 'like', "%{$search}%");
             });
         }
 
         if ($categorySlug) {
-            $query->whereHas('category', function($q) use ($categorySlug) {
+            $query->whereHas('category', function ($q) use ($categorySlug) {
                 $q->where('slug', $categorySlug);
             });
         }
 
         // Featured article on top of list
         $featuredArticle = null;
-        if (!$search && !$categorySlug) {
+        if (! $search && ! $categorySlug) {
             $featuredArticle = Article::with('category')
                 ->where('status', 'published')
                 ->where('is_featured', true)
@@ -39,12 +39,12 @@ class ArticleController extends Controller
                 ->first();
         }
 
-        $articles = $query->when($featuredArticle, fn($q) => $q->where('id', '!=', $featuredArticle->id))
+        $articles = $query->when($featuredArticle, fn ($q) => $q->where('id', '!=', $featuredArticle->id))
             ->latest('published_at')
             ->paginate(6)
             ->withQueryString();
 
-        $categories = Category::withCount(['articles' => function($q) {
+        $categories = Category::withCount(['articles' => function ($q) {
             $q->where('status', 'published');
         }])->get();
 
@@ -72,7 +72,7 @@ class ArticleController extends Controller
             ->take(3)
             ->get();
 
-        $categories = Category::withCount(['articles' => function($q) {
+        $categories = Category::withCount(['articles' => function ($q) {
             $q->where('status', 'published');
         }])->get();
 

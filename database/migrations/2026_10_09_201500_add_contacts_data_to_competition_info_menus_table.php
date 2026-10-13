@@ -12,7 +12,7 @@ return new class extends Migration
     public function up(): void
     {
         if (Schema::hasTable('competition_info_menus')) {
-            if (!Schema::hasColumn('competition_info_menus', 'contacts_data')) {
+            if (! Schema::hasColumn('competition_info_menus', 'contacts_data')) {
                 Schema::table('competition_info_menus', function (Blueprint $table) {
                     $table->json('contacts_data')->nullable()->after('url_link');
                 });

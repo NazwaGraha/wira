@@ -14,6 +14,7 @@ class CompetitionBroadcastMail extends Mailable
     use Queueable, SerializesModels;
 
     public $broadcastData;
+
     public $recipientInfo;
 
     /**

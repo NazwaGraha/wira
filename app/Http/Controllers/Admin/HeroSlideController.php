@@ -11,6 +11,7 @@ class HeroSlideController extends Controller
     public function index()
     {
         $slides = HeroSlide::orderBy('order_position')->get();
+
         return view('admin.hero.index', compact('slides'));
     }
 
@@ -40,6 +41,7 @@ class HeroSlideController extends Controller
     public function edit($id)
     {
         $slide = HeroSlide::findOrFail($id);
+
         return view('admin.hero.edit', compact('slide'));
     }
 

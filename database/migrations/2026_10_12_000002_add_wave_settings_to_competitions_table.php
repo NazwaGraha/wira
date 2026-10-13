@@ -13,25 +13,25 @@ return new class extends Migration
     {
         if (Schema::hasTable('competition_events')) {
             Schema::table('competition_events', function (Blueprint $table) {
-                if (!Schema::hasColumn('competition_events', 'wave1_name')) {
+                if (! Schema::hasColumn('competition_events', 'wave1_name')) {
                     $table->string('wave1_name')->default('Gelombang 1')->after('registration_fee');
                 }
-                if (!Schema::hasColumn('competition_events', 'wave1_start_date')) {
+                if (! Schema::hasColumn('competition_events', 'wave1_start_date')) {
                     $table->dateTime('wave1_start_date')->nullable()->after('wave1_name');
                 }
-                if (!Schema::hasColumn('competition_events', 'wave1_end_date')) {
+                if (! Schema::hasColumn('competition_events', 'wave1_end_date')) {
                     $table->dateTime('wave1_end_date')->nullable()->after('wave1_start_date');
                 }
-                if (!Schema::hasColumn('competition_events', 'wave2_name')) {
+                if (! Schema::hasColumn('competition_events', 'wave2_name')) {
                     $table->string('wave2_name')->default('Gelombang 2')->after('wave1_end_date');
                 }
-                if (!Schema::hasColumn('competition_events', 'wave2_start_date')) {
+                if (! Schema::hasColumn('competition_events', 'wave2_start_date')) {
                     $table->dateTime('wave2_start_date')->nullable()->after('wave2_name');
                 }
-                if (!Schema::hasColumn('competition_events', 'wave2_end_date')) {
+                if (! Schema::hasColumn('competition_events', 'wave2_end_date')) {
                     $table->dateTime('wave2_end_date')->nullable()->after('wave2_start_date');
                 }
-                if (!Schema::hasColumn('competition_events', 'is_waves_enabled')) {
+                if (! Schema::hasColumn('competition_events', 'is_waves_enabled')) {
                     $table->boolean('is_waves_enabled')->default(true)->after('wave2_end_date');
                 }
             });
@@ -39,10 +39,10 @@ return new class extends Migration
 
         if (Schema::hasTable('competition_categories')) {
             Schema::table('competition_categories', function (Blueprint $table) {
-                if (!Schema::hasColumn('competition_categories', 'registration_fee_wave1')) {
+                if (! Schema::hasColumn('competition_categories', 'registration_fee_wave1')) {
                     $table->decimal('registration_fee_wave1', 12, 2)->nullable()->after('registration_fee');
                 }
-                if (!Schema::hasColumn('competition_categories', 'registration_fee_wave2')) {
+                if (! Schema::hasColumn('competition_categories', 'registration_fee_wave2')) {
                     $table->decimal('registration_fee_wave2', 12, 2)->nullable()->after('registration_fee_wave1');
                 }
             });
@@ -50,7 +50,7 @@ return new class extends Migration
 
         if (Schema::hasTable('competition_registrations')) {
             Schema::table('competition_registrations', function (Blueprint $table) {
-                if (!Schema::hasColumn('competition_registrations', 'registration_wave')) {
+                if (! Schema::hasColumn('competition_registrations', 'registration_wave')) {
                     $table->unsignedTinyInteger('registration_wave')->default(1)->after('total_payment');
                 }
             });

@@ -12,16 +12,16 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('competition_registrations', function (Blueprint $table) {
-            if (!Schema::hasColumn('competition_registrations', 'is_checked_in')) {
+            if (! Schema::hasColumn('competition_registrations', 'is_checked_in')) {
                 $table->boolean('is_checked_in')->default(false)->after('verified_by');
             }
-            if (!Schema::hasColumn('competition_registrations', 'checked_in_at')) {
+            if (! Schema::hasColumn('competition_registrations', 'checked_in_at')) {
                 $table->timestamp('checked_in_at')->nullable()->after('is_checked_in');
             }
-            if (!Schema::hasColumn('competition_registrations', 'checked_in_by')) {
+            if (! Schema::hasColumn('competition_registrations', 'checked_in_by')) {
                 $table->string('checked_in_by')->nullable()->after('checked_in_at');
             }
-            if (!Schema::hasColumn('competition_registrations', 'checkin_notes')) {
+            if (! Schema::hasColumn('competition_registrations', 'checkin_notes')) {
                 $table->text('checkin_notes')->nullable()->after('checked_in_by');
             }
         });

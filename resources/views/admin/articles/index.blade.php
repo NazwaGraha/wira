@@ -132,6 +132,7 @@
                                class="inline-block px-2.5 py-1 rounded-lg bg-blue-50 hover:bg-blue-100 text-blue-600 font-bold transition">
                                 Edit
                             </a>
+                            @if(auth()->user()?->canDelete())
                             <form action="{{ route('admin.articles.destroy', $art->id) }}" method="POST" class="inline-block" onsubmit="return confirm('Apakah Anda yakin ingin menghapus artikel ini?');">
                                 @csrf
                                 @method('DELETE')
@@ -139,6 +140,7 @@
                                     Delete
                                 </button>
                             </form>
+                            @endif
                         </td>
                     </tr>
                 @empty

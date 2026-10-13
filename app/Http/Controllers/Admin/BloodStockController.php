@@ -11,6 +11,7 @@ class BloodStockController extends Controller
     public function index()
     {
         $stocks = BloodStock::all();
+
         return view('admin.blood-stocks.index', compact('stocks'));
     }
 
@@ -27,6 +28,6 @@ class BloodStockController extends Controller
             'status' => $request->status,
         ]);
 
-        return back()->with('success', 'Stok darah ' . $stock->blood_type . ' berhasil diperbarui.');
+        return back()->with('success', 'Stok darah '.$stock->blood_type.' berhasil diperbarui.');
     }
 }
