@@ -144,13 +144,10 @@
                                 <input type="checkbox" name="selected_members[]" value="{{ $member->id }}" onchange="updateSelectedCount()" class="member-checkbox w-4 h-4 rounded text-pmr-primary focus:ring-pmr-primary border-slate-300 cursor-pointer">
                             </td>
                             <td class="px-4 py-4">
-                                @if($member->photo)
-                                    <img src="{{ Storage::url($member->photo) }}" class="w-12 h-16 object-cover rounded-lg border border-slate-200 shadow-sm" alt="Foto">
-                                @else
-                                    <div class="w-12 h-16 rounded-lg border border-slate-200 bg-slate-100 flex items-center justify-center text-slate-400 text-xl">
-                                        <i class="fa-solid fa-user"></i>
-                                    </div>
-                                @endif
+                                <img src="{{ $member->photo_url }}" 
+                                     alt="{{ $member->name }}" 
+                                     class="w-12 h-16 object-cover rounded-lg border border-slate-200 shadow-sm"
+                                     onerror="this.onerror=null; this.src='https://ui-avatars.com/api/?name={{ urlencode($member->name) }}&background=dc2626&color=ffffff&bold=true&size=256';">
                             </td>
                             <td class="px-6 py-4">
                                 <div class="font-extrabold text-slate-900 text-base">{{ $member->name }}</div>

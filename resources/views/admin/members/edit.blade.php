@@ -28,7 +28,11 @@
                 <div class="text-sm font-bold text-slate-700 mb-3">Upload Foto Profil <span class="text-xs font-normal text-slate-400">(Opsional)</span></div>
                 <div class="relative w-full aspect-[3/4] bg-slate-50 border-2 border-dashed border-slate-300 rounded-2xl overflow-hidden group hover:border-pmr-primary transition">
                     @if($member->photo)
-                        <img id="photo-preview" src="{{ Storage::url($member->photo) }}" alt="Preview" class="w-full h-full object-cover">
+                        <img id="photo-preview" 
+                             src="{{ $member->photo_url }}" 
+                             alt="Preview" 
+                             class="w-full h-full object-cover"
+                             onerror="this.onerror=null; this.src='https://ui-avatars.com/api/?name={{ urlencode($member->name) }}&background=dc2626&color=ffffff&bold=true&size=300';">
                         <div id="photo-placeholder" class="absolute inset-0 flex-col items-center justify-center text-slate-400 group-hover:text-pmr-primary transition hidden bg-white/80">
                             <i class="fa-solid fa-camera text-4xl mb-2"></i>
                             <span class="text-xs font-semibold">Ganti Foto</span>

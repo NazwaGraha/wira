@@ -272,12 +272,17 @@ Route::get('/server-sync-update-pmr', function () {
     try {
         Artisan::call('optimize:clear');
         Artisan::call('migrate', ['--force' => true]);
+        try {
+            Artisan::call('storage:link');
+        } catch (Throwable $e) {
+            // Ignore if already linked or permission denied
+        }
         $output = Artisan::output();
 
         return response("<div style='font-family:sans-serif;padding:30px;max-width:600px;margin:auto;'>
-            <h2 style='color:#059669;'>✅ Cache Server Berhasil Dibersihkan & Database Dimigrasi!</h2>
+            <h2 style='color:#059669;'>✅ Cache Server Berhasil Dibersihkan, Database Dimigrasi & Storage Symlink Disinkronkan!</h2>
             <pre style='background:#f1f5f9;padding:15px;border-radius:10px;font-size:12px;overflow:auto;'>".htmlspecialchars($output)."</pre>
-            <p><a href='/admin/competition-fees' style='display:inline-block;padding:10px 20px;background:#dc2626;color:white;text-decoration:none;border-radius:8px;font-weight:bold;'>Buka Halaman Setup Biaya &rarr;</a></p>
+            <p><a href='/admin/members' style='display:inline-block;padding:10px 20px;background:#dc2626;color:white;text-decoration:none;border-radius:8px;font-weight:bold;'>Buka Daftar Anggota &rarr;</a></p>
         </div>");
     } catch (Throwable $e) {
         return response("<div style='font-family:sans-serif;padding:30px;max-width:600px;margin:auto;color:#dc2626;'>
