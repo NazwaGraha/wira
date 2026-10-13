@@ -63,6 +63,11 @@ class PageController extends Controller
         return view('pages.tentang-kami', compact('organizationSetting', 'organizationMembers', 'allMembers'));
     }
 
+    public function pedomanOrganisasi()
+    {
+        return view('pages.pedoman-organisasi');
+    }
+
     public function kegiatan(Request $request)
     {
         $category = $request->query('kategori');

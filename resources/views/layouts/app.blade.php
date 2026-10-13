@@ -133,9 +133,41 @@
                     <a href="{{ route('home') }}" class="px-4 py-2.5 rounded-xl transition {{ request()->routeIs('home') ? 'bg-black/30 text-white font-bold shadow-inner' : 'hover:bg-white/10 text-white/90' }}">
                         Beranda
                     </a>
-                    <a href="{{ route('tentang-kami') }}" class="px-4 py-2.5 rounded-xl transition {{ request()->routeIs('tentang-kami') ? 'bg-black/30 text-white font-bold shadow-inner' : 'hover:bg-white/10 text-white/90' }}">
-                        Tentang Kami
-                    </a>
+                    <!-- Dropdown Menu: Tentang Kami (Profil, Struktur, Pedoman Organisasi) -->
+                    @php
+                        $isAboutActive = request()->routeIs('tentang-kami') || request()->routeIs('pedoman-organisasi');
+                    @endphp
+                    <div class="relative group">
+                        <button type="button" class="px-4 py-2.5 rounded-xl transition flex items-center gap-2 {{ $isAboutActive ? 'bg-black/30 text-white font-bold shadow-inner' : 'hover:bg-white/10 text-white/90' }}">
+                            <span>Tentang Kami</span>
+                            <i class="fa-solid fa-chevron-down text-xs text-red-200 group-hover:rotate-180 transition-transform duration-200"></i>
+                        </button>
+                        
+                        <!-- Dropdown Popup -->
+                        <div class="absolute left-0 top-full pt-2 w-72 hidden group-hover:block transition-all duration-200 z-50">
+                            <div class="bg-white text-slate-800 rounded-2xl shadow-2xl border border-slate-100 p-2 space-y-1">
+                                <a href="{{ route('tentang-kami') }}" class="flex items-center gap-3 px-3.5 py-3 rounded-xl hover:bg-red-50 text-slate-700 hover:text-pmr-primary transition {{ request()->routeIs('tentang-kami') ? 'bg-red-50 text-pmr-primary font-bold' : '' }}">
+                                    <div class="w-8 h-8 rounded-lg bg-red-100 text-pmr-primary flex items-center justify-center flex-shrink-0">
+                                        <i class="fa-solid fa-shield-heart text-sm"></i>
+                                    </div>
+                                    <div>
+                                        <div class="text-sm font-bold leading-tight">Profil & Kepengurusan</div>
+                                        <div class="text-[11px] text-slate-400 font-normal">Sejarah, visi misi & bagan pengurus</div>
+                                    </div>
+                                </a>
+
+                                <a href="{{ route('pedoman-organisasi') }}" class="flex items-center gap-3 px-3.5 py-3 rounded-xl hover:bg-red-50 text-slate-700 hover:text-pmr-primary transition {{ request()->routeIs('pedoman-organisasi') ? 'bg-red-50 text-pmr-primary font-bold' : '' }}">
+                                    <div class="w-8 h-8 rounded-lg bg-amber-100 text-amber-700 flex items-center justify-center flex-shrink-0">
+                                        <i class="fa-solid fa-book-bookmark text-sm"></i>
+                                    </div>
+                                    <div>
+                                        <div class="text-sm font-bold leading-tight">Pedoman Organisasi</div>
+                                        <div class="text-[11px] text-slate-400 font-normal">GBHO 2026 & PPUO 2026 (27 Bab)</div>
+                                    </div>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
 
                     <!-- Dropdown Menu: Info (Kegiatan, Galeri, Donor Darah, Artikel) -->
                     @php
@@ -266,6 +298,13 @@
             <div class="bg-stone-800/60 rounded-2xl p-3.5 border border-stone-700/60 mb-4 space-y-1">
                 <div class="text-[10px] font-extrabold uppercase tracking-widest text-stone-400 px-2 pb-1.5">Informasi & Publikasi</div>
                 
+                <a href="{{ route('pedoman-organisasi') }}" class="flex items-center justify-between p-2.5 rounded-xl hover:bg-stone-700/80 text-stone-200 transition text-xs font-semibold {{ request()->routeIs('pedoman-organisasi') ? 'bg-amber-600/30 text-amber-300 font-bold' : '' }}">
+                    <span class="flex items-center gap-2.5">
+                        <i class="fa-solid fa-book-bookmark text-amber-400 w-4"></i> Pedoman Organisasi (GBHO & PPUO)
+                    </span>
+                    <i class="fa-solid fa-chevron-right text-[10px] text-stone-500"></i>
+                </a>
+
                 <a href="{{ route('kegiatan') }}" class="flex items-center justify-between p-2.5 rounded-xl hover:bg-stone-700/80 text-stone-200 transition text-xs font-semibold">
                     <span class="flex items-center gap-2.5">
                         <i class="fa-solid fa-calendar-check text-red-400 w-4"></i> Agenda Kegiatan
@@ -373,6 +412,7 @@
                     <ul class="space-y-2 text-xs">
                         <li><a href="{{ route('home') }}" class="hover:text-white transition flex items-center gap-1.5"><i class="fa-solid fa-angle-right text-[10px] text-pmr-primary"></i> Beranda</a></li>
                         <li><a href="{{ route('tentang-kami') }}" class="hover:text-white transition flex items-center gap-1.5"><i class="fa-solid fa-angle-right text-[10px] text-pmr-primary"></i> Profil & Visi Misi</a></li>
+                        <li><a href="{{ route('pedoman-organisasi') }}" class="hover:text-white transition flex items-center gap-1.5"><i class="fa-solid fa-angle-right text-[10px] text-pmr-primary"></i> Pedoman Organisasi (GBHO & PPUO)</a></li>
                         <li><a href="{{ route('kegiatan') }}" class="hover:text-white transition flex items-center gap-1.5"><i class="fa-solid fa-angle-right text-[10px] text-pmr-primary"></i> Agenda & Program Kerja</a></li>
                         <li><a href="{{ route('galeri') }}" class="hover:text-white transition flex items-center gap-1.5"><i class="fa-solid fa-angle-right text-[10px] text-pmr-primary"></i> Galeri Dokumentasi</a></li>
                         <li><a href="{{ route('donor-darah') }}" class="hover:text-white transition flex items-center gap-1.5"><i class="fa-solid fa-angle-right text-[10px] text-pmr-primary"></i> Donor Darah Sukarela</a></li>

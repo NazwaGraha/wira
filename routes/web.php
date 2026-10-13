@@ -36,6 +36,8 @@ use Illuminate\Support\Facades\Route;
 */
 Route::get('/', [PageController::class, 'home'])->name('home');
 Route::get('/tentang-kami', [PageController::class, 'tentangKami'])->name('tentang-kami');
+Route::get('/pedoman-organisasi', [PageController::class, 'pedomanOrganisasi'])->name('pedoman-organisasi');
+Route::get('/tentang-kami/pedoman', fn () => redirect()->route('pedoman-organisasi'));
 Route::get('/kegiatan', [PageController::class, 'kegiatan'])->name('kegiatan');
 Route::get('/kegiatan/{slug}', [PageController::class, 'kegiatanShow'])->name('kegiatan.show');
 Route::get('/galeri', [PageController::class, 'galeri'])->name('galeri');

@@ -65,7 +65,17 @@ class ExampleTest extends TestCase
         $response->assertStatus(200);
         $response->assertSee('Panduan P3K Upacara');
 
-        // 9. Admin Login Page
+        // 9. Pedoman Organisasi (GBHO & PPUO)
+        $response = $this->get('/pedoman-organisasi');
+        $response->assertStatus(200);
+        $response->assertSee('GBHO');
+        $response->assertSee('PPUO');
+
+        // 10. Legacy /tentang-kami/pedoman redirect
+        $response = $this->get('/tentang-kami/pedoman');
+        $response->assertRedirect(route('pedoman-organisasi'));
+
+        // 11. Admin Login Page
         $response = $this->get('/admin/login');
         $response->assertStatus(200);
     }
