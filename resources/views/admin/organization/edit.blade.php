@@ -298,9 +298,10 @@
                      data-id="{{ $m->id }}"
                      data-name="{{ $m->name }}"
                      data-class="{{ $m->class_grade ?? '' }}"
-                     data-nis="{{ $m->nis ?? '' }}"
+                     data-nri="{{ $m->nri ?? $m->nis ?? '' }}"
+                     data-nis="{{ $m->nri ?? $m->nis ?? '' }}"
                      data-photo="{{ $mPhoto }}"
-                     data-search="{{ strtolower($m->name . ' ' . ($m->class_grade ?? '') . ' ' . ($m->nis ?? '')) }}">
+                     data-search="{{ strtolower($m->name . ' ' . ($m->class_grade ?? '') . ' ' . ($m->nri ?? $m->nis ?? '')) }}">
                     <div class="flex items-center gap-3">
                         <img src="{{ $mPhoto }}" alt="{{ $m->name }}" class="w-10 h-10 rounded-full object-cover border border-slate-200 flex-shrink-0">
                         <div>
@@ -309,8 +310,8 @@
                                 @if($m->class_grade)
                                     <span class="bg-slate-100 text-slate-700 px-2 py-0.5 rounded text-[11px] font-semibold">Kelas: {{ $m->class_grade }}</span>
                                 @endif
-                                @if($m->nis)
-                                    <span>NIS: {{ $m->nis }}</span>
+                                @if($m->nri || $m->nis)
+                                    <span>NRI: {{ $m->nri ?? $m->nis }}</span>
                                 @endif
                             </div>
                         </div>
@@ -412,7 +413,7 @@
 
         if (cardName) cardName.textContent = m.name;
         if (cardPhoto) cardPhoto.src = m.photo_url || ('https://ui-avatars.com/api/?name=' + encodeURIComponent(m.name) + '&background=dc2626&color=ffffff&bold=true');
-        if (cardMeta) cardMeta.textContent = (m.class_grade ? 'Kelas ' + m.class_grade : 'Anggota PMR') + (m.nis ? ' • NIS: ' + m.nis : '');
+        if (cardMeta) cardMeta.textContent = (m.class_grade ? 'Kelas ' + m.class_grade : 'Anggota PMR') + ((m.nri || m.nis) ? ' • NRI: ' + (m.nri || m.nis) : '');
 
         if (subtitleInput && (!subtitleInput.value || subtitleInput.value.trim() === '')) {
             const pos = posInput ? posInput.value.trim() : '';

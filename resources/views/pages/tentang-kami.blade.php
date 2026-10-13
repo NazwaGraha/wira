@@ -771,7 +771,7 @@
                         <i class="fa-solid fa-address-card"></i>
                     </div>
                     <div class="min-w-0">
-                        <div class="text-[11px] font-bold text-slate-400 uppercase tracking-wider">NIS / ID Anggota</div>
+                        <div class="text-[11px] font-bold text-slate-400 uppercase tracking-wider">NRI (Nomor Registrasi Induk)</div>
                         <div class="text-xs sm:text-sm font-extrabold text-slate-800 truncate mt-0.5" id="bio-nis">-</div>
                     </div>
                 </div>

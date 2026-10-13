@@ -74,7 +74,7 @@
                 @endif
                 <div class="relative w-full md:w-64">
                     <i class="fa-solid fa-search absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"></i>
-                    <input type="text" name="q" value="{{ $search }}" placeholder="Cari Nama, NIS, Tahun..." class="w-full pl-9 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:border-pmr-primary focus:ring-1 focus:ring-pmr-primary">
+                    <input type="text" name="q" value="{{ $search }}" placeholder="Cari Nama, NRI, Tahun..." class="w-full pl-9 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:border-pmr-primary focus:ring-1 focus:ring-pmr-primary">
                 </div>
                 <button type="submit" class="bg-slate-800 hover:bg-slate-900 text-white px-4 py-2 rounded-xl text-sm font-bold transition">
                     Cari
@@ -92,7 +92,7 @@
                 <thead class="bg-slate-50 text-slate-700 text-xs uppercase font-bold border-y border-slate-200">
                     <tr>
                         <th class="px-6 py-4">Foto</th>
-                        <th class="px-6 py-4">Nama Lengkap & NIS</th>
+                        <th class="px-6 py-4">Nama Lengkap & NRI</th>
                         <th class="px-6 py-4">Kelas / Tingkat</th>
                         <th class="px-6 py-4">Status & Tahun Masuk</th>
                         <th class="px-6 py-4">Kontak</th>
@@ -103,6 +103,7 @@
                     @forelse ($members as $member)
                         @php
                             $effStatus = $member->effective_status;
+                            $nriDisplay = $member->nri ?: $member->nis ?: '-';
                         @endphp
                         <tr class="hover:bg-slate-50 transition">
                             <td class="px-6 py-4">
@@ -117,7 +118,7 @@
                             <td class="px-6 py-4">
                                 <div class="font-extrabold text-slate-900 text-base">{{ $member->name }}</div>
                                 <div class="text-[11px] font-bold text-pmr-primary uppercase tracking-wider my-0.5">{{ $member->position ?: 'Anggota' }}</div>
-                                <div class="text-xs text-slate-500 mt-0.5">NIS: {{ $member->nis ?: '-' }} &bull; {{ $member->gender }}</div>
+                                <div class="text-xs text-slate-500 mt-0.5"><span class="font-bold text-slate-700">NRI:</span> {{ $nriDisplay }} &bull; {{ $member->gender }}</div>
                             </td>
                             <td class="px-6 py-4">
                                 <span class="bg-pmr-50 text-pmr-primary px-3 py-1 rounded-full text-[11px] font-bold border border-red-100">

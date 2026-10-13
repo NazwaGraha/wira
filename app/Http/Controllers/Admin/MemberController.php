@@ -15,6 +15,11 @@ class MemberController extends Controller
     {
         // Pastikan kolom baru tersedia secara aman
         if (Schema::hasTable('members')) {
+            if (!Schema::hasColumn('members', 'nri')) {
+                Schema::table('members', function (Blueprint $table) {
+                    $table->string('nri', 50)->nullable()->unique()->after('id');
+                });
+            }
             if (!Schema::hasColumn('members', 'entry_year')) {
                 Schema::table('members', function (Blueprint $table) {
                     $table->unsignedSmallInteger('entry_year')->nullable()->after('class_grade');
@@ -35,9 +40,15 @@ class MemberController extends Controller
         if ($search) {
             $query->where(function($q) use ($search) {
                 $q->where('name', 'like', "%{$search}%")
-                  ->orWhere('nis', 'like', "%{$search}%")
                   ->orWhere('class_grade', 'like', "%{$search}%")
                   ->orWhere('entry_year', 'like', "%{$search}%");
+
+                if (Schema::hasColumn('members', 'nri')) {
+                    $q->orWhere('nri', 'like', "%{$search}%");
+                }
+                if (Schema::hasColumn('members', 'nis')) {
+                    $q->orWhere('nis', 'like', "%{$search}%");
+                }
             });
         }
 
@@ -57,6 +68,54 @@ class MemberController extends Controller
         return view('admin.members.index', compact('members', 'search', 'status', 'year', 'totalMembers', 'totalAktif', 'totalPurna'));
     }
 
+    /**
+     * Endpoint Lookup Data Anggota via NRI / NIS
+     */
+    public function lookup(Request $request)
+    {
+        $nri = trim((string) $request->query('nri', $request->query('q', '')));
+        if (!$nri) {
+            return response()->json(['found' => false, 'message' => 'Parameter NRI tidak boleh kosong.'], 400);
+        }
+
+        $member = Member::where(function($q) use ($nri) {
+            if (Schema::hasColumn('members', 'nri')) {
+                $q->where('nri', $nri);
+            }
+            if (Schema::hasColumn('members', 'nis')) {
+                $q->orWhere('nis', $nri);
+            }
+        })->first();
+
+        if (!$member) {
+            return response()->json([
+                'found' => false, 
+                'message' => "Data anggota dengan NRI '{$nri}' tidak ditemukan."
+            ], 404);
+        }
+
+        return response()->json([
+            'found' => true,
+            'member' => [
+                'id' => $member->id,
+                'nri' => $member->nri,
+                'nis' => $member->nis,
+                'name' => $member->name,
+                'position' => $member->position ?: 'Anggota',
+                'gender' => $member->gender,
+                'class_grade' => $member->class_grade,
+                'entry_year' => $member->entry_year,
+                'member_status' => $member->effective_status,
+                'birth_place' => $member->birth_place,
+                'birth_date' => $member->birth_date ? $member->birth_date->format('Y-m-d') : null,
+                'email' => $member->email,
+                'phone' => $member->phone,
+                'address' => $member->address,
+                'photo_url' => $member->photo_url,
+            ]
+        ]);
+    }
+
     public function create()
     {
         $positions = \App\Models\OrganizationMember::select('position')->distinct()->pluck('position')->toArray();
@@ -65,8 +124,29 @@ class MemberController extends Controller
 
     public function store(Request $request)
     {
+        $nriInput = trim((string) $request->input('nri', $request->input('nis', '')));
+
+        // Validasi keunikan NRI jika diisi
+        if (!empty($nriInput)) {
+            $duplicate = Member::where(function($q) use ($nriInput) {
+                if (Schema::hasColumn('members', 'nri')) {
+                    $q->where('nri', $nriInput);
+                }
+                if (Schema::hasColumn('members', 'nis')) {
+                    $q->orWhere('nis', $nriInput);
+                }
+            })->exists();
+
+            if ($duplicate) {
+                return redirect()->back()->withInput()->withErrors([
+                    'nri' => "NRI '{$nriInput}' sudah digunakan oleh anggota lain. Satu anggota hanya boleh memiliki 1 NRI unik."
+                ]);
+            }
+        }
+
         $validated = $request->validate([
-            'nis' => 'nullable|string|max:20|unique:members',
+            'nri' => 'nullable|string|max:50',
+            'nis' => 'nullable|string|max:50',
             'name' => 'required|string|max:255',
             'position' => 'nullable|string|max:100',
             'address' => 'nullable|string',
@@ -84,6 +164,9 @@ class MemberController extends Controller
             'photo' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:5120',
             'is_active' => 'nullable|boolean',
         ]);
+
+        $validated['nri'] = $nriInput ?: null;
+        $validated['nis'] = $nriInput ?: null;
 
         if ($request->hasFile('photo')) {
             $file = $request->file('photo');
@@ -117,8 +200,30 @@ class MemberController extends Controller
 
     public function update(Request $request, Member $member)
     {
+        $nriInput = trim((string) $request->input('nri', $request->input('nis', '')));
+
+        // Validasi keunikan NRI jika diisi
+        if (!empty($nriInput)) {
+            $duplicate = Member::where('id', '!=', $member->id)
+                ->where(function($q) use ($nriInput) {
+                    if (Schema::hasColumn('members', 'nri')) {
+                        $q->where('nri', $nriInput);
+                    }
+                    if (Schema::hasColumn('members', 'nis')) {
+                        $q->orWhere('nis', $nriInput);
+                    }
+                })->exists();
+
+            if ($duplicate) {
+                return redirect()->back()->withInput()->withErrors([
+                    'nri' => "NRI '{$nriInput}' sudah digunakan oleh anggota lain. Satu anggota hanya boleh memiliki 1 NRI unik."
+                ]);
+            }
+        }
+
         $validated = $request->validate([
-            'nis' => 'nullable|string|max:20|unique:members,nis,' . $member->id,
+            'nri' => 'nullable|string|max:50',
+            'nis' => 'nullable|string|max:50',
             'name' => 'required|string|max:255',
             'position' => 'nullable|string|max:100',
             'address' => 'nullable|string',
@@ -136,6 +241,9 @@ class MemberController extends Controller
             'photo' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:5120',
             'is_active' => 'nullable|boolean',
         ]);
+
+        $validated['nri'] = $nriInput ?: null;
+        $validated['nis'] = $nriInput ?: null;
 
         if ($request->hasFile('photo')) {
             $file = $request->file('photo');

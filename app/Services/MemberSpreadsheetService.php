@@ -14,7 +14,7 @@ class MemberSpreadsheetService
      * Column definition mapping with widths and alignment styles
      */
     public const COLUMNS = [
-        'A' => ['key' => 'nis', 'label' => 'NIS', 'width' => 16, 'align' => 'center'],
+        'A' => ['key' => 'nri', 'label' => 'NRI', 'width' => 18, 'align' => 'center'],
         'B' => ['key' => 'name', 'label' => 'Nama Lengkap', 'width' => 30, 'align' => 'left'],
         'C' => ['key' => 'position', 'label' => 'Jabatan', 'width' => 24, 'align' => 'left'],
         'D' => ['key' => 'gender', 'label' => 'Jenis Kelamin', 'width' => 16, 'align' => 'center'],
@@ -42,7 +42,7 @@ class MemberSpreadsheetService
         foreach ($members as $m) {
             $birthDateStr = $m->birth_date ? $m->birth_date->format('Y-m-d') : '';
             $rows[] = [
-                (string) ($m->nis ?? ''),
+                (string) ($m->nri ?? $m->nis ?? ''),
                 (string) ($m->name ?? ''),
                 (string) ($m->position ?? 'Anggota'),
                 (string) ($m->gender ?? ''),
@@ -149,14 +149,14 @@ class MemberSpreadsheetService
         $updatedCount = 0;
         $skippedCount = 0;
         $errors = [];
-        $seenNisInFile = [];
+        $seenNriInFile = [];
         $currentYear = (int) date('Y');
 
         foreach ($rows as $index => $row) {
             $rowNumber = $index + 2; // 1-indexed Excel row (header is 1)
 
             // Extract values using dynamic column mapping (with positional fallback)
-            $nis = $this->getMappedVal($row, $colMap, 'nis', 0);
+            $nri = $this->getMappedVal($row, $colMap, 'nri', 0) ?: $this->getMappedVal($row, $colMap, 'nis', 0);
             $name = $this->getMappedVal($row, $colMap, 'name', 1);
             $position = $this->getMappedVal($row, $colMap, 'position', 2);
             $gender = $this->getMappedVal($row, $colMap, 'gender', 3);
@@ -173,7 +173,7 @@ class MemberSpreadsheetService
             $mission = $this->getMappedVal($row, $colMap, 'mission', 14);
 
             // Skip completely empty rows
-            if (empty($name) && empty($nis)) {
+            if (empty($name) && empty($nri)) {
                 $skippedCount++;
                 continue;
             }
@@ -184,20 +184,20 @@ class MemberSpreadsheetService
                 continue;
             }
 
-            // Validasi NIS: 1 anggota wajib 1 NIS dan tidak boleh kosong
-            if (empty($nis)) {
-                $errors[] = "Baris {$rowNumber} ({$name}): NIS wajib diisi (1 anggota 1 NIS tidak boleh kosong).";
+            // Validasi NRI: 1 anggota wajib 1 NRI dan tidak boleh kosong
+            if (empty($nri)) {
+                $errors[] = "Baris {$rowNumber} ({$name}): NRI wajib diisi (1 anggota 1 NRI tidak boleh kosong).";
                 $skippedCount++;
                 continue;
             }
 
-            // Validasi Duplikasi NIS di dalam file Excel yang sama
-            if (isset($seenNisInFile[$nis])) {
-                $errors[] = "Baris {$rowNumber} ({$name}): NIS '{$nis}' duplikat dengan baris {$seenNisInFile[$nis]} dalam file (dilewati).";
+            // Validasi Duplikasi NRI di dalam file Excel yang sama
+            if (isset($seenNriInFile[$nri])) {
+                $errors[] = "Baris {$rowNumber} ({$name}): NRI '{$nri}' duplikat dengan baris {$seenNriInFile[$nri]} dalam file (dilewati).";
                 $skippedCount++;
                 continue;
             }
-            $seenNisInFile[$nis] = $rowNumber;
+            $seenNriInFile[$nri] = $rowNumber;
 
             // Bungkus proses penyimpanan per baris agar kesalahan satu baris tidak menggugurkan baris lainnya
             try {
@@ -270,7 +270,8 @@ class MemberSpreadsheetService
                 }
 
                 $memberData = [
-                    'nis' => $nis,
+                    'nri' => $nri,
+                    'nis' => $nri,
                     'name' => $name,
                     'position' => $position ?: 'Anggota',
                     'gender' => $gender,
@@ -288,23 +289,29 @@ class MemberSpreadsheetService
                     'is_active' => true,
                 ];
 
-                // 1. Cek apakah NIS unik sudah ada di database (Update data jika ada)
-                $existingMember = Member::where('nis', $nis)->first();
+                // 1. Cek apakah NRI unik sudah ada di database (Update data jika ada)
+                $existingMember = Member::where(function($q) use ($nri) {
+                    $q->where('nri', $nri)->orWhere('nis', $nri);
+                })->first();
+
                 if ($existingMember) {
                     $existingMember->update($memberData);
                     $updatedCount++;
                     continue;
                 }
 
-                // 2. Pemulihan otomatis (Self-Healing): Cek jika ada anggota dengan nama sama tapi NIS korup ('Laki-laki' / 'Perempuan') akibat bug versi sebelumnya
-                $corruptedMember = Member::where('name', $name)->whereIn('nis', ['Laki-laki', 'Perempuan'])->first();
+                // 2. Pemulihan otomatis (Self-Healing): Cek jika ada anggota dengan nama sama tapi NRI/NIS korup ('Laki-laki' / 'Perempuan') akibat bug versi sebelumnya
+                $corruptedMember = Member::where('name', $name)->where(function($q) {
+                    $q->whereIn('nri', ['Laki-laki', 'Perempuan'])->orWhereIn('nis', ['Laki-laki', 'Perempuan']);
+                })->first();
+
                 if ($corruptedMember) {
                     $corruptedMember->update($memberData);
                     $updatedCount++;
                     continue;
                 }
 
-                // 3. Tambah anggota baru jika NIS belum pernah terdaftar
+                // 3. Tambah anggota baru jika NRI belum pernah terdaftar
                 Member::create($memberData);
                 $successCount++;
             } catch (\Throwable $e) {
@@ -332,8 +339,9 @@ class MemberSpreadsheetService
             $h = strtolower(trim((string) $cellText));
             if (empty($h)) continue;
 
-            // Prioritaskan NIS: pastikan BUKAN kata 'jenis' (seperti 'jenis kelamin')
-            if (!str_contains($h, 'jenis') && (preg_match('/\bnis\b/i', $h) || str_contains($h, 'induk') || $h === 'nis')) {
+            // Prioritaskan NRI / NIS: pastikan BUKAN kata 'jenis' (seperti 'jenis kelamin')
+            if (!str_contains($h, 'jenis') && (preg_match('/\b(nri|nis)\b/i', $h) || str_contains($h, 'registrasi') || str_contains($h, 'induk') || $h === 'nri' || $h === 'nis')) {
+                $map['nri'] = $idx;
                 $map['nis'] = $idx;
             } elseif (str_contains($h, 'nama')) {
                 $map['name'] = $idx;

@@ -101,6 +101,7 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::get('/members/export', [\App\Http\Controllers\Admin\MemberController::class, 'export'])->name('members.export');
         Route::get('/members/template', [\App\Http\Controllers\Admin\MemberController::class, 'downloadTemplate'])->name('members.template');
         Route::post('/members/import', [\App\Http\Controllers\Admin\MemberController::class, 'import'])->name('members.import');
+        Route::get('/members/lookup', [\App\Http\Controllers\Admin\MemberController::class, 'lookup'])->name('members.lookup');
         Route::resource('members', \App\Http\Controllers\Admin\MemberController::class);
 
         // Donor Darah

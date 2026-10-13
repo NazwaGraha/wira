@@ -10,6 +10,7 @@ class Member extends Model
     use HasFactory;
 
     protected $fillable = [
+        'nri',
         'nis',
         'name',
         'position',
@@ -34,6 +35,23 @@ class Member extends Model
         'entry_year' => 'integer',
         'is_active' => 'boolean',
     ];
+
+    /**
+     * Accessor untuk NRI (Nomor Registrasi Induk)
+     * Mengembalikan kolom 'nri' atau fallback ke 'nis'
+     */
+    public function getNriAttribute(): ?string
+    {
+        return $this->attributes['nri'] ?? $this->attributes['nis'] ?? null;
+    }
+
+    /**
+     * Backward-compatibility accessor untuk NIS
+     */
+    public function getNisAttribute(): ?string
+    {
+        return $this->attributes['nri'] ?? $this->attributes['nis'] ?? null;
+    }
 
     /**
      * Otomatis tentukan status: jika tahun masuk + 3 <= tahun sekarang maka Purna

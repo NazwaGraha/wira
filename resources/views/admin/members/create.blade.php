@@ -48,9 +48,10 @@
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>
                         <label class="flex items-center gap-2 text-sm font-bold text-slate-700 mb-2">
-                            <i class="fa-regular fa-user text-slate-400"></i> NIS (Nomor Induk Siswa)
+                            <i class="fa-solid fa-id-card text-slate-400"></i> NRI (Nomor Registrasi Induk)
                         </label>
-                        <input type="text" name="nis" value="{{ old('nis') }}" class="w-full bg-white border border-slate-200 px-4 py-2.5 rounded-xl focus:outline-none focus:border-red-500 focus:ring-1 focus:ring-red-500" placeholder="Contoh: 12345678">
+                        <input type="text" name="nri" value="{{ old('nri', old('nis')) }}" class="w-full bg-white border border-slate-200 px-4 py-2.5 rounded-xl focus:outline-none focus:border-red-500 focus:ring-1 focus:ring-red-500 font-semibold text-slate-800" placeholder="Contoh: 2026.01.001">
+                        <span class="text-[11px] text-slate-400 mt-1 block">Nomor unik registrasi induk anggota PMR.</span>
                     </div>
                     <div>
                         <label class="block text-sm font-bold text-slate-700 mb-2">Nama Lengkap <span class="text-rose-500">*</span></label>
