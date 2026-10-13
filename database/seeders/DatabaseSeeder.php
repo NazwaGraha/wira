@@ -9,6 +9,7 @@ use App\Models\Category;
 use App\Models\HeroSlide;
 use App\Models\Member;
 use App\Models\MemberRegistration;
+use App\Models\OrganizationGuideline;
 use App\Models\OrganizationMember;
 use App\Models\OrganizationSetting;
 use App\Models\User;
@@ -746,5 +747,8 @@ class DatabaseSeeder extends Seeder
         foreach ($orgMembers as $member) {
             OrganizationMember::create($member);
         }
+
+        // 10. Organization Guidelines (GBHO & PPUO 2026)
+        OrganizationGuideline::current();
     }
 }

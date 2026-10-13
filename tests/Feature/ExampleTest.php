@@ -217,4 +217,67 @@ class ExampleTest extends TestCase
             'id' => $activity->id,
         ]);
     }
+
+    public function test_admin_can_manage_organization_guidelines(): void
+    {
+        $user = User::factory()->create();
+
+        // 1. Access admin pedoman organisasi
+        $response = $this->actingAs($user)->get('/admin/pedoman-organisasi');
+        $response->assertStatus(200);
+        $response->assertSee('Manajemen Pedoman Organisasi (GBHO & PPUO)');
+        $response->assertSee('Arah Kebijakan Umum');
+
+        // 2. Update GBHO
+        $response = $this->actingAs($user)->put('/admin/pedoman-organisasi/gbho', [
+            'period' => '2027/2028',
+            'established_date' => '10 Januari 2027',
+            'established_place' => 'Ciawi, Bogor',
+            'gbho_policy_heading' => 'Arah Kebijakan Terpilih',
+            'gbho_policy_text' => 'Mewujudkan PMR Wira SMAN 1 Ciawi periode baru yang unggul dan berprestasi.',
+        ]);
+        $response->assertRedirect('/admin/pedoman-organisasi?tab=gbho');
+        $this->assertDatabaseHas('organization_guidelines', [
+            'period' => '2027/2028',
+            'gbho_policy_heading' => 'Arah Kebijakan Terpilih',
+        ]);
+
+        // 3. Add a new GBHO strategy
+        $response = $this->actingAs($user)->post('/admin/pedoman-organisasi/strategy', [
+            'title' => 'Digitalisasi Layanan Medis Sekolah',
+            'description' => 'Mengembangkan pencatatan inventaris obat dan penanganan siswa berbasis web.',
+            'icon' => 'fa-solid fa-laptop-medical',
+            'order_number' => 7,
+        ]);
+        $response->assertRedirect('/admin/pedoman-organisasi?tab=gbho');
+        $this->assertDatabaseHas('gbho_strategies', [
+            'title' => 'Digitalisasi Layanan Medis Sekolah',
+            'order_number' => 7,
+        ]);
+
+        // 4. Add a new PPUO chapter
+        $response = $this->actingAs($user)->post('/admin/pedoman-organisasi/chapter', [
+            'chapter_number' => 'BAB XII',
+            'title' => 'Kode Kehormatan dan Aturan Tambahan',
+            'summary' => 'Ketentuan tata krama khusus relawan di lingkungan luar sekolah.',
+            'badge' => 'Kode Etik Khusus',
+            'order_number' => 12,
+        ]);
+        $response->assertRedirect('/admin/pedoman-organisasi?tab=ppuo');
+        $this->assertDatabaseHas('ppuo_chapters', [
+            'chapter_number' => 'BAB XII',
+            'title' => 'Kode Kehormatan dan Aturan Tambahan',
+        ]);
+
+        // 5. Verify public pages reflect the updated period and new strategy
+        $response = $this->get('/tentang-kami');
+        $response->assertStatus(200);
+        $response->assertSee('2027/2028');
+        $response->assertSee('Digitalisasi Layanan Medis Sekolah');
+
+        $response = $this->get('/pedoman-organisasi');
+        $response->assertStatus(200);
+        $response->assertSee('2027/2028');
+        $response->assertSee('Digitalisasi Layanan Medis Sekolah');
+    }
 }

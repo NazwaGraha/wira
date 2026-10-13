@@ -130,6 +130,11 @@
                 <span>Bagan Kepengurusan</span>
             </a>
 
+            <a href="{{ route('admin.organization-guidelines.index') }}" class="flex items-center gap-3 px-3 py-2.5 rounded-xl font-medium text-sm transition {{ request()->routeIs('admin.organization-guidelines.*') ? 'bg-pmr-primary text-white shadow-md shadow-red-950/40' : 'hover:bg-slate-800 text-slate-300' }}">
+                <i class="fa-solid fa-book-bookmark w-5 text-center text-amber-400"></i>
+                <span>Pedoman Organisasi</span>
+            </a>
+
             <!-- Submenu Manajemen Lomba -->
             <div class="pt-4 pb-1 text-[11px] font-bold uppercase text-slate-500 tracking-wider px-3">SUA BHAKTI BERKARYA</div>
             <a href="{{ route('admin.competition-event.index') }}" class="flex items-center gap-3 px-3 py-2.5 rounded-xl font-medium text-sm transition {{ request()->routeIs('admin.competition-event.*') ? 'bg-pmr-primary text-white shadow-md shadow-red-950/40' : 'hover:bg-slate-800 text-slate-300' }}">

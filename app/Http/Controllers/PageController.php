@@ -12,6 +12,7 @@ use App\Models\GalleryCategory;
 use App\Models\HeroSlide;
 use App\Models\Member;
 use App\Models\MemberRegistration;
+use App\Models\OrganizationGuideline;
 use App\Models\OrganizationMember;
 use App\Models\OrganizationSetting;
 use Illuminate\Http\Request;
@@ -59,13 +60,18 @@ class PageController extends Controller
             ->groupBy('level');
 
         $allMembers = Member::all()->keyBy('name');
+        $guideline = OrganizationGuideline::current();
 
-        return view('pages.tentang-kami', compact('organizationSetting', 'organizationMembers', 'allMembers'));
+        return view('pages.tentang-kami', compact('organizationSetting', 'organizationMembers', 'allMembers', 'guideline'));
     }
 
     public function pedomanOrganisasi()
     {
-        return view('pages.pedoman-organisasi');
+        $guideline = OrganizationGuideline::current();
+        $strategies = $guideline->strategies()->orderBy('order_number')->get();
+        $chapters = $guideline->chapters()->orderBy('order_number')->get();
+
+        return view('pages.pedoman-organisasi', compact('guideline', 'strategies', 'chapters'));
     }
 
     public function kegiatan(Request $request)

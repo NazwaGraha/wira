@@ -22,11 +22,11 @@
 
         <!-- Download Buttons in Header -->
         <div class="mt-8 flex flex-wrap items-center justify-center gap-3">
-            <a href="{{ asset('documents/GBHO_PMR_WIRA_SMAN_1_CIAWI_2026.pdf') }}" download 
+            <a href="{{ $guideline->gbho_pdf_url }}" download 
                class="px-5 py-3 rounded-full bg-white text-pmr-primary hover:bg-red-50 font-bold text-xs uppercase tracking-wider shadow-lg transition flex items-center gap-2">
-                <i class="fa-solid fa-file-pdf text-red-600"></i> Unduh GBHO 2026 (PDF)
+                <i class="fa-solid fa-file-pdf text-red-600"></i> Unduh GBHO {{ $guideline->period }} (PDF)
             </a>
-            <a href="{{ asset('documents/PPUO_PMR_WIRA_SMAN_1_CIAWI_2026.pdf') }}" download 
+            <a href="{{ $guideline->ppuo_pdf_url }}" download 
                class="px-5 py-3 rounded-full bg-red-950/60 hover:bg-red-950 text-white font-bold text-xs uppercase tracking-wider border border-white/30 backdrop-blur-sm transition flex items-center gap-2">
                 <i class="fa-solid fa-book-bookmark text-amber-300"></i> Unduh Buku PPUO (27 Hal)
             </a>
@@ -58,14 +58,14 @@
                     :class="activeTab === 'gbho' ? 'bg-white text-pmr-primary shadow-md font-extrabold' : 'text-slate-600 hover:text-slate-900 font-medium'"
                     class="px-6 sm:px-8 py-3 rounded-xl text-xs sm:text-sm tracking-wide transition-all duration-200 flex items-center gap-2.5">
                 <i class="fa-solid fa-compass text-base text-red-600"></i>
-                <span>Garis Besar Haluan (GBHO 2026)</span>
+                <span>Garis Besar Haluan (GBHO {{ $guideline->period }})</span>
             </button>
             <button type="button" 
                     @click="activeTab = 'ppuo'" 
                     :class="activeTab === 'ppuo' ? 'bg-white text-pmr-primary shadow-md font-extrabold' : 'text-slate-600 hover:text-slate-900 font-medium'"
                     class="px-6 sm:px-8 py-3 rounded-xl text-xs sm:text-sm tracking-wide transition-all duration-200 flex items-center gap-2.5">
                 <i class="fa-solid fa-book-journal-whills text-base text-amber-600"></i>
-                <span>Pedoman Pelaksanaan (PPUO 2026)</span>
+                <span>Pedoman Pelaksanaan (PPUO {{ $guideline->period }})</span>
             </button>
         </div>
     </div>
@@ -86,11 +86,11 @@
                         Garis Besar Haluan Organisasi (GBHO)
                     </h2>
                     <p class="text-sm text-slate-300 max-w-2xl leading-relaxed">
-                        PMR Unit SMA Negeri 1 Ciawi Periode 2026 &mdash; Disusun dan disahkan sebagai acuan berjalannya roda kepengurusan organisasi agar tujuan tercapai secara optimal.
+                        PMR Unit SMA Negeri 1 Ciawi Periode {{ $guideline->period }} &mdash; Disusun dan disahkan sebagai acuan berjalannya roda kepengurusan organisasi agar tujuan tercapai secara optimal.
                     </p>
                 </div>
                 <div class="flex-shrink-0">
-                    <a href="{{ asset('documents/GBHO_PMR_WIRA_SMAN_1_CIAWI_2026.pdf') }}" download
+                    <a href="{{ $guideline->gbho_pdf_url }}" download
                        class="px-6 py-3.5 bg-red-600 hover:bg-red-700 text-white font-bold text-xs uppercase tracking-wider rounded-2xl shadow-lg transition flex items-center gap-2">
                         <i class="fa-solid fa-download"></i> Unduh File Asli PDF
                     </a>
@@ -105,10 +105,10 @@
                     <i class="fa-solid fa-bullseye"></i>
                 </div>
                 <div>
-                    <h3 class="text-xs font-bold uppercase text-red-600 tracking-widest mb-1.5">Visi & Arah Kebijakan 2026</h3>
-                    <h4 class="text-xl sm:text-2xl font-black text-slate-900 mb-4">Arah Kebijakan Organisasi</h4>
+                    <h3 class="text-xs font-bold uppercase text-red-600 tracking-widest mb-1.5">Visi & Arah Kebijakan {{ $guideline->period }}</h3>
+                    <h4 class="text-xl sm:text-2xl font-black text-slate-900 mb-4">{{ $guideline->gbho_policy_heading ?: 'Arah Kebijakan Organisasi' }}</h4>
                     <p class="text-sm sm:text-base text-slate-700 leading-relaxed font-medium bg-red-50/60 p-6 rounded-2xl border-l-4 border-pmr-primary">
-                        "PMR SMAN 1 Ciawi diarahkan sebagai organisasi kepalangmerahan yang <strong>aktif, dan solid</strong> dengan penguatan kapasitas anggota dalam <strong>kecerdasan berorganisasi, ketangguhan fisik, serta keterampilan kepalangmerahan</strong>. Organisasi ini berfokus pada penumbuhan jiwa kemanusiaan, kepedulian sosial, dan kerja sama yang kuat, sehingga mampu memberikan manfaat nyata bagi warga sekolah melalui aksi kemanusiaan yang <strong>cepat, tepat, dan berdampak</strong>."
+                        "{{ $guideline->gbho_policy_text }}"
                     </p>
                 </div>
             </div>
@@ -124,100 +124,31 @@
             </div>
 
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                <!-- Strategi 1 -->
+                @foreach($strategies as $st)
                 <div class="bg-white p-6 sm:p-8 rounded-3xl border border-slate-200 shadow-sm hover:shadow-md hover:border-red-300 transition-all duration-300 flex flex-col justify-between group">
                     <div>
                         <div class="w-12 h-12 rounded-2xl bg-rose-50 text-red-600 flex items-center justify-center text-xl font-bold mb-4 group-hover:scale-110 transition">
-                            <i class="fa-solid fa-stopwatch"></i>
+                            <i class="{{ $st->icon ?: 'fa-solid fa-check' }}"></i>
                         </div>
-                        <div class="text-xs font-black uppercase text-red-600 tracking-wider mb-1">Strategi 01</div>
-                        <h4 class="font-extrabold text-slate-900 text-base mb-2.5">Kedisiplinan & Tanggung Jawab</h4>
+                        <div class="text-xs font-black uppercase text-red-600 tracking-wider mb-1">Strategi {{ sprintf('%02d', $st->order_number) }}</div>
+                        <h4 class="font-extrabold text-slate-900 text-base mb-2.5">{{ $st->title }}</h4>
                         <p class="text-xs sm:text-sm text-slate-600 leading-relaxed">
-                            Menanamkan kedisiplinan dan rasa tanggung jawab kepada seluruh anggota dalam setiap kegiatan, rapat, dan kepanitiaan sebagai dasar terbentuknya organisasi yang tertib dan solid.
+                            {{ $st->description }}
                         </p>
                     </div>
                 </div>
-
-                <!-- Strategi 2 -->
-                <div class="bg-white p-6 sm:p-8 rounded-3xl border border-slate-200 shadow-sm hover:shadow-md hover:border-red-300 transition-all duration-300 flex flex-col justify-between group">
-                    <div>
-                        <div class="w-12 h-12 rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center text-xl font-bold mb-4 group-hover:scale-110 transition">
-                            <i class="fa-solid fa-kit-medical"></i>
-                        </div>
-                        <div class="text-xs font-black uppercase text-emerald-600 tracking-wider mb-1">Strategi 02</div>
-                        <h4 class="font-extrabold text-slate-900 text-base mb-2.5">Keahlian Medis & Pertolongan Pertama</h4>
-                        <p class="text-xs sm:text-sm text-slate-600 leading-relaxed">
-                            Meningkatkan kemampuan kepalangmerahan dan medis dasar anggota melalui pelatihan pertolongan pertama yang dilaksanakan secara bertahap, rutin, dan sesuai standar PMR.
-                        </p>
-                    </div>
-                </div>
-
-                <!-- Strategi 3 -->
-                <div class="bg-white p-6 sm:p-8 rounded-3xl border border-slate-200 shadow-sm hover:shadow-md hover:border-red-300 transition-all duration-300 flex flex-col justify-between group">
-                    <div>
-                        <div class="w-12 h-12 rounded-2xl bg-amber-50 text-amber-600 flex items-center justify-center text-xl font-bold mb-4 group-hover:scale-110 transition">
-                            <i class="fa-solid fa-person-hiking"></i>
-                        </div>
-                        <div class="text-xs font-black uppercase text-amber-600 tracking-wider mb-1">Strategi 03</div>
-                        <h4 class="font-extrabold text-slate-900 text-base mb-2.5">Pembinaan Fisik & Mental (Long March)</h4>
-                        <p class="text-xs sm:text-sm text-slate-600 leading-relaxed">
-                            Menyelenggarakan program pembinaan fisik dan mental anggota, seperti latihan fisik berkala dan kegiatan ketahanan mental, untuk membentuk anggota PMR yang kuat, tangguh, dan siap bertugas.
-                        </p>
-                    </div>
-                </div>
-
-                <!-- Strategi 4 -->
-                <div class="bg-white p-6 sm:p-8 rounded-3xl border border-slate-200 shadow-sm hover:shadow-md hover:border-red-300 transition-all duration-300 flex flex-col justify-between group">
-                    <div>
-                        <div class="w-12 h-12 rounded-2xl bg-blue-50 text-blue-600 flex items-center justify-center text-xl font-bold mb-4 group-hover:scale-110 transition">
-                            <i class="fa-solid fa-people-roof"></i>
-                        </div>
-                        <div class="text-xs font-black uppercase text-blue-600 tracking-wider mb-1">Strategi 04</div>
-                        <h4 class="font-extrabold text-slate-900 text-base mb-2.5">Kekompakan & Kekeluargaan</h4>
-                        <p class="text-xs sm:text-sm text-slate-600 leading-relaxed">
-                            Membangun kekompakan dan rasa kekeluargaan antar anggota PMR, dengan menciptakan kegiatan kebersamaan yang positif, edukatif, dan menyenangkan sehingga PMR menjadi lingkungan yang nyaman bagi seluruh anggota.
-                        </p>
-                    </div>
-                </div>
-
-                <!-- Strategi 5 -->
-                <div class="bg-white p-6 sm:p-8 rounded-3xl border border-slate-200 shadow-sm hover:shadow-md hover:border-red-300 transition-all duration-300 flex flex-col justify-between group">
-                    <div>
-                        <div class="w-12 h-12 rounded-2xl bg-purple-50 text-purple-600 flex items-center justify-center text-xl font-bold mb-4 group-hover:scale-110 transition">
-                            <i class="fa-solid fa-users-gear"></i>
-                        </div>
-                        <div class="text-xs font-black uppercase text-purple-600 tracking-wider mb-1">Strategi 05</div>
-                        <h4 class="font-extrabold text-slate-900 text-base mb-2.5">Kepemimpinan & Manajemen Kerja</h4>
-                        <p class="text-xs sm:text-sm text-slate-600 leading-relaxed">
-                            Mengembangkan kemampuan organisasi dan kepemimpinan anggota, melalui pelatihan manajemen kegiatan, kerja tim, dan pembiasaan peran aktif dalam setiap program kerja.
-                        </p>
-                    </div>
-                </div>
-
-                <!-- Strategi 6 -->
-                <div class="bg-white p-6 sm:p-8 rounded-3xl border border-slate-200 shadow-sm hover:shadow-md hover:border-red-300 transition-all duration-300 flex flex-col justify-between group">
-                    <div>
-                        <div class="w-12 h-12 rounded-2xl bg-teal-50 text-teal-600 flex items-center justify-center text-xl font-bold mb-4 group-hover:scale-110 transition">
-                            <i class="fa-solid fa-handshake-angle"></i>
-                        </div>
-                        <div class="text-xs font-black uppercase text-teal-600 tracking-wider mb-1">Strategi 06</div>
-                        <h4 class="font-extrabold text-slate-900 text-base mb-2.5">Sinergi Pembina, Alumni & Mitra</h4>
-                        <p class="text-xs sm:text-sm text-slate-600 leading-relaxed">
-                            Memperkuat hubungan dan kerja sama antara anggota, pembina, purna PMR, serta organisasi dan ekstrakurikuler lain di SMA Negeri 1 Ciawi untuk mendukung keberlanjutan dan kemajuan PMR.
-                        </p>
-                    </div>
-                </div>
+                @endforeach
             </div>
         </div>
 
         <!-- Penutup GBHO -->
         <div class="bg-slate-100 p-6 sm:p-8 rounded-3xl border border-slate-200 text-center text-xs text-slate-500 leading-relaxed">
-            <p>Demikian Garis Besar Haluan Organisasi PMR Unit SMA Negeri 1 Ciawi yang disusun dan disahkan sebagai acuan berjalannya kepengurusan organisasi periode 2026 agar tujuan organisasi tercapai.</p>
+            <p>Demikian Garis Besar Haluan Organisasi PMR Unit SMA Negeri 1 Ciawi yang disusun dan disahkan sebagai acuan berjalannya kepengurusan organisasi periode {{ $guideline->period }} agar tujuan organisasi tercapai.</p>
         </div>
     </div>
 
     <!-- ==================================================== -->
-    <!-- TAB 2: PPUO (Pedoman Pelaksanaan Umum Organisasi 2026) -->
+    <!-- TAB 2: PPUO (Pedoman Pelaksanaan Umum Organisasi)    -->
     <!-- ==================================================== -->
     <div x-show="activeTab === 'ppuo'" x-transition:enter="transition ease-out duration-300" x-transition:enter-start="opacity-0 translate-y-2" x-transition:enter-end="opacity-100 translate-y-0" class="space-y-10">
 
@@ -230,12 +161,12 @@
                 <div>
                     <div class="text-xs font-bold text-red-400 uppercase tracking-widest mb-1">Buku Panduan & Anggaran Rumah Tangga</div>
                     <h2 class="text-2xl sm:text-3xl font-black text-white">Pedoman Pelaksanaan Umum Organisasi (PPUO)</h2>
-                    <p class="text-xs sm:text-sm text-slate-300 mt-1">Palang Merah Remaja Unit SMAN 1 Ciawi &bull; Edisi Resmi Januari 2026 (27 Halaman)</p>
+                    <p class="text-xs sm:text-sm text-slate-300 mt-1">Palang Merah Remaja Unit SMAN 1 Ciawi &bull; Periode {{ $guideline->period }} (27 Halaman)</p>
                 </div>
             </div>
 
             <div class="flex-shrink-0">
-                <a href="{{ asset('documents/PPUO_PMR_WIRA_SMAN_1_CIAWI_2026.pdf') }}" download 
+                <a href="{{ $guideline->ppuo_pdf_url }}" download 
                    class="px-6 py-3.5 bg-gradient-to-r from-red-600 to-pmr-primary hover:from-red-700 hover:to-red-900 text-white font-bold text-xs uppercase tracking-wider rounded-2xl shadow-lg transition flex items-center gap-2">
                     <i class="fa-solid fa-file-pdf"></i> Unduh Lengkap PDF
                 </a>

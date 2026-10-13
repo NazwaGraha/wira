@@ -723,7 +723,7 @@
                         <span class="inline-flex items-center gap-1.5 bg-red-50 text-red-700 border border-red-200/70 text-[11px] font-black uppercase tracking-wider px-3 py-1 rounded-full">
                             <i class="fa-solid fa-compass"></i> Dokumen Strategis
                         </span>
-                        <span class="text-xs font-bold text-slate-400">Periode 2026</span>
+                        <span class="text-xs font-bold text-slate-400">Periode {{ $guideline->period }}</span>
                     </div>
 
                     <h3 class="text-xl sm:text-2xl font-black text-slate-900 leading-tight">
@@ -736,45 +736,27 @@
                     <!-- Arah Kebijakan Callout -->
                     <div class="p-4 sm:p-5 rounded-2xl bg-gradient-to-br from-red-50 via-rose-50/50 to-white border-l-4 border-pmr-primary border border-red-100/80 mb-6 shadow-xs">
                         <div class="text-[11px] font-black uppercase tracking-wider text-pmr-primary flex items-center gap-1.5 mb-2">
-                            <i class="fa-solid fa-quote-left"></i> Arah Kebijakan Utama
+                            <i class="fa-solid fa-quote-left"></i> {{ $guideline->gbho_policy_heading ?: 'Arah Kebijakan Utama' }}
                         </div>
                         <p class="text-xs sm:text-sm font-semibold text-slate-800 leading-relaxed italic">
-                            "Mewujudkan PMR Wira SMAN 1 Ciawi sebagai organisasi yang aktif, solid, cerdas berorganisasi, dan memiliki ketangguhan fisik serta mental dalam aksi kemanusiaan yang cepat, tepat, dan berdampak nyata."
+                            "{{ $guideline->gbho_policy_text }}"
                         </p>
                     </div>
 
                     <!-- 6 Pilar Strategi (Grid 2 Kolom) -->
                     <div class="space-y-2.5 mb-6">
                         <div class="text-xs font-black uppercase tracking-wider text-slate-700 flex items-center justify-between">
-                            <span>6 Strategi Pokok Organisasi</span>
-                            <span class="text-[10px] font-bold text-red-600 bg-red-50 px-2 py-0.5 rounded-full">Lengkap</span>
+                            <span>Strategi Pokok Organisasi</span>
+                            <span class="text-[10px] font-bold text-red-600 bg-red-50 px-2 py-0.5 rounded-full">{{ $guideline->strategies->count() }} Pilar</span>
                         </div>
                         
                         <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
+                            @foreach($guideline->strategies as $st)
                             <div class="p-2.5 rounded-xl bg-slate-50 border border-slate-100 flex items-start gap-2">
-                                <span class="w-5 h-5 rounded-lg bg-red-100 text-pmr-primary flex items-center justify-center text-[10px] font-black flex-shrink-0 mt-0.5">1</span>
-                                <span class="font-bold text-slate-800">Kedisiplinan & Sikap Dasar Relawan</span>
+                                <span class="w-5 h-5 rounded-lg bg-red-100 text-pmr-primary flex items-center justify-center text-[10px] font-black flex-shrink-0 mt-0.5">{{ $st->order_number }}</span>
+                                <span class="font-bold text-slate-800">{{ $st->title }}</span>
                             </div>
-                            <div class="p-2.5 rounded-xl bg-slate-50 border border-slate-100 flex items-start gap-2">
-                                <span class="w-5 h-5 rounded-lg bg-red-100 text-pmr-primary flex items-center justify-center text-[10px] font-black flex-shrink-0 mt-0.5">2</span>
-                                <span class="font-bold text-slate-800">Pelatihan Medis & Tanggap PP</span>
-                            </div>
-                            <div class="p-2.5 rounded-xl bg-slate-50 border border-slate-100 flex items-start gap-2">
-                                <span class="w-5 h-5 rounded-lg bg-red-100 text-pmr-primary flex items-center justify-center text-[10px] font-black flex-shrink-0 mt-0.5">3</span>
-                                <span class="font-bold text-slate-800">Pembinaan Fisik & Mental Tangguh</span>
-                            </div>
-                            <div class="p-2.5 rounded-xl bg-slate-50 border border-slate-100 flex items-start gap-2">
-                                <span class="w-5 h-5 rounded-lg bg-red-100 text-pmr-primary flex items-center justify-center text-[10px] font-black flex-shrink-0 mt-0.5">4</span>
-                                <span class="font-bold text-slate-800">Kekompakan & Solidaritas Internal</span>
-                            </div>
-                            <div class="p-2.5 rounded-xl bg-slate-50 border border-slate-100 flex items-start gap-2">
-                                <span class="w-5 h-5 rounded-lg bg-red-100 text-pmr-primary flex items-center justify-center text-[10px] font-black flex-shrink-0 mt-0.5">5</span>
-                                <span class="font-bold text-slate-800">Manajemen Modern & Tertib ADM</span>
-                            </div>
-                            <div class="p-2.5 rounded-xl bg-slate-50 border border-slate-100 flex items-start gap-2">
-                                <span class="w-5 h-5 rounded-lg bg-red-100 text-pmr-primary flex items-center justify-center text-[10px] font-black flex-shrink-0 mt-0.5">6</span>
-                                <span class="font-bold text-slate-800">Sinergi Pembina, Sekolah & Alumni</span>
-                            </div>
+                            @endforeach
                         </div>
                     </div>
                 </div>
@@ -785,7 +767,7 @@
                        class="w-full sm:flex-1 py-3 px-4 rounded-xl bg-pmr-primary hover:bg-pmr-dark text-white font-extrabold text-xs uppercase tracking-wider text-center shadow-md transition flex items-center justify-center gap-2">
                         <i class="fa-solid fa-book-open"></i> Baca Teks GBHO
                     </a>
-                    <a href="{{ asset('documents/GBHO_PMR_WIRA_SMAN_1_CIAWI_2026.pdf') }}" download
+                    <a href="{{ $guideline->gbho_pdf_url }}" download
                        class="w-full sm:w-auto py-3 px-4 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-extrabold text-xs uppercase tracking-wider text-center transition flex items-center justify-center gap-1.5">
                         <i class="fa-solid fa-file-pdf text-red-600"></i> Unduh PDF
                     </a>
@@ -804,7 +786,7 @@
                         </span>
                         <div class="flex items-center gap-2 text-xs font-bold text-slate-400">
                             <span class="inline-block w-2 h-2 rounded-full bg-emerald-500"></span>
-                            <span>11 Bab Regulasi</span>
+                            <span>{{ $guideline->chapters->count() }} Bab Regulasi</span>
                         </div>
                     </div>
 
@@ -837,35 +819,17 @@
                     <!-- Directory 11 Bab (Mini Explorer Grid) -->
                     <div class="mb-6">
                         <div class="text-xs font-black uppercase tracking-wider text-slate-700 mb-3 flex items-center justify-between">
-                            <span>Struktur Dokumen PPUO (11 Bab)</span>
+                            <span>Struktur Dokumen PPUO ({{ $guideline->chapters->count() }} Bab)</span>
                             <span class="text-[11px] text-slate-400 font-medium">Lengkap & Tersusun Rapi</span>
                         </div>
 
                         <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
+                            @foreach($guideline->chapters->take(6) as $ch)
                             <a href="{{ route('pedoman-organisasi') }}#ppuo" class="p-2.5 rounded-xl bg-slate-50 hover:bg-red-50 hover:border-red-200 border border-slate-100 transition flex items-center gap-2 group/item">
-                                <i class="fa-solid fa-feather text-pmr-primary text-[10px] w-4 text-center"></i>
-                                <span class="font-extrabold text-slate-700 group-hover/item:text-pmr-primary transition truncate">Bab I - II: Pendahuluan & Asas</span>
+                                <i class="fa-solid fa-file-lines text-pmr-primary text-[10px] w-4 text-center"></i>
+                                <span class="font-extrabold text-slate-700 group-hover/item:text-pmr-primary transition truncate">{{ $ch->chapter_number }}: {{ $ch->title }}</span>
                             </a>
-                            <a href="{{ route('pedoman-organisasi') }}#ppuo" class="p-2.5 rounded-xl bg-slate-50 hover:bg-red-50 hover:border-red-200 border border-slate-100 transition flex items-center gap-2 group/item">
-                                <i class="fa-solid fa-users text-pmr-primary text-[10px] w-4 text-center"></i>
-                                <span class="font-extrabold text-slate-700 group-hover/item:text-pmr-primary transition truncate">Bab III - IV: Keanggotaan & Hak/Kewajiban</span>
-                            </a>
-                            <a href="{{ route('pedoman-organisasi') }}#ppuo" class="p-2.5 rounded-xl bg-slate-50 hover:bg-red-50 hover:border-red-200 border border-slate-100 transition flex items-center gap-2 group/item">
-                                <i class="fa-solid fa-shirt text-pmr-primary text-[10px] w-4 text-center"></i>
-                                <span class="font-extrabold text-slate-700 group-hover/item:text-pmr-primary transition truncate">Bab V: Seragam & Standarisasi Syal</span>
-                            </a>
-                            <a href="{{ route('pedoman-organisasi') }}#ppuo" class="p-2.5 rounded-xl bg-slate-50 hover:bg-red-50 hover:border-red-200 border border-slate-100 transition flex items-center gap-2 group/item">
-                                <i class="fa-solid fa-sitemap text-pmr-primary text-[10px] w-4 text-center"></i>
-                                <span class="font-extrabold text-slate-700 group-hover/item:text-pmr-primary transition truncate">Bab VI: Struktur & BPH</span>
-                            </a>
-                            <a href="{{ route('pedoman-organisasi') }}#ppuo" class="p-2.5 rounded-xl bg-slate-50 hover:bg-red-50 hover:border-red-200 border border-slate-100 transition flex items-center gap-2 group/item">
-                                <i class="fa-solid fa-briefcase-medical text-pmr-primary text-[10px] w-4 text-center"></i>
-                                <span class="font-extrabold text-slate-700 group-hover/item:text-pmr-primary transition truncate">Bab VII: Manajemen Markas & UKS</span>
-                            </a>
-                            <a href="{{ route('pedoman-organisasi') }}#ppuo" class="p-2.5 rounded-xl bg-slate-50 hover:bg-red-50 hover:border-red-200 border border-slate-100 transition flex items-center gap-2 group/item">
-                                <i class="fa-solid fa-triangle-exclamation text-amber-600 text-[10px] w-4 text-center"></i>
-                                <span class="font-extrabold text-slate-700 group-hover/item:text-pmr-primary transition truncate">Bab X: Tata Tertib & Sanksi Disiplin</span>
-                            </a>
+                            @endforeach
                         </div>
                     </div>
                 </div>
@@ -874,9 +838,9 @@
                 <div class="relative z-10 pt-4 border-t border-slate-100 flex flex-col sm:flex-row items-center gap-2.5">
                     <a href="{{ route('pedoman-organisasi') }}#ppuo" 
                        class="w-full sm:flex-1 py-3 px-5 rounded-xl bg-gradient-to-r from-pmr-primary to-red-700 hover:from-pmr-dark hover:to-red-800 text-white font-extrabold text-xs uppercase tracking-wider text-center shadow-md transition flex items-center justify-center gap-2">
-                        <i class="fa-solid fa-book-journal-whills"></i> Buka Reader Digital Lengkap (11 Bab)
+                        <i class="fa-solid fa-book-journal-whills"></i> Buka Reader Digital Lengkap ({{ $guideline->chapters->count() }} Bab)
                     </a>
-                    <a href="{{ asset('documents/PPUO_PMR_WIRA_SMAN_1_CIAWI_2026.pdf') }}" download
+                    <a href="{{ $guideline->ppuo_pdf_url }}" download
                        class="w-full sm:w-auto py-3 px-5 rounded-xl bg-amber-50 hover:bg-amber-100 text-amber-900 border border-amber-200 font-extrabold text-xs uppercase tracking-wider text-center transition flex items-center justify-center gap-1.5">
                         <i class="fa-solid fa-download text-amber-700"></i> Unduh Buku PDF (27 Hal)
                     </a>
@@ -892,9 +856,9 @@
                     <i class="fa-solid fa-stamp"></i>
                 </div>
                 <div>
-                    <h4 class="font-extrabold text-base sm:text-lg text-white">Lembar Pengesahan & Arsip Resmi 2026</h4>
+                    <h4 class="font-extrabold text-base sm:text-lg text-white">Lembar Pengesahan & Arsip Resmi {{ $guideline->period }}</h4>
                     <p class="text-xs sm:text-sm text-slate-400 mt-0.5">
-                        Dokumen GBHO & PPUO ini telah disahkan bersama Presidium Sidang, Pembina PMR, dan Pihak Sekolah pada 05 Januari 2026.
+                        Dokumen GBHO & PPUO ini telah disahkan bersama {{ $guideline->signer_presidium }}, {{ $guideline->signer_pembina }}, dan {{ $guideline->signer_school }} pada {{ $guideline->established_date }}.
                     </p>
                 </div>
             </div>

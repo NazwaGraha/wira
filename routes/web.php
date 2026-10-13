@@ -22,6 +22,7 @@ use App\Http\Controllers\Admin\GalleryController;
 use App\Http\Controllers\Admin\HeroSlideController;
 use App\Http\Controllers\Admin\MemberController;
 use App\Http\Controllers\Admin\OrganizationController;
+use App\Http\Controllers\Admin\OrganizationGuidelineController;
 use App\Http\Controllers\ArticleController;
 use App\Http\Controllers\CompetitionController;
 use App\Http\Controllers\MemberAreaController;
@@ -129,6 +130,17 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::get('/bagan-kepengurusan/{member}/edit', [OrganizationController::class, 'edit'])->name('organization.edit');
         Route::put('/bagan-kepengurusan/{member}', [OrganizationController::class, 'update'])->name('organization.update');
         Route::delete('/bagan-kepengurusan/{member}', [OrganizationController::class, 'destroy'])->name('organization.destroy');
+
+        // Pedoman Organisasi (GBHO & PPUO)
+        Route::get('/pedoman-organisasi', [OrganizationGuidelineController::class, 'index'])->name('organization-guidelines.index');
+        Route::put('/pedoman-organisasi/gbho', [OrganizationGuidelineController::class, 'updateGbho'])->name('organization-guidelines.update-gbho');
+        Route::post('/pedoman-organisasi/strategy', [OrganizationGuidelineController::class, 'storeStrategy'])->name('organization-guidelines.store-strategy');
+        Route::put('/pedoman-organisasi/strategy/{strategy}', [OrganizationGuidelineController::class, 'updateStrategy'])->name('organization-guidelines.update-strategy');
+        Route::delete('/pedoman-organisasi/strategy/{strategy}', [OrganizationGuidelineController::class, 'destroyStrategy'])->name('organization-guidelines.destroy-strategy');
+        Route::post('/pedoman-organisasi/chapter', [OrganizationGuidelineController::class, 'storeChapter'])->name('organization-guidelines.store-chapter');
+        Route::put('/pedoman-organisasi/chapter/{chapter}', [OrganizationGuidelineController::class, 'updateChapter'])->name('organization-guidelines.update-chapter');
+        Route::delete('/pedoman-organisasi/chapter/{chapter}', [OrganizationGuidelineController::class, 'destroyChapter'])->name('organization-guidelines.destroy-chapter');
+        Route::put('/pedoman-organisasi/files', [OrganizationGuidelineController::class, 'updateFilesAndSigners'])->name('organization-guidelines.update-files');
 
         // Data Anggota
         Route::get('/members/export', [MemberController::class, 'export'])->name('members.export');
