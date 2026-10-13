@@ -168,4 +168,74 @@ class MemberController extends Controller
 
         return redirect()->route('admin.members.index')->with('success', "Data anggota '{$name}' berhasil dihapus.");
     }
+
+    /**
+     * Export member list to Excel XLSX
+     */
+    public function export(Request $request, \App\Services\MemberSpreadsheetService $spreadsheetService)
+    {
+        $status = $request->query('status');
+        $query = Member::orderBy('name');
+
+        if ($status && in_array($status, ['Aktif', 'Purna'])) {
+            $query->where('member_status', $status);
+        }
+
+        $members = $query->get();
+        $filePath = $spreadsheetService->export($members);
+        $filename = 'Data_Anggota_PMR_WIRA_' . date('Ymd_His') . '.xlsx';
+
+        return response()->download($filePath, $filename, [
+            'Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        ])->deleteFileAfterSend(true);
+    }
+
+    /**
+     * Download Excel template for bulk import
+     */
+    public function downloadTemplate(\App\Services\MemberSpreadsheetService $spreadsheetService)
+    {
+        $filePath = $spreadsheetService->exportTemplate();
+        $filename = 'Template_Import_Anggota_PMR_WIRA.xlsx';
+
+        return response()->download($filePath, $filename, [
+            'Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        ])->deleteFileAfterSend(true);
+    }
+
+    /**
+     * Import members from Excel (.xlsx or .csv)
+     */
+    public function import(Request $request, \App\Services\MemberSpreadsheetService $spreadsheetService)
+    {
+        $request->validate([
+            'excel_file' => 'required|file|max:10240',
+        ], [
+            'excel_file.required' => 'Silakan pilih file Excel (.xlsx atau .csv) terlebih dahulu.',
+            'excel_file.max' => 'Ukuran file Excel maksimal 10MB.',
+        ]);
+
+        $file = $request->file('excel_file');
+        $ext = strtolower($file->getClientOriginalExtension());
+        if (!in_array($ext, ['xlsx', 'xls', 'csv', 'txt'])) {
+            return redirect()->back()->with('error', 'Format file harus berupa file Excel (.xlsx) atau CSV (.csv).');
+        }
+
+        try {
+            $result = $spreadsheetService->import($file);
+
+            if ($result['total'] === 0 && !empty($result['errors'])) {
+                return redirect()->back()->with('error', implode('<br>', $result['errors']));
+            }
+
+            $message = "Berhasil memproses {$result['total']} data anggota (Baru: {$result['success']}, Diperbarui: {$result['updated']}).";
+            if ($result['skipped'] > 0) {
+                $message .= " {$result['skipped']} baris dilewati karena kosong atau tidak valid.";
+            }
+
+            return redirect()->route('admin.members.index')->with('success', $message);
+        } catch (\Throwable $e) {
+            return redirect()->back()->with('error', 'Gagal memproses file Excel: ' . $e->getMessage());
+        }
+    }
 }

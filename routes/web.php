@@ -87,6 +87,9 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::delete('/bagan-kepengurusan/{member}', [\App\Http\Controllers\Admin\OrganizationController::class, 'destroy'])->name('organization.destroy');
         
         // Data Anggota
+        Route::get('/members/export', [\App\Http\Controllers\Admin\MemberController::class, 'export'])->name('members.export');
+        Route::get('/members/template', [\App\Http\Controllers\Admin\MemberController::class, 'downloadTemplate'])->name('members.template');
+        Route::post('/members/import', [\App\Http\Controllers\Admin\MemberController::class, 'import'])->name('members.import');
         Route::resource('members', \App\Http\Controllers\Admin\MemberController::class);
 
         // Donor Darah
