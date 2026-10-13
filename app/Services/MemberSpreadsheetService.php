@@ -11,24 +11,24 @@ use SimpleXMLElement;
 class MemberSpreadsheetService
 {
     /**
-     * Column definition mapping
+     * Column definition mapping with widths and alignment styles
      */
     public const COLUMNS = [
-        'A' => ['key' => 'nis', 'label' => 'NIS', 'required' => false],
-        'B' => ['key' => 'name', 'label' => 'Nama Lengkap', 'required' => true],
-        'C' => ['key' => 'position', 'label' => 'Jabatan', 'required' => false],
-        'D' => ['key' => 'gender', 'label' => 'Jenis Kelamin (Laki-laki / Perempuan)', 'required' => false],
-        'E' => ['key' => 'class_grade', 'label' => 'Kelas / Tingkat (X / XI / XII / Alumni)', 'required' => false],
-        'F' => ['key' => 'entry_year', 'label' => 'Tahun Masuk (contoh: 2024)', 'required' => false],
-        'G' => ['key' => 'member_status', 'label' => 'Status Anggota (Aktif / Purna / Kosongkan untuk Otomatis)', 'required' => false],
-        'H' => ['key' => 'birth_place', 'label' => 'Tempat Lahir', 'required' => false],
-        'I' => ['key' => 'birth_date', 'label' => 'Tanggal Lahir (YYYY-MM-DD)', 'required' => false],
-        'J' => ['key' => 'email', 'label' => 'Email', 'required' => false],
-        'K' => ['key' => 'phone', 'label' => 'Nomor HP / WA', 'required' => false],
-        'L' => ['key' => 'address', 'label' => 'Alamat Lengkap', 'required' => false],
-        'M' => ['key' => 'motto', 'label' => 'Motto Hidup', 'required' => false],
-        'N' => ['key' => 'vision', 'label' => 'Visi', 'required' => false],
-        'O' => ['key' => 'mission', 'label' => 'Misi', 'required' => false],
+        'A' => ['key' => 'nis', 'label' => 'NIS', 'width' => 16, 'align' => 'center'],
+        'B' => ['key' => 'name', 'label' => 'Nama Lengkap', 'width' => 30, 'align' => 'left'],
+        'C' => ['key' => 'position', 'label' => 'Jabatan', 'width' => 24, 'align' => 'left'],
+        'D' => ['key' => 'gender', 'label' => 'Jenis Kelamin', 'width' => 16, 'align' => 'center'],
+        'E' => ['key' => 'class_grade', 'label' => 'Kelas / Tingkat', 'width' => 16, 'align' => 'center'],
+        'F' => ['key' => 'entry_year', 'label' => 'Tahun Masuk', 'width' => 15, 'align' => 'center'],
+        'G' => ['key' => 'member_status', 'label' => 'Status Anggota', 'width' => 18, 'align' => 'center'],
+        'H' => ['key' => 'birth_place', 'label' => 'Tempat Lahir', 'width' => 20, 'align' => 'left'],
+        'I' => ['key' => 'birth_date', 'label' => 'Tanggal Lahir', 'width' => 16, 'align' => 'center'],
+        'J' => ['key' => 'email', 'label' => 'Email', 'width' => 28, 'align' => 'left'],
+        'K' => ['key' => 'phone', 'label' => 'Nomor HP / WA', 'width' => 20, 'align' => 'left'],
+        'L' => ['key' => 'address', 'label' => 'Alamat Lengkap', 'width' => 38, 'align' => 'left'],
+        'M' => ['key' => 'motto', 'label' => 'Motto Hidup', 'width' => 32, 'align' => 'left'],
+        'N' => ['key' => 'vision', 'label' => 'Visi', 'width' => 32, 'align' => 'left'],
+        'O' => ['key' => 'mission', 'label' => 'Misi', 'width' => 32, 'align' => 'left'],
     ];
 
     /**
@@ -142,6 +142,9 @@ class MemberSpreadsheetService
         // Header check (skip row 1)
         $headerRow = array_shift($rows);
 
+        // Build dynamic column mapping from header text
+        $colMap = $this->buildHeaderColumnMapping($headerRow);
+
         $successCount = 0;
         $updatedCount = 0;
         $skippedCount = 0;
@@ -151,22 +154,22 @@ class MemberSpreadsheetService
         foreach ($rows as $index => $row) {
             $rowNumber = $index + 2; // 1-indexed Excel row (header is 1)
 
-            // Extract columns by position (matching COLUMNS order)
-            $nis = isset($row[0]) ? trim((string) $row[0]) : null;
-            $name = isset($row[1]) ? trim((string) $row[1]) : '';
-            $position = isset($row[2]) ? trim((string) $row[2]) : null;
-            $gender = isset($row[3]) ? trim((string) $row[3]) : null;
-            $classGrade = isset($row[4]) ? trim((string) $row[4]) : null;
-            $entryYearRaw = isset($row[5]) ? trim((string) $row[5]) : null;
-            $memberStatus = isset($row[6]) ? trim((string) $row[6]) : null;
-            $birthPlace = isset($row[7]) ? trim((string) $row[7]) : null;
-            $birthDateRaw = isset($row[8]) ? trim((string) $row[8]) : null;
-            $email = isset($row[9]) ? trim((string) $row[9]) : null;
-            $phone = isset($row[10]) ? trim((string) $row[10]) : null;
-            $address = isset($row[11]) ? trim((string) $row[11]) : null;
-            $motto = isset($row[12]) ? trim((string) $row[12]) : null;
-            $vision = isset($row[13]) ? trim((string) $row[13]) : null;
-            $mission = isset($row[14]) ? trim((string) $row[14]) : null;
+            // Extract values using dynamic column mapping (with positional fallback)
+            $nis = $this->getMappedVal($row, $colMap, 'nis', 0);
+            $name = $this->getMappedVal($row, $colMap, 'name', 1);
+            $position = $this->getMappedVal($row, $colMap, 'position', 2);
+            $gender = $this->getMappedVal($row, $colMap, 'gender', 3);
+            $classGrade = $this->getMappedVal($row, $colMap, 'class_grade', 4);
+            $entryYearRaw = $this->getMappedVal($row, $colMap, 'entry_year', 5);
+            $memberStatus = $this->getMappedVal($row, $colMap, 'member_status', 6);
+            $birthPlace = $this->getMappedVal($row, $colMap, 'birth_place', 7);
+            $birthDateRaw = $this->getMappedVal($row, $colMap, 'birth_date', 8);
+            $email = $this->getMappedVal($row, $colMap, 'email', 9);
+            $phone = $this->getMappedVal($row, $colMap, 'phone', 10);
+            $address = $this->getMappedVal($row, $colMap, 'address', 11);
+            $motto = $this->getMappedVal($row, $colMap, 'motto', 12);
+            $vision = $this->getMappedVal($row, $colMap, 'vision', 13);
+            $mission = $this->getMappedVal($row, $colMap, 'mission', 14);
 
             // Skip completely empty rows
             if (empty($name) && empty($nis)) {
@@ -297,6 +300,64 @@ class MemberSpreadsheetService
     }
 
     /**
+     * Build column index map by matching header names
+     */
+    protected function buildHeaderColumnMapping(array $headerRow): array
+    {
+        $map = [];
+        foreach ($headerRow as $idx => $cellText) {
+            $h = strtolower(trim((string) $cellText));
+            if (empty($h)) continue;
+
+            if (str_contains($h, 'nis')) {
+                $map['nis'] = $idx;
+            } elseif (str_contains($h, 'nama')) {
+                $map['name'] = $idx;
+            } elseif (str_contains($h, 'jabatan') || str_contains($h, 'posisi')) {
+                $map['position'] = $idx;
+            } elseif (str_contains($h, 'kelamin') || str_contains($h, 'gender')) {
+                $map['gender'] = $idx;
+            } elseif (str_contains($h, 'kelas') || str_contains($h, 'tingkat')) {
+                $map['class_grade'] = $idx;
+            } elseif (str_contains($h, 'tahun') || str_contains($h, 'masuk')) {
+                $map['entry_year'] = $idx;
+            } elseif (str_contains($h, 'status')) {
+                $map['member_status'] = $idx;
+            } elseif (str_contains($h, 'tempat')) {
+                $map['birth_place'] = $idx;
+            } elseif (str_contains($h, 'tanggal') || str_contains($h, 'tgl') || str_contains($h, 'lahir')) {
+                $map['birth_date'] = $idx;
+            } elseif (str_contains($h, 'email')) {
+                $map['email'] = $idx;
+            } elseif (str_contains($h, 'hp') || str_contains($h, 'wa') || str_contains($h, 'telepon') || str_contains($h, 'kontak') || str_contains($h, 'phone')) {
+                $map['phone'] = $idx;
+            } elseif (str_contains($h, 'alamat')) {
+                $map['address'] = $idx;
+            } elseif (str_contains($h, 'motto')) {
+                $map['motto'] = $idx;
+            } elseif (str_contains($h, 'visi')) {
+                $map['vision'] = $idx;
+            } elseif (str_contains($h, 'misi')) {
+                $map['mission'] = $idx;
+            }
+        }
+        return $map;
+    }
+
+    /**
+     * Get value from row using mapped index or default position
+     */
+    protected function getMappedVal(array $row, array $colMap, string $key, int $defaultIdx): ?string
+    {
+        $idx = $colMap[$key] ?? $defaultIdx;
+        if (isset($row[$idx])) {
+            $val = trim((string) $row[$idx]);
+            return $val !== '' ? $val : null;
+        }
+        return null;
+    }
+
+    /**
      * Read XLSX file rows using ZipArchive & SimpleXMLElement
      */
     protected function readXlsx(string $filePath): array
@@ -330,7 +391,6 @@ class MemberSpreadsheetService
         // 2. Read Sheet 1 XML
         $sheetXmlContent = $zip->getFromName('xl/worksheets/sheet1.xml');
         if (!$sheetXmlContent) {
-            // Coba cari nama sheet pertama
             for ($i = 0; $i < $zip->numFiles; $i++) {
                 $filename = $zip->getNameIndex($i);
                 if (str_starts_with($filename, 'xl/worksheets/sheet') && str_ends_with($filename, '.xml')) {
@@ -396,7 +456,6 @@ class MemberSpreadsheetService
             return [];
         }
 
-        // Read first line to detect delimiter (, or ;)
         $firstLine = fgets($handle);
         rewind($handle);
 
@@ -411,7 +470,7 @@ class MemberSpreadsheetService
     }
 
     /**
-     * Helper to create a valid XLSX file via ZipArchive
+     * Helper to create a beautifully styled XLSX file via ZipArchive
      */
     protected function createXlsxFile(array $rows, string $sheetTitle = 'Data'): string
     {
@@ -419,7 +478,7 @@ class MemberSpreadsheetService
         $zip = new ZipArchive();
         $zip->open($tempFile, ZipArchive::CREATE | ZipArchive::OVERWRITE);
 
-        // Content types
+        // 1. Content types
         $contentTypes = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types">
 <Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/>
@@ -430,14 +489,14 @@ class MemberSpreadsheetService
 </Types>';
         $zip->addFromString('[Content_Types].xml', $contentTypes);
 
-        // Package relationships
+        // 2. Package relationships
         $rels = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">
 <Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="xl/workbook.xml"/>
 </Relationships>';
         $zip->addFromString('_rels/.rels', $rels);
 
-        // Workbook relationships
+        // 3. Workbook relationships
         $wbRels = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">
 <Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet1.xml"/>
@@ -445,7 +504,7 @@ class MemberSpreadsheetService
 </Relationships>';
         $zip->addFromString('xl/_rels/workbook.xml.rels', $wbRels);
 
-        // Workbook definition
+        // 4. Workbook definition
         $safeSheetTitle = htmlspecialchars(substr($sheetTitle, 0, 31), ENT_XML1);
         $workbook = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships">
@@ -453,55 +512,118 @@ class MemberSpreadsheetService
 </workbook>';
         $zip->addFromString('xl/workbook.xml', $workbook);
 
-        // Styles definition (Basic clean font and header background)
+        // 5. Professional Styles definition
+        // Style 0: Default
+        // Style 1: Header (Merah PMR #B91C1C, Font Putih Bold 11pt, Center, Thin Border)
+        // Style 2: Data Center (Font Calibri 10pt, Center, Thin Border)
+        // Style 3: Data Left (Font Calibri 10pt, Left, Thin Border)
+        // Style 4: Data Center Zebra Light (#F8FAFC, Center, Thin Border)
+        // Style 5: Data Left Zebra Light (#F8FAFC, Left, Thin Border)
         $styles = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <styleSheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">
 <fonts count="2">
-<font><name val="Calibri"/><sz val="11"/></font>
+<font><name val="Calibri"/><sz val="10"/><color rgb="FF0F172A"/></font>
 <font><b/><name val="Calibri"/><sz val="11"/><color rgb="FFFFFFFF"/></font>
 </fonts>
-<fills count="3">
+<fills count="4">
 <fill><patternFill patternType="none"/></fill>
 <fill><patternFill patternType="gray125"/></fill>
-<fill><patternFill patternType="solid"><fgColor rgb="FF991B1B"/></patternFill></fill>
+<fill><patternFill patternType="solid"><fgColor rgb="FFB91C1C"/></patternFill></fill>
+<fill><patternFill patternType="solid"><fgColor rgb="FFF8FAFC"/></patternFill></fill>
 </fills>
-<borders count="1">
+<borders count="2">
 <border><left/><right/><top/><bottom/></border>
+<border>
+<left style="thin"><color rgb="FFCBD5E1"/></left>
+<right style="thin"><color rgb="FFCBD5E1"/></right>
+<top style="thin"><color rgb="FFCBD5E1"/></top>
+<bottom style="thin"><color rgb="FFCBD5E1"/></bottom>
+</border>
 </borders>
 <cellStyleXfs count="1">
 <xf numFmtId="0" fontId="0" fillId="0" borderId="0"/>
 </cellStyleXfs>
-<cellXfs count="2">
-<xf numFmtId="0" fontId="0" fillId="0" borderId="0" xfId="0"/>
-<xf numFmtId="0" fontId="1" fillId="2" borderId="0" xfId="0" applyFont="1" applyFill="1"/>
+<cellXfs count="6">
+<!-- 0: Default -->
+<xf numFmtId="0" fontId="0" fillId="0" borderId="1" xfId="0" applyBorder="1"/>
+<!-- 1: Header (Red, Bold, Center) -->
+<xf numFmtId="0" fontId="1" fillId="2" borderId="1" xfId="0" applyFont="1" applyFill="1" applyBorder="1" applyAlignment="1">
+<alignment horizontal="center" vertical="center" wrapText="1"/>
+</xf>
+<!-- 2: Data Center -->
+<xf numFmtId="0" fontId="0" fillId="0" borderId="1" xfId="0" applyFont="1" applyBorder="1" applyAlignment="1">
+<alignment horizontal="center" vertical="center"/>
+</xf>
+<!-- 3: Data Left -->
+<xf numFmtId="0" fontId="0" fillId="0" borderId="1" xfId="0" applyFont="1" applyBorder="1" applyAlignment="1">
+<alignment horizontal="left" vertical="center"/>
+</xf>
+<!-- 4: Data Center Zebra -->
+<xf numFmtId="0" fontId="0" fillId="3" borderId="1" xfId="0" applyFont="1" applyFill="1" applyBorder="1" applyAlignment="1">
+<alignment horizontal="center" vertical="center"/>
+</xf>
+<!-- 5: Data Left Zebra -->
+<xf numFmtId="0" fontId="0" fillId="3" borderId="1" xfId="0" applyFont="1" applyFill="1" applyBorder="1" applyAlignment="1">
+<alignment horizontal="left" vertical="center"/>
+</xf>
 </cellXfs>
 </styleSheet>';
         $zip->addFromString('xl/styles.xml', $styles);
 
-        // Sheet Data construction
+        // 6. Column Widths Definition (<cols>)
+        $colsXml = '<cols>';
+        $colIdx = 1;
+        foreach (self::COLUMNS as $colMeta) {
+            $w = $colMeta['width'] ?? 20;
+            $colsXml .= '<col min="' . $colIdx . '" max="' . $colIdx . '" width="' . $w . '" customWidth="1"/>';
+            $colIdx++;
+        }
+        $colsXml .= '</cols>';
+
+        // 7. Sheet Data construction
+        $alignMap = array_values(array_column(self::COLUMNS, 'align'));
+
         $sheetDataXml = '<sheetData>';
         foreach ($rows as $rowIndex => $cols) {
             $rNum = $rowIndex + 1;
             $isHeader = ($rNum === 1);
-            $sheetDataXml .= '<row r="' . $rNum . '">';
+            $rowHeight = $isHeader ? ' ht="28" customHeight="1"' : ' ht="22" customHeight="1"';
+            $isZebra = (!$isHeader && $rNum % 2 === 1);
+
+            $sheetDataXml .= '<row r="' . $rNum . '"' . $rowHeight . '>';
             foreach ($cols as $colIndex => $val) {
                 $colLetter = $this->indexToColumnLetter($colIndex);
                 $cellRef = $colLetter . $rNum;
-                $styleAttr = $isHeader ? ' s="1"' : '';
 
-                if (is_numeric($val) && strlen((string)$val) < 11 && !str_starts_with((string)$val, '0')) {
-                    $sheetDataXml .= '<c r="' . $cellRef . '"' . $styleAttr . '><v>' . $val . '</v></c>';
+                if ($isHeader) {
+                    $styleId = 1; // Header red
                 } else {
-                    $safeVal = htmlspecialchars((string) $val, ENT_XML1);
-                    $sheetDataXml .= '<c r="' . $cellRef . '"' . $styleAttr . ' t="inlineStr"><is><t>' . $safeVal . '</t></is></c>';
+                    $align = $alignMap[$colIndex] ?? 'left';
+                    if ($align === 'center') {
+                        $styleId = $isZebra ? 4 : 2;
+                    } else {
+                        $styleId = $isZebra ? 5 : 3;
+                    }
                 }
+
+                $styleAttr = ' s="' . $styleId . '"';
+                $safeVal = htmlspecialchars((string) $val, ENT_XML1);
+                $sheetDataXml .= '<c r="' . $cellRef . '"' . $styleAttr . ' t="inlineStr"><is><t>' . $safeVal . '</t></is></c>';
             }
             $sheetDataXml .= '</row>';
         }
         $sheetDataXml .= '</sheetData>';
 
+        // 8. Worksheet XML with Frozen Header Pane & Custom Column Widths
         $worksheet = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">
+<sheetViews>
+<sheetView tabSelected="1" workbookViewId="0">
+<pane ySplit="1" topLeftCell="A2" activePane="bottomLeft" state="frozen"/>
+</sheetView>
+</sheetViews>
+<sheetFormatPr defaultRowHeight="20"/>
+' . $colsXml . '
 ' . $sheetDataXml . '
 </worksheet>';
         $zip->addFromString('xl/worksheets/sheet1.xml', $worksheet);
