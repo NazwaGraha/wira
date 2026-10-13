@@ -108,7 +108,11 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::resource('blood-donation-events', \App\Http\Controllers\Admin\BloodDonationEventController::class);
         Route::resource('blood-donor-registrations', \App\Http\Controllers\Admin\BloodDonorRegistrationController::class);
 
-        // Galeri
+        // Galeri & Kategori Galeri
+        Route::post('gallery/categories/quick-store', [\App\Http\Controllers\Admin\GalleryCategoryController::class, 'quickStore'])->name('gallery-categories.quick-store');
+        Route::resource('gallery/categories', \App\Http\Controllers\Admin\GalleryCategoryController::class)->names('gallery-categories')->parameters([
+            'categories' => 'category'
+        ]);
         Route::resource('gallery', \App\Http\Controllers\Admin\GalleryController::class);
 
         // Manajemen Lomba (SUA BHAKTI BERKARYA)

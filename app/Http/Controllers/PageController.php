@@ -86,8 +86,9 @@ class PageController extends Controller
 
     public function galeri()
     {
-        $galleries = \App\Models\Gallery::where('is_active', true)->orderBy('created_at', 'desc')->get();
-        return view('pages.galeri', compact('galleries'));
+        $galleries = \App\Models\Gallery::with('galleryCategory')->where('is_active', true)->orderBy('created_at', 'desc')->get();
+        $categories = \App\Models\GalleryCategory::orderBy('name')->get();
+        return view('pages.galeri', compact('galleries', 'categories'));
     }
 
     public function donorDarah()

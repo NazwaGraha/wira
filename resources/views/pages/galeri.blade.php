@@ -16,12 +16,14 @@
 <!-- Filter Tabs -->
 <div class="bg-white border-b border-slate-200 py-4 sticky top-20 z-30 shadow-sm">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex justify-center">
-        <div class="flex items-center gap-2 overflow-x-auto">
-            <button onclick="filterGallery('all')" class="gallery-filter-btn active px-5 py-2 rounded-full text-xs font-bold bg-pmr-primary text-white shadow">Semua Foto</button>
-            <button onclick="filterGallery('latihan')" class="gallery-filter-btn px-5 py-2 rounded-full text-xs font-bold bg-slate-100 text-slate-600 hover:bg-slate-200">Latihan & PP</button>
-            <button onclick="filterGallery('donor')" class="gallery-filter-btn px-5 py-2 rounded-full text-xs font-bold bg-slate-100 text-slate-600 hover:bg-slate-200">Donor Darah</button>
-            <button onclick="filterGallery('sosial')" class="gallery-filter-btn px-5 py-2 rounded-full text-xs font-bold bg-slate-100 text-slate-600 hover:bg-slate-200">Bakti Sosial</button>
-            <button onclick="filterGallery('video')" class="gallery-filter-btn px-5 py-2 rounded-full text-xs font-bold bg-slate-100 text-slate-600 hover:bg-slate-200">Video Dokumentasi</button>
+        <div class="flex items-center gap-2 overflow-x-auto pb-1 max-w-full">
+            <button onclick="filterGallery('all')" class="gallery-filter-btn active px-5 py-2 rounded-full text-xs font-bold bg-pmr-primary text-white shadow shrink-0">Semua Foto</button>
+            @foreach($categories as $cat)
+                <button onclick="filterGallery('{{ $cat->slug }}')" class="gallery-filter-btn px-5 py-2 rounded-full text-xs font-bold bg-slate-100 text-slate-600 hover:bg-slate-200 shrink-0">
+                    {{ $cat->name }}
+                </button>
+            @endforeach
+            <button onclick="filterGallery('video')" class="gallery-filter-btn px-5 py-2 rounded-full text-xs font-bold bg-slate-100 text-slate-600 hover:bg-slate-200 shrink-0">Video Dokumentasi</button>
         </div>
     </div>
 </div>
@@ -31,16 +33,13 @@
     <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5" id="gallery-container">
         @forelse($galleries->where('type', 'photo') as $item)
             @php
-                $filterClass = strtolower(str_replace([' ', '&'], ['-', 'and'], $item->category));
-                // simplified filter mapping for the mockup buttons
-                if(str_contains(strtolower($item->category), 'latihan') || str_contains(strtolower($item->category), 'pertolongan')) $filterClass = 'latihan';
-                elseif(str_contains(strtolower($item->category), 'donor')) $filterClass = 'donor';
-                elseif(str_contains(strtolower($item->category), 'sosial')) $filterClass = 'sosial';
+                $catSlug = $item->galleryCategory ? $item->galleryCategory->slug : \Illuminate\Support\Str::slug($item->category ?? 'lainnya');
+                $catName = $item->category_name;
             @endphp
-            <div class="gallery-item filter-{{ $filterClass }} filter-photo group relative rounded-2xl overflow-hidden shadow-md bg-slate-900 aspect-video sm:aspect-square cursor-pointer" onclick="openLightbox('{{ Storage::url($item->image_path) }}', '{{ $item->title }}')">
+            <div class="gallery-item filter-{{ $catSlug }} filter-photo group relative rounded-2xl overflow-hidden shadow-md bg-slate-900 aspect-video sm:aspect-square cursor-pointer" onclick="openLightbox('{{ Storage::url($item->image_path) }}', '{{ $item->title }}')">
                 <img src="{{ Storage::url($item->image_path) }}" alt="{{ $item->title }}" class="w-full h-full object-cover group-hover:scale-105 transition duration-300">
                 <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition duration-300 flex flex-col justify-end p-4 text-white">
-                    <span class="text-[10px] uppercase font-bold text-red-400">{{ $item->category }}</span>
+                    <span class="text-[10px] uppercase font-bold text-red-400">{{ $catName }}</span>
                     <h4 class="text-xs font-bold leading-tight">{{ $item->title }}</h4>
                 </div>
                 <div class="absolute top-3 right-3 w-8 h-8 rounded-full bg-black/60 text-white flex items-center justify-center text-xs opacity-0 group-hover:opacity-100 transition">

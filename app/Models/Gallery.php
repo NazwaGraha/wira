@@ -10,6 +10,7 @@ class Gallery extends Model
         'type',
         'title',
         'category',
+        'gallery_category_id',
         'image_path',
         'video_url',
         'duration',
@@ -19,4 +20,20 @@ class Gallery extends Model
     protected $casts = [
         'is_active' => 'boolean',
     ];
+
+    /**
+     * Relasi ke GalleryCategory
+     */
+    public function galleryCategory()
+    {
+        return $this->belongsTo(GalleryCategory::class, 'gallery_category_id');
+    }
+
+    /**
+     * Accessor nama kategori (prioritaskan nama dari relasi jika ada, atau fallback ke category string)
+     */
+    public function getCategoryNameAttribute()
+    {
+        return $this->galleryCategory->name ?? $this->category ?? '-';
+    }
 }

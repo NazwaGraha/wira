@@ -4,9 +4,14 @@
 @section('page_title', 'Kelola Galeri')
 
 @section('top_actions')
-<a href="{{ route('admin.gallery.create') }}" class="bg-pmr-primary hover:bg-pmr-dark text-white px-5 py-2.5 rounded-xl font-bold text-sm shadow-md shadow-red-950/20 transition flex items-center gap-2">
-    <i class="fa-solid fa-plus"></i> Tambah Media
-</a>
+<div class="flex items-center gap-2">
+    <a href="{{ route('admin.gallery-categories.index') }}" class="bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs uppercase tracking-wider px-4 py-2.5 rounded-xl transition flex items-center gap-2">
+        <i class="fa-solid fa-folder-tree"></i> Kelola Kategori
+    </a>
+    <a href="{{ route('admin.gallery.create') }}" class="bg-pmr-primary hover:bg-pmr-dark text-white px-5 py-2.5 rounded-xl font-bold text-xs uppercase tracking-wider shadow-md shadow-red-950/20 transition flex items-center gap-2">
+        <i class="fa-solid fa-plus"></i> Tambah Media
+    </a>
+</div>
 @endsection
 
 @section('content')
@@ -30,7 +35,13 @@
                     </td>
                     <td class="px-6 py-4">
                         <div class="font-bold text-slate-800 text-base mb-1">{{ $item->title }}</div>
-                        <div class="text-xs text-slate-500">Kategori: <span class="font-semibold">{{ $item->category ?? '-' }}</span></div>
+                        <div class="text-xs text-slate-500">
+                            Kategori: 
+                            <span class="inline-flex items-center gap-1 font-semibold text-slate-700 bg-slate-100 px-2 py-0.5 rounded-md text-[11px]">
+                                <i class="fa-solid fa-folder text-slate-400 text-[10px]"></i>
+                                {{ $item->galleryCategory->name ?? $item->category ?? 'Tanpa Kategori' }}
+                            </span>
+                        </div>
                     </td>
                     <td class="px-6 py-4">
                         @if($item->type === 'video')
