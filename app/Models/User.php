@@ -45,6 +45,21 @@ class User extends Authenticatable
         return false;
     }
 
+    public function canManageMembers(): bool
+    {
+        return true;
+    }
+
+    public function isPurna(): bool
+    {
+        return false;
+    }
+
+    public function isAktif(): bool
+    {
+        return true;
+    }
+
     public function getRoleAttribute(): string
     {
         return 'superuser';

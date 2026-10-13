@@ -115,28 +115,77 @@ class BackofficeAuthTest extends TestCase
     }
 
     /**
-     * Test ordinary member after login is redirected to client area and cannot access backoffice.
+     * Test ordinary active member can login to backoffice and access member data menu, but restricted from other modules.
      */
-    public function test_ordinary_member_redirects_to_client_area_and_cannot_access_backoffice(): void
+    public function test_active_ordinary_member_can_access_backoffice_and_member_data_menu(): void
     {
         $member = Member::factory()->create([
             'nri' => 'TEST.2026.003',
             'password' => Hash::make('password123'),
-            'name' => 'Anggota Biasa',
+            'name' => 'Anggota Biasa Aktif',
             'position' => 'Anggota',
+            'member_status' => 'Aktif',
+            'entry_year' => (int) date('Y'),
         ]);
+
+        $this->assertTrue($member->isAktif());
+        $this->assertFalse($member->isPurna());
+        $this->assertTrue($member->canAccessBackoffice());
+        $this->assertTrue($member->canManageMembers());
+        $this->assertFalse($member->canDelete());
 
         $response = $this->post('/admin/login', [
             'login_id' => 'TEST.2026.003',
             'password' => 'password123',
         ]);
 
-        $response->assertRedirect(route('member.profile'));
+        $response->assertRedirect(route('admin.dashboard'));
         $this->assertAuthenticatedAs($member);
 
-        // Attempt to access admin dashboard should be blocked and redirected back to client area
-        $adminResponse = $this->get('/admin/dashboard');
-        $adminResponse->assertRedirect(route('member.profile'));
+        // Buka Daftar Anggota
+        $membersResponse = $this->get('/admin/members');
+        $membersResponse->assertOk();
+
+        // Buka Input Data Anggota
+        $createResponse = $this->get('/admin/members/create');
+        $createResponse->assertOk();
+
+        // Coba akses modul lain (misal pengaturan lomba) harus dibatasi
+        $blockedResponse = $this->get('/admin/competition-event');
+        $blockedResponse->assertRedirect(route('admin.members.index'));
+        $blockedResponse->assertSessionHas('error');
+    }
+
+    /**
+     * Test purna member is denied access to backoffice and redirected to client area.
+     */
+    public function test_purna_member_is_denied_access_to_backoffice(): void
+    {
+        $purnaMember = Member::factory()->create([
+            'nri' => 'TEST.PURNA.001',
+            'password' => Hash::make('password123'),
+            'name' => 'Anggota Purna',
+            'position' => 'Anggota',
+            'member_status' => 'Purna',
+            'entry_year' => 2020,
+        ]);
+
+        $this->assertTrue($purnaMember->isPurna());
+        $this->assertFalse($purnaMember->isAktif());
+        $this->assertFalse($purnaMember->canAccessBackoffice());
+
+        $response = $this->post('/admin/login', [
+            'login_id' => 'TEST.PURNA.001',
+            'password' => 'password123',
+        ]);
+
+        $response->assertRedirect(route('member.profile'));
+        $this->assertAuthenticatedAs($purnaMember);
+
+        // Akses langsung ke backoffice ditolak dan dialihkan ke profil
+        $dashboardResponse = $this->get('/admin/dashboard');
+        $dashboardResponse->assertRedirect(route('member.profile'));
+        $dashboardResponse->assertSessionHas('error');
     }
 
     /**
@@ -150,6 +199,7 @@ class BackofficeAuthTest extends TestCase
             'password' => Hash::make('password123'),
             'name' => 'Bapak Pembina',
             'position' => 'Pembina PMR',
+            'member_status' => 'Aktif',
         ]);
 
         // Login using NIP
@@ -173,6 +223,7 @@ class BackofficeAuthTest extends TestCase
             'password' => Hash::make('password123'),
             'name' => 'Ketua Bidang Markas',
             'position' => 'Ketua Bidang Markas',
+            'member_status' => 'Aktif',
         ]);
 
         $this->assertFalse($ketuaBidang->canDelete());
@@ -186,25 +237,35 @@ class BackofficeAuthTest extends TestCase
     }
 
     /**
-     * Test Staff Bidang is restricted to articles module only.
+     * Test Staff Bidang can access articles and member data, but restricted from other modules.
      */
-    public function test_staff_bidang_is_restricted_to_articles_module_only(): void
+    public function test_staff_bidang_can_access_articles_and_member_data(): void
     {
         $staffBidang = Member::factory()->create([
             'nri' => 'STAFF.MARKAS.001',
             'password' => Hash::make('password123'),
             'name' => 'Staff Bidang Markas',
             'position' => 'Staf Bidang Markas',
+            'member_status' => 'Aktif',
         ]);
 
         $this->assertTrue($staffBidang->canOnlyManageArticles());
+        $this->assertTrue($staffBidang->canManageMembers());
 
         // Can access articles index
         $response = $this->actingAs($staffBidang)->get('/admin/artikel');
         $response->assertStatus(200);
 
-        // Cannot access members management
-        $blockedResponse = $this->actingAs($staffBidang)->get('/admin/members');
+        // Can access members management
+        $membersResponse = $this->actingAs($staffBidang)->get('/admin/members');
+        $membersResponse->assertStatus(200);
+
+        // Can access input members
+        $createResponse = $this->actingAs($staffBidang)->get('/admin/members/create');
+        $createResponse->assertStatus(200);
+
+        // Cannot access competition settings
+        $blockedResponse = $this->actingAs($staffBidang)->get('/admin/competition-event');
         $blockedResponse->assertRedirect(route('admin.articles.index'));
         $blockedResponse->assertSessionHas('error');
     }

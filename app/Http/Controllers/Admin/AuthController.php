@@ -103,7 +103,7 @@ class AuthController extends Controller
                 return redirect()->intended(route('admin.dashboard'));
             }
 
-            return redirect()->route('member.profile')->with('success', 'Selamat datang di Area Anggota PMR Wira SMAN 1 Ciawi!');
+            return redirect()->route('member.profile')->with('info', 'Selamat datang di Area Anggota PMR Wira SMAN 1 Ciawi! Akun Anda berstatus Purna sehingga akses dibatasi pada biodata pribadi.');
         }
 
         // Jika password salah

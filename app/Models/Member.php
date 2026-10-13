@@ -147,17 +147,53 @@ class Member extends Authenticatable
     }
 
     /**
+     * Apakah anggota berstatus Purna
+     */
+    public function isPurna(): bool
+    {
+        if ($this->isSuperUser()) {
+            return false;
+        }
+
+        $status = strtolower(trim((string) ($this->member_status ?? '')));
+        if ($status === 'purna' || $status === 'alumni') {
+            return true;
+        }
+
+        if ($this->entry_year) {
+            $currentYear = (int) date('Y');
+            if ($currentYear >= ($this->entry_year + 3)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * Apakah anggota berstatus Aktif
+     */
+    public function isAktif(): bool
+    {
+        return ! $this->isPurna();
+    }
+
+    /**
      * Hak Akses Hapus (Delete)
      * Hanya Super User, Pembina, Ketum, BPH (Sekretaris & Bendahara) yang boleh DELETE
      */
     public function canDelete(): bool
     {
+        if ($this->isPurna()) {
+            return false;
+        }
+
         return in_array($this->role, ['superuser', 'pembina', 'ketua_umum', 'bph'], true);
     }
 
     /**
      * Apakah akses dibatasi hanya untuk Modul Artikel
-     * Staff 5 Bidang hanya memiliki wewenang CRU Artikel
+     * Staff 5 Bidang memiliki wewenang Artikel & Data Anggota
      */
     public function canOnlyManageArticles(): bool
     {
@@ -165,10 +201,33 @@ class Member extends Authenticatable
     }
 
     /**
+     * Apakah berhak mengelola modul Data Anggota (Daftar & Input Anggota)
+     * Semua anggota yang berstatus aktif bisa akses
+     */
+    public function canManageMembers(): bool
+    {
+        if ($this->isSuperUser()) {
+            return true;
+        }
+
+        return $this->isAktif();
+    }
+
+    /**
      * Apakah berhak mengakses Backoffice
+     * Semua anggota berstatus aktif bisa akses backoffice (minimal untuk Input & Daftar Anggota).
+     * Anggota berstatus Purna tidak diberikan akses ke backoffice.
      */
     public function canAccessBackoffice(): bool
     {
-        return in_array($this->role, ['superuser', 'pembina', 'ketua_umum', 'bph', 'ketua_bidang', 'staff_bidang'], true);
+        if ($this->isSuperUser()) {
+            return true;
+        }
+
+        if ($this->isPurna()) {
+            return false;
+        }
+
+        return true;
     }
 }

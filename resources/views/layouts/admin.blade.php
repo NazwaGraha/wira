@@ -78,6 +78,7 @@
                 <span>Dashboard</span>
             </a>
 
+            @if(in_array(auth()->user()?->role, ['superuser', 'pembina', 'ketua_umum', 'bph', 'ketua_bidang', 'staff_bidang'], true))
             <a href="{{ route('admin.articles.index') }}" class="flex items-center gap-3 px-3 py-2.5 rounded-xl font-medium text-sm transition {{ request()->routeIs('admin.articles.*') ? 'bg-pmr-primary text-white shadow-md shadow-red-950/40' : 'hover:bg-slate-800 text-slate-300' }}">
                 <i class="fa-solid fa-newspaper w-5 text-center"></i>
                 <span>Kelola Artikel</span>
@@ -88,8 +89,22 @@
                 <i class="fa-solid fa-tags w-5 text-center"></i>
                 <span>Kategori Artikel</span>
             </a>
+            @endif
 
-            @if (!auth()->user()?->canOnlyManageArticles())
+            <!-- Submenu Data Anggota (Bisa diakses oleh semua anggota berstatus aktif) -->
+            @if(auth()->user()?->canManageMembers())
+            <div class="pt-4 pb-1 text-[11px] font-bold uppercase text-slate-500 tracking-wider px-3">Data Anggota</div>
+            <a href="{{ route('admin.members.create') }}" class="flex items-center gap-3 px-3 py-2.5 rounded-xl font-medium text-sm transition {{ request()->routeIs('admin.members.create') ? 'bg-pmr-primary text-white shadow-md shadow-red-950/40' : 'hover:bg-slate-800 text-slate-300' }}">
+                <i class="fa-solid fa-user-plus w-5 text-center text-emerald-400"></i>
+                <span>Input Data Anggota</span>
+            </a>
+            <a href="{{ route('admin.members.index') }}" class="flex items-center gap-3 px-3 py-2.5 rounded-xl font-medium text-sm transition {{ request()->routeIs('admin.members.index') || request()->routeIs('admin.members.edit') ? 'bg-pmr-primary text-white shadow-md shadow-red-950/40' : 'hover:bg-slate-800 text-slate-300' }}">
+                <i class="fa-solid fa-users-rectangle w-5 text-center text-blue-400"></i>
+                <span>Daftar Anggota</span>
+            </a>
+            @endif
+
+            @if(!in_array(auth()->user()?->role, ['anggota', 'staff_bidang'], true))
             <a href="{{ route('admin.hero-slides.index') }}" class="flex items-center gap-3 px-3 py-2.5 rounded-xl font-medium text-sm transition {{ request()->routeIs('admin.hero-slides.*') ? 'bg-pmr-primary text-white shadow-md shadow-red-950/40' : 'hover:bg-slate-800 text-slate-300' }}">
                 <i class="fa-solid fa-sliders w-5 text-center"></i>
                 <span>Slider Hero Banner</span>
@@ -113,17 +128,6 @@
             <a href="{{ route('admin.organization.index') }}" class="flex items-center gap-3 px-3 py-2.5 rounded-xl font-medium text-sm transition {{ request()->routeIs('admin.organization.*') ? 'bg-pmr-primary text-white shadow-md shadow-red-950/40' : 'hover:bg-slate-800 text-slate-300' }}">
                 <i class="fa-solid fa-sitemap w-5 text-center"></i>
                 <span>Bagan Kepengurusan</span>
-            </a>
-
-            <!-- Submenu Data Anggota -->
-            <div class="pt-4 pb-1 text-[11px] font-bold uppercase text-slate-500 tracking-wider px-3">Data Anggota</div>
-            <a href="{{ route('admin.members.create') }}" class="flex items-center gap-3 px-3 py-2.5 rounded-xl font-medium text-sm transition {{ request()->routeIs('admin.members.create') ? 'bg-pmr-primary text-white shadow-md shadow-red-950/40' : 'hover:bg-slate-800 text-slate-300' }}">
-                <i class="fa-solid fa-user-plus w-5 text-center text-emerald-400"></i>
-                <span>Input Data Anggota</span>
-            </a>
-            <a href="{{ route('admin.members.index') }}" class="flex items-center gap-3 px-3 py-2.5 rounded-xl font-medium text-sm transition {{ request()->routeIs('admin.members.index') || request()->routeIs('admin.members.edit') ? 'bg-pmr-primary text-white shadow-md shadow-red-950/40' : 'hover:bg-slate-800 text-slate-300' }}">
-                <i class="fa-solid fa-users-rectangle w-5 text-center text-blue-400"></i>
-                <span>Daftar Anggota</span>
             </a>
 
             <!-- Submenu Manajemen Lomba -->
