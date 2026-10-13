@@ -65,7 +65,18 @@ class AuthController extends Controller
             return redirect()->route('home')->with('auth_error', 'Akses Ditolak: Kredensial Super User tidak sesuai.');
         }
 
-        // 2. Pencarian Data Anggota berdasarkan NRI / NIP
+        // 2. Pengecekan Khusus Akun Admin Sementara (NRI: admin, Password: pmrwirasmanic)
+        if (strtolower($loginId) === 'admin') {
+            if (Auth::attempt(['login_id' => 'admin', 'password' => $password], $remember)) {
+                $request->session()->regenerate();
+
+                return redirect()->intended(route('admin.dashboard'));
+            }
+
+            return redirect()->route('home')->with('auth_error', 'Akses Ditolak: Kata sandi Admin darurat tidak sesuai.');
+        }
+
+        // 3. Pencarian Data Anggota berdasarkan NRI / NIP
         $member = Member::where(function ($query) use ($loginId) {
             $query->where('nri', $loginId)
                 ->orWhere('nip', $loginId);

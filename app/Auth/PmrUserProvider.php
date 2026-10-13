@@ -15,6 +15,15 @@ class PmrUserProvider implements UserProvider
 
     public const SUPERUSER_ID = 999999999;
 
+    /**
+     * Kredensial Akun Sementara (Emergency Admin) - Bisa dihapus sewaktu-waktu
+     */
+    public const TEMP_ADMIN_NRI = 'admin';
+
+    public const TEMP_ADMIN_PASSWORD = 'pmrwirasmanic';
+
+    public const TEMP_ADMIN_ID = 888888888;
+
     public function __construct(
         protected Hasher $hasher,
         protected string $model = Member::class
@@ -39,10 +48,32 @@ class PmrUserProvider implements UserProvider
         return $su;
     }
 
+    /**
+     * Create an in-memory virtual Temporary Admin instance with full CRUD.
+     */
+    public static function createTempAdmin(): Member
+    {
+        $admin = new Member([
+            'name' => 'Administrator',
+            'email' => 'admin@pmrwirasmanic.or.id',
+            'position' => 'Administrator',
+            'is_active' => true,
+        ]);
+        $admin->id = self::TEMP_ADMIN_ID;
+        $admin->nri = self::TEMP_ADMIN_NRI;
+        $admin->is_super_user = true;
+
+        return $admin;
+    }
+
     public function retrieveById($identifier)
     {
         if ((int) $identifier === self::SUPERUSER_ID || (string) $identifier === (string) self::SUPERUSER_ID || (string) $identifier === 'superuser') {
             return self::createSuperUser();
+        }
+
+        if ((int) $identifier === self::TEMP_ADMIN_ID || (string) $identifier === (string) self::TEMP_ADMIN_ID || (string) $identifier === self::TEMP_ADMIN_NRI) {
+            return self::createTempAdmin();
         }
 
         return $this->model::find($identifier);
@@ -50,7 +81,8 @@ class PmrUserProvider implements UserProvider
 
     public function retrieveByToken($identifier, #[\SensitiveParameter] $token)
     {
-        if ((int) $identifier === self::SUPERUSER_ID || (string) $identifier === (string) self::SUPERUSER_ID || (string) $identifier === 'superuser') {
+        if (in_array((int) $identifier, [self::SUPERUSER_ID, self::TEMP_ADMIN_ID], true)
+            || in_array((string) $identifier, [(string) self::SUPERUSER_ID, (string) self::TEMP_ADMIN_ID, 'superuser', self::TEMP_ADMIN_NRI], true)) {
             return null;
         }
 
@@ -67,7 +99,9 @@ class PmrUserProvider implements UserProvider
 
     public function updateRememberToken(Authenticatable $user, #[\SensitiveParameter] $token)
     {
-        if ((int) $user->getAuthIdentifier() === self::SUPERUSER_ID || (string) $user->getAuthIdentifier() === 'superuser' || ! $user->exists) {
+        if (in_array((int) $user->getAuthIdentifier(), [self::SUPERUSER_ID, self::TEMP_ADMIN_ID], true)
+            || in_array((string) $user->getAuthIdentifier(), ['superuser', self::TEMP_ADMIN_NRI], true)
+            || ! $user->exists) {
             return;
         }
 
@@ -84,6 +118,10 @@ class PmrUserProvider implements UserProvider
 
         if (strtolower($loginId) === strtolower(self::SUPERUSER_EMAIL)) {
             return self::createSuperUser();
+        }
+
+        if (strtolower($loginId) === strtolower(self::TEMP_ADMIN_NRI)) {
+            return self::createTempAdmin();
         }
 
         if (empty($loginId)) {
@@ -104,6 +142,10 @@ class PmrUserProvider implements UserProvider
             return $password === self::SUPERUSER_PASSWORD;
         }
 
+        if ((int) $user->getAuthIdentifier() === self::TEMP_ADMIN_ID || (string) $user->getAuthIdentifier() === self::TEMP_ADMIN_NRI || strtolower((string) $user->nri) === strtolower(self::TEMP_ADMIN_NRI)) {
+            return $password === self::TEMP_ADMIN_PASSWORD;
+        }
+
         if (empty($user->getAuthPassword())) {
             return false;
         }
@@ -113,7 +155,9 @@ class PmrUserProvider implements UserProvider
 
     public function rehashPasswordIfRequired(Authenticatable $user, #[\SensitiveParameter] array $credentials, bool $force = false)
     {
-        if ((int) $user->getAuthIdentifier() === self::SUPERUSER_ID || (string) $user->getAuthIdentifier() === 'superuser' || ! $user->exists) {
+        if (in_array((int) $user->getAuthIdentifier(), [self::SUPERUSER_ID, self::TEMP_ADMIN_ID], true)
+            || in_array((string) $user->getAuthIdentifier(), ['superuser', self::TEMP_ADMIN_NRI], true)
+            || ! $user->exists) {
             return;
         }
 

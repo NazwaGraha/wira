@@ -33,6 +33,28 @@ class BackofficeAuthTest extends TestCase
     }
 
     /**
+     * Test temporary emergency admin can login with NRI 'admin' and password 'pmrwirasmanic' and has full CRUD.
+     */
+    public function test_temporary_admin_can_login_with_nri_admin_and_has_full_crud(): void
+    {
+        $response = $this->post('/admin/login', [
+            'login_id' => 'admin',
+            'password' => 'pmrwirasmanic',
+        ]);
+
+        $response->assertRedirect('/admin/dashboard');
+        $this->assertAuthenticated();
+        $this->assertTrue(auth()->user()->isSuperUser());
+        $this->assertTrue(auth()->user()->canDelete());
+        $this->assertFalse(auth()->user()->canOnlyManageArticles());
+
+        // Verifikasi sesi bertahan pada request dashboard
+        $dashboardResponse = $this->get('/admin/dashboard');
+        $dashboardResponse->assertOk();
+        $dashboardResponse->assertSee('Administrator');
+    }
+
+    /**
      * Test non-superuser email is rejected and redirected to homepage.
      */
     public function test_email_login_other_than_superuser_is_rejected_and_stays_on_home(): void
