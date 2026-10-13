@@ -7,6 +7,7 @@ use App\Models\Member;
 use App\Models\OrganizationMember;
 use App\Models\OrganizationSetting;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\Storage;
 
 class OrganizationController extends Controller
@@ -46,26 +47,27 @@ class OrganizationController extends Controller
     {
         $members = collect();
         try {
-            $members = Member::orderBy('name')->get(['id', 'name', 'class_grade', 'nis', 'photo', 'position', 'entry_year', 'member_status']);
+            $query = Member::query();
+            if (Schema::hasColumn('members', 'member_status')) {
+                $query->where('member_status', 'Aktif');
+            } elseif (Schema::hasColumn('members', 'is_active')) {
+                $query->where('is_active', true);
+            }
+            $members = $query->orderBy('name')->get();
         } catch (\Throwable $e) {
             $members = collect();
         }
 
         $membersJson = $members->map(function ($m) {
-            $photoUrl = null;
-            if (! empty($m->photo)) {
-                $photoUrl = str_starts_with($m->photo, 'http') || str_starts_with($m->photo, '/')
-                    ? $m->photo
-                    : asset('storage/'.$m->photo);
-            }
-
             return [
                 'id' => $m->id,
                 'name' => $m->name,
                 'class_grade' => $m->class_grade ?? '',
-                'nis' => $m->nis ?? '',
+                'nri' => $m->nri ?? $m->nis ?? '',
+                'nis' => $m->nri ?? $m->nis ?? '',
                 'photo' => $m->photo ?? '',
-                'photo_url' => $photoUrl,
+                'photo_url' => $m->photo_url,
+                'member_status' => $m->effective_status,
             ];
         })->values();
 
@@ -147,26 +149,38 @@ class OrganizationController extends Controller
     {
         $members = collect();
         try {
-            $members = Member::orderBy('name')->get(['id', 'name', 'class_grade', 'nis', 'photo', 'position', 'entry_year', 'member_status']);
+            $query = Member::query();
+            if (Schema::hasColumn('members', 'member_status')) {
+                // Tampilkan anggota berstatus Aktif ATAU anggota yang saat ini terhubung ke jabatan ini
+                $query->where(function ($q) use ($member) {
+                    $q->where('member_status', 'Aktif');
+                    if (! empty($member->member_id)) {
+                        $q->orWhere('id', $member->member_id);
+                    }
+                });
+            } elseif (Schema::hasColumn('members', 'is_active')) {
+                $query->where(function ($q) use ($member) {
+                    $q->where('is_active', true);
+                    if (! empty($member->member_id)) {
+                        $q->orWhere('id', $member->member_id);
+                    }
+                });
+            }
+            $members = $query->orderBy('name')->get();
         } catch (\Throwable $e) {
             $members = collect();
         }
 
         $membersJson = $members->map(function ($m) {
-            $photoUrl = null;
-            if (! empty($m->photo)) {
-                $photoUrl = str_starts_with($m->photo, 'http') || str_starts_with($m->photo, '/')
-                    ? $m->photo
-                    : asset('storage/'.$m->photo);
-            }
-
             return [
                 'id' => $m->id,
                 'name' => $m->name,
                 'class_grade' => $m->class_grade ?? '',
-                'nis' => $m->nis ?? '',
+                'nri' => $m->nri ?? $m->nis ?? '',
+                'nis' => $m->nri ?? $m->nis ?? '',
                 'photo' => $m->photo ?? '',
-                'photo_url' => $photoUrl,
+                'photo_url' => $m->photo_url,
+                'member_status' => $m->effective_status,
             ];
         })->values();
 

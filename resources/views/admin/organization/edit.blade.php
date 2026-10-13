@@ -286,32 +286,35 @@
         <div class="p-4 overflow-y-auto flex-grow space-y-2 max-h-[50vh]" id="modal-member-list">
             @forelse($members as $m)
                 @php
-                    $mPhoto = null;
-                    if (!empty($m->photo)) {
-                        $mPhoto = str_starts_with($m->photo, 'http') || str_starts_with($m->photo, '/') ? $m->photo : asset('storage/' . $m->photo);
-                    } else {
-                        $mPhoto = 'https://ui-avatars.com/api/?name=' . urlencode($m->name) . '&background=dc2626&color=ffffff&bold=true&size=128';
-                    }
+                    $mPhoto = $m->photo_url;
+                    $mStatus = $m->effective_status;
+                    $mNri = $m->nri ?: ($m->nis ?: '-');
                 @endphp
                 <div class="member-item p-3.5 rounded-xl border border-slate-200 hover:border-pmr-primary hover:bg-red-50/50 flex items-center justify-between cursor-pointer transition group"
                      onclick="selectMemberFromEl(this)"
                      data-id="{{ $m->id }}"
                      data-name="{{ $m->name }}"
                      data-class="{{ $m->class_grade ?? '' }}"
-                     data-nri="{{ $m->nri ?? $m->nis ?? '' }}"
-                     data-nis="{{ $m->nri ?? $m->nis ?? '' }}"
+                     data-nri="{{ $mNri !== '-' ? $mNri : '' }}"
+                     data-nis="{{ $mNri !== '-' ? $mNri : '' }}"
                      data-photo="{{ $mPhoto }}"
-                     data-search="{{ strtolower($m->name . ' ' . ($m->class_grade ?? '') . ' ' . ($m->nri ?? $m->nis ?? '')) }}">
+                     data-status="{{ $mStatus }}"
+                     data-search="{{ strtolower($m->name . ' ' . ($m->class_grade ?? '') . ' ' . $mNri . ' ' . $mStatus) }}">
                     <div class="flex items-center gap-3">
-                        <img src="{{ $mPhoto }}" alt="{{ $m->name }}" class="w-10 h-10 rounded-full object-cover border border-slate-200 flex-shrink-0">
+                        <img src="{{ $mPhoto }}" alt="{{ $m->name }}" class="w-10 h-10 rounded-full object-cover border border-slate-200 flex-shrink-0" onerror="this.onerror=null; this.src='https://ui-avatars.com/api/?name={{ urlencode($m->name) }}&background=dc2626&color=ffffff&bold=true&size=128';">
                         <div>
-                            <div class="font-bold text-slate-900 text-sm group-hover:text-pmr-primary transition">{{ $m->name }}</div>
+                            <div class="font-bold text-slate-900 text-sm group-hover:text-pmr-primary transition flex items-center gap-2">
+                                <span>{{ $m->name }}</span>
+                                <span class="px-2 py-0.5 rounded-full text-[10px] font-black uppercase {{ $mStatus === 'Purna' ? 'bg-slate-100 text-slate-600 border border-slate-200' : 'bg-emerald-100 text-emerald-800 border border-emerald-200' }}">
+                                    {{ $mStatus }}
+                                </span>
+                            </div>
                             <div class="text-xs text-slate-500 flex items-center gap-2 mt-0.5">
                                 @if($m->class_grade)
                                     <span class="bg-slate-100 text-slate-700 px-2 py-0.5 rounded text-[11px] font-semibold">Kelas: {{ $m->class_grade }}</span>
                                 @endif
-                                @if($m->nri || $m->nis)
-                                    <span>NRI: {{ $m->nri ?? $m->nis }}</span>
+                                @if($mNri !== '-')
+                                    <span>NRI: {{ $mNri }}</span>
                                 @endif
                             </div>
                         </div>
