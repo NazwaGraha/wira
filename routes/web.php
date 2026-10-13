@@ -143,6 +143,7 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::put('/pedoman-organisasi/files', [OrganizationGuidelineController::class, 'updateFilesAndSigners'])->name('organization-guidelines.update-files');
 
         // Data Anggota
+        Route::delete('/members/destroy-multiple', [MemberController::class, 'destroyMultiple'])->name('members.destroy-multiple');
         Route::get('/members/export', [MemberController::class, 'export'])->name('members.export');
         Route::get('/members/template', [MemberController::class, 'downloadTemplate'])->name('members.template');
         Route::post('/members/import', [MemberController::class, 'import'])->name('members.import');

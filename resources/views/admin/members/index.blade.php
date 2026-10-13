@@ -87,11 +87,45 @@
             </form>
         </div>
 
+        <!-- Bulk Action Floating Bar (Muncul saat ada data yang diceklis) -->
+        <div id="bulk-action-bar" class="hidden bg-rose-50 border-2 border-rose-300 rounded-2xl p-4 flex flex-col sm:flex-row items-center justify-between gap-3 animate-in fade-in slide-in-from-top-2 duration-200">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-xl bg-rose-600 text-white flex items-center justify-center font-black">
+                    <i class="fa-solid fa-list-check"></i>
+                </div>
+                <div>
+                    <div class="text-sm font-extrabold text-slate-900">
+                        <span id="selected-count" class="text-rose-600 text-base">0</span> Data Anggota Terpilih
+                    </div>
+                    <p class="text-xs text-slate-500">Anda dapat menghapus seluruh data anggota yang telah diceklis sekaligus.</p>
+                </div>
+            </div>
+            <div class="flex items-center gap-2 w-full sm:w-auto justify-end">
+                <button type="button" onclick="deselectAllMembers()" class="px-3.5 py-2 rounded-xl text-xs font-bold bg-white text-slate-700 border border-slate-200 hover:bg-slate-50 transition">
+                    Batal Pilih
+                </button>
+                @if(auth()->user()?->canDelete())
+                <form id="bulk-delete-form" action="{{ route('admin.members.destroy-multiple') }}" method="POST" onsubmit="return confirmBulkDelete();">
+                    @csrf
+                    @method('DELETE')
+                    <div id="bulk-hidden-inputs"></div>
+                    <button type="submit" class="bg-rose-600 hover:bg-rose-700 text-white px-4 py-2 rounded-xl text-xs font-bold transition flex items-center gap-2 shadow-sm">
+                        <i class="fa-solid fa-trash-can"></i>
+                        <span>Hapus Terpilih</span>
+                    </button>
+                </form>
+                @endif
+            </div>
+        </div>
+
         <div class="overflow-x-auto">
             <table class="w-full text-left text-sm text-slate-600">
                 <thead class="bg-slate-50 text-slate-700 text-xs uppercase font-bold border-y border-slate-200">
                     <tr>
-                        <th class="px-6 py-4">Foto</th>
+                        <th class="px-4 py-4 w-12 text-center">
+                            <input type="checkbox" id="select-all-checkbox" onchange="toggleSelectAll(this)" class="w-4 h-4 rounded text-pmr-primary focus:ring-pmr-primary border-slate-300 cursor-pointer" title="Pilih Semua di Halaman Ini">
+                        </th>
+                        <th class="px-4 py-4">Foto</th>
                         <th class="px-6 py-4">Nama Lengkap & NRI</th>
                         <th class="px-6 py-4">Kelas / Tingkat</th>
                         <th class="px-6 py-4">Status & Tahun Masuk</th>
@@ -105,8 +139,11 @@
                             $effStatus = $member->effective_status;
                             $nriDisplay = $member->nri ?: $member->nis ?: '-';
                         @endphp
-                        <tr class="hover:bg-slate-50 transition">
-                            <td class="px-6 py-4">
+                        <tr id="member-row-{{ $member->id }}" class="hover:bg-slate-50 transition">
+                            <td class="px-4 py-4 text-center">
+                                <input type="checkbox" name="selected_members[]" value="{{ $member->id }}" onchange="updateSelectedCount()" class="member-checkbox w-4 h-4 rounded text-pmr-primary focus:ring-pmr-primary border-slate-300 cursor-pointer">
+                            </td>
+                            <td class="px-4 py-4">
                                 @if($member->photo)
                                     <img src="{{ Storage::url($member->photo) }}" class="w-12 h-16 object-cover rounded-lg border border-slate-200 shadow-sm" alt="Foto">
                                 @else
@@ -164,7 +201,7 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="6" class="px-6 py-12 text-center">
+                            <td colspan="7" class="px-6 py-12 text-center">
                                 <div class="text-slate-400 mb-2"><i class="fa-solid fa-users-slash text-4xl"></i></div>
                                 <div class="font-bold text-slate-600">Belum ada data anggota</div>
                                 <div class="text-xs text-slate-500 mt-1">Silakan input data baru atau gunakan fitur Import Excel.</div>
@@ -293,5 +330,97 @@
             closeImportModal();
         }
     });
+
+    // Manajemen Checklist & Bulk Delete
+    function toggleSelectAll(masterCheckbox) {
+        const checkboxes = document.querySelectorAll('.member-checkbox');
+        checkboxes.forEach(cb => {
+            cb.checked = masterCheckbox.checked;
+            toggleRowHighlight(cb);
+        });
+        updateSelectedCount();
+    }
+
+    function toggleRowHighlight(checkbox) {
+        const row = document.getElementById('member-row-' + checkbox.value);
+        if (row) {
+            if (checkbox.checked) {
+                row.classList.add('bg-rose-50/60');
+            } else {
+                row.classList.remove('bg-rose-50/60');
+            }
+        }
+    }
+
+    function updateSelectedCount() {
+        const checkboxes = document.querySelectorAll('.member-checkbox:checked');
+        const count = checkboxes.length;
+        const countEl = document.getElementById('selected-count');
+        const barEl = document.getElementById('bulk-action-bar');
+        const masterCb = document.getElementById('select-all-checkbox');
+        const allCheckboxes = document.querySelectorAll('.member-checkbox');
+
+        // Update highlight setiap baris yang diceklis
+        allCheckboxes.forEach(cb => toggleRowHighlight(cb));
+
+        if (countEl) {
+            countEl.textContent = count;
+        }
+
+        if (barEl) {
+            if (count > 0) {
+                barEl.classList.remove('hidden');
+            } else {
+                barEl.classList.add('hidden');
+            }
+        }
+
+        if (masterCb && allCheckboxes.length > 0) {
+            masterCb.checked = (count === allCheckboxes.length);
+            masterCb.indeterminate = (count > 0 && count < allCheckboxes.length);
+        }
+    }
+
+    function deselectAllMembers() {
+        const checkboxes = document.querySelectorAll('.member-checkbox');
+        const masterCb = document.getElementById('select-all-checkbox');
+        checkboxes.forEach(cb => {
+            cb.checked = false;
+            toggleRowHighlight(cb);
+        });
+        if (masterCb) {
+            masterCb.checked = false;
+            masterCb.indeterminate = false;
+        }
+        updateSelectedCount();
+    }
+
+    function confirmBulkDelete() {
+        const checkedBoxes = document.querySelectorAll('.member-checkbox:checked');
+        const count = checkedBoxes.length;
+
+        if (count === 0) {
+            alert('Silakan pilih minimal 1 data anggota terlebih dahulu.');
+            return false;
+        }
+
+        const confirmMsg = `PERINGATAN:\nApakah Anda yakin ingin menghapus ${count} data anggota yang dipilih secara permanen?`;
+        if (!confirm(confirmMsg)) {
+            return false;
+        }
+
+        // Masukkan ID ke dalam hidden input form
+        const container = document.getElementById('bulk-hidden-inputs');
+        container.innerHTML = '';
+        checkedBoxes.forEach(cb => {
+            const input = document.createElement('input');
+            input.type = 'hidden';
+            input.name = 'ids[]';
+            input.value = cb.value;
+            container.appendChild(input);
+        });
+
+        return true;
+    }
 </script>
 @endpush

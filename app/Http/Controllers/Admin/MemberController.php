@@ -392,6 +392,38 @@ class MemberController extends Controller
     }
 
     /**
+     * Hapus massal (bulk delete) anggota terpilih berdasarkan checkbox
+     */
+    public function destroyMultiple(Request $request)
+    {
+        $ids = $request->input('ids');
+
+        if (is_string($ids)) {
+            $ids = array_filter(explode(',', $ids));
+        }
+
+        if (empty($ids) || ! is_array($ids)) {
+            return redirect()->route('admin.members.index')->with('error', 'Tidak ada data anggota yang dipilih untuk dihapus.');
+        }
+
+        // Sanitasi IDs
+        $ids = array_map('intval', array_filter($ids));
+
+        if (empty($ids)) {
+            return redirect()->route('admin.members.index')->with('error', 'Data anggota yang dipilih tidak valid.');
+        }
+
+        try {
+            $count = Member::whereIn('id', $ids)->count();
+            Member::whereIn('id', $ids)->delete();
+
+            return redirect()->route('admin.members.index')->with('success', "Berhasil menghapus {$count} data anggota terpilih.");
+        } catch (\Throwable $e) {
+            return redirect()->route('admin.members.index')->with('error', 'Gagal menghapus data anggota terpilih: '.$e->getMessage());
+        }
+    }
+
+    /**
      * Export member list to Excel XLSX
      */
     public function export(Request $request, MemberSpreadsheetService $spreadsheetService)
