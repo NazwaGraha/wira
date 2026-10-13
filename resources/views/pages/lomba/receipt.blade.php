@@ -60,7 +60,7 @@
                         PMR WIRA SMAN 1 CIAWI KAB. BOGOR
                     </h2>
                     <p class="text-[10px] text-slate-500 mt-1 leading-tight">
-                        Jl. Veteran III No. 01 Ciawi, Bogor &bull; Email: pmrwira@sman1ciawi.sch.id
+                        Jl. Veteran III No. 01 Ciawi, Bogor &bull; Email: pmrwirasman1c@gmail.com
                     </p>
                 </div>
 

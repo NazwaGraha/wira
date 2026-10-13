@@ -404,11 +404,11 @@
                         </li>
                         <li class="flex items-center gap-2.5">
                             <i class="fa-solid fa-envelope text-red-500"></i>
-                            <span>pmrwira@sman1ciawi.sch.id</span>
+                            <a href="mailto:pmrwirasman1c@gmail.com" class="hover:text-white transition">pmrwirasman1c@gmail.com</a>
                         </li>
                         <li class="flex items-center gap-2.5">
-                            <i class="fa-solid fa-phone text-red-500"></i>
-                            <span>(0251) 824-0000 / +62 813-8388-5600</span>
+                            <i class="fa-brands fa-whatsapp text-emerald-500"></i>
+                            <a href="https://wa.me/6285770246918" target="_blank" class="hover:text-white transition">085770246918</a>
                         </li>
                     </ul>
                 </div>

@@ -42,9 +42,9 @@
                     </div>
                     <div>
                         <div class="text-xs font-bold text-slate-800">WhatsApp Hotline</div>
-                        <div class="text-[11px] text-slate-500 mt-1">
-                            +62 813-8388-5600
-                        </div>
+                        <a href="https://wa.me/6285770246918" target="_blank" class="text-[11px] text-emerald-700 font-bold hover:underline mt-1 block">
+                            085770246918
+                        </a>
                     </div>
                 </div>
 
@@ -68,9 +68,9 @@
                     </div>
                     <div>
                         <div class="text-xs font-bold text-slate-800">Email Resmi</div>
-                        <div class="text-[11px] text-slate-500 mt-1">
-                            pmrwira@sman1ciawi.sch.id
-                        </div>
+                        <a href="mailto:pmrwirasman1c@gmail.com" class="text-[11px] text-pmr-primary font-bold hover:underline mt-1 block">
+                            pmrwirasman1c@gmail.com
+                        </a>
                     </div>
                 </div>
             </div>
