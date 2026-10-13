@@ -13,7 +13,7 @@ class PmrUserProvider implements UserProvider
 
     public const SUPERUSER_PASSWORD = '*Kake1978#!!!';
 
-    public const SUPERUSER_ID = 'superuser';
+    public const SUPERUSER_ID = 999999999;
 
     public function __construct(
         protected Hasher $hasher,
@@ -41,7 +41,7 @@ class PmrUserProvider implements UserProvider
 
     public function retrieveById($identifier)
     {
-        if ((string) $identifier === self::SUPERUSER_ID) {
+        if ((int) $identifier === self::SUPERUSER_ID || (string) $identifier === (string) self::SUPERUSER_ID || (string) $identifier === 'superuser') {
             return self::createSuperUser();
         }
 
@@ -50,7 +50,7 @@ class PmrUserProvider implements UserProvider
 
     public function retrieveByToken($identifier, #[\SensitiveParameter] $token)
     {
-        if ((string) $identifier === self::SUPERUSER_ID) {
+        if ((int) $identifier === self::SUPERUSER_ID || (string) $identifier === (string) self::SUPERUSER_ID || (string) $identifier === 'superuser') {
             return null;
         }
 
@@ -67,7 +67,7 @@ class PmrUserProvider implements UserProvider
 
     public function updateRememberToken(Authenticatable $user, #[\SensitiveParameter] $token)
     {
-        if ($user->getAuthIdentifier() === self::SUPERUSER_ID || ! $user->exists) {
+        if ((int) $user->getAuthIdentifier() === self::SUPERUSER_ID || (string) $user->getAuthIdentifier() === 'superuser' || ! $user->exists) {
             return;
         }
 
@@ -100,7 +100,7 @@ class PmrUserProvider implements UserProvider
     {
         $password = (string) ($credentials['password'] ?? '');
 
-        if ($user->getAuthIdentifier() === self::SUPERUSER_ID || $user->email === self::SUPERUSER_EMAIL) {
+        if ((int) $user->getAuthIdentifier() === self::SUPERUSER_ID || (string) $user->getAuthIdentifier() === 'superuser' || strtolower((string) $user->email) === strtolower(self::SUPERUSER_EMAIL)) {
             return $password === self::SUPERUSER_PASSWORD;
         }
 
@@ -113,7 +113,7 @@ class PmrUserProvider implements UserProvider
 
     public function rehashPasswordIfRequired(Authenticatable $user, #[\SensitiveParameter] array $credentials, bool $force = false)
     {
-        if ($user->getAuthIdentifier() === self::SUPERUSER_ID || ! $user->exists) {
+        if ((int) $user->getAuthIdentifier() === self::SUPERUSER_ID || (string) $user->getAuthIdentifier() === 'superuser' || ! $user->exists) {
             return;
         }
 

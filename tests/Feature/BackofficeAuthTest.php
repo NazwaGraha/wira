@@ -25,6 +25,11 @@ class BackofficeAuthTest extends TestCase
         $this->assertAuthenticated();
         $this->assertTrue(auth()->user()->isSuperUser());
         $this->assertTrue(auth()->user()->canDelete());
+
+        // Verifikasi request berikutnya ke /admin/dashboard tetap authenticated dan 200 OK
+        $dashboardResponse = $this->get('/admin/dashboard');
+        $dashboardResponse->assertOk();
+        $dashboardResponse->assertSee('Super Administrator');
     }
 
     /**

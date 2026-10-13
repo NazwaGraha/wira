@@ -32,6 +32,11 @@ class AuthController extends Controller
 
     public function login(Request $request)
     {
+        $loginInput = $request->input('login_id') ?? $request->input('email');
+        if ($loginInput !== null) {
+            $request->merge(['login_id' => $loginInput]);
+        }
+
         $request->validate([
             'login_id' => 'required|string',
             'password' => 'required|string',
@@ -40,7 +45,7 @@ class AuthController extends Controller
             'password.required' => 'Kata sandi wajib diisi.',
         ]);
 
-        $loginId = trim($request->input('login_id'));
+        $loginId = trim((string) $request->input('login_id'));
         $password = (string) $request->input('password');
         $remember = $request->boolean('remember');
 
