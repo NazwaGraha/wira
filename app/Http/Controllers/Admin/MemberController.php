@@ -8,7 +8,10 @@ use App\Models\OrganizationMember;
 use App\Services\MemberSpreadsheetService;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\File;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 
 class MemberController extends Controller
@@ -246,10 +249,30 @@ class MemberController extends Controller
             try {
                 $file = $request->file('photo');
                 $filename = time().'_'.Str::random(8).'.'.$file->getClientOriginalExtension();
+
+                // Pastikan direktori target ada
+                File::ensureDirectoryExists(storage_path('app/public/members'), 0755, true);
+                if (file_exists(public_path('storage'))) {
+                    File::ensureDirectoryExists(public_path('storage/members'), 0755, true);
+                }
+
+                // Simpan ke storage disk public
                 $path = $file->storeAs('members', $filename, 'public');
                 $dataToSave['photo'] = 'members/'.$filename;
+
+                // Salin juga langsung ke public/storage/members jika public/storage adalah folder biasa (bukan symlink)
+                try {
+                    $directPublicTarget = public_path('storage/members/'.$filename);
+                    $sourceStoragePath = storage_path('app/public/members/'.$filename);
+                    if (! file_exists($directPublicTarget) && file_exists($sourceStoragePath)) {
+                        @copy($sourceStoragePath, $directPublicTarget);
+                    }
+                } catch (\Throwable $e) {
+                    // Ignore direct copy failure
+                }
             } catch (\Throwable $e) {
-                // Jangan gagalkan simpan data jika upload storage mengalami kendala
+                Log::error('Upload foto anggota gagal (store): '.$e->getMessage());
+                session()->flash('warning', 'Data tersimpan, namun foto profil gagal diunggah karena izin folder server: '.$e->getMessage());
             }
         }
 
@@ -365,10 +388,43 @@ class MemberController extends Controller
             try {
                 $file = $request->file('photo');
                 $filename = time().'_'.Str::random(8).'.'.$file->getClientOriginalExtension();
+
+                // Pastikan direktori target ada
+                File::ensureDirectoryExists(storage_path('app/public/members'), 0755, true);
+                if (file_exists(public_path('storage'))) {
+                    File::ensureDirectoryExists(public_path('storage/members'), 0755, true);
+                }
+
+                // Hapus foto lama jika ada
+                if (! empty($member->photo)) {
+                    try {
+                        Storage::disk('public')->delete($member->photo);
+                        $oldPublicPath = public_path('storage/'.$member->photo);
+                        if (file_exists($oldPublicPath)) {
+                            @unlink($oldPublicPath);
+                        }
+                    } catch (\Throwable $e) {
+                        // Ignore deletion error
+                    }
+                }
+
+                // Simpan ke storage disk public
                 $path = $file->storeAs('members', $filename, 'public');
                 $dataToUpdate['photo'] = 'members/'.$filename;
+
+                // Salin juga langsung ke public/storage/members jika public/storage adalah folder biasa (bukan symlink)
+                try {
+                    $directPublicTarget = public_path('storage/members/'.$filename);
+                    $sourceStoragePath = storage_path('app/public/members/'.$filename);
+                    if (! file_exists($directPublicTarget) && file_exists($sourceStoragePath)) {
+                        @copy($sourceStoragePath, $directPublicTarget);
+                    }
+                } catch (\Throwable $e) {
+                    // Ignore direct copy failure
+                }
             } catch (\Throwable $e) {
-                // Jangan gagalkan update data jika upload storage mengalami kendala
+                Log::error('Upload foto anggota gagal (update): '.$e->getMessage());
+                session()->flash('warning', 'Data tersimpan, namun foto profil gagal diunggah karena izin folder server: '.$e->getMessage());
             }
         }
 

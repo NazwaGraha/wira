@@ -28,6 +28,7 @@ use App\Http\Controllers\CompetitionController;
 use App\Http\Controllers\MemberAreaController;
 use App\Http\Controllers\PageController;
 use Illuminate\Support\Facades\Artisan;
+use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -272,11 +273,24 @@ Route::get('/server-sync-update-pmr', function () {
     try {
         Artisan::call('optimize:clear');
         Artisan::call('migrate', ['--force' => true]);
+
+        // Pastikan folder storage publik dibuat
+        File::ensureDirectoryExists(storage_path('app/public/members'), 0755, true);
+        File::ensureDirectoryExists(storage_path('app/public/competition_payments'), 0755, true);
+        File::ensureDirectoryExists(storage_path('app/public/guidelines'), 0755, true);
+
         try {
             Artisan::call('storage:link');
         } catch (Throwable $e) {
             // Ignore if already linked or permission denied
         }
+
+        // Salin darurat jika symlink tidak bekerja di shared hosting cPanel
+        if (file_exists(public_path()) && ! is_link(public_path('storage'))) {
+            File::ensureDirectoryExists(public_path('storage/members'), 0755, true);
+            File::copyDirectory(storage_path('app/public/members'), public_path('storage/members'));
+        }
+
         $output = Artisan::output();
 
         return response("<div style='font-family:sans-serif;padding:30px;max-width:600px;margin:auto;'>
@@ -291,6 +305,33 @@ Route::get('/server-sync-update-pmr', function () {
         </div>', 500);
     }
 });
+
+// Route Penyajian Langsung Berkas Storage (Anti 404 jika shared hosting / cPanel memblokir symlink)
+Route::get('/storage/{folder}/{filename}', function ($folder, $filename) {
+    $allowedFolders = ['members', 'competition_payments', 'galleries', 'donor-banners', 'broadcast_images', 'guidelines'];
+    if (! in_array($folder, $allowedFolders, true)) {
+        abort(404);
+    }
+
+    $safeFilename = basename($filename);
+    $path = storage_path("app/public/{$folder}/{$safeFilename}");
+
+    if (! file_exists($path)) {
+        $publicFallback = public_path("storage/{$folder}/{$safeFilename}");
+        if (file_exists($publicFallback)) {
+            $path = $publicFallback;
+        } else {
+            abort(404);
+        }
+    }
+
+    $mime = mime_content_type($path) ?: 'application/octet-stream';
+
+    return response()->file($path, [
+        'Content-Type' => $mime,
+        'Cache-Control' => 'public, max-age=86400',
+    ]);
+})->where('filename', '[A-Za-z0-9_\-\.]+');
 
 // Rute Publik Lomba PMR
 Route::prefix('lomba')->name('lomba.')->group(function () {

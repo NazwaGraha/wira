@@ -233,21 +233,16 @@
                 photoPreview.setAttribute('src', e.target.result);
                 photoPreview.classList.remove('hidden');
                 
-                // Hide placeholder explicitly
-                if(photoPlaceholder) {
+                if (photoPlaceholder) {
                     photoPlaceholder.classList.remove('flex');
                     photoPlaceholder.classList.add('hidden');
-                    // Remove hover events if we just replaced an existing image
-                    const newContainer = photoInput.parentElement;
-                    const newClone = newContainer.cloneNode(true);
-                    newContainer.parentNode.replaceChild(newClone, newContainer);
-                    
-                    // Reattach change listener to the cloned input
-                    newClone.querySelector('#photo').addEventListener('change', arguments.callee);
+                    // Ganti teks placeholder menjadi "Ganti Foto"
+                    const spanText = photoPlaceholder.querySelector('span');
+                    if (spanText) spanText.textContent = 'Ganti Foto';
                 }
                 
-                if(uploadIcon) uploadIcon.classList.remove('hidden');
-            }
+                if (uploadIcon) uploadIcon.classList.remove('hidden');
+            };
             
             reader.readAsDataURL(this.files[0]);
         }
