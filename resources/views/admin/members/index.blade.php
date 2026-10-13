@@ -10,22 +10,38 @@
 @endsection
 
 @section('content')
-<div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
-    <div class="flex flex-col md:flex-row justify-between items-center gap-4 mb-6">
-        <div class="flex items-center gap-2">
-            <span class="text-sm text-slate-500">Total Anggota:</span>
-            <span class="bg-slate-100 text-pmr-primary font-bold px-3 py-1 rounded-lg text-xs">{{ $totalMembers }}</span>
+<div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 space-y-6">
+    <!-- Stat Badges & Filter Bar -->
+    <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+        <div class="flex flex-wrap items-center gap-2">
+            <a href="{{ route('admin.members.index') }}" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition {{ !$status ? 'bg-slate-900 text-white' : 'bg-slate-100 text-slate-700 hover:bg-slate-200' }}">
+                <span>Semua</span>
+                <span class="px-1.5 py-0.5 rounded-md text-[10px] bg-white/20">{{ $totalMembers }}</span>
+            </a>
+            <a href="{{ route('admin.members.index', ['status' => 'Aktif']) }}" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition {{ $status === 'Aktif' ? 'bg-emerald-600 text-white' : 'bg-emerald-50 text-emerald-800 hover:bg-emerald-100 border border-emerald-200' }}">
+                <i class="fa-solid fa-circle-check text-[10px]"></i>
+                <span>Aktif</span>
+                <span class="px-1.5 py-0.5 rounded-md text-[10px] bg-white/20">{{ $totalAktif }}</span>
+            </a>
+            <a href="{{ route('admin.members.index', ['status' => 'Purna']) }}" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition {{ $status === 'Purna' ? 'bg-slate-700 text-white' : 'bg-slate-100 text-slate-700 hover:bg-slate-200 border border-slate-200' }}">
+                <i class="fa-solid fa-graduation-cap text-[10px]"></i>
+                <span>Purna</span>
+                <span class="px-1.5 py-0.5 rounded-md text-[10px] bg-white/20">{{ $totalPurna }}</span>
+            </a>
         </div>
 
-        <form action="{{ route('admin.members.index') }}" method="GET" class="w-full md:w-auto flex gap-2">
+        <form action="{{ route('admin.members.index') }}" method="GET" class="w-full md:w-auto flex flex-wrap gap-2">
+            @if($status)
+                <input type="hidden" name="status" value="{{ $status }}">
+            @endif
             <div class="relative w-full md:w-64">
                 <i class="fa-solid fa-search absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"></i>
-                <input type="text" name="q" value="{{ $search }}" placeholder="Cari Nama / NIS..." class="w-full pl-9 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:border-pmr-primary focus:ring-1 focus:ring-pmr-primary">
+                <input type="text" name="q" value="{{ $search }}" placeholder="Cari Nama, NIS, Tahun..." class="w-full pl-9 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:border-pmr-primary focus:ring-1 focus:ring-pmr-primary">
             </div>
             <button type="submit" class="bg-slate-800 hover:bg-slate-900 text-white px-4 py-2 rounded-xl text-sm font-bold transition">
                 Cari
             </button>
-            @if($search)
+            @if($search || $status)
                 <a href="{{ route('admin.members.index') }}" class="bg-slate-100 hover:bg-slate-200 text-slate-600 px-4 py-2 rounded-xl text-sm font-bold transition">
                     Reset
                 </a>
@@ -40,12 +56,16 @@
                     <th class="px-6 py-4">Foto</th>
                     <th class="px-6 py-4">Nama Lengkap & NIS</th>
                     <th class="px-6 py-4">Kelas / Tingkat</th>
+                    <th class="px-6 py-4">Status & Tahun Masuk</th>
                     <th class="px-6 py-4">Kontak</th>
                     <th class="px-6 py-4 text-right">Aksi</th>
                 </tr>
             </thead>
             <tbody class="divide-y divide-slate-200">
                 @forelse ($members as $member)
+                    @php
+                        $effStatus = $member->effective_status;
+                    @endphp
                     <tr class="hover:bg-slate-50 transition">
                         <td class="px-6 py-4">
                             @if($member->photo)
@@ -65,6 +85,22 @@
                             <span class="bg-pmr-50 text-pmr-primary px-3 py-1 rounded-full text-[11px] font-bold border border-red-100">
                                 {{ $member->class_grade ?: 'Belum diisi' }}
                             </span>
+                        </td>
+                        <td class="px-6 py-4">
+                            <div>
+                                @if($effStatus === 'Purna')
+                                    <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-slate-100 text-slate-700 border border-slate-300">
+                                        <i class="fa-solid fa-graduation-cap text-[9px]"></i> Purna
+                                    </span>
+                                @else
+                                    <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-emerald-100 text-emerald-800 border border-emerald-200">
+                                        <i class="fa-solid fa-circle-check text-[9px]"></i> Aktif
+                                    </span>
+                                @endif
+                            </div>
+                            <div class="text-xs text-slate-500 mt-1 font-mono">
+                                Masuk: <strong>{{ $member->entry_year ?: '-' }}</strong>
+                            </div>
                         </td>
                         <td class="px-6 py-4">
                             <div class="text-xs"><i class="fa-solid fa-phone w-4 text-slate-400"></i> {{ $member->phone ?: '-' }}</div>
@@ -87,7 +123,7 @@
                     </tr>
                 @empty
                     <tr>
-                        <td colspan="5" class="px-6 py-12 text-center">
+                        <td colspan="6" class="px-6 py-12 text-center">
                             <div class="text-slate-400 mb-2"><i class="fa-solid fa-users-slash text-4xl"></i></div>
                             <div class="font-bold text-slate-600">Belum ada data anggota</div>
                             <div class="text-xs text-slate-500 mt-1">Silakan input data anggota PMR baru.</div>

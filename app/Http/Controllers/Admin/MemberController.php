@@ -6,26 +6,55 @@ use App\Http\Controllers\Controller;
 use App\Models\Member;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Schema;
+use Illuminate\Database\Schema\Blueprint;
 
 class MemberController extends Controller
 {
     public function index(Request $request)
     {
+        // Pastikan kolom baru tersedia secara aman
+        if (Schema::hasTable('members')) {
+            if (!Schema::hasColumn('members', 'entry_year')) {
+                Schema::table('members', function (Blueprint $table) {
+                    $table->unsignedSmallInteger('entry_year')->nullable()->after('class_grade');
+                });
+            }
+            if (!Schema::hasColumn('members', 'member_status')) {
+                Schema::table('members', function (Blueprint $table) {
+                    $table->string('member_status', 20)->default('Aktif')->after('entry_year');
+                });
+            }
+        }
+
         $search = $request->query('q');
+        $status = $request->query('status');
+        $year = $request->query('year');
         $query = Member::query();
 
         if ($search) {
             $query->where(function($q) use ($search) {
                 $q->where('name', 'like', "%{$search}%")
                   ->orWhere('nis', 'like', "%{$search}%")
-                  ->orWhere('class_grade', 'like', "%{$search}%");
+                  ->orWhere('class_grade', 'like', "%{$search}%")
+                  ->orWhere('entry_year', 'like', "%{$search}%");
             });
+        }
+
+        if ($status && in_array($status, ['Aktif', 'Purna'])) {
+            $query->where('member_status', $status);
+        }
+
+        if ($year) {
+            $query->where('entry_year', $year);
         }
 
         $members = $query->orderBy('name')->paginate(15)->withQueryString();
         $totalMembers = Member::count();
+        $totalAktif = Member::where('member_status', 'Aktif')->count();
+        $totalPurna = Member::where('member_status', 'Purna')->count();
 
-        return view('admin.members.index', compact('members', 'search', 'totalMembers'));
+        return view('admin.members.index', compact('members', 'search', 'status', 'year', 'totalMembers', 'totalAktif', 'totalPurna'));
     }
 
     public function create()
@@ -45,6 +74,8 @@ class MemberController extends Controller
             'birth_date' => 'nullable|date',
             'gender' => 'nullable|in:Laki-laki,Perempuan',
             'class_grade' => 'nullable|string|max:50',
+            'entry_year' => 'nullable|integer|min:1990|max:' . ((int)date('Y') + 5),
+            'member_status' => 'nullable|string|in:Aktif,Purna',
             'email' => 'nullable|email|max:255',
             'phone' => 'nullable|string|max:20',
             'motto' => 'nullable|string|max:255',
@@ -62,6 +93,16 @@ class MemberController extends Controller
         }
 
         $validated['is_active'] = $request->has('is_active');
+
+        // Otomatisasi Status Anggota: jika tahun masuk + 3 <= tahun sekarang -> Purna
+        if (!empty($validated['entry_year'])) {
+            $currentYear = (int) date('Y');
+            if (empty($validated['member_status'])) {
+                $validated['member_status'] = ($currentYear >= ((int)$validated['entry_year'] + 3)) ? 'Purna' : 'Aktif';
+            }
+        } else {
+            $validated['member_status'] = $validated['member_status'] ?? 'Aktif';
+        }
 
         Member::create($validated);
 
@@ -85,6 +126,8 @@ class MemberController extends Controller
             'birth_date' => 'nullable|date',
             'gender' => 'nullable|in:Laki-laki,Perempuan',
             'class_grade' => 'nullable|string|max:50',
+            'entry_year' => 'nullable|integer|min:1990|max:' . ((int)date('Y') + 5),
+            'member_status' => 'nullable|string|in:Aktif,Purna',
             'email' => 'nullable|email|max:255',
             'phone' => 'nullable|string|max:20',
             'motto' => 'nullable|string|max:255',
@@ -102,6 +145,16 @@ class MemberController extends Controller
         }
 
         $validated['is_active'] = $request->has('is_active');
+
+        // Otomatisasi Status Anggota: jika tahun masuk + 3 <= tahun sekarang -> Purna
+        if (!empty($validated['entry_year'])) {
+            $currentYear = (int) date('Y');
+            if (empty($validated['member_status'])) {
+                $validated['member_status'] = ($currentYear >= ((int)$validated['entry_year'] + 3)) ? 'Purna' : 'Aktif';
+            }
+        } else {
+            $validated['member_status'] = $validated['member_status'] ?? 'Aktif';
+        }
 
         $member->update($validated);
 

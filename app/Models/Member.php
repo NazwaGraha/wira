@@ -18,6 +18,8 @@ class Member extends Model
         'birth_date',
         'gender',
         'class_grade',
+        'entry_year',
+        'member_status',
         'email',
         'phone',
         'motto',
@@ -29,8 +31,24 @@ class Member extends Model
 
     protected $casts = [
         'birth_date' => 'date',
+        'entry_year' => 'integer',
         'is_active' => 'boolean',
     ];
+
+    /**
+     * Otomatis tentukan status: jika tahun masuk + 3 <= tahun sekarang maka Purna
+     */
+    public function getEffectiveStatusAttribute(): string
+    {
+        if ($this->entry_year) {
+            $currentYear = (int) date('Y');
+            if ($currentYear >= ($this->entry_year + 3)) {
+                return 'Purna';
+            }
+        }
+
+        return $this->member_status ?: 'Aktif';
+    }
 
     public function getPhotoUrlAttribute(): string
     {

@@ -46,7 +46,7 @@ class OrganizationController extends Controller
     {
         $members = collect();
         try {
-            $members = Member::orderBy('name')->get(['id', 'name', 'class_grade', 'nis', 'photo', 'position']);
+            $members = Member::orderBy('name')->get(['id', 'name', 'class_grade', 'nis', 'photo', 'position', 'entry_year', 'member_status']);
         } catch (\Throwable $e) {
             $members = collect();
         }
@@ -146,7 +146,7 @@ class OrganizationController extends Controller
     {
         $members = collect();
         try {
-            $members = Member::orderBy('name')->get(['id', 'name', 'class_grade', 'nis', 'photo', 'position']);
+            $members = Member::orderBy('name')->get(['id', 'name', 'class_grade', 'nis', 'photo', 'position', 'entry_year', 'member_status']);
         } catch (\Throwable $e) {
             $members = collect();
         }

@@ -106,6 +106,34 @@
                     </div>
                 </div>
 
+                <!-- Status & Periode Keanggotaan -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-6 bg-slate-50 p-5 rounded-2xl border border-slate-200">
+                    <div>
+                        <label class="flex items-center gap-2 text-sm font-bold text-slate-700 mb-2">
+                            <i class="fa-regular fa-calendar-check text-slate-400"></i> Tahun Masuk PMR
+                        </label>
+                        <input type="number" name="entry_year" id="entry_year" min="2000" max="{{ date('Y') + 1 }}" value="{{ old('entry_year', date('Y')) }}" class="w-full bg-white border border-slate-200 px-4 py-2.5 rounded-xl focus:outline-none focus:border-red-500 focus:ring-1 focus:ring-red-500 font-bold" placeholder="Contoh: {{ date('Y') }}">
+                        <p class="text-[11px] text-slate-500 mt-1.5 flex items-center gap-1.5">
+                            <i class="fa-solid fa-circle-info text-blue-500"></i> Jika Tahun Masuk + 3 &le; Tahun sekarang ({{ date('Y') }}), otomatis berstatus <strong>Purna</strong>.
+                        </p>
+                    </div>
+                    <div>
+                        <label class="flex items-center justify-between text-sm font-bold text-slate-700 mb-2">
+                            <span class="flex items-center gap-2">
+                                <i class="fa-solid fa-user-tag text-slate-400"></i> Status Anggota
+                            </span>
+                            <span id="status-badge" class="text-[10px] font-black uppercase px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-700">Aktif</span>
+                        </label>
+                        <select name="member_status" id="member_status" class="w-full bg-white border border-slate-200 px-4 py-2.5 rounded-xl focus:outline-none focus:border-red-500 focus:ring-1 focus:ring-red-500 font-bold appearance-none cursor-pointer">
+                            <option value="Aktif" {{ old('member_status') == 'Aktif' ? 'selected' : '' }}>Aktif (Anggota Aktif)</option>
+                            <option value="Purna" {{ old('member_status') == 'Purna' ? 'selected' : '' }}>Purna (Alumni / Masa Bakti Selesai)</option>
+                        </select>
+                        <p class="text-[11px] text-slate-500 mt-1.5">
+                            Disesuaikan otomatis berdasarkan Tahun Masuk, namun dapat diubah manual bila perlu.
+                        </p>
+                    </div>
+                </div>
+
                 <!-- Kontak -->
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>
@@ -175,5 +203,46 @@
             reader.readAsDataURL(this.files[0]);
         }
     });
+
+    // Auto-update status anggota berdasarkan Tahun Masuk (+3 tahun = Purna)
+    const entryYearInput = document.getElementById('entry_year');
+    const memberStatusSelect = document.getElementById('member_status');
+    const statusBadge = document.getElementById('status-badge');
+    const currentYear = new Date().getFullYear();
+
+    function updateMemberStatusAuto() {
+        if (!entryYearInput || !memberStatusSelect) return;
+        const entryYear = parseInt(entryYearInput.value);
+        if (!isNaN(entryYear) && entryYear > 1990) {
+            if (currentYear >= (entryYear + 3)) {
+                memberStatusSelect.value = 'Purna';
+            } else {
+                memberStatusSelect.value = 'Aktif';
+            }
+        }
+        syncStatusBadge();
+    }
+
+    function syncStatusBadge() {
+        if (!statusBadge || !memberStatusSelect) return;
+        if (memberStatusSelect.value === 'Purna') {
+            statusBadge.textContent = 'Purna';
+            statusBadge.className = 'text-[10px] font-black uppercase px-2.5 py-0.5 rounded-full bg-slate-200 text-slate-700';
+        } else {
+            statusBadge.textContent = 'Aktif';
+            statusBadge.className = 'text-[10px] font-black uppercase px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-700';
+        }
+    }
+
+    if (entryYearInput) {
+        entryYearInput.addEventListener('input', updateMemberStatusAuto);
+        entryYearInput.addEventListener('change', updateMemberStatusAuto);
+    }
+    if (memberStatusSelect) {
+        memberStatusSelect.addEventListener('change', syncStatusBadge);
+    }
+
+    // Jalankan kalkulasi saat halaman dimuat
+    updateMemberStatusAuto();
 </script>
 @endpush
