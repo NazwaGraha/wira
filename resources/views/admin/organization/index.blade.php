@@ -80,16 +80,39 @@
 
     <!-- 2. Manajemen Nama-nama Pengurus & Jabatan -->
     <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
-        <div class="px-6 py-4 bg-slate-50 border-b border-slate-200 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div class="px-6 py-4 bg-slate-50 border-b border-slate-200 flex flex-col md:flex-row md:items-center justify-between gap-4">
             <div>
-                <h2 class="font-extrabold text-slate-800 text-sm">Daftar Pejabat & 5 Bidang Bagan Kepengurusan</h2>
-                <p class="text-xs text-slate-500">Kelola ketua, staf pelaksana, dan program kerja masing-masing bidang</p>
+                <div class="flex items-center gap-2">
+                    <h2 class="font-extrabold text-slate-800 text-sm">Daftar Pejabat & 5 Bidang Bagan Kepengurusan</h2>
+                    <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-blue-50 text-blue-700 border border-blue-200">
+                        <i class="fa-solid fa-users-viewfinder text-[9px]"></i> Sesuai Anggota Aktif
+                    </span>
+                </div>
+                <p class="text-xs text-slate-500 mt-0.5">Kelola ketua, staf pelaksana, dan program kerja masing-masing bidang berdasarkan status keanggotaan</p>
             </div>
 
-            <a href="{{ route('admin.organization.create') }}" class="bg-slate-900 hover:bg-slate-800 text-white px-3.5 py-2 rounded-xl font-bold text-xs flex items-center gap-2 transition self-start sm:self-auto">
-                <i class="fa-solid fa-plus text-red-400"></i>
-                <span>Tambah Pengurus / Bidang</span>
-            </a>
+            <div class="flex items-center gap-2 flex-wrap">
+                <!-- Filter Tabs -->
+                <div class="inline-flex items-center bg-slate-200/70 p-1 rounded-xl text-xs font-bold text-slate-600">
+                    <a href="{{ route('admin.organization.index', ['status_filter' => 'all']) }}" 
+                       class="px-3 py-1.5 rounded-lg transition {{ ($statusFilter ?? 'all') === 'all' ? 'bg-white text-slate-900 shadow-xs' : 'hover:text-slate-900' }}">
+                        Semua
+                    </a>
+                    <a href="{{ route('admin.organization.index', ['status_filter' => 'active_only']) }}" 
+                       class="px-3 py-1.5 rounded-lg transition {{ ($statusFilter ?? '') === 'active_only' ? 'bg-emerald-600 text-white shadow-xs' : 'hover:text-emerald-700' }}">
+                        <i class="fa-solid fa-circle-check text-[10px] mr-1"></i> Anggota Aktif
+                    </a>
+                    <a href="{{ route('admin.organization.index', ['status_filter' => 'purna_only']) }}" 
+                       class="px-3 py-1.5 rounded-lg transition {{ ($statusFilter ?? '') === 'purna_only' ? 'bg-amber-600 text-white shadow-xs' : 'hover:text-amber-700' }}">
+                        <i class="fa-solid fa-user-clock text-[10px] mr-1"></i> Purna / Nonaktif
+                    </a>
+                </div>
+
+                <a href="{{ route('admin.organization.create') }}" class="bg-slate-900 hover:bg-slate-800 text-white px-3.5 py-2 rounded-xl font-bold text-xs flex items-center gap-2 transition">
+                    <i class="fa-solid fa-plus text-red-400"></i>
+                    <span>Tambah Pengurus</span>
+                </a>
+            </div>
         </div>
 
         @if($allMembers->isEmpty())
@@ -97,8 +120,16 @@
                 <div class="w-16 h-16 rounded-2xl bg-red-50 text-pmr-primary flex items-center justify-center text-2xl mx-auto mb-4">
                     <i class="fa-solid fa-sitemap"></i>
                 </div>
-                <h3 class="font-bold text-slate-800 text-base mb-1">Belum Ada Pengurus</h3>
-                <p class="text-slate-500 text-xs mb-6">Silakan tambahkan data nama pengurus pertama untuk bagan organisasi.</p>
+                <h3 class="font-bold text-slate-800 text-base mb-1">Tidak Ada Data Pengurus</h3>
+                <p class="text-slate-500 text-xs mb-6">
+                    @if(($statusFilter ?? 'all') === 'active_only')
+                        Tidak ada pengurus dengan anggota berstatus Aktif saat ini.
+                    @elseif(($statusFilter ?? 'all') === 'purna_only')
+                        Tidak ada pengurus dengan anggota berstatus Purna/Nonaktif.
+                    @else
+                        Silakan tambahkan data nama pengurus pertama untuk bagan organisasi.
+                    @endif
+                </p>
                 <a href="{{ route('admin.organization.create') }}" class="bg-pmr-primary text-white text-xs font-bold px-4 py-2.5 rounded-xl inline-flex items-center gap-2 shadow">
                     <i class="fa-solid fa-plus"></i> Tambah Pengurus Baru
                 </a>
@@ -168,8 +199,23 @@
                                         </div>
                                     @endif
                                     <div>
-                                        <div class="font-extrabold text-slate-900 text-sm">{{ $m->name }}</div>
-                                        <div class="text-xs text-slate-500">{{ $m->subtitle ?: '-' }}</div>
+                                        <div class="flex items-center gap-2 flex-wrap">
+                                            <span class="font-extrabold text-slate-900 text-sm">{{ $m->name }}</span>
+                                            @if($m->level === 1)
+                                                <span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-bold bg-slate-100 text-slate-700">
+                                                    Pembina
+                                                </span>
+                                            @elseif($m->isLeaderActive())
+                                                <span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
+                                                    <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span> Anggota Aktif
+                                                </span>
+                                            @else
+                                                <span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-bold bg-amber-50 text-amber-700 border border-amber-200">
+                                                    <i class="fa-solid fa-clock-rotate-left text-[9px]"></i> Purna / Nonaktif
+                                                </span>
+                                            @endif
+                                        </div>
+                                        <div class="text-xs text-slate-500 mt-0.5">{{ $m->subtitle ?: '-' }}</div>
                                     </div>
                                 </div>
                             </td>
@@ -186,10 +232,21 @@
 
                             <!-- Staf Anggota -->
                             <td class="py-3.5 px-4">
+                                @php
+                                    $activeStaffList = $m->active_staff_members;
+                                    $activeStaffCount = count($activeStaffList);
+                                @endphp
                                 @if($staffCount > 0)
-                                    <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold bg-red-50 text-pmr-primary">
-                                        <i class="fa-solid fa-users text-[10px]"></i> {{ $staffCount }} Orang Staf
-                                    </span>
+                                    <div class="space-y-1">
+                                        <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold {{ $activeStaffCount === $staffCount ? 'bg-red-50 text-pmr-primary' : 'bg-amber-50 text-amber-800 border border-amber-200' }}">
+                                            <i class="fa-solid fa-users text-[10px]"></i> {{ $activeStaffCount }} / {{ $staffCount }} Staf Aktif
+                                        </span>
+                                        @if($activeStaffCount < $staffCount)
+                                            <div class="text-[10px] text-amber-600 font-semibold">
+                                                {{ $staffCount - $activeStaffCount }} staf purna/nonaktif disembunyikan
+                                            </div>
+                                        @endif
+                                    </div>
                                 @else
                                     <span class="text-xs text-slate-400 italic">-</span>
                                 @endif
@@ -211,11 +268,11 @@
                                 {{ $m->order_position }}
                             </td>
 
-                            <!-- Status -->
+                            <!-- Status Jabatan di Bagan -->
                             <td class="py-3.5 px-4 text-center">
                                 @if($m->is_active)
                                     <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-800">
-                                        <span class="w-1.5 h-1.5 rounded-full bg-emerald-600"></span> Aktif
+                                        <span class="w-1.5 h-1.5 rounded-full bg-emerald-600"></span> Tayang
                                     </span>
                                 @else
                                     <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-slate-200 text-slate-600">

@@ -33,6 +33,64 @@ class OrganizationMember extends Model
         return $this->belongsTo(Member::class, 'member_id');
     }
 
+    /**
+     * Cek apakah pejabat / ketua masih aktif
+     * Level 1 (Pembina) selalu dianggap aktif jika tidak terikat siswa aktif
+     */
+    public function isLeaderActive(): bool
+    {
+        if ($this->level === 1) {
+            return true;
+        }
+
+        if ($this->member) {
+            return $this->member->effective_status === 'Aktif';
+        }
+
+        if (! empty($this->name)) {
+            $matchedMember = Member::where('name', $this->name)->first();
+            if ($matchedMember) {
+                return $matchedMember->effective_status === 'Aktif';
+            }
+        }
+
+        // Jika tidak terhubung ke tabel member dan nama custom, tetap dianggap aktif
+        return true;
+    }
+
+    /**
+     * Dapatkan daftar staf yang masih berstatus Aktif
+     */
+    public function getActiveStaffMembersAttribute(): array
+    {
+        $staffList = is_array($this->staff_members) ? $this->staff_members : [];
+        if (empty($staffList)) {
+            return [];
+        }
+
+        $activeStaff = [];
+        foreach ($staffList as $st) {
+            $stMem = null;
+            if (! empty($st['member_id'])) {
+                $stMem = Member::find($st['member_id']);
+            } elseif (! empty($st['name'])) {
+                $stMem = Member::where('name', $st['name'])->first();
+            }
+
+            // Jika terhubung / ditemukan di tabel Member, harus berstatus Aktif
+            if ($stMem) {
+                if ($stMem->effective_status === 'Aktif') {
+                    $activeStaff[] = $st;
+                }
+            } else {
+                // Jika entri staf manual tanpa rekaman di Member, tetap sertakan
+                $activeStaff[] = $st;
+            }
+        }
+
+        return $activeStaff;
+    }
+
     public function getPhotoUrlAttribute(): ?string
     {
         if (! empty($this->photo)) {

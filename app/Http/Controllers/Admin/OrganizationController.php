@@ -12,7 +12,7 @@ use Illuminate\Support\Facades\Storage;
 
 class OrganizationController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
         $setting = OrganizationSetting::firstOrCreate(
             ['id' => 1],
@@ -23,10 +23,19 @@ class OrganizationController extends Controller
             ]
         );
 
+        $statusFilter = $request->query('status_filter', 'all'); // 'all', 'active_only', 'purna_only'
+
         $allMembers = OrganizationMember::with('member')->orderBy('level')->orderBy('order_position')->get();
+
+        if ($statusFilter === 'active_only') {
+            $allMembers = $allMembers->filter(fn ($m) => $m->isLeaderActive())->values();
+        } elseif ($statusFilter === 'purna_only') {
+            $allMembers = $allMembers->filter(fn ($m) => ! $m->isLeaderActive())->values();
+        }
+
         $membersByLevel = $allMembers->groupBy('level');
 
-        return view('admin.organization.index', compact('setting', 'allMembers', 'membersByLevel'));
+        return view('admin.organization.index', compact('setting', 'allMembers', 'membersByLevel', 'statusFilter'));
     }
 
     public function updateSetting(Request $request)

@@ -52,12 +52,21 @@ class PageController extends Controller
             ]
         );
 
-        $organizationMembers = OrganizationMember::with('member')
+        $rawMembers = OrganizationMember::with('member')
             ->where('is_active', true)
             ->orderBy('level')
             ->orderBy('order_position')
-            ->get()
-            ->groupBy('level');
+            ->get();
+
+        // Saring pengurus di bagan: hanya tampil jika pejabat/ketua aktif (atau level 1 / Pembina)
+        $organizationMembers = $rawMembers->filter(function ($m) {
+            return $m->isLeaderActive();
+        })->map(function ($m) {
+            // Saring staf yang aktif
+            $m->staff_members = $m->active_staff_members;
+
+            return $m;
+        })->groupBy('level');
 
         $allMembers = Member::all()->keyBy('name');
         $guideline = OrganizationGuideline::current();
