@@ -265,7 +265,7 @@
                 </div>
                 <div>
                     <h3 class="font-extrabold text-slate-900 text-base" id="modal-title">Pilih Dari Database Anggota PMR</h3>
-                    <p class="text-xs text-slate-500">Cari berdasarkan Nama, NIS, atau Kelas (Total: {{ $members->count() }} Anggota)</p>
+                    <p class="text-xs text-slate-500">Cari berdasarkan Nama, NRI, atau Kelas <span id="modal-count-label" class="font-bold text-pmr-primary">(Tersedia: {{ $members->count() }} Anggota)</span></p>
                 </div>
             </div>
             <button type="button" onclick="closeMemberModal()" class="w-8 h-8 rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-200 flex items-center justify-center transition">
@@ -284,6 +284,13 @@
 
         <!-- Modal Member List -->
         <div class="p-4 overflow-y-auto flex-grow space-y-2 max-h-[50vh]" id="modal-member-list">
+            <!-- Empty state jika tidak ada hasil pencarian / semua sudah terpilih -->
+            <div id="modal-no-results" class="text-center py-10 text-slate-400 hidden">
+                <i class="fa-solid fa-user-check text-4xl mb-2 text-emerald-400 block"></i>
+                <div class="font-bold text-slate-600">Tidak ada anggota yang dapat dipilih</div>
+                <div class="text-xs text-slate-400 mt-1">Anggota lainnya sudah dipilih pada jabatan/staf ini atau tidak cocok dengan pencarian.</div>
+            </div>
+
             @forelse($members as $m)
                 @php
                     $mPhoto = $m->photo_url;
@@ -373,17 +380,60 @@
         if (modal) modal.classList.add('hidden');
     }
 
+    function getSelectedMemberIds() {
+        const selected = new Set();
+        
+        // ID anggota yang saat ini terpilih sebagai Pejabat / Ketua
+        const leaderId = document.getElementById('member_id')?.value;
+        if (leaderId) {
+            selected.add(String(leaderId));
+        }
+
+        // ID anggota yang saat ini terdaftar di daftar staf bidang
+        document.querySelectorAll('input[name^="staff_members"][name$="[member_id]"]').forEach(input => {
+            if (input.value) {
+                selected.add(String(input.value));
+            }
+        });
+
+        return selected;
+    }
+
     function filterModalMembers(query) {
         const q = query.toLowerCase().trim();
         const items = document.querySelectorAll('.member-item');
+        const selectedIds = getSelectedMemberIds();
+        let visibleCount = 0;
+
         items.forEach(item => {
+            const itemId = String(item.getAttribute('data-id') || '');
             const search = item.getAttribute('data-search') || '';
-            if (search.includes(q)) {
+
+            // Sembunyikan anggota yang sudah dipilih di form ini
+            const isAlreadySelected = selectedIds.has(itemId);
+
+            if (!isAlreadySelected && search.includes(q)) {
                 item.classList.remove('hidden');
+                visibleCount++;
             } else {
                 item.classList.add('hidden');
             }
         });
+
+        // Update counter dan empty state jika semua anggota sudah dipilih / tidak cocok pencarian
+        const emptyState = document.getElementById('modal-no-results');
+        if (emptyState) {
+            if (visibleCount === 0) {
+                emptyState.classList.remove('hidden');
+            } else {
+                emptyState.classList.add('hidden');
+            }
+        }
+
+        const countLabel = document.getElementById('modal-count-label');
+        if (countLabel) {
+            countLabel.textContent = `(Tersedia: ${visibleCount} Anggota)`;
+        }
     }
 
     function selectMemberFromEl(el) {
