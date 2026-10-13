@@ -25,7 +25,7 @@
             
             <!-- Left Side (Photo Upload) -->
             <div class="lg:col-span-3">
-                <div class="text-sm font-bold text-slate-700 mb-3">Upload Foto Profil <span class="text-rose-500">*</span></div>
+                <div class="text-sm font-bold text-slate-700 mb-3">Upload Foto Profil <span class="text-xs font-normal text-slate-400">(Opsional)</span></div>
                 <div class="relative w-full aspect-[3/4] bg-slate-50 border-2 border-dashed border-slate-300 rounded-2xl overflow-hidden group hover:border-pmr-primary transition">
                     @if($member->photo)
                         <img id="photo-preview" src="{{ Storage::url($member->photo) }}" alt="Preview" class="w-full h-full object-cover">

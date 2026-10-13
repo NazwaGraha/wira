@@ -24,14 +24,14 @@
             
             <!-- Left Side (Photo Upload) -->
             <div class="lg:col-span-3">
-                <div class="text-sm font-bold text-slate-700 mb-3">Upload Foto Profil <span class="text-rose-500">*</span></div>
+                <div class="text-sm font-bold text-slate-700 mb-3">Upload Foto Profil <span class="text-xs font-normal text-slate-400">(Opsional)</span></div>
                 <div class="relative w-full aspect-[3/4] bg-slate-50 border-2 border-dashed border-slate-300 rounded-2xl overflow-hidden group hover:border-pmr-primary transition">
                     <img id="photo-preview" src="#" alt="Preview" class="w-full h-full object-cover hidden">
                     <div id="photo-placeholder" class="absolute inset-0 flex flex-col items-center justify-center text-slate-400 group-hover:text-pmr-primary transition">
                         <i class="fa-solid fa-camera text-4xl mb-2"></i>
                         <span class="text-xs font-semibold">Pilih Foto</span>
                     </div>
-                    <input type="file" name="photo" id="photo" accept="image/*" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10" required>
+                    <input type="file" name="photo" id="photo" accept="image/*" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10">
                     
                     <div class="absolute bottom-3 right-3 z-20 w-8 h-8 bg-pmr-primary text-white rounded-full flex items-center justify-center shadow-lg pointer-events-none hidden" id="upload-icon">
                         <i class="fa-solid fa-upload text-sm"></i>
