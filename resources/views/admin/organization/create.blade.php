@@ -326,6 +326,8 @@
 @push('scripts')
 <script>
     const membersData = {!! json_encode($membersJson) !!};
+    const globalUsedMemberIds = new Set({!! json_encode($usedMemberIds ?? []) !!}.map(String));
+    const globalUsedMemberNames = new Set({!! json_encode($usedMemberNames ?? []) !!}.map(s => String(s).trim().toLowerCase()));
     let currentModalTarget = 'leader';
     let staffCount = 0;
 
@@ -355,15 +357,15 @@
     }
 
     function getSelectedMemberIds() {
-        const selected = new Set();
+        const selected = new Set(globalUsedMemberIds);
         
-        // ID anggota yang saat ini terpilih sebagai Pejabat / Ketua
+        // ID anggota yang saat ini terpilih sebagai Pejabat / Ketua di form ini
         const leaderId = document.getElementById('member_id')?.value;
         if (leaderId) {
             selected.add(String(leaderId));
         }
 
-        // ID anggota yang saat ini terdaftar di daftar staf bidang
+        // ID anggota yang saat ini terdaftar di daftar staf bidang di form ini
         document.querySelectorAll('input[name^="staff_members"][name$="[member_id]"]').forEach(input => {
             if (input.value) {
                 selected.add(String(input.value));
@@ -373,18 +375,39 @@
         return selected;
     }
 
+    function getSelectedMemberNames() {
+        const selectedNames = new Set(globalUsedMemberNames);
+
+        // Nama anggota yang saat ini terpilih sebagai Pejabat / Ketua di form ini
+        const leaderName = document.getElementById('name')?.value;
+        if (leaderName) {
+            selectedNames.add(String(leaderName).trim().toLowerCase());
+        }
+
+        // Nama staf yang saat ini terdaftar di form ini
+        document.querySelectorAll('input[name^="staff_members"][name$="[name]"]').forEach(input => {
+            if (input.value) {
+                selectedNames.add(String(input.value).trim().toLowerCase());
+            }
+        });
+
+        return selectedNames;
+    }
+
     function filterModalMembers(query) {
         const q = query.toLowerCase().trim();
         const items = document.querySelectorAll('.member-item');
         const selectedIds = getSelectedMemberIds();
+        const selectedNames = getSelectedMemberNames();
         let visibleCount = 0;
 
         items.forEach(item => {
             const itemId = String(item.getAttribute('data-id') || '');
+            const itemName = String(item.getAttribute('data-name') || '').trim().toLowerCase();
             const search = item.getAttribute('data-search') || '';
 
-            // Sembunyikan anggota yang sudah dipilih di form ini
-            const isAlreadySelected = selectedIds.has(itemId);
+            // Sembunyikan anggota yang sudah dipilih di struktur organisasi
+            const isAlreadySelected = (itemId && selectedIds.has(itemId)) || (itemName && selectedNames.has(itemName));
 
             if (!isAlreadySelected && search.includes(q)) {
                 item.classList.remove('hidden');

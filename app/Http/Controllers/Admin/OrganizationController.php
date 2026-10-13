@@ -67,6 +67,31 @@ class OrganizationController extends Controller
             $members = collect();
         }
 
+        // Kumpulkan ID dan nama anggota yang sudah ditugaskan di seluruh struktur organisasi (jabatan lain maupun staf lain)
+        $allOrgMembers = OrganizationMember::all();
+        $usedMemberIds = [];
+        $usedMemberNames = [];
+        foreach ($allOrgMembers as $org) {
+            if (! empty($org->member_id)) {
+                $usedMemberIds[] = (int) $org->member_id;
+            }
+            if (! empty($org->name)) {
+                $usedMemberNames[] = trim(strtolower($org->name));
+            }
+            if (! empty($org->staff_members) && is_array($org->staff_members)) {
+                foreach ($org->staff_members as $st) {
+                    if (! empty($st['member_id'])) {
+                        $usedMemberIds[] = (int) $st['member_id'];
+                    }
+                    if (! empty($st['name'])) {
+                        $usedMemberNames[] = trim(strtolower($st['name']));
+                    }
+                }
+            }
+        }
+        $usedMemberIds = array_values(array_unique($usedMemberIds));
+        $usedMemberNames = array_values(array_unique($usedMemberNames));
+
         $membersJson = $members->map(function ($m) {
             return [
                 'id' => $m->id,
@@ -80,7 +105,7 @@ class OrganizationController extends Controller
             ];
         })->values();
 
-        return view('admin.organization.create', compact('members', 'membersJson'));
+        return view('admin.organization.create', compact('members', 'membersJson', 'usedMemberIds', 'usedMemberNames'));
     }
 
     public function store(Request $request)
@@ -180,6 +205,31 @@ class OrganizationController extends Controller
             $members = collect();
         }
 
+        // Kumpulkan ID dan nama anggota yang sudah ditugaskan di jabatan lain maupun staf lain (kecuali record $member ini)
+        $otherOrgMembers = OrganizationMember::where('id', '!=', $member->id)->get();
+        $usedMemberIds = [];
+        $usedMemberNames = [];
+        foreach ($otherOrgMembers as $org) {
+            if (! empty($org->member_id)) {
+                $usedMemberIds[] = (int) $org->member_id;
+            }
+            if (! empty($org->name)) {
+                $usedMemberNames[] = trim(strtolower($org->name));
+            }
+            if (! empty($org->staff_members) && is_array($org->staff_members)) {
+                foreach ($org->staff_members as $st) {
+                    if (! empty($st['member_id'])) {
+                        $usedMemberIds[] = (int) $st['member_id'];
+                    }
+                    if (! empty($st['name'])) {
+                        $usedMemberNames[] = trim(strtolower($st['name']));
+                    }
+                }
+            }
+        }
+        $usedMemberIds = array_values(array_unique($usedMemberIds));
+        $usedMemberNames = array_values(array_unique($usedMemberNames));
+
         $membersJson = $members->map(function ($m) {
             return [
                 'id' => $m->id,
@@ -193,7 +243,7 @@ class OrganizationController extends Controller
             ];
         })->values();
 
-        return view('admin.organization.edit', compact('member', 'members', 'membersJson'));
+        return view('admin.organization.edit', compact('member', 'members', 'membersJson', 'usedMemberIds', 'usedMemberNames'));
     }
 
     public function update(Request $request, OrganizationMember $member)
