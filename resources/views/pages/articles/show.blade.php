@@ -1,6 +1,35 @@
 @extends('layouts.app')
 
 @section('title', $article->title)
+@section('meta_title', $article->effective_meta_title)
+@section('meta_description', $article->effective_meta_description)
+
+@section('meta_tags')
+    <link rel="canonical" href="{{ $article->canonical_url ?: url()->current() }}">
+    @if($article->meta_keywords)
+        <meta name="keywords" content="{{ $article->meta_keywords }}">
+    @endif
+    <!-- Open Graph / Facebook / WhatsApp -->
+    <meta property="og:type" content="article">
+    <meta property="og:url" content="{{ url()->current() }}">
+    <meta property="og:title" content="{{ $article->og_title ?: $article->effective_meta_title }}">
+    <meta property="og:description" content="{{ $article->og_description ?: $article->effective_meta_description }}">
+    <meta property="og:image" content="{{ $article->effective_og_image }}">
+    <meta property="og:site_name" content="PMR Wira SMAN 1 Ciawi">
+    @if($article->published_at)
+        <meta property="article:published_time" content="{{ $article->published_at->toIso8601String() }}">
+    @endif
+    <meta property="article:author" content="{{ $article->author_name }}">
+    @if($article->category)
+        <meta property="article:section" content="{{ $article->category->name }}">
+    @endif
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="{{ $article->og_title ?: $article->effective_meta_title }}">
+    <meta name="twitter:description" content="{{ $article->og_description ?: $article->effective_meta_description }}">
+    <meta name="twitter:image" content="{{ $article->effective_og_image }}">
+@endsection
 
 @section('content')
 <!-- Breadcrumbs -->
@@ -46,14 +75,18 @@
 
     <!-- Featured Image -->
     @if ($article->thumbnail)
-        <div class="rounded-3xl overflow-hidden shadow-xl mb-10 bg-slate-900">
-            <img src="{{ $article->thumbnail }}" alt="{{ $article->title }}" class="w-full h-auto object-cover max-h-[500px]">
+        <div class="rounded-3xl overflow-hidden shadow-xl mb-10 bg-slate-900 border border-slate-200">
+            <img src="{{ $article->thumbnail_url }}" alt="{{ $article->title }}" class="w-full h-auto object-cover max-h-[520px]">
         </div>
     @endif
 
     <!-- Body content with nice typography -->
-    <div class="prose max-w-none text-slate-700 leading-relaxed text-base sm:text-lg mb-12 space-y-6">
-        {!! nl2br(e($article->body)) !!}
+    <div class="prose max-w-none text-slate-800 leading-relaxed text-base sm:text-lg mb-12 space-y-6">
+        @if(strip_tags($article->body) !== $article->body)
+            {!! $article->body !!}
+        @else
+            {!! nl2br(e($article->body)) !!}
+        @endif
     </div>
 
     <!-- Share & Socials -->

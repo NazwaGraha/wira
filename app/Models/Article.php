@@ -16,6 +16,14 @@ class Article extends Model
         'excerpt',
         'body',
         'thumbnail',
+        'meta_title',
+        'meta_description',
+        'meta_keywords',
+        'focus_keyword',
+        'canonical_url',
+        'og_title',
+        'og_description',
+        'og_image',
         'category_id',
         'user_id',
         'author_name',
@@ -38,6 +46,49 @@ class Article extends Model
     public function user()
     {
         return $this->belongsTo(User::class);
+    }
+
+    public function getThumbnailUrlAttribute(): string
+    {
+        if (empty($this->thumbnail)) {
+            return asset('mockups/07_artikel.jpg');
+        }
+
+        if (str_starts_with($this->thumbnail, 'http://') || str_starts_with($this->thumbnail, 'https://') || str_starts_with($this->thumbnail, '/')) {
+            return $this->thumbnail;
+        }
+
+        return asset('storage/' . $this->thumbnail);
+    }
+
+    public function getEffectiveMetaTitleAttribute(): string
+    {
+        return $this->meta_title ?: ($this->title . ' - PMR Wira SMAN 1 Ciawi');
+    }
+
+    public function getEffectiveMetaDescriptionAttribute(): string
+    {
+        if (!empty($this->meta_description)) {
+            return $this->meta_description;
+        }
+
+        if (!empty($this->excerpt)) {
+            return $this->excerpt;
+        }
+
+        return Str::limit(strip_tags($this->body), 160);
+    }
+
+    public function getEffectiveOgImageAttribute(): string
+    {
+        if (!empty($this->og_image)) {
+            if (str_starts_with($this->og_image, 'http://') || str_starts_with($this->og_image, 'https://') || str_starts_with($this->og_image, '/')) {
+                return $this->og_image;
+            }
+            return asset('storage/' . $this->og_image);
+        }
+
+        return $this->thumbnail_url;
     }
 
     public function getEstimatedReadingTimeAttribute()
