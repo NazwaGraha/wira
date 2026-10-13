@@ -8,6 +8,8 @@ use App\Models\OrganizationGuideline;
 use App\Models\PpuoChapter;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Artisan;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\View\View;
 
@@ -18,9 +20,17 @@ class OrganizationGuidelineController extends Controller
      */
     public function index(): View
     {
+        try {
+            if (! Schema::hasTable('organization_guidelines')) {
+                Artisan::call('migrate', ['--force' => true]);
+            }
+        } catch (\Throwable $e) {
+            // ignore
+        }
+
         $guideline = OrganizationGuideline::current();
-        $strategies = $guideline->strategies()->orderBy('order_number')->get();
-        $chapters = $guideline->chapters()->orderBy('order_number')->get();
+        $strategies = $guideline->exists ? $guideline->strategies()->orderBy('order_number')->get() : ($guideline->strategies ?? collect());
+        $chapters = $guideline->exists ? $guideline->chapters()->orderBy('order_number')->get() : ($guideline->chapters ?? collect());
 
         return view('admin.organization_guidelines.index', compact('guideline', 'strategies', 'chapters'));
     }
