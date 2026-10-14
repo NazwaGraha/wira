@@ -7,6 +7,7 @@ use App\Models\Advisor;
 use App\Models\Member;
 use App\Models\OrganizationMember;
 use App\Models\OrganizationSetting;
+use App\Services\OrganizationSyncService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\Storage;
@@ -76,6 +77,13 @@ class OrganizationController extends Controller
         return redirect()->route('admin.organization.index')->with('success', 'Judul dan informasi Bagan Kepengurusan berhasil diperbarui!');
     }
 
+    public function syncFromMembers()
+    {
+        $result = OrganizationSyncService::syncAll();
+
+        return redirect()->route('admin.organization.index')->with('success', $result['message']);
+    }
+
     public function create()
     {
         $members = collect();
@@ -121,6 +129,7 @@ class OrganizationController extends Controller
                 'id' => $m->id,
                 'name' => $m->name,
                 'class_grade' => $m->class_grade ?? '',
+                'position' => $m->position ?? '',
                 'nri' => $m->nri ?? $m->nis ?? '',
                 'nis' => $m->nri ?? $m->nis ?? '',
                 'photo' => $m->photo ?? '',
@@ -293,6 +302,7 @@ class OrganizationController extends Controller
                 'id' => $m->id,
                 'name' => $m->name,
                 'class_grade' => $m->class_grade ?? '',
+                'position' => $m->position ?? '',
                 'nri' => $m->nri ?? $m->nis ?? '',
                 'nis' => $m->nri ?? $m->nis ?? '',
                 'photo' => $m->photo ?? '',

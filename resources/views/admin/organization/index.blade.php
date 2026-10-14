@@ -4,10 +4,19 @@
 @section('page_title', 'Kelola Bagan Kepengurusan')
 
 @section('top_actions')
-<a href="{{ route('admin.organization.create') }}" class="bg-pmr-primary hover:bg-pmr-dark text-white px-4 py-2.5 rounded-xl font-bold text-xs flex items-center gap-2 shadow-md shadow-red-950/20 transition">
-    <i class="fa-solid fa-user-plus"></i>
-    <span>Tambah Pengurus / Bidang</span>
-</a>
+<div class="flex flex-wrap items-center gap-2">
+    <form action="{{ route('admin.organization.sync-from-members') }}" method="POST" onsubmit="return confirm('Apakah Anda yakin ingin menyinkronkan seluruh susunan bagan kepengurusan dan staf secara otomatis berdasarkan data anggota yang aktif dan memiliki jabatan? Data bagan yang ada akan diperbarui sesuai jabatan anggota.')">
+        @csrf
+        <button type="submit" class="bg-emerald-600 hover:bg-emerald-700 text-white px-3.5 py-2.5 rounded-xl font-bold text-xs flex items-center gap-2 shadow-sm transition">
+            <i class="fa-solid fa-arrows-rotate"></i>
+            <span>⚡ Sinkronkan dari Data Anggota</span>
+        </button>
+    </form>
+    <a href="{{ route('admin.organization.create') }}" class="bg-pmr-primary hover:bg-pmr-dark text-white px-4 py-2.5 rounded-xl font-bold text-xs flex items-center gap-2 shadow-md shadow-red-950/20 transition">
+        <i class="fa-solid fa-user-plus"></i>
+        <span>Tambah Pengurus / Bidang</span>
+    </a>
+</div>
 @endsection
 
 @section('content')

@@ -324,16 +324,23 @@
                      data-id="{{ $m->id }}"
                      data-name="{{ $m->name }}"
                      data-class="{{ $m->class_grade ?? '' }}"
+                     data-position="{{ $m->position ?? '' }}"
                      data-nri="{{ $mNri !== '-' ? $mNri : '' }}"
                      data-nis="{{ $mNri !== '-' ? $mNri : '' }}"
                      data-photo="{{ $mPhoto }}"
                      data-status="{{ $mStatus }}"
-                     data-search="{{ strtolower($m->name . ' ' . ($m->class_grade ?? '') . ' ' . $mNri . ' ' . $mStatus) }}">
+                     data-search="{{ strtolower($m->name . ' ' . ($m->position ?? '') . ' ' . ($m->class_grade ?? '') . ' ' . $mNri . ' ' . $mStatus) }}">
                     <div class="flex items-center gap-3">
                         <img src="{{ $mPhoto }}" alt="{{ $m->name }}" class="w-10 h-10 rounded-full object-cover border border-slate-200 flex-shrink-0" onerror="this.onerror=null; this.src='https://ui-avatars.com/api/?name={{ urlencode($m->name) }}&background=dc2626&color=ffffff&bold=true&size=128';">
                         <div>
-                            <div class="font-bold text-slate-900 text-sm group-hover:text-pmr-primary transition flex items-center gap-2">
+                            <div class="font-bold text-slate-900 text-sm group-hover:text-pmr-primary transition flex flex-wrap items-center gap-1.5">
                                 <span>{{ $m->name }}</span>
+                                @if(!empty($m->position))
+                                    <span class="px-2 py-0.5 rounded-full text-[10px] font-black uppercase bg-red-100 text-pmr-primary border border-red-200 flex items-center gap-1 shadow-2xs">
+                                        <i class="fa-solid fa-award text-[9px]"></i>
+                                        <span>{{ $m->position }}</span>
+                                    </span>
+                                @endif
                                 <span class="px-2 py-0.5 rounded-full text-[10px] font-black uppercase {{ $mStatus === 'Purna' ? 'bg-slate-100 text-slate-600 border border-slate-200' : 'bg-emerald-100 text-emerald-800 border border-emerald-200' }}">
                                     {{ $mStatus }}
                                 </span>
@@ -555,13 +562,89 @@
             name: el.getAttribute('data-name'),
             class_grade: el.getAttribute('data-class'),
             nis: el.getAttribute('data-nis'),
-            photo_url: el.getAttribute('data-photo')
+            photo_url: el.getAttribute('data-photo'),
+            position: el.getAttribute('data-position') || ''
         };
 
         if (currentModalTarget === 'leader') {
             selectLeader(member);
         } else if (currentModalTarget === 'staff') {
             addStaffRow(member);
+        }
+    }
+
+    function autoFillFromMemberPosition(rawPos, classGrade = '') {
+        if (!rawPos || !rawPos.trim()) return;
+        const posLower = rawPos.toLowerCase().trim();
+        const posInput = document.getElementById('position');
+        const levelSelect = document.getElementById('level');
+        const iconInput = document.getElementById('icon');
+        const iconPreview = document.getElementById('icon-preview');
+        const subtitleInput = document.getElementById('subtitle');
+
+        let targetLevel = null;
+        let targetPos = rawPos;
+        let targetIcon = 'fa-solid fa-shapes';
+        let targetSubtitle = rawPos;
+
+        if (posLower.includes('ketua umum') || (posLower.includes('ketua') && !posLower.includes('wakil') && !posLower.includes('bidang'))) {
+            targetLevel = 2;
+            targetPos = 'Ketua Umum';
+            targetIcon = 'fa-solid fa-crown';
+            targetSubtitle = 'Masa Bakti Ragana Dwi Pantara';
+        } else if (posLower.includes('wakil')) {
+            targetLevel = 3;
+            targetPos = 'Wakil Ketua';
+            targetIcon = 'fa-solid fa-user-shield';
+            targetSubtitle = 'Wakil Ketua PMR Wira';
+        } else if (posLower.includes('sekretaris')) {
+            targetLevel = 4;
+            targetPos = 'Sekretaris';
+            targetIcon = 'fa-solid fa-file-signature';
+            targetSubtitle = 'Sekretaris PMR Wira';
+        } else if (posLower.includes('bendahara')) {
+            targetLevel = 4;
+            targetPos = 'Bendahara';
+            targetIcon = 'fa-solid fa-wallet';
+            targetSubtitle = 'Bendahara PMR Wira';
+        } else if (posLower.includes('markas') || posLower.includes('logistik')) {
+            targetLevel = 5;
+            targetPos = 'Ketua Bidang Markas & Logistik';
+            targetIcon = 'fa-solid fa-boxes-stacked';
+            targetSubtitle = 'Bidang Markas PMR';
+        } else if (posLower.includes('pelayanan') || posLower.includes('kesehatan') || posLower.includes('pp')) {
+            targetLevel = 5;
+            targetPos = 'Ketua Bidang Pelayanan Kesehatan & PP';
+            targetIcon = 'fa-solid fa-heart-pulse';
+            targetSubtitle = 'Bidang Pelayanan PMR';
+        } else if (posLower.includes('diklat') || posLower.includes('pendidikan') || posLower.includes('pelatihan')) {
+            targetLevel = 5;
+            targetPos = 'Ketua Bidang Pendidikan & Pelatihan (Diklat)';
+            targetIcon = 'fa-solid fa-graduation-cap';
+            targetSubtitle = 'Bidang Diklat PMR';
+        } else if (posLower.includes('humas') || posLower.includes('hubungan')) {
+            targetLevel = 5;
+            targetPos = 'Ketua Bidang Hubungan Masyarakat (Humas)';
+            targetIcon = 'fa-solid fa-bullhorn';
+            targetSubtitle = 'Bidang Humas PMR';
+        } else if (posLower.includes('kreasi') || posLower.includes('bakat') || posLower.includes('minat')) {
+            targetLevel = 5;
+            targetPos = 'Ketua Bidang Kreasi, Bakat & Minat';
+            targetIcon = 'fa-solid fa-palette';
+            targetSubtitle = 'Bidang Kreasi & Minat PMR';
+        }
+
+        if (posInput) posInput.value = targetPos;
+        if (targetLevel && levelSelect) {
+            levelSelect.value = targetLevel;
+            if (typeof toggleLevelSections === 'function') toggleLevelSections();
+        }
+        if (iconInput) {
+            iconInput.value = targetIcon;
+            if (iconPreview) iconPreview.className = targetIcon + ' text-sm';
+        }
+        if (subtitleInput) {
+            subtitleInput.value = targetSubtitle;
         }
     }
 
@@ -580,14 +663,23 @@
 
         if (cardName) cardName.textContent = m.name;
         if (cardPhoto) cardPhoto.src = m.photo_url || ('https://ui-avatars.com/api/?name=' + encodeURIComponent(m.name) + '&background=dc2626&color=ffffff&bold=true');
-        if (cardMeta) cardMeta.textContent = (m.class_grade ? 'Kelas ' + m.class_grade : 'Anggota PMR') + ((m.nri || m.nis) ? ' • NRI: ' + (m.nri || m.nis) : '');
+        
+        const metaParts = [];
+        if (m.position) metaParts.push(m.position);
+        if (m.class_grade) metaParts.push('Kelas ' + m.class_grade);
+        if (m.nri || m.nis) metaParts.push('NRI: ' + (m.nri || m.nis));
+        if (cardMeta) cardMeta.textContent = metaParts.length > 0 ? metaParts.join(' • ') : 'Anggota PMR';
 
-        if (subtitleInput && (!subtitleInput.value || subtitleInput.value.trim() === '')) {
-            const pos = posInput ? posInput.value.trim() : '';
-            if (pos) {
-                subtitleInput.value = 'Ketua ' + pos;
-            } else if (m.class_grade) {
-                subtitleInput.value = 'Kelas ' + m.class_grade;
+        if (m.position) {
+            autoFillFromMemberPosition(m.position, m.class_grade);
+        } else {
+            if (subtitleInput && (!subtitleInput.value || subtitleInput.value.trim() === '')) {
+                const pos = posInput ? posInput.value.trim() : '';
+                if (pos) {
+                    subtitleInput.value = 'Ketua ' + pos;
+                } else if (m.class_grade) {
+                    subtitleInput.value = 'Kelas ' + m.class_grade;
+                }
             }
         }
 
@@ -632,6 +724,7 @@
         const id = m ? (m.id || '') : '';
         const name = m ? (m.name || '') : '';
         const classGrade = m ? (m.class_grade || '') : '';
+        const position = m ? (m.position || '') : '';
         const photoUrl = m ? (m.photo_url || 'https://ui-avatars.com/api/?name=' + encodeURIComponent(name) + '&background=dc2626&color=ffffff&bold=true') : '';
 
         const row = document.createElement('div');
@@ -643,11 +736,15 @@
             <input type="hidden" name="staff_members[${index}][name]" value="${name}">
             <input type="hidden" name="staff_members[${index}][class_grade]" value="${classGrade}">
             <input type="hidden" name="staff_members[${index}][photo]" value="${photoUrl}">
+            <input type="hidden" name="staff_members[${index}][position]" value="${position}">
 
             <div class="flex items-center gap-3 min-w-0">
                 <img src="${photoUrl}" class="w-10 h-10 rounded-full object-cover border border-slate-200 flex-shrink-0">
                 <div class="min-w-0">
-                    <div class="font-bold text-xs text-slate-800 truncate">${name}</div>
+                    <div class="font-bold text-xs text-slate-800 truncate flex items-center gap-1.5">
+                        <span>${name}</span>
+                        ${position ? `<span class="bg-red-50 text-pmr-primary border border-red-200 text-[10px] font-bold px-1.5 py-0.2 rounded">${position}</span>` : ''}
+                    </div>
                     <div class="text-[11px] text-slate-400 truncate">${classGrade ? 'Kelas: ' + classGrade : 'Anggota PMR'}</div>
                 </div>
             </div>

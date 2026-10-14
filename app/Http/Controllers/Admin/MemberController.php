@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Member;
 use App\Models\OrganizationMember;
 use App\Services\MemberSpreadsheetService;
+use App\Services\OrganizationSyncService;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\File;
@@ -291,6 +292,14 @@ class MemberController extends Controller
 
         try {
             Member::create($dataToSave);
+
+            if (! empty($dataToSave['position'])) {
+                try {
+                    OrganizationSyncService::syncAll();
+                } catch (\Throwable $syncEx) {
+                    Log::warning('OrganizationSyncService::syncAll error after member create: '.$syncEx->getMessage());
+                }
+            }
         } catch (\Throwable $e) {
             return redirect()->back()->withInput()->withErrors([
                 'error' => 'Gagal menyimpan data anggota: '.$e->getMessage(),
@@ -443,6 +452,12 @@ class MemberController extends Controller
 
         try {
             $member->update($dataToUpdate);
+
+            try {
+                OrganizationSyncService::syncAll();
+            } catch (\Throwable $syncEx) {
+                Log::warning('OrganizationSyncService::syncAll error after member update: '.$syncEx->getMessage());
+            }
         } catch (\Throwable $e) {
             return redirect()->back()->withInput()->withErrors([
                 'error' => 'Gagal memperbarui data anggota: '.$e->getMessage(),
@@ -456,6 +471,12 @@ class MemberController extends Controller
     {
         $name = $member->name;
         $member->delete();
+
+        try {
+            OrganizationSyncService::syncAll();
+        } catch (\Throwable $e) {
+            // Ignore
+        }
 
         return redirect()->route('admin.members.index')->with('success', "Data anggota '{$name}' berhasil dihapus.");
     }
@@ -485,6 +506,12 @@ class MemberController extends Controller
         try {
             $count = Member::whereIn('id', $ids)->count();
             Member::whereIn('id', $ids)->delete();
+
+            try {
+                OrganizationSyncService::syncAll();
+            } catch (\Throwable $e) {
+                // Ignore
+            }
 
             return redirect()->route('admin.members.index')->with('success', "Berhasil menghapus {$count} data anggota terpilih.");
         } catch (\Throwable $e) {
@@ -551,6 +578,12 @@ class MemberController extends Controller
 
             if ($result['total'] === 0 && ! empty($result['errors'])) {
                 return redirect()->back()->with('error', implode('<br>', $result['errors']));
+            }
+
+            try {
+                OrganizationSyncService::syncAll();
+            } catch (\Throwable $e) {
+                // Ignore
             }
 
             $message = "Berhasil memproses {$result['total']} data anggota (Baru: {$result['success']}, Diperbarui: {$result['updated']}).";

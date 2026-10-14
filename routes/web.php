@@ -28,6 +28,7 @@ use App\Http\Controllers\ArticleController;
 use App\Http\Controllers\CompetitionController;
 use App\Http\Controllers\MemberAreaController;
 use App\Http\Controllers\PageController;
+use App\Services\OrganizationSyncService;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Route;
@@ -126,6 +127,7 @@ Route::prefix('admin')->name('admin.')->group(function () {
 
         // Bagan Kepengurusan (Struktur Organisasi)
         Route::get('/bagan-kepengurusan', [OrganizationController::class, 'index'])->name('organization.index');
+        Route::post('/bagan-kepengurusan/sync-from-members', [OrganizationController::class, 'syncFromMembers'])->name('organization.sync-from-members');
         Route::put('/bagan-kepengurusan/setting', [OrganizationController::class, 'updateSetting'])->name('organization.setting.update');
         Route::get('/bagan-kepengurusan/create', [OrganizationController::class, 'create'])->name('organization.create');
         Route::post('/bagan-kepengurusan', [OrganizationController::class, 'store'])->name('organization.store');
@@ -321,6 +323,13 @@ Route::get('/server-sync-update-pmr', function () {
             File::copyDirectory(storage_path('app/public/advisors'), public_path('storage/advisors'));
             File::ensureDirectoryExists(public_path('storage/members'), 0755, true);
             File::copyDirectory(storage_path('app/public/members'), public_path('storage/members'));
+        }
+
+        // Sinkronisasi otomatis struktur bagan kepengurusan dari Data Anggota & Pembina
+        try {
+            OrganizationSyncService::syncAll();
+        } catch (Throwable $e) {
+            Log::warning('Organization sync error on server-sync-update: '.$e->getMessage());
         }
 
         $output = Artisan::output();
