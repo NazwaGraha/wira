@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Models\Member;
 use App\Models\OrganizationMember;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
 class OrganizationSyncService
@@ -56,6 +57,38 @@ class OrganizationSyncService
     {
         if (! Schema::hasTable('members') || ! Schema::hasTable('organization_members')) {
             return ['status' => false, 'message' => 'Tabel belum tersedia'];
+        }
+
+        // Normalisasi otomatis: ganti setiap "Kepala Bidang" atau "Kabid" menjadi "Ketua Bidang"
+        try {
+            DB::table('members')
+                ->where('position', 'like', '%kepala bidang%')
+                ->orWhere('position', 'like', '%kabid%')
+                ->get()
+                ->each(function ($m) {
+                    $newPos = preg_replace('/kepala\s+bidang/i', 'Ketua Bidang', $m->position);
+                    $newPos = preg_replace('/\bkabid\b/i', 'Ketua Bidang', $newPos);
+                    DB::table('members')->where('id', $m->id)->update(['position' => $newPos]);
+                });
+
+            DB::table('organization_members')
+                ->where('position', 'like', '%kepala bidang%')
+                ->orWhere('subtitle', 'like', '%kepala bidang%')
+                ->orWhere('position', 'like', '%kabid%')
+                ->orWhere('subtitle', 'like', '%kabid%')
+                ->get()
+                ->each(function ($om) {
+                    $newPos = preg_replace('/kepala\s+bidang/i', 'Ketua Bidang', $om->position);
+                    $newPos = preg_replace('/\bkabid\b/i', 'Ketua Bidang', $newPos);
+                    $newSub = preg_replace('/kepala\s+bidang/i', 'Ketua Bidang', $om->subtitle ?? '');
+                    $newSub = preg_replace('/\bkabid\b/i', 'Ketua Bidang', $newSub);
+                    DB::table('organization_members')->where('id', $om->id)->update([
+                        'position' => $newPos,
+                        'subtitle' => $newSub,
+                    ]);
+                });
+        } catch (\Throwable $e) {
+            // Ignore error
         }
 
         // Ambil seluruh anggota berstatus Aktif

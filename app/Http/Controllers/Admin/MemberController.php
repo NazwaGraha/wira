@@ -4,7 +4,6 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Member;
-use App\Models\OrganizationMember;
 use App\Services\MemberSpreadsheetService;
 use App\Services\OrganizationSyncService;
 use Illuminate\Database\Schema\Blueprint;
@@ -163,11 +162,51 @@ class MemberController extends Controller
         ]);
     }
 
+    public static function getAvailablePositions(): array
+    {
+        $defaultPositions = [
+            'Ketua Umum',
+            'Wakil Ketua',
+            'Sekretaris',
+            'Bendahara',
+            'Ketua Bidang Markas',
+            'Ketua Bidang Pelayanan',
+            'Ketua Bidang Diklat',
+            'Ketua Bidang Humas',
+            'Ketua Bidang Kreasi',
+            'Staf Bidang Markas',
+            'Staf Bidang Pelayanan',
+            'Staf Bidang Diklat',
+            'Staf Bidang Humas',
+            'Staf Bidang Kreasi',
+            'Anggota',
+        ];
+
+        $dbPositions = [];
+        if (Schema::hasTable('members')) {
+            $dbPositions = Member::whereNotNull('position')
+                ->where('position', '!=', '')
+                ->where('position', 'not like', '%Pembina%')
+                ->distinct()
+                ->pluck('position')
+                ->toArray();
+        }
+
+        // Normalisasi setiap jabatan dari DB agar tidak ada "Kepala Bidang"
+        $dbPositions = array_map(function ($p) {
+            $p = preg_replace('/kepala\s+bidang/i', 'Ketua Bidang', $p);
+
+            return preg_replace('/\bkabid\b/i', 'Ketua Bidang', $p);
+        }, $dbPositions);
+
+        return array_values(array_unique(array_filter(array_merge($defaultPositions, $dbPositions))));
+    }
+
     public function create()
     {
         $this->ensureColumnsExist();
 
-        $positions = OrganizationMember::select('position')->distinct()->pluck('position')->toArray();
+        $positions = self::getAvailablePositions();
 
         return view('admin.members.create', compact('positions'));
     }
@@ -230,8 +269,14 @@ class MemberController extends Controller
             $dataToSave['nip'] = $request->input('nip') ? trim($request->input('nip')) : null;
         }
 
+        $rawPos = $validated['position'] ?? null;
+        if (! empty($rawPos)) {
+            $rawPos = preg_replace('/kepala\s+bidang/i', 'Ketua Bidang', $rawPos);
+            $rawPos = preg_replace('/\bkabid\b/i', 'Ketua Bidang', $rawPos);
+        }
+
         $dataToSave['name'] = $validated['name'];
-        $dataToSave['position'] = $validated['position'] ?? null;
+        $dataToSave['position'] = $rawPos;
         $dataToSave['address'] = $validated['address'] ?? null;
         $dataToSave['birth_place'] = $validated['birth_place'] ?? null;
         $dataToSave['birth_date'] = $validated['birth_date'] ?? null;
@@ -313,7 +358,7 @@ class MemberController extends Controller
     {
         $this->ensureColumnsExist();
 
-        $positions = OrganizationMember::select('position')->distinct()->pluck('position')->toArray();
+        $positions = self::getAvailablePositions();
 
         return view('admin.members.edit', compact('member', 'positions'));
     }
@@ -377,8 +422,14 @@ class MemberController extends Controller
             $dataToUpdate['nip'] = $request->input('nip') ? trim($request->input('nip')) : null;
         }
 
+        $rawPos = $validated['position'] ?? null;
+        if (! empty($rawPos)) {
+            $rawPos = preg_replace('/kepala\s+bidang/i', 'Ketua Bidang', $rawPos);
+            $rawPos = preg_replace('/\bkabid\b/i', 'Ketua Bidang', $rawPos);
+        }
+
         $dataToUpdate['name'] = $validated['name'];
-        $dataToUpdate['position'] = $validated['position'] ?? null;
+        $dataToUpdate['position'] = $rawPos;
         $dataToUpdate['address'] = $validated['address'] ?? null;
         $dataToUpdate['birth_place'] = $validated['birth_place'] ?? null;
         $dataToUpdate['birth_date'] = $validated['birth_date'] ?? null;

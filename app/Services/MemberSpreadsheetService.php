@@ -279,6 +279,11 @@ class MemberSpreadsheetService
                 $hasEntryYear = Schema::hasColumn('members', 'entry_year');
                 $hasMemberStatus = Schema::hasColumn('members', 'member_status');
 
+                if (! empty($position)) {
+                    $position = preg_replace('/kepala\s+bidang/i', 'Ketua Bidang', $position);
+                    $position = preg_replace('/\bkabid\b/i', 'Ketua Bidang', $position);
+                }
+
                 $memberData = [
                     'name' => $name,
                     'position' => $position ?: 'Anggota',
