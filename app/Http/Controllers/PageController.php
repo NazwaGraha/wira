@@ -17,6 +17,7 @@ use App\Models\OrganizationGuideline;
 use App\Models\OrganizationMember;
 use App\Models\OrganizationSetting;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Schema;
 
 class PageController extends Controller
 {
@@ -63,7 +64,10 @@ class PageController extends Controller
         $hasLevel1 = $rawMembers->contains(fn ($m) => (int) $m->level === 1);
         if (! $hasLevel1) {
             try {
-                $activeAdvisors = Advisor::where('is_active', true)->orderBy('order_position')->get();
+                $activeAdvisors = collect();
+                if (Schema::hasTable('advisors')) {
+                    $activeAdvisors = Advisor::where('is_active', true)->orderBy('order_position')->get();
+                }
                 if ($activeAdvisors->isEmpty()) {
                     $activeAdvisors = collect([
                         new Advisor([

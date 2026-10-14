@@ -15,6 +15,8 @@ class OrganizationController extends Controller
 {
     public function index(Request $request)
     {
+        $statusFilter = $request->query('status_filter', 'all');
+
         $setting = OrganizationSetting::firstOrCreate(
             ['id' => 1],
             [
@@ -28,7 +30,10 @@ class OrganizationController extends Controller
         $hasLevel1 = OrganizationMember::where('level', 1)->exists();
         if (! $hasLevel1) {
             try {
-                $firstAdvisor = Advisor::where('is_active', true)->orderBy('order_position')->first();
+                $firstAdvisor = null;
+                if (Schema::hasTable('advisors')) {
+                    $firstAdvisor = Advisor::where('is_active', true)->orderBy('order_position')->first();
+                }
                 OrganizationMember::create([
                     'name' => $firstAdvisor?->name ?: 'Drs. H. Mulyadi, M.Pd',
                     'position' => $firstAdvisor?->position ?: 'Pembina PMR',
@@ -124,7 +129,14 @@ class OrganizationController extends Controller
             ];
         })->values();
 
-        $advisors = Advisor::where('is_active', true)->orderBy('order_position')->orderBy('name')->get();
+        $advisors = collect();
+        if (Schema::hasTable('advisors')) {
+            try {
+                $advisors = Advisor::where('is_active', true)->orderBy('order_position')->orderBy('name')->get();
+            } catch (\Throwable $e) {
+                // Ignore
+            }
+        }
         $advisorsJson = $advisors->map(function ($a) {
             return [
                 'id' => $a->id,
@@ -280,7 +292,14 @@ class OrganizationController extends Controller
             ];
         })->values();
 
-        $advisors = Advisor::orderBy('order_position')->orderBy('name')->get();
+        $advisors = collect();
+        if (Schema::hasTable('advisors')) {
+            try {
+                $advisors = Advisor::orderBy('order_position')->orderBy('name')->get();
+            } catch (\Throwable $e) {
+                // Ignore
+            }
+        }
         $advisorsJson = $advisors->map(function ($a) {
             return [
                 'id' => $a->id,
