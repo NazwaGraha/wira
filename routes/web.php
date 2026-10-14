@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Admin\ActivityController;
+use App\Http\Controllers\Admin\AdvisorController;
 use App\Http\Controllers\Admin\ArticleController as AdminArticleController;
 use App\Http\Controllers\Admin\AuthController;
 use App\Http\Controllers\Admin\BloodDonationEventController;
@@ -143,6 +144,9 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::delete('/pedoman-organisasi/chapter/{chapter}', [OrganizationGuidelineController::class, 'destroyChapter'])->name('organization-guidelines.destroy-chapter');
         Route::put('/pedoman-organisasi/files', [OrganizationGuidelineController::class, 'updateFilesAndSigners'])->name('organization-guidelines.update-files');
 
+        // Data Pembina
+        Route::resource('advisors', AdvisorController::class);
+
         // Data Anggota
         Route::delete('/members/destroy-multiple', [MemberController::class, 'destroyMultiple'])->name('members.destroy-multiple');
         Route::get('/members/export', [MemberController::class, 'export'])->name('members.export');
@@ -275,6 +279,7 @@ Route::get('/server-sync-update-pmr', function () {
         Artisan::call('migrate', ['--force' => true]);
 
         // Pastikan folder storage publik dibuat
+        File::ensureDirectoryExists(storage_path('app/public/advisors'), 0755, true);
         File::ensureDirectoryExists(storage_path('app/public/members'), 0755, true);
         File::ensureDirectoryExists(storage_path('app/public/competition_payments'), 0755, true);
         File::ensureDirectoryExists(storage_path('app/public/guidelines'), 0755, true);
@@ -287,6 +292,8 @@ Route::get('/server-sync-update-pmr', function () {
 
         // Salin darurat jika symlink tidak bekerja di shared hosting cPanel
         if (file_exists(public_path()) && ! is_link(public_path('storage'))) {
+            File::ensureDirectoryExists(public_path('storage/advisors'), 0755, true);
+            File::copyDirectory(storage_path('app/public/advisors'), public_path('storage/advisors'));
             File::ensureDirectoryExists(public_path('storage/members'), 0755, true);
             File::copyDirectory(storage_path('app/public/members'), public_path('storage/members'));
         }
@@ -296,7 +303,8 @@ Route::get('/server-sync-update-pmr', function () {
         return response("<div style='font-family:sans-serif;padding:30px;max-width:600px;margin:auto;'>
             <h2 style='color:#059669;'>✅ Cache Server Berhasil Dibersihkan, Database Dimigrasi & Storage Symlink Disinkronkan!</h2>
             <pre style='background:#f1f5f9;padding:15px;border-radius:10px;font-size:12px;overflow:auto;'>".htmlspecialchars($output)."</pre>
-            <p><a href='/admin/members' style='display:inline-block;padding:10px 20px;background:#dc2626;color:white;text-decoration:none;border-radius:8px;font-weight:bold;'>Buka Daftar Anggota &rarr;</a></p>
+            <p><a href='/admin/advisors' style='display:inline-block;padding:10px 20px;background:#991b1b;color:white;text-decoration:none;border-radius:8px;font-weight:bold;margin-right:10px;'>Buka Data Pembina &rarr;</a>
+               <a href='/admin/members' style='display:inline-block;padding:10px 20px;background:#dc2626;color:white;text-decoration:none;border-radius:8px;font-weight:bold;'>Buka Data Anggota &rarr;</a></p>
         </div>");
     } catch (Throwable $e) {
         return response("<div style='font-family:sans-serif;padding:30px;max-width:600px;margin:auto;color:#dc2626;'>
@@ -308,7 +316,7 @@ Route::get('/server-sync-update-pmr', function () {
 
 // Route Penyajian Langsung Berkas Storage (Anti 404 jika shared hosting / cPanel memblokir symlink)
 Route::get('/storage/{folder}/{filename}', function ($folder, $filename) {
-    $allowedFolders = ['members', 'competition_payments', 'galleries', 'donor-banners', 'broadcast_images', 'guidelines'];
+    $allowedFolders = ['advisors', 'members', 'competition_payments', 'galleries', 'donor-banners', 'broadcast_images', 'guidelines'];
     if (! in_array($folder, $allowedFolders, true)) {
         abort(404);
     }

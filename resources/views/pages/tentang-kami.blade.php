@@ -311,21 +311,26 @@
                 <div class="flex flex-wrap justify-center gap-6">
                     @foreach($pembina as $m)
                         @php
+                            $advisor = isset($allAdvisors) ? ($allAdvisors->get($m->name) ?? null) : null;
+                            if (!$advisor) {
+                                $advisor = \App\Models\Advisor::where('name', $m->name)->first();
+                            }
                             $mem = $m->member ?? ($allMembers->get($m->name) ?? null);
-                            $photoUrl = $m->photo_url ?: ($mem?->photo_url ?: 'https://ui-avatars.com/api/?name=' . urlencode($m->name) . '&background=dc2626&color=ffffff&bold=true&size=300');
+                            $photoUrl = $m->photo_url ?: ($advisor?->photo_url ?: ($mem?->photo_url ?: 'https://ui-avatars.com/api/?name=' . urlencode($m->name) . '&background=991b1b&color=ffffff&bold=true&size=300'));
+                            $displayName = $advisor ? ($advisor->name . ($advisor->title_degree ? ', ' . $advisor->title_degree : '')) : $m->name;
                             $biodata = [
-                                'name' => $m->name,
-                                'position' => $m->position,
-                                'subtitle' => $m->subtitle,
-                                'class_grade' => $mem?->class_grade ?? ($m->subtitle ?: 'Guru Pembina'),
-                                'nis' => $mem?->nis ?? '-',
-                                'gender' => $mem?->gender ?? '-',
-                                'birth_place' => $mem?->birth_place ?? '',
-                                'birth_date' => $mem?->birth_date ? \Carbon\Carbon::parse($mem->birth_date)->translatedFormat('d F Y') : '',
-                                'address' => $mem?->address ?? '',
-                                'phone' => $mem?->phone ?? '',
-                                'email' => $mem?->email ?? '',
-                                'motto' => $mem?->motto ?? '',
+                                'name' => $displayName,
+                                'position' => $m->position ?: ($advisor?->position ?: 'Pembina PMR'),
+                                'subtitle' => $advisor?->position ?: ($m->subtitle ?: 'Guru Pembina PMR'),
+                                'class_grade' => $advisor?->title_degree ? 'Gelar: ' . $advisor->title_degree : ($m->subtitle ?: 'Guru Pembina'),
+                                'nis' => $advisor?->nip ? 'NIP. ' . $advisor->nip : ($mem?->nip ? 'NIP. ' . $mem->nip : '-'),
+                                'gender' => $advisor?->gender ?: ($mem?->gender ?? '-'),
+                                'birth_place' => $advisor?->birth_place ?: ($mem?->birth_place ?? ''),
+                                'birth_date' => ($advisor?->birth_date ? \Carbon\Carbon::parse($advisor->birth_date)->translatedFormat('d F Y') : ($mem?->birth_date ? \Carbon\Carbon::parse($mem->birth_date)->translatedFormat('d F Y') : '')),
+                                'address' => $advisor?->address ?: ($mem?->address ?? ''),
+                                'phone' => $advisor?->phone ?: ($mem?->phone ?? ''),
+                                'email' => $advisor?->email ?: ($mem?->email ?? ''),
+                                'motto' => $advisor?->motto ?: ($mem?->motto ?? ''),
                                 'photo' => $photoUrl,
                             ];
                         @endphp
@@ -338,10 +343,12 @@
                             </div>
                             <div class="text-center sm:text-left">
                                 <div class="text-xs uppercase tracking-wider text-red-400 font-extrabold flex items-center justify-center sm:justify-start gap-1.5">
-                                    <i class="fa-solid fa-shield-halved text-xs"></i> {{ $m->position }}
+                                    <i class="fa-solid fa-shield-halved text-xs"></i> {{ $m->position ?: ($advisor?->position ?: 'Pembina PMR') }}
                                 </div>
-                                <div class="text-xl sm:text-2xl font-black mt-1 text-white leading-snug cursor-pointer hover:text-red-300 transition" onclick="openBiodataModal({!! htmlspecialchars(json_encode($biodata), ENT_QUOTES, 'UTF-8') !!})">{{ $m->name }}</div>
-                                @if($m->subtitle)
+                                <div class="text-xl sm:text-2xl font-black mt-1 text-white leading-snug cursor-pointer hover:text-red-300 transition" onclick="openBiodataModal({!! htmlspecialchars(json_encode($biodata), ENT_QUOTES, 'UTF-8') !!})">{{ $displayName }}</div>
+                                @if($advisor?->nip)
+                                    <div class="text-xs text-stone-400 font-mono mt-0.5">NIP. {{ $advisor->nip }}</div>
+                                @elseif($m->subtitle)
                                     <div class="text-xs sm:text-sm text-stone-400 mt-1">{{ $m->subtitle }}</div>
                                 @endif
                                 <button type="button" onclick="openBiodataModal({!! htmlspecialchars(json_encode($biodata), ENT_QUOTES, 'UTF-8') !!})" class="mt-3 inline-flex items-center gap-1.5 text-xs font-bold text-red-300 hover:text-white bg-white/10 hover:bg-red-600/60 px-3 py-1.5 rounded-full transition">

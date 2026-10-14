@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Activity;
+use App\Models\Advisor;
 use App\Models\Article;
 use App\Models\BloodDonationEvent;
 use App\Models\BloodDonorRegistration;
@@ -69,9 +70,10 @@ class PageController extends Controller
         })->groupBy('level');
 
         $allMembers = Member::all()->keyBy('name');
+        $allAdvisors = Advisor::all()->keyBy('name');
         $guideline = OrganizationGuideline::current();
 
-        return view('pages.tentang-kami', compact('organizationSetting', 'organizationMembers', 'allMembers', 'guideline'));
+        return view('pages.tentang-kami', compact('organizationSetting', 'organizationMembers', 'allMembers', 'allAdvisors', 'guideline'));
     }
 
     public function pedomanOrganisasi()

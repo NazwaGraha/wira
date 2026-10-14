@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\Advisor;
 use App\Models\Member;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
@@ -76,27 +77,33 @@ class AuthController extends Controller
             return redirect()->route('home')->with('auth_error', 'Akses Ditolak: Kata sandi Admin darurat tidak sesuai.');
         }
 
-        // 3. Pencarian Data Anggota berdasarkan NRI / NIP
-        $member = Member::where(function ($query) use ($loginId) {
+        // 3. Pencarian Data Anggota berdasarkan NRI / NIP, atau Pembina berdasarkan NIP
+        $user = Member::where(function ($query) use ($loginId) {
             $query->where('nri', $loginId)
                 ->orWhere('nip', $loginId);
         })->first();
 
-        if (! $member) {
-            return redirect()->route('home')->with('auth_error', 'Akses Ditolak: Nomor NRI atau NIP Pembina tidak ditemukan dalam basis data.');
+        if (! $user) {
+            $user = Advisor::where('nip', $loginId)->first();
         }
 
-        // 3. Login Pertama Kali (Aktivasi Akun & Pembuatan Password)
-        if (empty($member->password)) {
-            return redirect()->route('admin.activate', ['nri' => $member->nri])
+        if (! $user) {
+            return redirect()->route('home')->with('auth_error', 'Akses Ditolak: Nomor NRI Anggota atau NIP Pembina tidak ditemukan dalam basis data.');
+        }
+
+        // 4. Login Pertama Kali (Aktivasi Akun & Pembuatan Password)
+        if (empty($user->password)) {
+            $identKey = $user instanceof Advisor ? $user->nip : ($user->nri ?? $user->nip);
+
+            return redirect()->route('admin.activate', ['nri' => $identKey])
                 ->with('info', 'Nomor identitas terverifikasi! Karena ini login pertama kali, silakan buat kata sandi untuk akun Anda.');
         }
 
-        // 4. Verifikasi Password Anggota
+        // 5. Verifikasi Password Pengguna (Anggota atau Pembina)
         if (Auth::attempt(['login_id' => $loginId, 'password' => $password], $remember)) {
             $request->session()->regenerate();
 
-            /** @var Member $loggedInUser */
+            /** @var Member|Advisor $loggedInUser */
             $loggedInUser = Auth::user();
 
             if (method_exists($loggedInUser, 'canAccessBackoffice') && $loggedInUser->canAccessBackoffice()) {
@@ -120,6 +127,9 @@ class AuthController extends Controller
 
         if ($nri) {
             $member = Member::where('nri', $nri)->orWhere('nip', $nri)->first();
+            if (! $member) {
+                $member = Advisor::where('nip', $nri)->first();
+            }
         }
 
         return view('admin.activate', compact('member', 'nri'));
@@ -143,26 +153,30 @@ class AuthController extends Controller
 
         $loginId = trim($request->input('nri'));
 
-        $member = Member::where(function ($query) use ($loginId) {
+        $user = Member::where(function ($query) use ($loginId) {
             $query->where('nri', $loginId)
                 ->orWhere('nip', $loginId);
         })->first();
 
-        if (! $member) {
-            return back()->withErrors(['nri' => 'Data anggota dengan nomor tersebut tidak ditemukan.'])->withInput();
+        if (! $user) {
+            $user = Advisor::where('nip', $loginId)->first();
         }
 
-        if (! empty($member->password)) {
+        if (! $user) {
+            return back()->withErrors(['nri' => 'Data anggota atau pembina dengan nomor tersebut tidak ditemukan.'])->withInput();
+        }
+
+        if (! empty($user->password)) {
             return redirect()->route('admin.login')->with('info', 'Akun Anda sudah aktif sebelumnya. Silakan langsung login.');
         }
 
-        $member->password = Hash::make($request->input('password'));
+        $user->password = Hash::make($request->input('password'));
 
-        if ($request->filled('email') && empty($member->email)) {
-            $member->email = trim($request->input('email'));
+        if ($request->filled('email') && empty($user->email)) {
+            $user->email = trim($request->input('email'));
         }
 
-        $member->save();
+        $user->save();
 
         return redirect()->route('admin.login')->with('success', 'Aktivasi akun berhasil! Kata sandi baru Anda telah aktif. Silakan masuk sekarang.');
     }
@@ -194,11 +208,15 @@ class AuthController extends Controller
         })->first();
 
         if (! $member) {
-            return back()->withErrors(['login_id' => 'NRI atau NIP tidak ditemukan dalam sistem.'])->withInput();
+            $member = Advisor::where('nip', $loginId)->first();
+        }
+
+        if (! $member) {
+            return back()->withErrors(['login_id' => 'Nomor NRI atau NIP tidak ditemukan dalam sistem.'])->withInput();
         }
 
         if (empty($member->email)) {
-            return back()->withErrors(['login_id' => 'Anggota ini belum memiliki alamat email terdaftar. Silakan hubungi admin/pembina untuk mendaftarkan email Anda.'])->withInput();
+            return back()->withErrors(['login_id' => 'Akun ini belum memiliki alamat email terdaftar. Silakan hubungi admin/pembina untuk mendaftarkan email Anda.'])->withInput();
         }
 
         // Buat token reset
@@ -217,9 +235,11 @@ class AuthController extends Controller
             'email' => $member->email,
         ]);
 
+        $idLabel = $member instanceof Advisor ? ('NIP: '.$member->nip) : ('NRI: '.($member->nri ?? $member->nip));
+
         // Coba kirimkan email jika mailer siap, atau catat ke log
         try {
-            Mail::raw("Halo {$member->name},\n\nAnda menerima email ini karena ada permintaan pengaturan ulang kata sandi untuk akun PMR Wira SMAN 1 Ciawi Anda (NRI: {$member->nri}).\n\nSilakan klik tautan berikut untuk membuat kata sandi baru:\n{$resetUrl}\n\nTautan ini berlaku selama 60 menit.\n\nJika Anda tidak melakukan permintaan ini, abaikan email ini.\n\nSalam,\nPMR WIRA SMAN 1 CIAWI", function ($message) use ($member) {
+            Mail::raw("Halo {$member->name},\n\nAnda menerima email ini karena ada permintaan pengaturan ulang kata sandi untuk akun PMR Wira SMAN 1 Ciawi Anda ({$idLabel}).\n\nSilakan klik tautan berikut untuk membuat kata sandi baru:\n{$resetUrl}\n\nTautan ini berlaku selama 60 menit.\n\nJika Anda tidak melakukan permintaan ini, abaikan email ini.\n\nSalam,\nPMR WIRA SMAN 1 CIAWI", function ($message) use ($member) {
                 $message->to($member->email)
                     ->subject('Tautan Reset Kata Sandi Akun PMR Wira SMAN 1 Ciawi');
             });
@@ -277,14 +297,17 @@ class AuthController extends Controller
             return back()->withErrors(['email' => 'Token reset kata sandi telah kedaluwarsa. Silakan ajukan permohonan baru.']);
         }
 
-        $member = Member::where('email', $request->email)->first();
-
-        if (! $member) {
-            return back()->withErrors(['email' => 'Data anggota dengan email tersebut tidak ditemukan.']);
+        $user = Member::where('email', $request->email)->first();
+        if (! $user) {
+            $user = Advisor::where('email', $request->email)->first();
         }
 
-        $member->password = Hash::make($request->password);
-        $member->save();
+        if (! $user) {
+            return back()->withErrors(['email' => 'Data pengguna dengan email tersebut tidak ditemukan.']);
+        }
+
+        $user->password = Hash::make($request->password);
+        $user->save();
 
         DB::table('password_reset_tokens')->where('email', $request->email)->delete();
 

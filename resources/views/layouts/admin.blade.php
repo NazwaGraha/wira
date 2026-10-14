@@ -91,6 +91,19 @@
             </a>
             @endif
 
+            <!-- Submenu Data Pembina -->
+            @if(in_array(auth()->user()?->role, ['superuser', 'pembina', 'ketua_umum', 'bph'], true))
+            <div class="pt-4 pb-1 text-[11px] font-bold uppercase text-slate-500 tracking-wider px-3">Data Pembina</div>
+            <a href="{{ route('admin.advisors.create') }}" class="flex items-center gap-3 px-3 py-2.5 rounded-xl font-medium text-sm transition {{ request()->routeIs('admin.advisors.create') ? 'bg-pmr-primary text-white shadow-md shadow-red-950/40' : 'hover:bg-slate-800 text-slate-300' }}">
+                <i class="fa-solid fa-user-tie w-5 text-center text-amber-400"></i>
+                <span>Input Data Pembina</span>
+            </a>
+            <a href="{{ route('admin.advisors.index') }}" class="flex items-center gap-3 px-3 py-2.5 rounded-xl font-medium text-sm transition {{ request()->routeIs('admin.advisors.index') || request()->routeIs('admin.advisors.edit') ? 'bg-pmr-primary text-white shadow-md shadow-red-950/40' : 'hover:bg-slate-800 text-slate-300' }}">
+                <i class="fa-solid fa-shield-halved w-5 text-center text-rose-400"></i>
+                <span>Daftar Pembina</span>
+            </a>
+            @endif
+
             <!-- Submenu Data Anggota (Bisa diakses oleh semua anggota berstatus aktif) -->
             @if(auth()->user()?->canManageMembers())
             <div class="pt-4 pb-1 text-[11px] font-bold uppercase text-slate-500 tracking-wider px-3">Data Anggota</div>

@@ -55,10 +55,10 @@
                     </div>
                     <div>
                         <label class="flex items-center gap-2 text-sm font-bold text-slate-700 mb-2">
-                            <i class="fa-solid fa-graduation-cap text-slate-400"></i> NIP (Khusus Pembina / Guru)
+                            <i class="fa-solid fa-address-card text-slate-400"></i> NIS / NISN Siswa (Opsional)
                         </label>
-                        <input type="text" name="nip" value="{{ old('nip') }}" class="w-full bg-white border border-slate-200 px-4 py-2.5 rounded-xl focus:outline-none focus:border-red-500 focus:ring-1 focus:ring-red-500 font-semibold text-slate-800" placeholder="Contoh: 198001012005011001">
-                        <span class="text-[11px] text-slate-400 mt-1 block">Nomor Induk Pegawai Pembina (bisa untuk login).</span>
+                        <input type="text" name="nis" value="{{ old('nis') }}" class="w-full bg-white border border-slate-200 px-4 py-2.5 rounded-xl focus:outline-none focus:border-red-500 focus:ring-1 focus:ring-red-500 font-semibold text-slate-800" placeholder="Nomor Induk Siswa Sekolah">
+                        <span class="text-[11px] text-slate-400 mt-1 block">Nomor induk siswa dari sekolah.</span>
                     </div>
                     <div class="md:col-span-2">
                         <label class="block text-sm font-bold text-slate-700 mb-2">Nama Lengkap <span class="text-rose-500">*</span></label>

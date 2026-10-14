@@ -85,6 +85,13 @@ class MemberController extends Controller
             });
         }
 
+        // Pisahkan data pembina dari daftar anggota siswa PMR
+        $query->where(function ($q) {
+            $q->whereNull('nip')->orWhere('nip', '');
+        })->where(function ($q) {
+            $q->whereNull('position')->orWhere('position', 'not like', '%Pembina%');
+        });
+
         if ($status && in_array($status, ['Aktif', 'Purna'])) {
             $query->where('member_status', $status);
         }
@@ -94,9 +101,15 @@ class MemberController extends Controller
         }
 
         $members = $query->orderBy('name')->paginate(15)->withQueryString();
-        $totalMembers = Member::count();
-        $totalAktif = Member::where('member_status', 'Aktif')->count();
-        $totalPurna = Member::where('member_status', 'Purna')->count();
+
+        $baseStudentQuery = Member::where(function ($q) {
+            $q->whereNull('nip')->orWhere('nip', '');
+        })->where(function ($q) {
+            $q->whereNull('position')->orWhere('position', 'not like', '%Pembina%');
+        });
+        $totalMembers = (clone $baseStudentQuery)->count();
+        $totalAktif = (clone $baseStudentQuery)->where('member_status', 'Aktif')->count();
+        $totalPurna = (clone $baseStudentQuery)->where('member_status', 'Purna')->count();
 
         return view('admin.members.index', compact('members', 'search', 'status', 'year', 'totalMembers', 'totalAktif', 'totalPurna'));
     }

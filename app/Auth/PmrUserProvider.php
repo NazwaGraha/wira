@@ -2,6 +2,7 @@
 
 namespace App\Auth;
 
+use App\Models\Advisor;
 use App\Models\Member;
 use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Contracts\Auth\UserProvider;
@@ -76,7 +77,12 @@ class PmrUserProvider implements UserProvider
             return self::createTempAdmin();
         }
 
-        return $this->model::find($identifier);
+        $model = $this->model::find($identifier);
+        if ($model) {
+            return $model;
+        }
+
+        return Advisor::find($identifier);
     }
 
     public function retrieveByToken($identifier, #[\SensitiveParameter] $token)
@@ -87,6 +93,9 @@ class PmrUserProvider implements UserProvider
         }
 
         $model = $this->model::where('id', $identifier)->first();
+        if (! $model) {
+            $model = Advisor::where('id', $identifier)->first();
+        }
 
         if (! $model) {
             return null;
@@ -128,10 +137,18 @@ class PmrUserProvider implements UserProvider
             return null;
         }
 
-        return $this->model::where(function ($query) use ($loginId) {
+        $member = $this->model::where(function ($query) use ($loginId) {
             $query->where('nri', $loginId)
                 ->orWhere('nip', $loginId);
         })->first();
+
+        if ($member) {
+            return $member;
+        }
+
+        return Advisor::where('nip', $loginId)
+            ->orWhere('email', $loginId)
+            ->first();
     }
 
     public function validateCredentials(Authenticatable $user, #[\SensitiveParameter] array $credentials)

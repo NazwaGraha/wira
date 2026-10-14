@@ -35,11 +35,18 @@ class OrganizationMember extends Model
 
     /**
      * Cek apakah pejabat / ketua masih aktif
-     * Level 1 (Pembina) selalu dianggap aktif jika tidak terikat siswa aktif
+     * Level 1 (Pembina) memeriksa status aktif di tabel Advisor
      */
     public function isLeaderActive(): bool
     {
         if ($this->level === 1) {
+            if (! empty($this->name)) {
+                $advisor = Advisor::where('name', $this->name)->first();
+                if ($advisor) {
+                    return (bool) $advisor->is_active;
+                }
+            }
+
             return true;
         }
 
@@ -97,6 +104,13 @@ class OrganizationMember extends Model
             return str_starts_with($this->photo, 'http') || str_starts_with($this->photo, '/')
                 ? $this->photo
                 : asset('storage/'.$this->photo);
+        }
+
+        if ($this->level === 1 && ! empty($this->name)) {
+            $advisor = Advisor::where('name', $this->name)->first();
+            if ($advisor && ! empty($advisor->photo_url)) {
+                return $advisor->photo_url;
+            }
         }
 
         if ($this->member && ! empty($this->member->photo)) {

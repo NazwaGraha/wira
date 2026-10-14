@@ -265,6 +265,54 @@
                 <div class="text-xs text-slate-400 mt-1">Anggota lainnya sudah dipilih pada jabatan/staf ini atau tidak cocok dengan pencarian.</div>
             </div>
 
+            @if(!empty($advisors) && $advisors->isNotEmpty())
+                <!-- Grup Khusus Pembina PMR (Tingkat 1) -->
+                <div id="modal-advisor-group" class="mb-4 bg-gradient-to-r from-red-50 to-rose-50/50 p-3.5 rounded-2xl border border-red-200">
+                    <div class="flex items-center justify-between mb-2.5 px-1">
+                        <span class="text-xs font-black uppercase tracking-wider text-pmr-primary flex items-center gap-1.5">
+                            <i class="fa-solid fa-graduation-cap"></i> Data Pembina PMR (Guru / Pembina)
+                        </span>
+                        <a href="{{ route('admin.advisors.create') }}" target="_blank" class="text-[11px] font-bold text-red-600 hover:underline">
+                            + Input Pembina Baru
+                        </a>
+                    </div>
+                    <div class="space-y-2">
+                        @foreach($advisors as $adv)
+                            <div class="advisor-item p-3 rounded-xl border border-red-200 bg-white hover:border-pmr-primary hover:shadow-xs flex items-center justify-between cursor-pointer transition group"
+                                 onclick="selectAdvisorFromEl(this)"
+                                 data-name="{{ $adv->name }}"
+                                 data-title="{{ $adv->title_degree }}"
+                                 data-position="{{ $adv->position }}"
+                                 data-nip="{{ $adv->nip }}"
+                                 data-photo="{{ $adv->photo_url }}"
+                                 data-search="{{ strtolower($adv->name . ' ' . $adv->position . ' ' . $adv->nip . ' ' . $adv->title_degree) }}">
+                                <div class="flex items-center gap-3">
+                                    <img src="{{ $adv->photo_url }}" alt="{{ $adv->name }}" class="w-10 h-10 rounded-full object-cover border-2 border-red-400 flex-shrink-0">
+                                    <div>
+                                        <div class="font-bold text-slate-900 text-sm group-hover:text-pmr-primary transition">
+                                            {{ $adv->name }}{{ $adv->title_degree ? ', ' . $adv->title_degree : '' }}
+                                        </div>
+                                        <div class="text-xs text-slate-500 flex items-center gap-2 mt-0.5">
+                                            <span class="text-red-700 font-semibold">{{ $adv->position }}</span>
+                                            @if($adv->nip)
+                                                <span>• NIP. {{ $adv->nip }}</span>
+                                            @endif
+                                        </div>
+                                    </div>
+                                </div>
+                                <span class="text-xs font-bold text-pmr-primary opacity-90 group-hover:opacity-100 transition flex items-center gap-1 bg-red-100/60 group-hover:bg-red-100 px-2.5 py-1 rounded-lg">
+                                    Pilih Pembina <i class="fa-solid fa-arrow-right text-[10px]"></i>
+                                </span>
+                            </div>
+                        @endforeach
+                    </div>
+                </div>
+            @endif
+
+            <div class="text-[11px] font-extrabold uppercase tracking-wider text-slate-400 px-1 pt-1 pb-2 flex items-center gap-1.5" id="member-students-header">
+                <i class="fa-solid fa-users"></i> Data Anggota Siswa PMR
+            </div>
+
             @forelse($members as $m)
                 @php
                     $mPhoto = $m->photo_url;
@@ -336,9 +384,21 @@
         const modal = document.getElementById('member-modal');
         const modalTitle = document.getElementById('modal-title');
         const searchInput = document.getElementById('modal-search-input');
+        const advisorGroup = document.getElementById('modal-advisor-group');
+        const studentsHeader = document.getElementById('member-students-header');
 
         if (modalTitle) {
-            modalTitle.textContent = target === 'leader' ? 'Pilih Pejabat / Ketua dari Data Anggota' : 'Pilih Staf Bidang dari Data Anggota';
+            modalTitle.textContent = target === 'leader' ? 'Pilih Pejabat / Pembina / Ketua' : 'Pilih Staf Bidang dari Anggota Siswa';
+        }
+
+        if (advisorGroup) {
+            if (target === 'staff') {
+                advisorGroup.classList.add('hidden');
+                if (studentsHeader) studentsHeader.classList.add('hidden');
+            } else {
+                advisorGroup.classList.remove('hidden');
+                if (studentsHeader) studentsHeader.classList.remove('hidden');
+            }
         }
 
         if (modal) {
@@ -397,10 +457,25 @@
     function filterModalMembers(query) {
         const q = query.toLowerCase().trim();
         const items = document.querySelectorAll('.member-item');
+        const advisorItems = document.querySelectorAll('.advisor-item');
         const selectedIds = getSelectedMemberIds();
         const selectedNames = getSelectedMemberNames();
         let visibleCount = 0;
 
+        // Filter daftar Pembina (hanya jika target == leader)
+        if (currentModalTarget === 'leader') {
+            advisorItems.forEach(item => {
+                const search = item.getAttribute('data-search') || '';
+                if (!q || search.includes(q)) {
+                    item.classList.remove('hidden');
+                    visibleCount++;
+                } else {
+                    item.classList.add('hidden');
+                }
+            });
+        }
+
+        // Filter daftar Anggota Siswa
         items.forEach(item => {
             const itemId = String(item.getAttribute('data-id') || '');
             const itemName = String(item.getAttribute('data-name') || '').trim().toLowerCase();
@@ -409,7 +484,7 @@
             // Sembunyikan anggota yang sudah dipilih di struktur organisasi
             const isAlreadySelected = (itemId && selectedIds.has(itemId)) || (itemName && selectedNames.has(itemName));
 
-            if (!isAlreadySelected && search.includes(q)) {
+            if (!isAlreadySelected && (!q || search.includes(q))) {
                 item.classList.remove('hidden');
                 visibleCount++;
             } else {
@@ -429,8 +504,49 @@
 
         const countLabel = document.getElementById('modal-count-label');
         if (countLabel) {
-            countLabel.textContent = `(Tersedia: ${visibleCount} Anggota)`;
+            countLabel.textContent = `(Tersedia: ${visibleCount} Pilihan)`;
         }
+    }
+
+    function selectAdvisorFromEl(el) {
+        const name = el.getAttribute('data-name') || '';
+        const title = el.getAttribute('data-title') || '';
+        const pos = el.getAttribute('data-position') || 'Pembina PMR';
+        const photo = el.getAttribute('data-photo') || '';
+        const nip = el.getAttribute('data-nip') || '';
+
+        document.getElementById('member_id').value = '';
+        document.getElementById('name').value = name;
+        document.getElementById('photo').value = photo;
+
+        const posInput = document.getElementById('position');
+        if (posInput && (!posInput.value || posInput.value.trim() === '')) {
+            posInput.value = pos;
+        }
+
+        const levelSelect = document.getElementById('level');
+        if (levelSelect) {
+            levelSelect.value = 1;
+        }
+
+        const subtitleInput = document.getElementById('subtitle');
+        if (subtitleInput && (!subtitleInput.value || subtitleInput.value.trim() === '' || subtitleInput.value.includes('Ketua'))) {
+            subtitleInput.value = title ? ('Pembina • ' + title) : pos;
+        }
+
+        const card = document.getElementById('member-selected-card');
+        const emptyCard = document.getElementById('member-empty-card');
+        const cardPhoto = document.getElementById('card-member-photo');
+        const cardName = document.getElementById('card-member-name');
+        const cardMeta = document.getElementById('card-member-meta');
+
+        if (cardName) cardName.textContent = name + (title ? ', ' + title : '');
+        if (cardPhoto) cardPhoto.src = photo || ('https://ui-avatars.com/api/?name=' + encodeURIComponent(name) + '&background=991b1b&color=ffffff&bold=true');
+        if (cardMeta) cardMeta.textContent = pos + (nip ? ' • NIP. ' + nip : '');
+        if (card) card.classList.remove('hidden');
+        if (emptyCard) emptyCard.classList.add('hidden');
+
+        closeMemberModal();
     }
 
     function selectMemberFromEl(el) {

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\Advisor;
 use App\Models\Member;
 use App\Models\OrganizationMember;
 use App\Models\OrganizationSetting;
@@ -105,7 +106,19 @@ class OrganizationController extends Controller
             ];
         })->values();
 
-        return view('admin.organization.create', compact('members', 'membersJson', 'usedMemberIds', 'usedMemberNames'));
+        $advisors = Advisor::where('is_active', true)->orderBy('order_position')->orderBy('name')->get();
+        $advisorsJson = $advisors->map(function ($a) {
+            return [
+                'id' => $a->id,
+                'name' => $a->name,
+                'position' => $a->position,
+                'title_degree' => $a->title_degree,
+                'nip' => $a->nip,
+                'photo_url' => $a->photo_url,
+            ];
+        })->values();
+
+        return view('admin.organization.create', compact('members', 'membersJson', 'usedMemberIds', 'usedMemberNames', 'advisors', 'advisorsJson'));
     }
 
     public function store(Request $request)
@@ -132,6 +145,12 @@ class OrganizationController extends Controller
                 if (empty($validated['photo']) && ! empty($memberObj->photo)) {
                     $validated['photo'] = $memberObj->photo;
                 }
+            }
+        } elseif ((int) ($validated['level'] ?? 0) === 1 && ! empty($validated['name'])) {
+            // Jika level 1 (Pembina) dan member_id kosong, coba sinkronisasi dari tabel Advisor
+            $advisor = Advisor::where('name', $validated['name'])->first();
+            if ($advisor && empty($validated['photo']) && ! empty($advisor->photo)) {
+                $validated['photo'] = $advisor->photo;
             }
         }
 
@@ -243,7 +262,19 @@ class OrganizationController extends Controller
             ];
         })->values();
 
-        return view('admin.organization.edit', compact('member', 'members', 'membersJson', 'usedMemberIds', 'usedMemberNames'));
+        $advisors = Advisor::orderBy('order_position')->orderBy('name')->get();
+        $advisorsJson = $advisors->map(function ($a) {
+            return [
+                'id' => $a->id,
+                'name' => $a->name,
+                'position' => $a->position,
+                'title_degree' => $a->title_degree,
+                'nip' => $a->nip,
+                'photo_url' => $a->photo_url,
+            ];
+        })->values();
+
+        return view('admin.organization.edit', compact('member', 'members', 'membersJson', 'usedMemberIds', 'usedMemberNames', 'advisors', 'advisorsJson'));
     }
 
     public function update(Request $request, OrganizationMember $member)
@@ -270,6 +301,12 @@ class OrganizationController extends Controller
                 if (! empty($memberObj->photo)) {
                     $validated['photo'] = $memberObj->photo;
                 }
+            }
+        } elseif ((int) ($validated['level'] ?? 0) === 1 && ! empty($validated['name'])) {
+            // Jika level 1 (Pembina) dan member_id kosong, coba sinkronisasi foto dari tabel Advisor
+            $advisor = Advisor::where('name', $validated['name'])->first();
+            if ($advisor && empty($validated['photo']) && ! empty($advisor->photo)) {
+                $validated['photo'] = $advisor->photo;
             }
         }
 
