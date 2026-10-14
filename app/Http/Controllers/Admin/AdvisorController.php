@@ -4,38 +4,140 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Advisor;
+use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Http\Request;
+use Illuminate\Pagination\LengthAwarePaginator;
+use Illuminate\Support\Facades\Artisan;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\File;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 
 class AdvisorController extends Controller
 {
-    public function index(Request $request)
+    /**
+     * Memastikan tabel advisors tersedia di database secara otomatis (self-healing)
+     */
+    protected function ensureTableExists(): void
     {
-        $search = $request->query('q');
-        $query = Advisor::query();
-
-        if ($search) {
-            $query->where(function ($q) use ($search) {
-                $q->where('name', 'like', "%{$search}%")
-                    ->orWhere('nip', 'like', "%{$search}%")
-                    ->orWhere('position', 'like', "%{$search}%");
-            });
+        if (Schema::hasTable('advisors')) {
+            return;
         }
 
-        $advisors = $query->orderBy('order_position')->orderBy('name')->paginate(15)->withQueryString();
-        $totalAdvisors = Advisor::count();
-        $totalAktif = Advisor::where('is_active', true)->count();
+        try {
+            Artisan::call('migrate', ['--force' => true]);
+        } catch (\Throwable $e) {
+            // Ignore
+        }
+
+        if (! Schema::hasTable('advisors')) {
+            try {
+                Schema::create('advisors', function (Blueprint $table) {
+                    $table->id();
+                    $table->string('nip', 50)->nullable()->unique();
+                    $table->string('name');
+                    $table->string('position')->default('Pembina PMR');
+                    $table->string('title_degree')->nullable();
+                    $table->enum('gender', ['Laki-laki', 'Perempuan'])->nullable();
+                    $table->string('birth_place')->nullable();
+                    $table->date('birth_date')->nullable();
+                    $table->text('address')->nullable();
+                    $table->string('phone', 30)->nullable();
+                    $table->string('email')->nullable();
+                    $table->string('password')->nullable();
+                    $table->rememberToken();
+                    $table->text('motto')->nullable();
+                    $table->text('vision')->nullable();
+                    $table->text('mission')->nullable();
+                    $table->string('photo')->nullable();
+                    $table->unsignedSmallInteger('order_position')->default(0);
+                    $table->boolean('is_active')->default(true);
+                    $table->timestamps();
+                });
+
+                // Salin data pembina dari tabel members jika ada
+                if (Schema::hasTable('members')) {
+                    $pembinaMembers = DB::table('members')
+                        ->where('position', 'like', '%pembina%')
+                        ->orWhereNotNull('nip')
+                        ->get();
+
+                    foreach ($pembinaMembers as $pm) {
+                        DB::table('advisors')->insert([
+                            'nip' => $pm->nip ?? null,
+                            'name' => $pm->name,
+                            'position' => $pm->position ?: 'Pembina PMR',
+                            'gender' => $pm->gender ?? null,
+                            'birth_place' => $pm->birth_place ?? null,
+                            'birth_date' => $pm->birth_date ?? null,
+                            'address' => $pm->address ?? null,
+                            'phone' => $pm->phone ?? null,
+                            'email' => $pm->email ?? null,
+                            'password' => $pm->password ?? null,
+                            'motto' => $pm->motto ?? null,
+                            'photo' => $pm->photo ?? null,
+                            'order_position' => 1,
+                            'is_active' => $pm->is_active ?? 1,
+                            'created_at' => now(),
+                            'updated_at' => now(),
+                        ]);
+                    }
+                }
+            } catch (\Throwable $e) {
+                // Ignore
+            }
+        }
+    }
+
+    public function index(Request $request)
+    {
+        $this->ensureTableExists();
+
+        $search = $request->query('q');
+        $query = Advisor::query();
+        $advisors = collect();
+        $totalAdvisors = 0;
+        $totalAktif = 0;
+
+        try {
+            if (Schema::hasTable('advisors')) {
+                if ($search) {
+                    $query->where(function ($q) use ($search) {
+                        $q->where('name', 'like', "%{$search}%")
+                            ->orWhere('nip', 'like', "%{$search}%")
+                            ->orWhere('position', 'like', "%{$search}%");
+                    });
+                }
+
+                $advisors = $query->orderBy('order_position')->orderBy('name')->paginate(15)->withQueryString();
+                $totalAdvisors = Advisor::count();
+                $totalAktif = Advisor::where('is_active', true)->count();
+            } else {
+                $advisors = new LengthAwarePaginator([], 0, 15);
+            }
+        } catch (\Throwable $e) {
+            $advisors = new LengthAwarePaginator([], 0, 15);
+        }
 
         return view('admin.advisors.index', compact('advisors', 'search', 'totalAdvisors', 'totalAktif'));
     }
 
     public function create()
     {
-        $positions = Advisor::whereNotNull('position')->distinct()->pluck('position');
-        if ($positions->isEmpty()) {
-            $positions = collect(['Pembina PMR', 'Pembina Utama', 'Pembina Teknis', 'Guru Pembina PMR']);
+        $this->ensureTableExists();
+
+        $positions = collect(['Pembina PMR', 'Pembina Utama', 'Pembina Teknis', 'Guru Pembina PMR']);
+
+        try {
+            if (Schema::hasTable('advisors')) {
+                $dbPositions = Advisor::whereNotNull('position')->distinct()->pluck('position');
+                if ($dbPositions->isNotEmpty()) {
+                    $positions = $positions->merge($dbPositions)->unique()->values();
+                }
+            }
+        } catch (\Throwable $e) {
+            // Tetap gunakan default jika query gagal
         }
 
         return view('admin.advisors.create', compact('positions'));
@@ -43,6 +145,8 @@ class AdvisorController extends Controller
 
     public function store(Request $request)
     {
+        $this->ensureTableExists();
+
         $validated = $request->validate([
             'nip' => 'nullable|string|max:50|unique:advisors,nip',
             'name' => 'required|string|max:255',
@@ -97,9 +201,18 @@ class AdvisorController extends Controller
 
     public function edit(Advisor $advisor)
     {
-        $positions = Advisor::whereNotNull('position')->distinct()->pluck('position');
-        if ($positions->isEmpty()) {
-            $positions = collect(['Pembina PMR', 'Pembina Utama', 'Pembina Teknis', 'Guru Pembina PMR']);
+        $this->ensureTableExists();
+
+        $positions = collect(['Pembina PMR', 'Pembina Utama', 'Pembina Teknis', 'Guru Pembina PMR']);
+        try {
+            if (Schema::hasTable('advisors')) {
+                $dbPositions = Advisor::whereNotNull('position')->distinct()->pluck('position');
+                if ($dbPositions->isNotEmpty()) {
+                    $positions = $positions->merge($dbPositions)->unique()->values();
+                }
+            }
+        } catch (\Throwable $e) {
+            // Tetap gunakan default
         }
 
         return view('admin.advisors.edit', compact('advisor', 'positions'));
@@ -107,6 +220,7 @@ class AdvisorController extends Controller
 
     public function update(Request $request, Advisor $advisor)
     {
+        $this->ensureTableExists();
         $validated = $request->validate([
             'nip' => 'nullable|string|max:50|unique:advisors,nip,'.$advisor->id,
             'name' => 'required|string|max:255',
@@ -169,6 +283,8 @@ class AdvisorController extends Controller
 
     public function destroy(Advisor $advisor)
     {
+        $this->ensureTableExists();
+
         if ($advisor->photo && Storage::disk('public')->exists($advisor->photo)) {
             Storage::disk('public')->delete($advisor->photo);
             $oldPublic = public_path('storage/'.$advisor->photo);
