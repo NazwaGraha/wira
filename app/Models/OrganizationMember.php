@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Support\Facades\Schema;
 
 class OrganizationMember extends Model
 {
@@ -39,14 +40,8 @@ class OrganizationMember extends Model
      */
     public function isLeaderActive(): bool
     {
-        if ($this->level === 1) {
-            if (! empty($this->name)) {
-                $advisor = Advisor::where('name', $this->name)->first();
-                if ($advisor) {
-                    return (bool) $advisor->is_active;
-                }
-            }
-
+        // Level 1 (Pembina PMR) di bagan kepengurusan selalu aktif
+        if ((int) $this->level === 1) {
             return true;
         }
 
@@ -106,10 +101,16 @@ class OrganizationMember extends Model
                 : asset('storage/'.$this->photo);
         }
 
-        if ($this->level === 1 && ! empty($this->name)) {
-            $advisor = Advisor::where('name', $this->name)->first();
-            if ($advisor && ! empty($advisor->photo_url)) {
-                return $advisor->photo_url;
+        if ((int) $this->level === 1 && ! empty($this->name)) {
+            if (Schema::hasTable('advisors')) {
+                try {
+                    $advisor = Advisor::where('name', $this->name)->first();
+                    if ($advisor && ! empty($advisor->photo_url)) {
+                        return $advisor->photo_url;
+                    }
+                } catch (\Throwable $e) {
+                    // Ignore
+                }
             }
         }
 

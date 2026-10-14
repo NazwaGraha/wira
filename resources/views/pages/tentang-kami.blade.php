@@ -290,17 +290,24 @@
         <!-- Organizational Chart Flow -->
         <div class="w-full flex flex-col items-center">
             @php
-                $pembina = $organizationMembers->get(1, collect());
-                $ketua = $organizationMembers->get(2, collect());
-                $wakil = $organizationMembers->get(3, collect());
-                $bph = $organizationMembers->get(4, collect());
-                $seksi = $organizationMembers->get(5, collect());
-                $others = $organizationMembers->get(6, collect());
+                $pembina = $organizationMembers->get(1, $organizationMembers->get('1', collect()));
+                $ketua = $organizationMembers->get(2, $organizationMembers->get('2', collect()));
+                $wakil = $organizationMembers->get(3, $organizationMembers->get('3', collect()));
+                $bph = $organizationMembers->get(4, $organizationMembers->get('4', collect()));
+                $seksi = $organizationMembers->get(5, $organizationMembers->get('5', collect()));
+                $others = $organizationMembers->get(6, $organizationMembers->get('6', collect()));
 
                 // Fallback otomatis: jika di organizationMembers belum ada level 1, ambil dari allAdvisors aktif
                 if ($pembina->isEmpty()) {
                     if (isset($allAdvisors) && $allAdvisors->isNotEmpty()) {
                         $pembina = $allAdvisors->filter(fn($a) => (bool)$a->is_active);
+                    }
+                    if ($pembina->isEmpty()) {
+                        if (\Illuminate\Support\Facades\Schema::hasTable('advisors')) {
+                            try {
+                                $pembina = \App\Models\Advisor::where('is_active', true)->orderBy('order_position')->get();
+                            } catch (\Throwable $e) {}
+                        }
                     }
                     if ($pembina->isEmpty()) {
                         // Sediakan fallback dewan pembina resmi PMR Wira SMAN 1 Ciawi
@@ -332,16 +339,26 @@
                         @php
                             $advisor = ($m instanceof \App\Models\Advisor) ? $m : (isset($allAdvisors) ? ($allAdvisors->get($m->name) ?? null) : null);
                             if (!$advisor && !($m instanceof \App\Models\Advisor)) {
-                                $advisor = \App\Models\Advisor::where('name', $m->name)->first();
+                                if (\Illuminate\Support\Facades\Schema::hasTable('advisors')) {
+                                    try {
+                                        $advisor = \App\Models\Advisor::where('name', $m->name)->first();
+                                        if (!$advisor && !empty($m->name)) {
+                                            $advisor = \App\Models\Advisor::where('name', 'like', '%' . $m->name . '%')->first();
+                                        }
+                                    } catch (\Throwable $e) {}
+                                }
                             }
                             $mem = method_exists($m, 'member') ? $m->member : null;
                             if (!$mem && isset($allMembers)) {
                                 $mem = $allMembers->get($m->name) ?? null;
                             }
                             $photoUrl = (!empty($m->photo_url) ? $m->photo_url : null) ?: ($advisor?->photo_url ?: ($mem?->photo_url ?: 'https://ui-avatars.com/api/?name=' . urlencode($m->name) . '&background=991b1b&color=ffffff&bold=true&size=300'));
-                            $displayName = $advisor ? ($advisor->name . ($advisor->title_degree ? ', ' . $advisor->title_degree : '')) : $m->name;
+                            $displayName = $m->name;
+                            if ($advisor && !empty($advisor->title_degree) && !str_contains($displayName, $advisor->title_degree)) {
+                                $displayName .= ', ' . $advisor->title_degree;
+                            }
                             $mPos = $m->position ?: ($advisor?->position ?: 'Pembina PMR');
-                            $mSub = $advisor?->title_degree ? ('Pembina • ' . $advisor->title_degree) : ($m->subtitle ?? ($advisor?->position ?: 'Guru Pembina PMR'));
+                            $mSub = $m->subtitle ?: ($advisor?->title_degree ? ('Pembina • ' . $advisor->title_degree) : ($advisor?->position ?: 'Guru Pembina PMR'));
                             $biodata = [
                                 'name' => $displayName,
                                 'position' => $mPos,

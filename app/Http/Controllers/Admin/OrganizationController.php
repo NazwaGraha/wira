@@ -168,19 +168,28 @@ class OrganizationController extends Controller
         ]);
 
         // Auto-populate from Member if member_id is selected
-        if (! empty($validated['member_id'])) {
+        if ((int) ($validated['level'] ?? 0) === 1) {
+            $validated['member_id'] = null;
+            if (Schema::hasTable('advisors') && ! empty($validated['name'])) {
+                try {
+                    $advisor = Advisor::where('name', $validated['name'])->first();
+                    if (! $advisor) {
+                        $advisor = Advisor::where('name', 'like', '%'.$validated['name'].'%')->first();
+                    }
+                    if ($advisor && empty($validated['photo']) && ! empty($advisor->photo)) {
+                        $validated['photo'] = $advisor->photo;
+                    }
+                } catch (\Throwable $e) {
+                    // Ignore
+                }
+            }
+        } elseif (! empty($validated['member_id'])) {
             $memberObj = Member::find($validated['member_id']);
             if ($memberObj) {
                 $validated['name'] = $memberObj->name;
                 if (empty($validated['photo']) && ! empty($memberObj->photo)) {
                     $validated['photo'] = $memberObj->photo;
                 }
-            }
-        } elseif ((int) ($validated['level'] ?? 0) === 1 && ! empty($validated['name'])) {
-            // Jika level 1 (Pembina) dan member_id kosong, coba sinkronisasi dari tabel Advisor
-            $advisor = Advisor::where('name', $validated['name'])->first();
-            if ($advisor && empty($validated['photo']) && ! empty($advisor->photo)) {
-                $validated['photo'] = $advisor->photo;
             }
         }
 
@@ -189,7 +198,7 @@ class OrganizationController extends Controller
         }
 
         $validated['order_position'] = $validated['order_position'] ?? 0;
-        $validated['is_active'] = $request->has('is_active');
+        $validated['is_active'] = (int) ($validated['level'] ?? 0) === 1 ? true : $request->has('is_active');
 
         // Clean and auto-populate staff_members from Member
         if (! empty($validated['staff_members'])) {
@@ -331,19 +340,33 @@ class OrganizationController extends Controller
         ]);
 
         // Auto-populate from Member if member_id is selected
-        if (! empty($validated['member_id'])) {
+        if ((int) ($validated['level'] ?? 0) === 1) {
+            $validated['member_id'] = null;
+            if (Schema::hasTable('advisors') && ! empty($validated['name'])) {
+                try {
+                    $advisor = Advisor::where('name', $validated['name'])->first();
+                    if (! $advisor) {
+                        $advisor = Advisor::where('name', 'like', '%'.$validated['name'].'%')->first();
+                    }
+                    if ($advisor) {
+                        if (empty($validated['photo']) || str_contains($validated['photo'], 'ui-avatars')) {
+                            $validated['photo'] = $advisor->photo;
+                        }
+                        if (empty($validated['subtitle'])) {
+                            $validated['subtitle'] = $advisor->title_degree ? ('Pembina • '.$advisor->title_degree) : ($advisor->position ?: 'Guru Pembina PMR');
+                        }
+                    }
+                } catch (\Throwable $e) {
+                    // Ignore
+                }
+            }
+        } elseif (! empty($validated['member_id'])) {
             $memberObj = Member::find($validated['member_id']);
             if ($memberObj) {
                 $validated['name'] = $memberObj->name;
                 if (! empty($memberObj->photo)) {
                     $validated['photo'] = $memberObj->photo;
                 }
-            }
-        } elseif ((int) ($validated['level'] ?? 0) === 1 && ! empty($validated['name'])) {
-            // Jika level 1 (Pembina) dan member_id kosong, coba sinkronisasi foto dari tabel Advisor
-            $advisor = Advisor::where('name', $validated['name'])->first();
-            if ($advisor && empty($validated['photo']) && ! empty($advisor->photo)) {
-                $validated['photo'] = $advisor->photo;
             }
         }
 
@@ -352,7 +375,7 @@ class OrganizationController extends Controller
         }
 
         $validated['order_position'] = $validated['order_position'] ?? 0;
-        $validated['is_active'] = $request->has('is_active');
+        $validated['is_active'] = (int) ($validated['level'] ?? 0) === 1 ? true : $request->has('is_active');
 
         // Clean and auto-populate staff_members from Member
         if (! empty($validated['staff_members'])) {

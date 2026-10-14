@@ -55,7 +55,10 @@ class PageController extends Controller
         );
 
         $rawMembers = OrganizationMember::with('member')
-            ->where('is_active', true)
+            ->where(function ($query) {
+                $query->where('is_active', true)
+                    ->orWhere('level', 1);
+            })
             ->orderBy('level')
             ->orderBy('order_position')
             ->get();
@@ -119,10 +122,17 @@ class PageController extends Controller
             $m->staff_members = $m->active_staff_members;
 
             return $m;
-        })->groupBy('level');
+        })->groupBy(fn ($m) => (int) $m->level);
 
         $allMembers = Member::all()->keyBy('name');
-        $allAdvisors = Advisor::all()->keyBy('name');
+        $allAdvisors = collect();
+        if (Schema::hasTable('advisors')) {
+            try {
+                $allAdvisors = Advisor::all()->keyBy('name');
+            } catch (\Throwable $e) {
+                // Ignore
+            }
+        }
         $guideline = OrganizationGuideline::current();
 
         return view('pages.tentang-kami', compact('organizationSetting', 'organizationMembers', 'allMembers', 'allAdvisors', 'guideline'));
