@@ -297,6 +297,25 @@
                 $seksi = $organizationMembers->get(5, collect());
                 $others = $organizationMembers->get(6, collect());
 
+                // Fallback otomatis: jika di organizationMembers belum ada level 1, ambil dari allAdvisors aktif
+                if ($pembina->isEmpty()) {
+                    if (isset($allAdvisors) && $allAdvisors->isNotEmpty()) {
+                        $pembina = $allAdvisors->filter(fn($a) => (bool)$a->is_active);
+                    }
+                    if ($pembina->isEmpty()) {
+                        // Sediakan fallback dewan pembina resmi PMR Wira SMAN 1 Ciawi
+                        $pembina = collect([
+                            (object)[
+                                'name' => 'Drs. H. Mulyadi, M.Pd',
+                                'position' => 'Pembina PMR',
+                                'subtitle' => 'Guru Pembina PMR Wira SMAN 1 Ciawi',
+                                'photo_url' => 'https://ui-avatars.com/api/?name=Drs+H+Mulyadi&background=991b1b&color=ffffff&bold=true&size=300',
+                                'level' => 1,
+                            ]
+                        ]);
+                    }
+                }
+
                 // Fallback kompatibilitas: jika DB lama belum digeser levelnya (level 3 masih BPH dan bukan wakil ketua)
                 if ($wakil->isNotEmpty() && $bph->isEmpty() && !$wakil->contains(fn($item) => stripos($item->position, 'wakil') !== false)) {
                     $bph = $wakil;
@@ -311,18 +330,23 @@
                 <div class="flex flex-wrap justify-center gap-6">
                     @foreach($pembina as $m)
                         @php
-                            $advisor = isset($allAdvisors) ? ($allAdvisors->get($m->name) ?? null) : null;
-                            if (!$advisor) {
+                            $advisor = ($m instanceof \App\Models\Advisor) ? $m : (isset($allAdvisors) ? ($allAdvisors->get($m->name) ?? null) : null);
+                            if (!$advisor && !($m instanceof \App\Models\Advisor)) {
                                 $advisor = \App\Models\Advisor::where('name', $m->name)->first();
                             }
-                            $mem = $m->member ?? ($allMembers->get($m->name) ?? null);
-                            $photoUrl = $m->photo_url ?: ($advisor?->photo_url ?: ($mem?->photo_url ?: 'https://ui-avatars.com/api/?name=' . urlencode($m->name) . '&background=991b1b&color=ffffff&bold=true&size=300'));
+                            $mem = method_exists($m, 'member') ? $m->member : null;
+                            if (!$mem && isset($allMembers)) {
+                                $mem = $allMembers->get($m->name) ?? null;
+                            }
+                            $photoUrl = (!empty($m->photo_url) ? $m->photo_url : null) ?: ($advisor?->photo_url ?: ($mem?->photo_url ?: 'https://ui-avatars.com/api/?name=' . urlencode($m->name) . '&background=991b1b&color=ffffff&bold=true&size=300'));
                             $displayName = $advisor ? ($advisor->name . ($advisor->title_degree ? ', ' . $advisor->title_degree : '')) : $m->name;
+                            $mPos = $m->position ?: ($advisor?->position ?: 'Pembina PMR');
+                            $mSub = $advisor?->title_degree ? ('Pembina • ' . $advisor->title_degree) : ($m->subtitle ?? ($advisor?->position ?: 'Guru Pembina PMR'));
                             $biodata = [
                                 'name' => $displayName,
-                                'position' => $m->position ?: ($advisor?->position ?: 'Pembina PMR'),
-                                'subtitle' => $advisor?->position ?: ($m->subtitle ?: 'Guru Pembina PMR'),
-                                'class_grade' => $advisor?->title_degree ? 'Gelar: ' . $advisor->title_degree : ($m->subtitle ?: 'Guru Pembina'),
+                                'position' => $mPos,
+                                'subtitle' => $mSub,
+                                'class_grade' => $advisor?->title_degree ? 'Gelar: ' . $advisor->title_degree : ($mSub ?: 'Guru Pembina'),
                                 'nis' => $advisor?->nip ? 'NIP. ' . $advisor->nip : ($mem?->nip ? 'NIP. ' . $mem->nip : '-'),
                                 'gender' => $advisor?->gender ?: ($mem?->gender ?? '-'),
                                 'birth_place' => $advisor?->birth_place ?: ($mem?->birth_place ?? ''),

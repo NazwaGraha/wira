@@ -278,6 +278,31 @@ Route::get('/server-sync-update-pmr', function () {
         Artisan::call('optimize:clear');
         Artisan::call('migrate', ['--force' => true]);
 
+        // Pastikan Tingkat 1 (Pembina PMR) selalu terdaftar di tabel organization_members
+        if (Schema::hasTable('organization_members') && ! DB::table('organization_members')->where('level', 1)->exists()) {
+            $advisorName = 'Drs. H. Mulyadi, M.Pd';
+            $advisorPhoto = null;
+            if (Schema::hasTable('advisors')) {
+                $adv = DB::table('advisors')->where('is_active', 1)->orderBy('order_position')->first();
+                if ($adv) {
+                    $advisorName = $adv->name;
+                    $advisorPhoto = $adv->photo;
+                }
+            }
+            DB::table('organization_members')->insert([
+                'name' => $advisorName,
+                'position' => 'Pembina PMR',
+                'subtitle' => 'Guru Pembina PMR',
+                'level' => 1,
+                'order_position' => 1,
+                'photo' => $advisorPhoto,
+                'icon' => 'fa-solid fa-shield-halved',
+                'is_active' => 1,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]);
+        }
+
         // Pastikan folder storage publik dibuat
         File::ensureDirectoryExists(storage_path('app/public/advisors'), 0755, true);
         File::ensureDirectoryExists(storage_path('app/public/members'), 0755, true);

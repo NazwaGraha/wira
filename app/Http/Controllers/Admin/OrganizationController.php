@@ -24,7 +24,25 @@ class OrganizationController extends Controller
             ]
         );
 
-        $statusFilter = $request->query('status_filter', 'all'); // 'all', 'active_only', 'purna_only'
+        // Pastikan Tingkat 1 (Pembina PMR) terdaftar di tabel organization_members
+        $hasLevel1 = OrganizationMember::where('level', 1)->exists();
+        if (! $hasLevel1) {
+            try {
+                $firstAdvisor = Advisor::where('is_active', true)->orderBy('order_position')->first();
+                OrganizationMember::create([
+                    'name' => $firstAdvisor?->name ?: 'Drs. H. Mulyadi, M.Pd',
+                    'position' => $firstAdvisor?->position ?: 'Pembina PMR',
+                    'subtitle' => $firstAdvisor?->title_degree ? ('Pembina • '.$firstAdvisor->title_degree) : 'Guru Pembina PMR',
+                    'level' => 1,
+                    'order_position' => 1,
+                    'photo' => $firstAdvisor?->photo ?: null,
+                    'icon' => 'fa-solid fa-shield-halved',
+                    'is_active' => true,
+                ]);
+            } catch (\Throwable $e) {
+                // Ignore
+            }
+        }
 
         $allMembers = OrganizationMember::with('member')->orderBy('level')->orderBy('order_position')->get();
 

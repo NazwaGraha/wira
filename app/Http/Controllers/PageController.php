@@ -59,6 +59,54 @@ class PageController extends Controller
             ->orderBy('order_position')
             ->get();
 
+        // 1. Pastikan Level 1 (Pembina PMR) selalu hadir di atas Ketua Umum:
+        $hasLevel1 = $rawMembers->contains(fn ($m) => (int) $m->level === 1);
+        if (! $hasLevel1) {
+            try {
+                $activeAdvisors = Advisor::where('is_active', true)->orderBy('order_position')->get();
+                if ($activeAdvisors->isEmpty()) {
+                    $activeAdvisors = collect([
+                        new Advisor([
+                            'name' => 'Drs. H. Mulyadi, M.Pd',
+                            'position' => 'Pembina PMR',
+                            'title_degree' => 'M.Pd',
+                            'order_position' => 1,
+                            'is_active' => true,
+                        ]),
+                    ]);
+                }
+
+                foreach ($activeAdvisors as $idx => $adv) {
+                    $orgAdv = new OrganizationMember([
+                        'name' => $adv->name,
+                        'position' => $adv->position ?: 'Pembina PMR',
+                        'subtitle' => $adv->title_degree ? ('Pembina • '.$adv->title_degree) : 'Guru Pembina PMR',
+                        'level' => 1,
+                        'order_position' => $adv->order_position ?: ($idx + 1),
+                        'photo' => $adv->photo,
+                        'icon' => 'fa-solid fa-shield-halved',
+                        'is_active' => true,
+                    ]);
+                    $rawMembers->push($orgAdv);
+
+                    // Buatkan juga permanen di DB jika belum ada
+                    OrganizationMember::firstOrCreate(
+                        ['level' => 1, 'name' => $adv->name],
+                        [
+                            'position' => $adv->position ?: 'Pembina PMR',
+                            'subtitle' => $adv->title_degree ? ('Pembina • '.$adv->title_degree) : 'Guru Pembina PMR',
+                            'order_position' => $adv->order_position ?: ($idx + 1),
+                            'photo' => $adv->photo,
+                            'icon' => 'fa-solid fa-shield-halved',
+                            'is_active' => true,
+                        ]
+                    );
+                }
+            } catch (\Throwable $e) {
+                // Ignore
+            }
+        }
+
         // Saring pengurus di bagan: hanya tampil jika pejabat/ketua aktif (atau level 1 / Pembina)
         $organizationMembers = $rawMembers->filter(function ($m) {
             return $m->isLeaderActive();
