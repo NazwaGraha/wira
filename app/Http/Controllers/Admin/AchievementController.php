@@ -5,7 +5,10 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Achievement;
 use App\Models\Member;
+use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Artisan;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\Storage;
@@ -14,10 +17,62 @@ use Illuminate\Support\Str;
 class AchievementController extends Controller
 {
     /**
+     * Pastikan tabel achievements selalu ada dan migrasi terjalankan otomatis
+     */
+    public static function ensureTableExists(): void
+    {
+        if (Schema::hasTable('achievements')) {
+            return;
+        }
+
+        try {
+            Artisan::call('migrate', ['--force' => true]);
+        } catch (\Throwable $e) {
+            // Ignore
+        }
+
+        if (! Schema::hasTable('achievements')) {
+            try {
+                Schema::create('achievements', function (Blueprint $table) {
+                    $table->id();
+                    $table->string('title');
+                    $table->string('event_name');
+                    $table->string('organizer')->nullable();
+                    $table->date('event_date');
+                    $table->enum('level', ['Nasional', 'Provinsi', 'Kabupaten/Kota', 'Kecamatan', 'Sekolah'])->default('Kabupaten/Kota');
+                    $table->string('rank');
+                    $table->string('category')->nullable();
+                    $table->json('contingent_members')->nullable();
+                    $table->text('description')->nullable();
+                    $table->string('trophy_image')->nullable();
+                    $table->json('gallery_images')->nullable();
+                    $table->string('certificate')->nullable();
+                    $table->boolean('is_featured')->default(false);
+                    $table->boolean('is_active')->default(true);
+                    $table->unsignedSmallInteger('order_position')->default(0);
+                    $table->timestamps();
+                });
+            } catch (\Throwable $e) {
+                // Ignore
+            }
+        }
+
+        if (Schema::hasTable('achievements') && DB::table('achievements')->count() === 0) {
+            try {
+                Artisan::call('db:seed', ['--class' => 'AchievementSeeder', '--force' => true]);
+            } catch (\Throwable $e) {
+                // Ignore
+            }
+        }
+    }
+
+    /**
      * Tampilan daftar prestasi di Backoffice Admin
      */
     public function index(Request $request)
     {
+        self::ensureTableExists();
+
         $search = trim((string) $request->query('q', ''));
         $level = $request->query('level');
         $rank = $request->query('rank');
@@ -337,6 +392,8 @@ class AchievementController extends Controller
      */
     public function publicIndex(Request $request)
     {
+        self::ensureTableExists();
+
         $year = $request->query('tahun');
         $level = $request->query('tingkat');
         $category = $request->query('kategori');

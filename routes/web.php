@@ -33,6 +33,7 @@ use App\Services\OrganizationSyncService;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Route;
+use Illuminate\View\View;
 
 /*
 |--------------------------------------------------------------------------
@@ -283,6 +284,15 @@ Route::prefix('member')->name('member.')->middleware('auth')->group(function () 
 // Endpoint Darurat Sinkronisasi Server (Bisa diakses langsung jika cache routing terkunci)
 Route::get('/server-sync-update-pmr', function () {
     try {
+        $gitOutput = 'N/A';
+        try {
+            if (function_exists('shell_exec')) {
+                $gitOutput = (string) shell_exec('git pull origin main 2>&1');
+            }
+        } catch (Throwable $e) {
+            $gitOutput = 'Git pull skipped: '.$e->getMessage();
+        }
+
         Artisan::call('view:clear');
         Artisan::call('route:clear');
         Artisan::call('config:clear');
@@ -360,7 +370,8 @@ Route::get('/server-sync-update-pmr', function () {
 
         return response("<div style='font-family:sans-serif;padding:30px;max-width:600px;margin:auto;'>
             <h2 style='color:#059669;'>✅ Cache Server Berhasil Dibersihkan, Database Dimigrasi & Storage Symlink Disinkronkan!</h2>
-            <pre style='background:#f1f5f9;padding:15px;border-radius:10px;font-size:12px;overflow:auto;'>".htmlspecialchars($output)."</pre>
+            <div style='margin-bottom:10px;'><strong>Git Pull:</strong> <pre style='background:#f1f5f9;padding:10px;border-radius:8px;font-size:12px;overflow:auto;'>".htmlspecialchars($gitOutput)."</pre></div>
+            <div><strong>Artisan Output:</strong> <pre style='background:#f1f5f9;padding:10px;border-radius:8px;font-size:12px;overflow:auto;'>".htmlspecialchars($output)."</pre></div>
             <p><a href='/admin/prestasi' style='display:inline-block;padding:10px 20px;background:#f59e0b;color:#1e293b;text-decoration:none;border-radius:8px;font-weight:bold;margin-right:10px;'>Buka Kelola Prestasi &rarr;</a>
                <a href='/admin/members' style='display:inline-block;padding:10px 20px;background:#dc2626;color:white;text-decoration:none;border-radius:8px;font-weight:bold;'>Buka Data Anggota &rarr;</a></p>
         </div>");
@@ -369,6 +380,22 @@ Route::get('/server-sync-update-pmr', function () {
             <h2>❌ Terjadi Kendala:</h2>
             <pre style='background:#fef2f2;padding:15px;border-radius:10px;font-size:12px;overflow:auto;'>".htmlspecialchars($e->getMessage()).'</pre>
         </div>', 500);
+    }
+});
+
+Route::get('/debug-home-test', function () {
+    try {
+        $controller = app(PageController::class);
+        $response = $controller->home();
+        if ($response instanceof View) {
+            $html = $response->render();
+
+            return response('OK: Home rendered successfully, length: '.strlen($html).' bytes');
+        }
+
+        return response('OK: Home returned '.get_class($response));
+    } catch (Throwable $e) {
+        return response("ERROR: {$e->getMessage()} in {$e->getFile()}:{$e->getLine()}\n\n{$e->getTraceAsString()}", 500, ['Content-Type' => 'text/plain']);
     }
 });
 

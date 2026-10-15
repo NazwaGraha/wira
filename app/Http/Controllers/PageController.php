@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Controllers\Admin\AchievementController;
 use App\Models\Achievement;
 use App\Models\Activity;
 use App\Models\Advisor;
@@ -42,17 +43,18 @@ class PageController extends Controller
         $bloodStocks = BloodStock::all();
 
         $featuredAchievements = collect();
-        if (Schema::hasTable('achievements')) {
-            try {
+        try {
+            AchievementController::ensureTableExists();
+            if (Schema::hasTable('achievements')) {
                 $featuredAchievements = Achievement::active()
                     ->orderByDesc('is_featured')
                     ->orderBy('order_position')
                     ->orderByDesc('event_date')
                     ->take(3)
                     ->get();
-            } catch (\Throwable $e) {
-                $featuredAchievements = collect();
             }
+        } catch (\Throwable $e) {
+            $featuredAchievements = collect();
         }
 
         return view('pages.home', compact('heroSlides', 'featuredArticle', 'latestArticles', 'activities', 'bloodStocks', 'featuredAchievements'));
