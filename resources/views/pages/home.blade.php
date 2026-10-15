@@ -241,7 +241,7 @@
                     Dedikasi, ketangkasan, dan jiwa kemanusiaan anggota PMR Wira SMAN 1 Ciawi yang terbukti dalam berbagai ajang kejuaraan bergengsi.
                 </p>
             </div>
-            <a href="{{ route('prestasi.index') }}" class="inline-flex items-center gap-2 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-stone-950 font-extrabold text-xs sm:text-sm px-6 py-3.5 rounded-xl shadow-lg shadow-amber-500/20 transition-all transform hover:-translate-y-0.5 whitespace-nowrap">
+            <a href="{{ url('/prestasi') }}" class="inline-flex items-center gap-2 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-stone-950 font-extrabold text-xs sm:text-sm px-6 py-3.5 rounded-xl shadow-lg shadow-amber-500/20 transition-all transform hover:-translate-y-0.5 whitespace-nowrap">
                 <span>Lihat Seluruh Prestasi</span>
                 <i class="fa-solid fa-arrow-right"></i>
             </a>
@@ -285,7 +285,7 @@
                             {{ $ach->event_name }}
                         </div>
                         <h3 class="text-base sm:text-lg font-bold text-white mb-2 leading-snug group-hover:text-amber-300 transition-colors">
-                            <a href="{{ route('prestasi.index') }}">{{ $ach->title }}</a>
+                            <a href="{{ url('/prestasi') }}">{{ $ach->title }}</a>
                         </h3>
                         <p class="text-stone-400 text-xs leading-relaxed mb-4 line-clamp-2">
                             {{ $ach->description }}
@@ -296,7 +296,7 @@
                             <span class="truncate max-w-[180px]">
                                 <i class="fa-solid fa-building-columns text-stone-500 mr-1"></i> {{ $ach->organizer ?? 'PMR Wira SMAN 1 Ciawi' }}
                             </span>
-                            <a href="{{ route('prestasi.index') }}" class="text-amber-400 group-hover:text-amber-300 font-bold flex items-center gap-1 hover:underline">
+                            <a href="{{ url('/prestasi') }}" class="text-amber-400 group-hover:text-amber-300 font-bold flex items-center gap-1 hover:underline">
                                 Detail <i class="fa-solid fa-angle-right text-[10px]"></i>
                             </a>
                         </div>

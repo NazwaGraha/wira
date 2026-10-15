@@ -212,7 +212,7 @@
                                     </div>
                                 </a>
 
-                                <a href="{{ route('prestasi.index') }}" class="flex items-center gap-3 px-3.5 py-3 rounded-xl hover:bg-red-50 text-slate-700 hover:text-pmr-primary transition {{ request()->routeIs('prestasi.*') ? 'bg-red-50 text-pmr-primary font-bold' : '' }}">
+                                <a href="{{ url('/prestasi') }}" class="flex items-center gap-3 px-3.5 py-3 rounded-xl hover:bg-red-50 text-slate-700 hover:text-pmr-primary transition {{ request()->is('prestasi*') ? 'bg-red-50 text-pmr-primary font-bold' : '' }}">
                                     <div class="w-8 h-8 rounded-lg bg-amber-100 text-amber-700 flex items-center justify-center flex-shrink-0">
                                         <i class="fa-solid fa-trophy text-sm text-amber-600"></i>
                                     </div>
@@ -235,7 +235,7 @@
                         </div>
                     </div>
 
-                    <a href="{{ route('prestasi.index') }}" class="px-4 py-2.5 rounded-xl transition flex items-center gap-1.5 {{ request()->routeIs('prestasi.*') ? 'bg-black/30 text-white font-bold shadow-inner' : 'hover:bg-white/10 text-white/90' }}">
+                    <a href="{{ url('/prestasi') }}" class="px-4 py-2.5 rounded-xl transition flex items-center gap-1.5 {{ request()->is('prestasi*') ? 'bg-black/30 text-white font-bold shadow-inner' : 'hover:bg-white/10 text-white/90' }}">
                         <i class="fa-solid fa-award text-amber-300"></i>
                         <span>Prestasi</span>
                     </a>
@@ -313,7 +313,7 @@
             <div class="bg-stone-800/60 rounded-2xl p-3.5 border border-stone-700/60 mb-4 space-y-1">
                 <div class="text-[10px] font-extrabold uppercase tracking-widest text-stone-400 px-2 pb-1.5">Informasi & Publikasi</div>
                 
-                <a href="{{ route('prestasi.index') }}" class="flex items-center justify-between p-2.5 rounded-xl hover:bg-stone-700/80 text-stone-200 transition text-xs font-semibold {{ request()->routeIs('prestasi.*') ? 'bg-amber-600/30 text-amber-300 font-bold' : '' }}">
+                <a href="{{ url('/prestasi') }}" class="flex items-center justify-between p-2.5 rounded-xl hover:bg-stone-700/80 text-stone-200 transition text-xs font-semibold {{ request()->is('prestasi*') ? 'bg-amber-600/30 text-amber-300 font-bold' : '' }}">
                     <span class="flex items-center gap-2.5">
                         <i class="fa-solid fa-trophy text-amber-400 w-4"></i> Jejak Prestasi & Galeri Piala
                     </span>

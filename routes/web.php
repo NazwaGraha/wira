@@ -283,8 +283,21 @@ Route::prefix('member')->name('member.')->middleware('auth')->group(function () 
 // Endpoint Darurat Sinkronisasi Server (Bisa diakses langsung jika cache routing terkunci)
 Route::get('/server-sync-update-pmr', function () {
     try {
+        Artisan::call('view:clear');
+        Artisan::call('route:clear');
+        Artisan::call('config:clear');
+        Artisan::call('cache:clear');
         Artisan::call('optimize:clear');
         Artisan::call('migrate', ['--force' => true]);
+
+        // Seed data prestasi jika tabel kosong
+        if (Schema::hasTable('achievements') && DB::table('achievements')->count() === 0) {
+            try {
+                Artisan::call('db:seed', ['--class' => 'AchievementSeeder', '--force' => true]);
+            } catch (Throwable $e) {
+                // Ignore seeder error if table already populated
+            }
+        }
 
         // Pastikan Tingkat 1 (Pembina PMR) selalu terdaftar di tabel organization_members
         if (Schema::hasTable('organization_members') && ! DB::table('organization_members')->where('level', 1)->exists()) {

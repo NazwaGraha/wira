@@ -41,12 +41,19 @@ class PageController extends Controller
         $activities = Activity::latest('event_date')->take(6)->get();
         $bloodStocks = BloodStock::all();
 
-        $featuredAchievements = Achievement::active()
-            ->orderByDesc('is_featured')
-            ->orderBy('order_position')
-            ->orderByDesc('event_date')
-            ->take(3)
-            ->get();
+        $featuredAchievements = collect();
+        if (Schema::hasTable('achievements')) {
+            try {
+                $featuredAchievements = Achievement::active()
+                    ->orderByDesc('is_featured')
+                    ->orderBy('order_position')
+                    ->orderByDesc('event_date')
+                    ->take(3)
+                    ->get();
+            } catch (\Throwable $e) {
+                $featuredAchievements = collect();
+            }
+        }
 
         return view('pages.home', compact('heroSlides', 'featuredArticle', 'latestArticles', 'activities', 'bloodStocks', 'featuredAchievements'));
     }
