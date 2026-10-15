@@ -268,8 +268,8 @@
                         </div>
 
                         <!-- Banner Image Preview -->
-                        <div class="rounded-lg overflow-hidden bg-stone-800 border border-white/10 mb-2.5 max-h-40 flex items-center justify-center">
-                            <img id="live_preview_img" src="{{ $currentBanner?->image_url ?? 'https://images.unsplash.com/photo-1511578314322-379afb476865?auto=format&fit=crop&w=600&q=80' }}" alt="Banner Preview" class="w-full h-auto object-cover max-h-40">
+                        <div class="rounded-lg overflow-hidden bg-stone-800 border border-white/10 mb-2.5 max-h-60 flex items-center justify-center">
+                            <img id="live_preview_img" src="{{ $currentBanner?->image_url ?? 'https://images.unsplash.com/photo-1511578314322-379afb476865?auto=format&fit=crop&w=600&q=80' }}" alt="Banner Preview" class="w-full h-auto object-contain max-h-60">
                         </div>
 
                         <!-- Judul Preview -->

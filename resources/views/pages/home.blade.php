@@ -369,61 +369,61 @@
 
 @if(isset($activePopupBanner) && $activePopupBanner)
     <!-- Modal Popup Banner Iklan / Pengumuman (Sesuai Mockup) -->
-    <div id="home-popup-banner-modal" class="fixed inset-0 z-[60] bg-stone-950/80 backdrop-blur-md hidden flex items-center justify-center p-3 sm:p-4 select-none animate-in fade-in duration-300">
+    <div id="home-popup-banner-modal" class="fixed inset-0 z-[60] bg-stone-950/85 backdrop-blur-md hidden flex items-center justify-center p-3 sm:p-6 md:p-8 select-none animate-in fade-in duration-300">
         
-        <!-- Modal Card Container -->
-        <div class="relative bg-stone-900 border border-amber-500/30 rounded-3xl max-w-lg w-full shadow-2xl overflow-hidden flex flex-col p-4 sm:p-6 text-center animate-in zoom-in-95 duration-300">
+        <!-- Modal Card Container (Enlarged for High Impact & Readability) -->
+        <div class="relative bg-stone-900 border border-amber-500/40 rounded-3xl max-w-xl sm:max-w-2xl md:max-w-3xl lg:max-w-4xl w-full max-h-[94vh] shadow-2xl overflow-y-auto flex flex-col p-4 sm:p-6 md:p-8 text-center animate-in zoom-in-95 duration-300">
             
             <!-- Tombol Close (X) di Pojok Kanan Atas -->
-            <button type="button" onclick="closeHomePopupBanner()" class="absolute top-3.5 right-3.5 w-8 h-8 rounded-full bg-white/20 hover:bg-white text-white hover:text-stone-950 flex items-center justify-center transition text-sm z-20 shadow-md" title="Tutup Pengumuman">
+            <button type="button" onclick="closeHomePopupBanner()" class="absolute top-3.5 right-3.5 sm:top-5 sm:right-5 w-9 h-9 sm:w-11 sm:h-11 rounded-full bg-stone-950/80 hover:bg-white text-white hover:text-stone-950 flex items-center justify-center transition text-base sm:text-lg z-30 shadow-xl border border-white/20" title="Tutup Pengumuman">
                 <i class="fa-solid fa-xmark"></i>
             </button>
 
             <!-- Badge Pengumuman Resmi -->
-            <div class="mb-3">
-                <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-pmr-primary text-white text-[10px] font-black uppercase tracking-wider shadow-md border border-red-400/40">
-                    <i class="fa-solid fa-bullhorn text-amber-300"></i> Pengumuman Resmi
+            <div class="mb-3 sm:mb-4">
+                <span class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-pmr-primary text-white text-[11px] sm:text-xs font-black uppercase tracking-wider shadow-md border border-red-400/40">
+                    <i class="fa-solid fa-bullhorn text-amber-300 text-xs sm:text-sm"></i> Pengumuman Resmi
                 </span>
             </div>
 
             <!-- Konten Gambar Banner (Dapat Diklik jika ada target_url) -->
-            <div class="rounded-2xl overflow-hidden bg-stone-950 border border-white/10 shadow-inner mb-4 relative group {{ !empty($activePopupBanner->target_url) ? 'cursor-pointer' : '' }}">
+            <div class="rounded-2xl overflow-hidden bg-stone-950 border border-white/10 shadow-2xl mb-4 sm:mb-6 relative group {{ !empty($activePopupBanner->target_url) ? 'cursor-pointer' : '' }}">
                 @if(!empty($activePopupBanner->target_url))
                     <a href="{{ route('popup-banner.click', $activePopupBanner->id) }}" {{ $activePopupBanner->open_in_new_tab ? 'target=_blank' : '' }} onclick="recordPopupClick()" class="block">
-                        <img src="{{ $activePopupBanner->image_url }}" alt="{{ $activePopupBanner->title }}" class="w-full h-auto max-h-[55vh] object-contain mx-auto group-hover:scale-102 transition-transform duration-300">
+                        <img src="{{ $activePopupBanner->image_url }}" alt="{{ $activePopupBanner->title }}" class="w-full h-auto max-h-[68vh] sm:max-h-[72vh] md:max-h-[76vh] object-contain mx-auto group-hover:scale-[1.01] transition-transform duration-300">
                     </a>
                 @else
-                    <img src="{{ $activePopupBanner->image_url }}" alt="{{ $activePopupBanner->title }}" class="w-full h-auto max-h-[55vh] object-contain mx-auto">
+                    <img src="{{ $activePopupBanner->image_url }}" alt="{{ $activePopupBanner->title }}" class="w-full h-auto max-h-[68vh] sm:max-h-[72vh] md:max-h-[76vh] object-contain mx-auto">
                 @endif
             </div>
 
             <!-- Judul Pengumuman -->
             @if($activePopupBanner->title)
-                <h3 class="text-sm sm:text-base font-black text-white leading-snug mb-3">
+                <h3 class="text-base sm:text-lg md:text-xl font-black text-white leading-snug mb-4 px-2">
                     {{ $activePopupBanner->title }}
                 </h3>
             @endif
 
             <!-- Tombol Aksi: Sesuai Permintaan User (Hanya Tombol Info & Tombol Lewati/Tutup) -->
-            <div class="flex flex-col sm:flex-row items-center justify-center gap-2.5 pt-1">
+            <div class="flex flex-col sm:flex-row items-center justify-center gap-3 pt-1">
                 @if(!empty($activePopupBanner->target_url))
                     <!-- Tombol Info Lebih Lanjut -->
-                    <a href="{{ route('popup-banner.click', $activePopupBanner->id) }}" {{ $activePopupBanner->open_in_new_tab ? 'target=_blank' : '' }} onclick="recordPopupClick()" class="w-full sm:w-auto px-6 py-2.5 rounded-xl bg-pmr-primary hover:bg-pmr-dark text-white text-xs font-black uppercase tracking-wider transition shadow-lg flex items-center justify-center gap-2">
+                    <a href="{{ route('popup-banner.click', $activePopupBanner->id) }}" {{ $activePopupBanner->open_in_new_tab ? 'target=_blank' : '' }} onclick="recordPopupClick()" class="w-full sm:w-auto px-8 py-3.5 rounded-2xl bg-pmr-primary hover:bg-pmr-dark text-white text-xs sm:text-sm font-black uppercase tracking-wider transition shadow-xl shadow-red-950/40 flex items-center justify-center gap-2.5 transform hover:-translate-y-0.5">
                         <span>{{ $activePopupBanner->button_text ?: 'Info Lebih Lanjut' }}</span>
-                        <i class="fa-solid fa-arrow-right text-[11px]"></i>
+                        <i class="fa-solid fa-arrow-right text-xs"></i>
                     </a>
                 @endif
 
                 <!-- Tombol Lewati & Tutup -->
-                <button type="button" onclick="closeHomePopupBanner()" class="w-full sm:w-auto px-6 py-2.5 rounded-xl bg-white/15 hover:bg-white/25 text-stone-200 hover:text-white text-xs font-bold transition border border-white/20">
+                <button type="button" onclick="closeHomePopupBanner()" class="w-full sm:w-auto px-7 py-3.5 rounded-2xl bg-white/15 hover:bg-white/25 text-stone-200 hover:text-white text-xs sm:text-sm font-bold transition border border-white/20">
                     Lewati & Tutup
                 </button>
             </div>
 
             <!-- Checkbox Opsi Cerdas: Jangan Tampilkan Lagi Hari Ini -->
-            <div class="mt-3 pt-2 border-t border-white/10 flex items-center justify-center">
-                <label class="inline-flex items-center gap-2 text-[11px] text-stone-400 cursor-pointer hover:text-stone-300">
-                    <input type="checkbox" id="dont-show-again-checkbox" class="w-3.5 h-3.5 rounded text-pmr-primary bg-stone-800 border-stone-700 focus:ring-pmr-primary">
+            <div class="mt-4 pt-3 border-t border-white/10 flex items-center justify-center">
+                <label class="inline-flex items-center gap-2 text-xs sm:text-sm text-stone-400 cursor-pointer hover:text-stone-300">
+                    <input type="checkbox" id="dont-show-again-checkbox" class="w-4 h-4 rounded text-pmr-primary bg-stone-800 border-stone-700 focus:ring-pmr-primary">
                     <span>Jangan tampilkan lagi hari ini</span>
                 </label>
             </div>
