@@ -221,6 +221,93 @@
     </div>
 </section>
 
+<!-- Showcase Prestasi & Rekam Jejak Juara Section -->
+@if(isset($featuredAchievements) && $featuredAchievements->count() > 0)
+<section class="py-16 sm:py-24 bg-gradient-to-b from-stone-900 via-stone-950 to-stone-900 text-white relative overflow-hidden">
+    <!-- Glow ambient effects -->
+    <div class="absolute top-0 left-1/4 w-96 h-96 bg-amber-500/10 rounded-full blur-3xl pointer-events-none"></div>
+    <div class="absolute bottom-0 right-1/4 w-96 h-96 bg-red-600/10 rounded-full blur-3xl pointer-events-none"></div>
+
+    <div class="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="flex flex-col md:flex-row justify-between items-start md:items-end mb-10 sm:mb-14 gap-4">
+            <div>
+                <div class="inline-flex items-center gap-2 bg-amber-500/15 border border-amber-500/30 px-3.5 py-1.5 rounded-full text-[11px] font-bold text-amber-300 uppercase tracking-widest mb-3 shadow-inner">
+                    <i class="fa-solid fa-trophy text-amber-400"></i> Etalase Prestasi & Kejuaraan
+                </div>
+                <h2 class="text-2xl sm:text-4xl font-extrabold text-white tracking-tight leading-tight">
+                    Rekam Jejak Prestasi & Kebanggaan Relawan
+                </h2>
+                <p class="text-stone-300 text-xs sm:text-sm mt-2 max-w-2xl leading-relaxed">
+                    Dedikasi, ketangkasan, dan jiwa kemanusiaan anggota PMR Wira SMAN 1 Ciawi yang terbukti dalam berbagai ajang kejuaraan bergengsi.
+                </p>
+            </div>
+            <a href="{{ route('prestasi.index') }}" class="inline-flex items-center gap-2 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-stone-950 font-extrabold text-xs sm:text-sm px-6 py-3.5 rounded-xl shadow-lg shadow-amber-500/20 transition-all transform hover:-translate-y-0.5 whitespace-nowrap">
+                <span>Lihat Seluruh Prestasi</span>
+                <i class="fa-solid fa-arrow-right"></i>
+            </a>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 sm:gap-8">
+            @foreach($featuredAchievements as $ach)
+                <div class="group bg-stone-900/80 rounded-3xl overflow-hidden border border-amber-500/20 hover:border-amber-400/50 shadow-xl hover:shadow-2xl hover:shadow-amber-500/10 transition-all duration-300 flex flex-col">
+                    <!-- Image Wrapper -->
+                    <div class="relative h-56 sm:h-64 bg-stone-950 overflow-hidden">
+                        <img src="{{ $ach->trophy_image_url }}" alt="{{ $ach->title }}" class="w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-500">
+                        <div class="absolute inset-0 bg-gradient-to-t from-stone-950 via-stone-950/40 to-transparent"></div>
+                        
+                        <!-- Badges -->
+                        <div class="absolute top-3.5 left-3.5 flex flex-wrap gap-2">
+                            <span class="px-3 py-1 rounded-full text-[10px] font-extrabold uppercase tracking-wider {{ $ach->rank_badge_class }} shadow-lg">
+                                {{ $ach->rank }}
+                            </span>
+                            <span class="px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider bg-black/60 text-stone-200 backdrop-blur-md border border-white/10">
+                                {{ $ach->level }}
+                            </span>
+                        </div>
+
+                        <!-- Date Badge -->
+                        <div class="absolute bottom-3 left-4 text-xs text-stone-300 flex items-center gap-1.5 font-medium">
+                            <i class="fa-regular fa-calendar text-amber-400"></i>
+                            <span>{{ $ach->event_date->translatedFormat('d F Y') }}</span>
+                        </div>
+
+                        @if($ach->gallery_images && count($ach->gallery_images) > 0)
+                            <div class="absolute bottom-3 right-4 bg-black/60 backdrop-blur-md px-2.5 py-1 rounded-full text-[10px] font-bold text-amber-300 border border-amber-500/30 flex items-center gap-1">
+                                <i class="fa-solid fa-camera"></i>
+                                <span>{{ count($ach->gallery_images) }} Foto</span>
+                            </div>
+                        @endif
+                    </div>
+
+                    <!-- Content -->
+                    <div class="p-6 flex flex-col flex-grow">
+                        <div class="text-[11px] font-bold text-amber-400 uppercase tracking-widest mb-1.5">
+                            {{ $ach->event_name }}
+                        </div>
+                        <h3 class="text-base sm:text-lg font-bold text-white mb-2 leading-snug group-hover:text-amber-300 transition-colors">
+                            <a href="{{ route('prestasi.index') }}">{{ $ach->title }}</a>
+                        </h3>
+                        <p class="text-stone-400 text-xs leading-relaxed mb-4 line-clamp-2">
+                            {{ $ach->description }}
+                        </p>
+
+                        <!-- Organizer & Action -->
+                        <div class="pt-4 border-t border-stone-800/80 mt-auto flex items-center justify-between text-xs text-stone-400">
+                            <span class="truncate max-w-[180px]">
+                                <i class="fa-solid fa-building-columns text-stone-500 mr-1"></i> {{ $ach->organizer ?? 'PMR Wira SMAN 1 Ciawi' }}
+                            </span>
+                            <a href="{{ route('prestasi.index') }}" class="text-amber-400 group-hover:text-amber-300 font-bold flex items-center gap-1 hover:underline">
+                                Detail <i class="fa-solid fa-angle-right text-[10px]"></i>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            @endforeach
+        </div>
+    </div>
+</section>
+@endif
+
 <!-- Latest Articles Section (Matching Mockup 07) -->
 <section class="py-12 sm:py-20 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
     <div class="flex flex-col md:flex-row justify-between items-start md:items-end mb-8 sm:mb-12 gap-3 sm:gap-4">

@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Admin\AchievementController;
 use App\Http\Controllers\Admin\ActivityController;
 use App\Http\Controllers\Admin\AdvisorController;
 use App\Http\Controllers\Admin\ArticleController as AdminArticleController;
@@ -47,6 +48,7 @@ Route::get('/kegiatan/{slug}', [PageController::class, 'kegiatanShow'])->name('k
 Route::get('/galeri', [PageController::class, 'galeri'])->name('galeri');
 Route::get('/donor-darah', [PageController::class, 'donorDarah'])->name('donor-darah');
 Route::get('/kontak', [PageController::class, 'kontak'])->name('kontak');
+Route::get('/prestasi', [AchievementController::class, 'publicIndex'])->name('prestasi.index');
 Route::post('/daftar-anggota', [PageController::class, 'storeRegistration'])->name('daftar-anggota.store');
 Route::post('/donor-darah/daftar', [PageController::class, 'storeDonorRegistration'])->name('donor-darah.store');
 
@@ -148,6 +150,10 @@ Route::prefix('admin')->name('admin.')->group(function () {
 
         // Data Pembina
         Route::resource('advisors', AdvisorController::class);
+
+        // Prestasi & Penghargaan Organisasi
+        Route::resource('prestasi', AchievementController::class)->names('prestasi');
+        Route::post('/prestasi/{id}/toggle-featured', [AchievementController::class, 'toggleFeatured'])->name('prestasi.toggle-featured');
 
         // Data Anggota
         Route::delete('/members/destroy-multiple', [MemberController::class, 'destroyMultiple'])->name('members.destroy-multiple');
@@ -310,6 +316,9 @@ Route::get('/server-sync-update-pmr', function () {
         File::ensureDirectoryExists(storage_path('app/public/members'), 0755, true);
         File::ensureDirectoryExists(storage_path('app/public/competition_payments'), 0755, true);
         File::ensureDirectoryExists(storage_path('app/public/guidelines'), 0755, true);
+        File::ensureDirectoryExists(storage_path('app/public/achievements/trophies'), 0755, true);
+        File::ensureDirectoryExists(storage_path('app/public/achievements/gallery'), 0755, true);
+        File::ensureDirectoryExists(storage_path('app/public/achievements/certificates'), 0755, true);
 
         try {
             Artisan::call('storage:link');
@@ -323,6 +332,8 @@ Route::get('/server-sync-update-pmr', function () {
             File::copyDirectory(storage_path('app/public/advisors'), public_path('storage/advisors'));
             File::ensureDirectoryExists(public_path('storage/members'), 0755, true);
             File::copyDirectory(storage_path('app/public/members'), public_path('storage/members'));
+            File::ensureDirectoryExists(public_path('storage/achievements'), 0755, true);
+            File::copyDirectory(storage_path('app/public/achievements'), public_path('storage/achievements'));
         }
 
         // Sinkronisasi otomatis struktur bagan kepengurusan dari Data Anggota & Pembina
@@ -337,7 +348,7 @@ Route::get('/server-sync-update-pmr', function () {
         return response("<div style='font-family:sans-serif;padding:30px;max-width:600px;margin:auto;'>
             <h2 style='color:#059669;'>✅ Cache Server Berhasil Dibersihkan, Database Dimigrasi & Storage Symlink Disinkronkan!</h2>
             <pre style='background:#f1f5f9;padding:15px;border-radius:10px;font-size:12px;overflow:auto;'>".htmlspecialchars($output)."</pre>
-            <p><a href='/admin/advisors' style='display:inline-block;padding:10px 20px;background:#991b1b;color:white;text-decoration:none;border-radius:8px;font-weight:bold;margin-right:10px;'>Buka Data Pembina &rarr;</a>
+            <p><a href='/admin/prestasi' style='display:inline-block;padding:10px 20px;background:#f59e0b;color:#1e293b;text-decoration:none;border-radius:8px;font-weight:bold;margin-right:10px;'>Buka Kelola Prestasi &rarr;</a>
                <a href='/admin/members' style='display:inline-block;padding:10px 20px;background:#dc2626;color:white;text-decoration:none;border-radius:8px;font-weight:bold;'>Buka Data Anggota &rarr;</a></p>
         </div>");
     } catch (Throwable $e) {
@@ -349,31 +360,31 @@ Route::get('/server-sync-update-pmr', function () {
 });
 
 // Route Penyajian Langsung Berkas Storage (Anti 404 jika shared hosting / cPanel memblokir symlink)
-Route::get('/storage/{folder}/{filename}', function ($folder, $filename) {
-    $allowedFolders = ['advisors', 'members', 'competition_payments', 'galleries', 'donor-banners', 'broadcast_images', 'guidelines'];
-    if (! in_array($folder, $allowedFolders, true)) {
+Route::get('/storage/{path}', function ($path) {
+    $firstFolder = explode('/', $path)[0];
+    $allowedFolders = ['advisors', 'members', 'competition_payments', 'galleries', 'donor-banners', 'broadcast_images', 'guidelines', 'achievements'];
+    if (! in_array($firstFolder, $allowedFolders, true)) {
         abort(404);
     }
 
-    $safeFilename = basename($filename);
-    $path = storage_path("app/public/{$folder}/{$safeFilename}");
+    $fullPath = storage_path("app/public/{$path}");
 
-    if (! file_exists($path)) {
-        $publicFallback = public_path("storage/{$folder}/{$safeFilename}");
+    if (! file_exists($fullPath)) {
+        $publicFallback = public_path("storage/{$path}");
         if (file_exists($publicFallback)) {
-            $path = $publicFallback;
+            $fullPath = $publicFallback;
         } else {
             abort(404);
         }
     }
 
-    $mime = mime_content_type($path) ?: 'application/octet-stream';
+    $mime = mime_content_type($fullPath) ?: 'application/octet-stream';
 
-    return response()->file($path, [
+    return response()->file($fullPath, [
         'Content-Type' => $mime,
         'Cache-Control' => 'public, max-age=86400',
     ]);
-})->where('filename', '[A-Za-z0-9_\-\.]+');
+})->where('path', '.*');
 
 // Rute Publik Lomba PMR
 Route::prefix('lomba')->name('lomba.')->group(function () {

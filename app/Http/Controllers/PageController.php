@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Achievement;
 use App\Models\Activity;
 use App\Models\Advisor;
 use App\Models\Article;
@@ -40,7 +41,14 @@ class PageController extends Controller
         $activities = Activity::latest('event_date')->take(6)->get();
         $bloodStocks = BloodStock::all();
 
-        return view('pages.home', compact('heroSlides', 'featuredArticle', 'latestArticles', 'activities', 'bloodStocks'));
+        $featuredAchievements = Achievement::active()
+            ->orderByDesc('is_featured')
+            ->orderBy('order_position')
+            ->orderByDesc('event_date')
+            ->take(3)
+            ->get();
+
+        return view('pages.home', compact('heroSlides', 'featuredArticle', 'latestArticles', 'activities', 'bloodStocks', 'featuredAchievements'));
     }
 
     public function tentangKami()
