@@ -317,20 +317,43 @@
         <!-- Modal Body (Scrollable) -->
         <div class="p-6 overflow-y-auto space-y-6">
             
-            <!-- Foto Utama Piala -->
+            <!-- Foto Utama Piala / Preview Slider -->
             <div>
-                <div class="text-xs font-black uppercase tracking-wider text-slate-700 mb-2 flex items-center gap-1.5">
-                    <i class="fa-solid fa-trophy text-amber-500"></i> Dokumentasi Piala & Trofi Utama
+                <div class="text-xs font-black uppercase tracking-wider text-slate-700 mb-2 flex items-center justify-between">
+                    <span class="flex items-center gap-1.5">
+                        <i class="fa-solid fa-trophy text-amber-500"></i> Dokumentasi Piala & Galeri Foto
+                    </span>
+                    <span id="modal-photo-counter" class="text-[11px] font-bold text-slate-500 bg-slate-100 px-2.5 py-0.5 rounded-full border border-slate-200">
+                        1 / 1 Foto
+                    </span>
                 </div>
-                <div class="rounded-2xl overflow-hidden bg-stone-900 border border-slate-200">
-                    <img id="modal-trophy-img" src="" alt="Piala" class="w-full max-h-80 object-contain mx-auto">
+                <div class="relative group/mainphoto rounded-2xl overflow-hidden bg-stone-950 border border-slate-200 aspect-video sm:h-80 flex items-center justify-center">
+                    <img id="modal-trophy-img" src="" alt="Dokumentasi Prestasi" class="w-full h-full object-contain mx-auto cursor-pointer transition-all duration-300" onclick="openLightboxFromModal()">
+                    
+                    <!-- Overlay Tombol Panah Kiri di Modal -->
+                    <button type="button" id="modal-prev-btn" onclick="prevModalPhoto(event)" class="absolute left-2.5 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-black/60 hover:bg-black/90 text-white flex items-center justify-center transition shadow-lg opacity-80 hover:opacity-100 z-10 hidden" title="Foto Sebelumnya">
+                        <i class="fa-solid fa-chevron-left text-sm"></i>
+                    </button>
+                    <!-- Overlay Tombol Panah Kanan di Modal -->
+                    <button type="button" id="modal-next-btn" onclick="nextModalPhoto(event)" class="absolute right-2.5 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-black/60 hover:bg-black/90 text-white flex items-center justify-center transition shadow-lg opacity-80 hover:opacity-100 z-10 hidden" title="Foto Selanjutnya">
+                        <i class="fa-solid fa-chevron-right text-sm"></i>
+                    </button>
+
+                    <!-- Tombol Overlay Buka Layar Penuh -->
+                    <div onclick="openLightboxFromModal()" class="absolute bottom-2.5 right-2.5 bg-black/70 hover:bg-black/90 text-white text-[11px] font-bold px-3 py-1.5 rounded-xl flex items-center gap-1.5 cursor-pointer backdrop-blur-xs transition z-10 shadow-md">
+                        <i class="fa-solid fa-expand text-xs text-amber-300"></i>
+                        <span class="hidden sm:inline">Mode Slider Layar Penuh</span>
+                    </div>
                 </div>
             </div>
 
             <!-- Galeri Foto Momen Penyerahan Piala -->
             <div id="modal-gallery-section" class="hidden">
-                <div class="text-xs font-black uppercase tracking-wider text-slate-700 mb-2 flex items-center gap-1.5">
-                    <i class="fa-solid fa-images text-emerald-500"></i> Galeri Serah Terima Piala di Panggung
+                <div class="text-xs font-black uppercase tracking-wider text-slate-700 mb-2 flex items-center justify-between">
+                    <span class="flex items-center gap-1.5">
+                        <i class="fa-solid fa-images text-emerald-500"></i> Galeri Serah Terima Piala di Panggung
+                    </span>
+                    <span class="text-[10px] text-slate-400 font-semibold">Klik foto untuk membuka mode slider</span>
                 </div>
                 <div id="modal-gallery-container" class="grid grid-cols-2 sm:grid-cols-3 gap-3">
                     <!-- Dinamis via JS -->
@@ -374,26 +397,116 @@
     </div>
 </div>
 
+<!-- Fullscreen Lightbox Image Slider Modal (Z-Index 70) -->
+<div id="prestasi-lightbox" class="fixed inset-0 z-[70] bg-stone-950/95 backdrop-blur-lg hidden flex flex-col justify-between p-3 sm:p-6 select-none animate-in fade-in duration-200">
+    
+    <!-- Lightbox Top Bar -->
+    <div class="flex items-center justify-between text-white py-2 px-2 sm:px-4 z-20">
+        <div class="flex items-center gap-3">
+            <span id="lb-counter" class="bg-white/15 px-3 py-1 rounded-full text-xs font-black tracking-wider text-amber-300 border border-white/10">
+                1 / 1
+            </span>
+            <div class="min-w-0">
+                <div id="lb-title" class="text-xs sm:text-sm font-bold text-white truncate max-w-[200px] sm:max-w-md"></div>
+                <div id="lb-subtitle" class="text-[10px] sm:text-xs text-stone-400 truncate"></div>
+            </div>
+        </div>
+        <div class="flex items-center gap-2">
+            <button type="button" onclick="closePrestasiLightbox()" class="w-10 h-10 rounded-full bg-white/10 hover:bg-white/20 text-white flex items-center justify-center transition text-lg active:scale-95" title="Tutup Slider (Esc)">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+        </div>
+    </div>
+
+    <!-- Lightbox Main Stage (With Left and Right navigation buttons) -->
+    <div class="relative flex-grow flex items-center justify-center px-2 sm:px-16 my-auto overflow-hidden" onclick="handleLightboxBackdropClick(event)">
+        
+        <!-- Tombol Panah Kiri (Prev) -->
+        <button type="button" id="lb-prev-btn" onclick="lightboxPrev(event)" class="absolute left-2 sm:left-4 top-1/2 -translate-y-1/2 w-12 h-12 sm:w-14 sm:h-14 rounded-full bg-white/15 hover:bg-white text-white hover:text-stone-950 backdrop-blur-md flex items-center justify-center transition-all duration-200 text-lg sm:text-xl shadow-2xl z-30 active:scale-95 border border-white/20" title="Foto Sebelumnya (Panah Kiri)">
+            <i class="fa-solid fa-chevron-left"></i>
+        </button>
+
+        <!-- Container Gambar Utama dengan Efek Transisi Halus -->
+        <div class="max-w-5xl max-h-[70vh] w-full flex items-center justify-center p-2">
+            <img id="lb-image" src="" alt="Galeri Prestasi" class="max-h-[68vh] max-w-full w-auto h-auto rounded-2xl shadow-2xl object-contain transition-all duration-200">
+        </div>
+
+        <!-- Tombol Panah Kanan (Next) -->
+        <button type="button" id="lb-next-btn" onclick="lightboxNext(event)" class="absolute right-2 sm:right-4 top-1/2 -translate-y-1/2 w-12 h-12 sm:w-14 sm:h-14 rounded-full bg-white/15 hover:bg-white text-white hover:text-stone-950 backdrop-blur-md flex items-center justify-center transition-all duration-200 text-lg sm:text-xl shadow-2xl z-30 active:scale-95 border border-white/20" title="Foto Selanjutnya (Panah Kanan)">
+            <i class="fa-solid fa-chevron-right"></i>
+        </button>
+    </div>
+
+    <!-- Lightbox Bottom Thumbnail Bar -->
+    <div class="py-2 px-2 z-20">
+        <div id="lb-thumbnails" class="flex items-center justify-center gap-2 overflow-x-auto py-2 max-w-3xl mx-auto">
+            <!-- Dinamis via JS -->
+        </div>
+    </div>
+</div>
+
 @push('scripts')
 <script>
+    let currentAchievementPhotos = [];
+    let currentPhotoIndex = 0;
+    let currentAchievementData = null;
+
     function openAchievementModal(data) {
+        currentAchievementData = data;
         document.getElementById('modal-title').textContent = data.title;
         document.getElementById('modal-event').textContent = data.event_name + (data.organizer ? ' • ' + data.organizer : '') + ' • ' + data.event_date;
         document.getElementById('modal-rank-badge').textContent = data.rank;
         document.getElementById('modal-level-badge').textContent = 'Tingkat ' + data.level;
-        document.getElementById('modal-trophy-img').src = data.trophy_image_url;
 
-        // Galeri
+        // Kumpulkan semua foto ke dalam array slide
+        currentAchievementPhotos = [];
+        if (data.trophy_image_url) {
+            currentAchievementPhotos.push({
+                url: data.trophy_image_url,
+                caption: 'Trofi & Piala Utama',
+                type: 'trophy'
+            });
+        }
+        if (data.gallery_urls && Array.isArray(data.gallery_urls)) {
+            data.gallery_urls.forEach((url, i) => {
+                currentAchievementPhotos.push({
+                    url: url,
+                    caption: `Dokumentasi Penyerahan Piala #${i + 1}`,
+                    type: 'gallery'
+                });
+            });
+        }
+
+        currentPhotoIndex = 0;
+        renderModalPhoto(0);
+
+        // Render Thumbnail Galeri di Modal
         const gallerySection = document.getElementById('modal-gallery-section');
         const galleryContainer = document.getElementById('modal-gallery-container');
         galleryContainer.innerHTML = '';
+
         if (data.gallery_urls && data.gallery_urls.length > 0) {
-            data.gallery_urls.forEach(url => {
-                const imgWrap = document.createElement('div');
-                imgWrap.className = 'rounded-xl overflow-hidden border border-slate-200 h-28 bg-stone-100 cursor-pointer hover:opacity-90 transition';
-                imgWrap.onclick = function() { window.open(url, '_blank'); };
-                imgWrap.innerHTML = `<img src="${url}" class="w-full h-full object-cover">`;
-                galleryContainer.appendChild(imgWrap);
+            data.gallery_urls.forEach((url, index) => {
+                const slideIndex = data.trophy_image_url ? (index + 1) : index;
+                
+                const card = document.createElement('div');
+                card.className = 'group relative rounded-xl overflow-hidden border-2 border-slate-200 h-28 bg-stone-900 cursor-pointer hover:border-amber-400 hover:shadow-lg transition-all duration-200';
+                card.onclick = function() {
+                    openPrestasiLightbox(slideIndex);
+                };
+
+                card.innerHTML = `
+                    <img src="${url}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300">
+                    <div class="absolute inset-0 bg-black/30 group-hover:bg-black/10 transition-colors flex items-center justify-center">
+                        <div class="w-8 h-8 rounded-full bg-white/90 group-hover:bg-white text-stone-900 flex items-center justify-center text-xs opacity-0 group-hover:opacity-100 transition shadow-md">
+                            <i class="fa-solid fa-magnifying-glass-plus"></i>
+                        </div>
+                    </div>
+                    <div class="absolute bottom-1 right-1 bg-black/70 text-white text-[9px] font-bold px-1.5 py-0.5 rounded">
+                        Foto ${index + 1}
+                    </div>
+                `;
+                galleryContainer.appendChild(card);
             });
             gallerySection.classList.remove('hidden');
         } else {
@@ -440,9 +553,186 @@
         document.body.style.overflow = 'hidden';
     }
 
+    function renderModalPhoto(index) {
+        if (!currentAchievementPhotos || currentAchievementPhotos.length === 0) return;
+        if (index < 0) index = currentAchievementPhotos.length - 1;
+        if (index >= currentAchievementPhotos.length) index = 0;
+        currentPhotoIndex = index;
+
+        const photo = currentAchievementPhotos[currentPhotoIndex];
+        const mainImg = document.getElementById('modal-trophy-img');
+        if (photo) {
+            mainImg.src = photo.url;
+        }
+
+        // Update Counter
+        const counterEl = document.getElementById('modal-photo-counter');
+        if (counterEl) {
+            counterEl.textContent = `${currentPhotoIndex + 1} / ${currentAchievementPhotos.length} Foto`;
+        }
+
+        // Tampilkan tombol navigasi modal jika foto > 1
+        const prevBtn = document.getElementById('modal-prev-btn');
+        const nextBtn = document.getElementById('modal-next-btn');
+        if (currentAchievementPhotos.length > 1) {
+            prevBtn?.classList.remove('hidden');
+            nextBtn?.classList.remove('hidden');
+        } else {
+            prevBtn?.classList.add('hidden');
+            nextBtn?.classList.add('hidden');
+        }
+    }
+
+    function prevModalPhoto(e) {
+        if (e) e.stopPropagation();
+        renderModalPhoto(currentPhotoIndex - 1);
+    }
+
+    function nextModalPhoto(e) {
+        if (e) e.stopPropagation();
+        renderModalPhoto(currentPhotoIndex + 1);
+    }
+
+    function openLightboxFromModal() {
+        openPrestasiLightbox(currentPhotoIndex);
+    }
+
+    // Lightbox Slider Functions
+    function openPrestasiLightbox(startIndex = 0) {
+        if (!currentAchievementPhotos || currentAchievementPhotos.length === 0) return;
+        currentPhotoIndex = startIndex;
+        if (currentPhotoIndex < 0) currentPhotoIndex = 0;
+        if (currentPhotoIndex >= currentAchievementPhotos.length) currentPhotoIndex = currentAchievementPhotos.length - 1;
+
+        renderLightboxSlide();
+
+        const lb = document.getElementById('prestasi-lightbox');
+        lb.classList.remove('hidden');
+    }
+
+    function renderLightboxSlide() {
+        const photo = currentAchievementPhotos[currentPhotoIndex];
+        if (!photo) return;
+
+        const imgEl = document.getElementById('lb-image');
+        imgEl.src = photo.url;
+        document.getElementById('lb-counter').textContent = `${currentPhotoIndex + 1} / ${currentAchievementPhotos.length} Foto`;
+        
+        if (currentAchievementData) {
+            document.getElementById('lb-title').textContent = currentAchievementData.title;
+            document.getElementById('lb-subtitle').textContent = photo.caption + ' • ' + currentAchievementData.event_name;
+        }
+
+        // Tampilkan tombol prev/next jika foto > 1
+        const prevBtn = document.getElementById('lb-prev-btn');
+        const nextBtn = document.getElementById('lb-next-btn');
+        if (currentAchievementPhotos.length > 1) {
+            prevBtn?.classList.remove('hidden');
+            nextBtn?.classList.remove('hidden');
+        } else {
+            prevBtn?.classList.add('hidden');
+            nextBtn?.classList.add('hidden');
+        }
+
+        // Render Thumbnails bar di bawah
+        const thumbContainer = document.getElementById('lb-thumbnails');
+        thumbContainer.innerHTML = '';
+        currentAchievementPhotos.forEach((item, idx) => {
+            const thumb = document.createElement('div');
+            const isActive = idx === currentPhotoIndex;
+            thumb.className = `w-14 h-14 sm:w-16 sm:h-16 rounded-xl overflow-hidden cursor-pointer transition-all duration-200 border-2 flex-shrink-0 ${
+                isActive ? 'border-amber-400 scale-105 ring-2 ring-amber-400/50' : 'border-white/20 opacity-60 hover:opacity-100 hover:border-white/60'
+            }`;
+            thumb.onclick = function() {
+                currentPhotoIndex = idx;
+                renderLightboxSlide();
+            };
+            thumb.innerHTML = `<img src="${item.url}" class="w-full h-full object-cover">`;
+            thumbContainer.appendChild(thumb);
+        });
+
+        // Sinkronkan foto modal di belakangnya
+        renderModalPhoto(currentPhotoIndex);
+    }
+
+    function lightboxPrev(e) {
+        if (e) e.stopPropagation();
+        if (currentAchievementPhotos.length <= 1) return;
+        currentPhotoIndex = (currentPhotoIndex - 1 + currentAchievementPhotos.length) % currentAchievementPhotos.length;
+        renderLightboxSlide();
+    }
+
+    function lightboxNext(e) {
+        if (e) e.stopPropagation();
+        if (currentAchievementPhotos.length <= 1) return;
+        currentPhotoIndex = (currentPhotoIndex + 1) % currentAchievementPhotos.length;
+        renderLightboxSlide();
+    }
+
+    function closePrestasiLightbox() {
+        document.getElementById('prestasi-lightbox').classList.add('hidden');
+    }
+
+    function handleLightboxBackdropClick(e) {
+        if (e.target.id === 'lb-image') return;
+        if (e.target.closest('#lb-prev-btn') || e.target.closest('#lb-next-btn')) return;
+        closePrestasiLightbox();
+    }
+
     function closeAchievementModal() {
+        closePrestasiLightbox();
         document.getElementById('achievement-modal').classList.add('hidden');
         document.body.style.overflow = 'auto';
+    }
+
+    // Keyboard & Gesture Navigation
+    document.addEventListener('keydown', function(e) {
+        const lb = document.getElementById('prestasi-lightbox');
+        const modal = document.getElementById('achievement-modal');
+
+        if (lb && !lb.classList.contains('hidden')) {
+            if (e.key === 'ArrowLeft') {
+                lightboxPrev();
+            } else if (e.key === 'ArrowRight') {
+                lightboxNext();
+            } else if (e.key === 'Escape') {
+                closePrestasiLightbox();
+            }
+        } else if (modal && !modal.classList.contains('hidden')) {
+            if (e.key === 'ArrowLeft') {
+                prevModalPhoto();
+            } else if (e.key === 'ArrowRight') {
+                nextModalPhoto();
+            } else if (e.key === 'Escape') {
+                closeAchievementModal();
+            }
+        }
+    });
+
+    // Touch Swipe Support for Mobile
+    let touchStartX = 0;
+    let touchEndX = 0;
+    const lbStage = document.getElementById('prestasi-lightbox');
+    if (lbStage) {
+        lbStage.addEventListener('touchstart', function(e) {
+            touchStartX = e.changedTouches[0].screenX;
+        }, { passive: true });
+
+        lbStage.addEventListener('touchend', function(e) {
+            touchEndX = e.changedTouches[0].screenX;
+            handleTouchGesture();
+        }, { passive: true });
+    }
+
+    function handleTouchGesture() {
+        const deltaX = touchEndX - touchStartX;
+        if (Math.abs(deltaX) > 40) {
+            if (deltaX < 0) {
+                lightboxNext();
+            } else {
+                lightboxPrev();
+            }
+        }
     }
 </script>
 @endpush
