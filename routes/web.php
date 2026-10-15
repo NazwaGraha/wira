@@ -33,7 +33,6 @@ use App\Services\OrganizationSyncService;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Route;
-use Illuminate\View\View;
 
 /*
 |--------------------------------------------------------------------------
@@ -380,22 +379,6 @@ Route::get('/server-sync-update-pmr', function () {
             <h2>❌ Terjadi Kendala:</h2>
             <pre style='background:#fef2f2;padding:15px;border-radius:10px;font-size:12px;overflow:auto;'>".htmlspecialchars($e->getMessage()).'</pre>
         </div>', 500);
-    }
-});
-
-Route::get('/debug-home-test', function () {
-    try {
-        $controller = app(PageController::class);
-        $response = $controller->home();
-        if ($response instanceof View) {
-            $html = $response->render();
-
-            return response('OK: Home rendered successfully, length: '.strlen($html).' bytes');
-        }
-
-        return response('OK: Home returned '.get_class($response));
-    } catch (Throwable $e) {
-        return response("ERROR: {$e->getMessage()} in {$e->getFile()}:{$e->getLine()}\n\n{$e->getTraceAsString()}", 500, ['Content-Type' => 'text/plain']);
     }
 });
 
