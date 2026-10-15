@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Controllers\Admin\AchievementController;
+use App\Http\Controllers\Admin\PopupBannerController;
 use App\Models\Achievement;
 use App\Models\Activity;
 use App\Models\Advisor;
@@ -60,8 +61,24 @@ class PageController extends Controller
 
         $activePopupBanner = null;
         try {
+            PopupBannerController::ensureTableExists();
             if (Schema::hasTable('popup_banners')) {
+                if (PopupBanner::count() === 0) {
+                    PopupBanner::create([
+                        'title' => 'Lomba Ketangkasan PMR Wira 2026 - Sua Bhakti Berkarya',
+                        'image_path' => '/mockups/mockup_popup_banner_publik.png',
+                        'target_url' => '/lomba',
+                        'button_text' => 'Info Lebih Lanjut',
+                        'open_in_new_tab' => false,
+                        'is_active' => true,
+                    ]);
+                }
+
                 $activePopupBanner = PopupBanner::currentlyActive()->latest()->first();
+
+                if (! $activePopupBanner) {
+                    $activePopupBanner = PopupBanner::where('is_active', true)->latest()->first();
+                }
             }
         } catch (\Throwable $e) {
             $activePopupBanner = null;

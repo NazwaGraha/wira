@@ -35,7 +35,7 @@
                 </div>
             @endif
 
-            <a href="{{ route('home') }}" target="_blank" class="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-slate-900 hover:bg-stone-800 text-white text-xs font-bold transition shadow-sm">
+            <a href="{{ route('home') }}?show_popup=1" target="_blank" class="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-slate-900 hover:bg-stone-800 text-white text-xs font-bold transition shadow-sm">
                 <i class="fa-solid fa-arrow-up-right-from-square text-xs"></i>
                 <span>Lihat Beranda Publik</span>
             </a>

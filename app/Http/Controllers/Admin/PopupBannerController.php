@@ -53,22 +53,24 @@ class PopupBannerController extends Controller
         $validated = $request->validate([
             'title' => 'required|string|max:255',
             'image' => ($banner ? 'nullable' : 'required').'|image|mimes:jpeg,png,jpg,webp|max:5120',
-            'target_url' => 'nullable|url|max:500',
+            'target_url' => 'nullable|string|max:500',
             'button_text' => 'nullable|string|max:100',
             'open_in_new_tab' => 'nullable|boolean',
             'start_date' => 'nullable|date',
             'end_date' => 'nullable|date|after_or_equal:start_date',
-            'is_active' => 'nullable|boolean',
+            'is_active' => 'nullable',
         ]);
+
+        $targetUrl = ! empty($validated['target_url']) ? trim($validated['target_url']) : null;
 
         $data = [
             'title' => $validated['title'],
-            'target_url' => $validated['target_url'] ?? null,
+            'target_url' => $targetUrl,
             'button_text' => $validated['button_text'] ?: 'Info Lebih Lanjut',
             'open_in_new_tab' => $request->has('open_in_new_tab'),
             'start_date' => $validated['start_date'] ?? null,
             'end_date' => $validated['end_date'] ?? null,
-            'is_active' => $request->has('is_active'),
+            'is_active' => $request->has('is_active') || $request->input('is_active') == '1' || ! $request->has('id'),
         ];
 
         // Jika upload gambar baru
@@ -186,6 +188,19 @@ class PopupBannerController extends Controller
                 $table->unsignedInteger('clicks_count')->default(0);
                 $table->timestamps();
             });
+
+            try {
+                PopupBanner::create([
+                    'title' => 'Lomba Ketangkasan PMR Wira 2026 - Sua Bhakti Berkarya',
+                    'image_path' => '/mockups/mockup_popup_banner_publik.png',
+                    'target_url' => '/lomba',
+                    'button_text' => 'Info Lebih Lanjut',
+                    'open_in_new_tab' => false,
+                    'is_active' => true,
+                ]);
+            } catch (\Throwable $e) {
+                // Ignore
+            }
         }
     }
 }

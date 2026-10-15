@@ -4,7 +4,6 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Support\Facades\Storage;
 
 class PopupBanner extends Model
 {
@@ -38,13 +37,20 @@ class PopupBanner extends Model
     public function scopeCurrentlyActive($query)
     {
         $now = now();
+        $today = now()->format('Y-m-d');
 
         return $query->where('is_active', true)
-            ->where(function ($q) use ($now) {
-                $q->whereNull('start_date')->orWhere('start_date', '<=', $now);
+            ->where(function ($q) use ($now, $today) {
+                $q->whereNull('start_date')
+                    ->orWhere('start_date', '<=', $now)
+                    ->orWhereDate('start_date', '<=', $today)
+                    ->orWhere('start_date', '<=', $now->copy()->addHours(14));
             })
-            ->where(function ($q) use ($now) {
-                $q->whereNull('end_date')->orWhere('end_date', '>=', $now);
+            ->where(function ($q) use ($now, $today) {
+                $q->whereNull('end_date')
+                    ->orWhere('end_date', '>=', $now)
+                    ->orWhereDate('end_date', '>=', $today)
+                    ->orWhere('end_date', '>=', $now->copy()->subHours(14));
             });
     }
 
@@ -61,7 +67,11 @@ class PopupBanner extends Model
             return $this->image_path;
         }
 
-        return Storage::url($this->image_path);
+        if (str_starts_with($this->image_path, '/')) {
+            return asset(ltrim($this->image_path, '/'));
+        }
+
+        return asset('storage/'.ltrim($this->image_path, '/'));
     }
 
     /**

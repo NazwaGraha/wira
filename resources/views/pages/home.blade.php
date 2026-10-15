@@ -508,7 +508,16 @@
             const now = new Date().getTime();
             const oneDay = 24 * 60 * 60 * 1000;
 
-            if (!lastClosed || (now - parseInt(lastClosed)) > oneDay) {
+            const urlParams = new URLSearchParams(window.location.search);
+            const forceShow = urlParams.has('show_popup') || urlParams.has('popup') || urlParams.has('preview');
+
+            @auth
+            const shouldShow = true;
+            @else
+            const shouldShow = forceShow || (!lastClosed || (now - parseInt(lastClosed)) > oneDay);
+            @endauth
+
+            if (shouldShow) {
                 setTimeout(() => {
                     const modal = document.getElementById('home-popup-banner-modal');
                     if (modal) {
@@ -543,9 +552,6 @@
     }
 
     function recordPopupClick() {
-        @if(isset($activePopupBanner) && $activePopupBanner)
-            localStorage.setItem('pmr_popup_closed_{{ $activePopupBanner->id }}', new Date().getTime().toString());
-        @endif
         closeHomePopupBanner();
     }
 </script>
