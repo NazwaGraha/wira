@@ -75,7 +75,12 @@ class ExampleTest extends TestCase
         $response = $this->get('/tentang-kami/pedoman');
         $response->assertRedirect(route('pedoman-organisasi'));
 
-        // 11. Admin Login Page
+        // 11. Prestasi & Rekam Jejak Juara
+        $response = $this->get('/prestasi');
+        $response->assertStatus(200);
+        $response->assertSee('Jejak Prestasi');
+
+        // 12. Admin Login Page
         $response = $this->get('/admin/login');
         $response->assertStatus(200);
     }
@@ -88,6 +93,11 @@ class ExampleTest extends TestCase
         $response = $this->actingAs($user)->get('/admin/dashboard');
         $response->assertStatus(200);
         $response->assertSee('Ringkasan Dashboard CMS');
+
+        // Access admin prestasi
+        $response = $this->actingAs($user)->get('/admin/prestasi');
+        $response->assertStatus(200);
+        $response->assertSee('Manajemen Prestasi');
 
         // Access articles list
         $response = $this->actingAs($user)->get('/admin/artikel');

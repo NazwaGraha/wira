@@ -127,11 +127,15 @@ class AchievementController extends Controller
         }
 
         // Daftar tahun untuk filter
-        $availableYears = Achievement::selectRaw('YEAR(event_date) as yr')
-            ->distinct()
-            ->orderBy('yr', 'desc')
-            ->pluck('yr')
-            ->toArray();
+        $availableYears = Achievement::query()
+            ->whereNotNull('event_date')
+            ->pluck('event_date')
+            ->map(fn ($d) => is_string($d) ? substr($d, 0, 4) : $d->format('Y'))
+            ->filter()
+            ->unique()
+            ->sortDesc()
+            ->values()
+            ->all();
 
         return view('admin.achievements.index', compact(
             'achievements',
@@ -432,7 +436,15 @@ class AchievementController extends Controller
         $totalNasional = Achievement::active()->where('level', 'Nasional')->count();
 
         // Daftar tahun yang ada prestasi
-        $yearsList = Achievement::active()->selectRaw('YEAR(event_date) as yr')->distinct()->orderBy('yr', 'desc')->pluck('yr')->toArray();
+        $yearsList = Achievement::active()
+            ->whereNotNull('event_date')
+            ->pluck('event_date')
+            ->map(fn ($d) => is_string($d) ? substr($d, 0, 4) : $d->format('Y'))
+            ->filter()
+            ->unique()
+            ->sortDesc()
+            ->values()
+            ->all();
 
         // Prestasi unggulan untuk carousel / spotlight (jika ada)
         $featuredAchievements = Achievement::active()->featured()->orderBy('order_position', 'asc')->take(3)->get();
