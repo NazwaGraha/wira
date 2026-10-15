@@ -414,10 +414,16 @@
                     </a>
                 @endif
 
-                <!-- Tombol Lewati & Tutup -->
-                <button type="button" onclick="closeHomePopupBanner()" class="w-full sm:w-auto px-7 py-3.5 rounded-2xl bg-white/15 hover:bg-white/25 text-stone-200 hover:text-white text-xs sm:text-sm font-bold transition border border-white/20">
-                    Lewati & Tutup
+                <!-- Tombol Lewati & Tutup (Dengan Countdown Otomatis 30 Detik) -->
+                <button type="button" onclick="closeHomePopupBanner()" class="w-full sm:w-auto px-7 py-3.5 rounded-2xl bg-white/15 hover:bg-white/25 text-stone-200 hover:text-white text-xs sm:text-sm font-bold transition border border-white/20 inline-flex items-center justify-center gap-2.5">
+                    <span>Lewati & Tutup</span>
+                    <span id="popup-auto-close-timer" class="text-[11px] px-2 py-0.5 rounded-full bg-white/20 text-white font-mono font-bold" title="Otomatis tertutup dalam 30 detik">30s</span>
                 </button>
+            </div>
+
+            <!-- Progress Bar Indikator 30 Detik -->
+            <div class="w-full bg-white/10 h-1 rounded-full overflow-hidden mt-3" title="Otomatis tertutup dalam 30 detik">
+                <div id="popup-progress-bar" class="h-full bg-gradient-to-r from-amber-400 to-amber-500 transition-all duration-1000 ease-linear" style="width: 100%;"></div>
             </div>
 
             <!-- Checkbox Opsi Cerdas: Jangan Tampilkan Lagi Hari Ini -->
@@ -500,7 +506,7 @@
     document.addEventListener('DOMContentLoaded', () => {
         startAutoSlide();
 
-        // Popup Banner Logic (Auto Delay & Dismiss)
+        // Popup Banner Logic (Auto Delay, 30s Auto Dismiss & Tracking)
         @if(isset($activePopupBanner) && $activePopupBanner)
             const popupBannerId = {{ $activePopupBanner->id }};
             const storageKey = 'pmr_popup_closed_' + popupBannerId;
@@ -522,6 +528,7 @@
                     const modal = document.getElementById('home-popup-banner-modal');
                     if (modal) {
                         modal.classList.remove('hidden');
+                        startPopupAutoCloseTimer();
                         
                         // Kirim impression tracking secara silent via background fetch
                         fetch("{{ route('popup-banner.impression', $activePopupBanner->id) }}", {
@@ -537,7 +544,46 @@
         @endif
     });
 
+    let popupAutoCloseTimer = null;
+    let popupSecondsRemaining = 30;
+
+    function startPopupAutoCloseTimer() {
+        clearPopupAutoCloseTimer();
+        popupSecondsRemaining = 30;
+        updatePopupTimerDisplay();
+
+        popupAutoCloseTimer = setInterval(() => {
+            popupSecondsRemaining--;
+            updatePopupTimerDisplay();
+
+            if (popupSecondsRemaining <= 0) {
+                clearPopupAutoCloseTimer();
+                closeHomePopupBanner();
+            }
+        }, 1000);
+    }
+
+    function updatePopupTimerDisplay() {
+        const timerBadge = document.getElementById('popup-auto-close-timer');
+        const progressBar = document.getElementById('popup-progress-bar');
+        if (timerBadge) {
+            timerBadge.textContent = Math.max(0, popupSecondsRemaining) + 's';
+        }
+        if (progressBar) {
+            const pct = Math.max(0, (popupSecondsRemaining / 30) * 100);
+            progressBar.style.width = pct + '%';
+        }
+    }
+
+    function clearPopupAutoCloseTimer() {
+        if (popupAutoCloseTimer) {
+            clearInterval(popupAutoCloseTimer);
+            popupAutoCloseTimer = null;
+        }
+    }
+
     function closeHomePopupBanner() {
+        clearPopupAutoCloseTimer();
         const modal = document.getElementById('home-popup-banner-modal');
         if (modal) {
             modal.classList.add('hidden');
@@ -552,6 +598,7 @@
     }
 
     function recordPopupClick() {
+        clearPopupAutoCloseTimer();
         closeHomePopupBanner();
     }
 </script>
