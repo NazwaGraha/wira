@@ -46,7 +46,7 @@ class AchievementController extends Controller
                     $table->text('description')->nullable();
                     $table->string('trophy_image')->nullable();
                     $table->json('gallery_images')->nullable();
-                    $table->string('certificate')->nullable();
+                    $table->string('certificate_file')->nullable();
                     $table->boolean('is_featured')->default(false);
                     $table->boolean('is_active')->default(true);
                     $table->unsignedSmallInteger('order_position')->default(0);
@@ -156,11 +156,31 @@ class AchievementController extends Controller
      */
     public function create()
     {
-        $members = [];
+        self::ensureTableExists();
+
+        $members = collect();
         if (Schema::hasTable('members')) {
-            $members = Member::where(function ($q) {
-                $q->whereNull('position')->orWhere('position', 'not like', '%Pembina%');
-            })->where('member_status', 'Aktif')->orderBy('name')->get(['id', 'name', 'class_grade', 'nri', 'nis']);
+            try {
+                $query = Member::query();
+                if (Schema::hasColumn('members', 'position')) {
+                    $query->where(function ($q) {
+                        $q->whereNull('position')->orWhere('position', 'not like', '%Pembina%');
+                    });
+                }
+                if (Schema::hasColumn('members', 'member_status')) {
+                    $query->where('member_status', 'Aktif');
+                }
+                $cols = ['id', 'name'];
+                if (Schema::hasColumn('members', 'class_grade')) {
+                    $cols[] = 'class_grade';
+                }
+                if (Schema::hasColumn('members', 'nri')) {
+                    $cols[] = 'nri';
+                }
+                $members = $query->orderBy('name')->get($cols);
+            } catch (\Throwable $e) {
+                $members = collect();
+            }
         }
 
         return view('admin.achievements.create', compact('members'));
@@ -250,11 +270,31 @@ class AchievementController extends Controller
      */
     public function edit(Achievement $prestasi)
     {
-        $members = [];
+        self::ensureTableExists();
+
+        $members = collect();
         if (Schema::hasTable('members')) {
-            $members = Member::where(function ($q) {
-                $q->whereNull('position')->orWhere('position', 'not like', '%Pembina%');
-            })->where('member_status', 'Aktif')->orderBy('name')->get(['id', 'name', 'class_grade', 'nri', 'nis']);
+            try {
+                $query = Member::query();
+                if (Schema::hasColumn('members', 'position')) {
+                    $query->where(function ($q) {
+                        $q->whereNull('position')->orWhere('position', 'not like', '%Pembina%');
+                    });
+                }
+                if (Schema::hasColumn('members', 'member_status')) {
+                    $query->where('member_status', 'Aktif');
+                }
+                $cols = ['id', 'name'];
+                if (Schema::hasColumn('members', 'class_grade')) {
+                    $cols[] = 'class_grade';
+                }
+                if (Schema::hasColumn('members', 'nri')) {
+                    $cols[] = 'nri';
+                }
+                $members = $query->orderBy('name')->get($cols);
+            } catch (\Throwable $e) {
+                $members = collect();
+            }
         }
 
         return view('admin.achievements.edit', [

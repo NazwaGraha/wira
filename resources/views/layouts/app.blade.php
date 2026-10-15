@@ -108,39 +108,53 @@
         </div>
     @endif
 
-    <!-- Main Navigation Header (Lebar Penuh & Mewah) -->
+    <!-- Main Navigation Header (Ramping, Mewah & Mobile-First) -->
     <header class="sticky top-0 z-50 bg-pmr-primary text-white shadow-xl border-b border-pmr-dark">
-        <div class="w-full max-w-[1720px] mx-auto px-3 sm:px-8 lg:px-12">
-            <div class="flex items-center justify-between h-16 sm:h-24 lg:h-28 gap-2">
+        <div class="w-full max-w-[1720px] mx-auto px-3 sm:px-6 lg:px-10">
+            <div class="flex items-center justify-between h-16 sm:h-20 lg:h-22 gap-2 sm:gap-4">
                 
-                <!-- Logo & School Brand (Responsif & Rapi di Mobile Maupun Desktop) -->
-                <a href="{{ route('home') }}" class="flex items-center gap-2 sm:gap-3.5 group min-w-0 flex-1 sm:flex-initial">
-                    <div class="h-11 sm:h-16 lg:h-20 bg-white rounded-xl sm:rounded-2xl px-2 sm:px-3.5 py-1 flex items-center justify-center shadow-lg group-hover:scale-105 transition-transform duration-200 flex-shrink-0">
-                        <img src="{{ asset('images/logo.png') }}" alt="Logo PMR Wira SMAN 1 Ciawi & PMI" class="h-8 sm:h-12 lg:h-16 w-auto object-contain">
+                <!-- Logo & Brand Identity (Proporsional & Bebas Truncate / Ellipsis) -->
+                <a href="{{ route('home') }}" class="flex items-center gap-2.5 sm:gap-3.5 group min-w-0 flex-shrink-0">
+                    <div class="h-10 sm:h-12 lg:h-14 bg-white rounded-xl sm:rounded-2xl px-2 sm:px-3 py-1 flex items-center justify-center shadow-md group-hover:scale-105 transition-transform duration-200 flex-shrink-0">
+                        <img src="{{ asset('images/logo.png') }}" alt="Logo PMR Wira SMAN 1 Ciawi & PMI" class="h-7 sm:h-9 lg:h-11 w-auto object-contain">
                     </div>
-                    <div class="min-w-0">
-                        <div class="font-black text-xs sm:text-lg lg:text-2xl tracking-tight leading-tight uppercase group-hover:text-red-100 transition truncate">
-                            PMR WIRA SMAN 1 CIAWI
+                    <div class="flex flex-col justify-center min-w-0">
+                        <!-- Tampilan di Mobile (< 640px): Tegas & Tanpa Truncate -->
+                        <div class="block sm:hidden">
+                            <span class="font-black text-sm text-white tracking-tight leading-tight uppercase block whitespace-nowrap">
+                                PMR WIRA
+                            </span>
+                            <span class="text-[10px] text-red-200 font-bold tracking-normal leading-none block whitespace-nowrap">
+                                SMAN 1 Ciawi
+                            </span>
                         </div>
-                        <div class="text-[9px] sm:text-xs lg:text-sm font-semibold text-red-200 tracking-wider truncate">
-                            RAGANA DWI PANTARA 2026/2027
+
+                        <!-- Tampilan di Tablet & Desktop (>= 640px) -->
+                        <div class="hidden sm:block">
+                            <div class="font-black text-base lg:text-xl text-white tracking-tight leading-tight uppercase group-hover:text-red-100 transition whitespace-nowrap">
+                                PMR WIRA SMAN 1 CIAWI
+                            </div>
+                            <div class="text-[10px] lg:text-xs font-semibold text-red-200 tracking-wider whitespace-nowrap">
+                                Unit Relawan Siswa &bull; Masa Bakti 2026/2027
+                            </div>
                         </div>
                     </div>
                 </a>
 
-                <!-- Desktop Menu (Lebar & Terbuka Nyaman - Hanya Tampil di Desktop xl:) -->
-                <nav class="hidden xl:flex items-center gap-1.5 font-semibold text-[15px]">
-                    <a href="{{ route('home') }}" class="px-4 py-2.5 rounded-xl transition {{ request()->routeIs('home') ? 'bg-black/30 text-white font-bold shadow-inner' : 'hover:bg-white/10 text-white/90' }}">
+                <!-- Desktop Menu (Satu Baris Sejajar, Rapi & Elegan - Tampil di Desktop xl:) -->
+                <nav class="hidden xl:flex items-center gap-1.5 font-semibold text-[14px] 2xl:text-[15px]">
+                    <a href="{{ route('home') }}" class="px-3.5 py-2 rounded-xl transition whitespace-nowrap {{ request()->routeIs('home') ? 'bg-black/25 text-white font-bold shadow-inner' : 'hover:bg-white/10 text-white/90' }}">
                         Beranda
                     </a>
+
                     <!-- Dropdown Menu: Tentang Kami (Profil, Struktur, Pedoman Organisasi) -->
                     @php
                         $isAboutActive = request()->routeIs('tentang-kami') || request()->routeIs('pedoman-organisasi');
                     @endphp
                     <div class="relative group">
-                        <button type="button" class="px-4 py-2.5 rounded-xl transition flex items-center gap-2 {{ $isAboutActive ? 'bg-black/30 text-white font-bold shadow-inner' : 'hover:bg-white/10 text-white/90' }}">
+                        <button type="button" class="px-3.5 py-2 rounded-xl transition flex items-center gap-1.5 whitespace-nowrap {{ $isAboutActive ? 'bg-black/25 text-white font-bold shadow-inner' : 'hover:bg-white/10 text-white/90' }}">
                             <span>Tentang Kami</span>
-                            <i class="fa-solid fa-chevron-down text-xs text-red-200 group-hover:rotate-180 transition-transform duration-200"></i>
+                            <i class="fa-solid fa-chevron-down text-[11px] text-red-200 group-hover:rotate-180 transition-transform duration-200"></i>
                         </button>
                         
                         <!-- Dropdown Popup -->
@@ -169,14 +183,20 @@
                         </div>
                     </div>
 
-                    <!-- Dropdown Menu: Info (Kegiatan, Galeri, Donor Darah, Artikel) -->
+                    <!-- Menu Prestasi -->
+                    <a href="{{ url('/prestasi') }}" class="px-3.5 py-2 rounded-xl transition flex items-center gap-1.5 whitespace-nowrap {{ request()->is('prestasi*') ? 'bg-black/25 text-white font-bold shadow-inner' : 'hover:bg-white/10 text-white/90' }}">
+                        <span>Prestasi</span>
+                        <i class="fa-solid fa-trophy text-amber-400 text-xs"></i>
+                    </a>
+
+                    <!-- Dropdown Menu: Info & Kegiatan (Kegiatan, Galeri, Donor Darah, Artikel) -->
                     @php
                         $isInfoActive = request()->routeIs('kegiatan') || request()->routeIs('galeri') || request()->routeIs('donor-darah') || request()->routeIs('artikel.*');
                     @endphp
                     <div class="relative group">
-                        <button type="button" class="px-4 py-2.5 rounded-xl transition flex items-center gap-2 {{ $isInfoActive ? 'bg-black/30 text-white font-bold shadow-inner' : 'hover:bg-white/10 text-white/90' }}">
-                            <span>Info</span>
-                            <i class="fa-solid fa-chevron-down text-xs text-red-200 group-hover:rotate-180 transition-transform duration-200"></i>
+                        <button type="button" class="px-3.5 py-2 rounded-xl transition flex items-center gap-1.5 whitespace-nowrap {{ $isInfoActive ? 'bg-black/25 text-white font-bold shadow-inner' : 'hover:bg-white/10 text-white/90' }}">
+                            <span>Info & Kegiatan</span>
+                            <i class="fa-solid fa-chevron-down text-[11px] text-red-200 group-hover:rotate-180 transition-transform duration-200"></i>
                         </button>
                         
                         <!-- Dropdown Popup -->
@@ -212,16 +232,6 @@
                                     </div>
                                 </a>
 
-                                <a href="{{ url('/prestasi') }}" class="flex items-center gap-3 px-3.5 py-3 rounded-xl hover:bg-red-50 text-slate-700 hover:text-pmr-primary transition {{ request()->is('prestasi*') ? 'bg-red-50 text-pmr-primary font-bold' : '' }}">
-                                    <div class="w-8 h-8 rounded-lg bg-amber-100 text-amber-700 flex items-center justify-center flex-shrink-0">
-                                        <i class="fa-solid fa-trophy text-sm text-amber-600"></i>
-                                    </div>
-                                    <div>
-                                        <div class="text-sm font-bold leading-tight">Jejak Prestasi</div>
-                                        <div class="text-[11px] text-slate-400 font-normal">Piala, medali & rekam jejak juara</div>
-                                    </div>
-                                </a>
-
                                 <a href="{{ route('artikel.index') }}" class="flex items-center gap-3 px-3.5 py-3 rounded-xl hover:bg-red-50 text-slate-700 hover:text-pmr-primary transition {{ request()->routeIs('artikel.*') ? 'bg-red-50 text-pmr-primary font-bold' : '' }}">
                                     <div class="w-8 h-8 rounded-lg bg-emerald-100 text-emerald-700 flex items-center justify-center flex-shrink-0">
                                         <i class="fa-solid fa-newspaper text-sm text-emerald-600"></i>
@@ -235,125 +245,154 @@
                         </div>
                     </div>
 
-                    <a href="{{ url('/prestasi') }}" class="px-4 py-2.5 rounded-xl transition flex items-center gap-1.5 {{ request()->is('prestasi*') ? 'bg-black/30 text-white font-bold shadow-inner' : 'hover:bg-white/10 text-white/90' }}">
-                        <i class="fa-solid fa-award text-amber-300"></i>
-                        <span>Prestasi</span>
-                    </a>
-
-                    <a href="{{ route('lomba.index') }}" class="px-4 py-2.5 rounded-xl transition flex items-center gap-1.5 {{ request()->routeIs('lomba.*') ? 'bg-black/30 text-white font-bold shadow-inner' : 'hover:bg-white/10 text-amber-300 font-bold' }}">
-                        <i class="fa-solid fa-trophy text-amber-400"></i>
+                    <!-- Menu Lomba PMR -->
+                    <a href="{{ route('lomba.index') }}" class="px-3.5 py-2 rounded-xl transition flex items-center gap-1.5 whitespace-nowrap {{ request()->routeIs('lomba.*') ? 'bg-black/25 text-amber-300 font-bold shadow-inner' : 'hover:bg-white/10 text-amber-300 font-bold' }}">
+                        <i class="fa-solid fa-medal text-amber-400"></i>
                         <span>Lomba PMR</span>
                     </a>
 
-                    <a href="{{ route('kontak') }}" class="px-4 py-2.5 rounded-xl transition {{ request()->routeIs('kontak') ? 'bg-black/30 text-white font-bold shadow-inner' : 'hover:bg-white/10 text-white/90' }}">
+                    <!-- Kontak -->
+                    <a href="{{ route('kontak') }}" class="px-3.5 py-2 rounded-xl transition whitespace-nowrap {{ request()->routeIs('kontak') ? 'bg-black/25 text-white font-bold shadow-inner' : 'hover:bg-white/10 text-white/90' }}">
                         Kontak
                     </a>
                 </nav>
 
-                <!-- Action Button (Desktop Only) -->
+                <!-- Action Button Gabung Relawan (Desktop Only) -->
                 <div class="hidden xl:flex items-center gap-3 flex-shrink-0">
-                    <a href="{{ route('kontak') }}#daftar" class="bg-white text-pmr-primary hover:bg-red-50 hover:shadow-xl font-extrabold text-xs uppercase tracking-wider px-6 py-3 rounded-full transition-all duration-200 transform hover:-translate-y-0.5 active:scale-95 shadow-md flex items-center gap-2">
-                        <i class="fa-solid fa-hand-holding-heart text-red-600 text-sm"></i> Gabung Relawan
+                    <a href="{{ route('kontak') }}#daftar" class="bg-white text-pmr-primary hover:bg-red-50 hover:shadow-xl font-extrabold text-xs uppercase tracking-wider px-5 py-2.5 rounded-full transition-all duration-200 transform hover:-translate-y-0.5 active:scale-95 shadow-md flex items-center gap-2 whitespace-nowrap">
+                        <i class="fa-solid fa-hand-holding-heart text-red-600"></i>
+                        <span>Gabung Relawan</span>
                     </a>
                 </div>
 
-                <!-- Mobile Header Actions & Hamburger Menu Button (Jelas & Menonjol) -->
+                <!-- Mobile Header Actions (Sleek & Thumb-Friendly) -->
                 <div class="flex xl:hidden items-center gap-2 flex-shrink-0">
-                    <a href="{{ route('lomba.index') }}" class="bg-amber-400 hover:bg-amber-300 text-stone-900 px-2.5 py-1.5 sm:px-3 sm:py-2 rounded-xl font-black text-[11px] sm:text-xs shadow-md transition flex items-center gap-1 sm:gap-1.5">
-                        <i class="fa-solid fa-trophy text-amber-900 text-xs"></i>
-                        <span class="hidden xs:inline">Lomba</span>
+                    <!-- Quick Trophy Shortcut -->
+                    <a href="{{ route('lomba.index') }}" class="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-amber-400 hover:bg-amber-300 text-stone-900 shadow-md flex items-center justify-center transition active:scale-95 flex-shrink-0" title="Ajang Lomba PMR">
+                        <i class="fa-solid fa-trophy text-amber-950 text-xs sm:text-sm"></i>
                     </a>
-                    <button type="button" onclick="toggleMobileMenu()" class="w-10 h-10 sm:w-11 sm:h-11 rounded-xl bg-white text-pmr-primary hover:bg-red-50 active:scale-95 shadow-lg flex items-center justify-center transition focus:outline-none border-2 border-white/80" aria-label="Buka Menu Navigasi">
-                        <i id="mobile-menu-icon" class="fa-solid fa-bars text-lg sm:text-xl"></i>
+
+                    <!-- Hamburger Button Modern -->
+                    <button type="button" onclick="toggleMobileMenu()" class="w-10 h-10 sm:w-11 sm:h-11 rounded-xl bg-white/15 hover:bg-white/25 active:scale-95 text-white border border-white/20 shadow-md flex items-center justify-center transition focus:outline-none flex-shrink-0" aria-label="Buka Menu Navigasi">
+                        <i id="mobile-menu-icon" class="fa-solid fa-bars text-lg"></i>
                     </button>
                 </div>
             </div>
         </div>
 
-        <!-- Modern Mobile App-Style Menu Drawer (Popup Navigasi) -->
-        <div id="mobile-menu" class="hidden xl:hidden bg-stone-900/98 backdrop-blur-xl border-t border-red-900/60 px-4 py-5 shadow-2xl transition-all duration-300 max-h-[85vh] overflow-y-auto">
+        <!-- Modern Mobile App-Style Menu Drawer (Exact Match to Mockup) -->
+        <div id="mobile-menu" class="hidden xl:hidden bg-stone-950/98 backdrop-blur-2xl border-t border-red-900/40 px-4 py-5 sm:px-6 shadow-2xl transition-all duration-300 max-h-[85vh] overflow-y-auto">
             
-            <!-- Quick Event Banner in Mobile Menu -->
-            <a href="{{ route('lomba.index') }}" class="mb-4 block bg-gradient-to-r from-red-600 to-amber-600 p-4 rounded-2xl text-white shadow-lg border border-red-400/30 hover:opacity-95 transition">
+            <!-- Quick Event Banner Emas (Mockup State 2) -->
+            <a href="{{ route('lomba.index') }}" class="mb-4 block bg-gradient-to-r from-amber-400 via-amber-500 to-amber-600 text-stone-950 p-3.5 rounded-2xl shadow-lg border border-amber-300/40 hover:opacity-95 transition">
                 <div class="flex items-center justify-between">
                     <div class="flex items-center gap-3">
-                        <div class="w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center text-xl">
+                        <div class="w-9 h-9 rounded-xl bg-stone-950/15 flex items-center justify-center text-lg flex-shrink-0">
                             🏆
                         </div>
-                        <div>
-                            <div class="text-[10px] font-bold text-amber-200 uppercase tracking-widest">Ajang Prestasi PMR</div>
-                            <div class="text-sm font-black">SUA BHAKTI BERKARYA III</div>
+                        <div class="min-w-0">
+                            <div class="text-[9px] font-black uppercase tracking-widest text-amber-950/80">Ajang Prestasi PMR Wira</div>
+                            <div class="text-xs sm:text-sm font-black truncate">LOMBA TINGKAT JAWA BARAT</div>
                         </div>
                     </div>
-                    <i class="fa-solid fa-arrow-right text-xs bg-white/20 p-2 rounded-lg"></i>
+                    <i class="fa-solid fa-chevron-right text-xs bg-stone-950/15 px-2 py-1.5 rounded-lg"></i>
                 </div>
             </a>
 
-            <!-- Primary Nav Grid (2 Columns) -->
+            <!-- Primary Nav Grid (2 Columns App-Style Icons - Mockup Match) -->
             <div class="grid grid-cols-2 gap-2.5 mb-4">
-                <a href="{{ route('home') }}" class="p-3.5 rounded-xl flex items-center gap-3 transition {{ request()->routeIs('home') ? 'bg-red-600 text-white font-bold shadow-md' : 'bg-stone-800/80 hover:bg-stone-700 text-stone-200' }}">
-                    <i class="fa-solid fa-house text-red-400 text-sm"></i>
+                <a href="{{ route('home') }}" class="p-3 rounded-2xl flex flex-col items-center text-center gap-1.5 transition {{ request()->routeIs('home') ? 'bg-red-600 text-white shadow-lg font-bold' : 'bg-stone-900/90 border border-stone-800/80 text-stone-200 hover:bg-stone-800' }}">
+                    <div class="w-9 h-9 rounded-xl bg-white/10 flex items-center justify-center text-red-400 text-base">
+                        <i class="fa-solid fa-house"></i>
+                    </div>
                     <span class="text-xs font-bold">Beranda</span>
                 </a>
-                <a href="{{ route('tentang-kami') }}" class="p-3.5 rounded-xl flex items-center gap-3 transition {{ request()->routeIs('tentang-kami') ? 'bg-red-600 text-white font-bold shadow-md' : 'bg-stone-800/80 hover:bg-stone-700 text-stone-200' }}">
-                    <i class="fa-solid fa-shield-heart text-amber-400 text-sm"></i>
-                    <span class="text-xs font-bold">Tentang Kami</span>
+
+                <a href="{{ route('tentang-kami') }}" class="p-3 rounded-2xl flex flex-col items-center text-center gap-1.5 transition {{ request()->routeIs('tentang-kami') ? 'bg-red-600 text-white shadow-lg font-bold' : 'bg-stone-900/90 border border-stone-800/80 text-stone-200 hover:bg-stone-800' }}">
+                    <div class="w-9 h-9 rounded-xl bg-white/10 flex items-center justify-center text-amber-400 text-base">
+                        <i class="fa-solid fa-shield-heart"></i>
+                    </div>
+                    <span class="text-xs font-bold">Profil & Struktur</span>
                 </a>
-                <a href="{{ route('kontak') }}" class="p-3.5 rounded-xl flex items-center gap-3 transition {{ request()->routeIs('kontak') ? 'bg-red-600 text-white font-bold shadow-md' : 'bg-stone-800/80 hover:bg-stone-700 text-stone-200' }}">
-                    <i class="fa-solid fa-envelope text-blue-400 text-sm"></i>
-                    <span class="text-xs font-bold">Kontak Kami</span>
+
+                <a href="{{ url('/prestasi') }}" class="p-3 rounded-2xl flex flex-col items-center text-center gap-1.5 transition {{ request()->is('prestasi*') ? 'bg-amber-500 text-stone-950 shadow-lg font-black' : 'bg-stone-900/90 border border-stone-800/80 text-stone-200 hover:bg-stone-800' }}">
+                    <div class="w-9 h-9 rounded-xl bg-white/10 flex items-center justify-center text-amber-400 text-base">
+                        <i class="fa-solid fa-trophy"></i>
+                    </div>
+                    <span class="text-xs font-bold">Etalase Prestasi</span>
                 </a>
-                <a href="{{ route('donor-darah') }}" class="p-3.5 rounded-xl flex items-center gap-3 transition {{ request()->routeIs('donor-darah') ? 'bg-red-600 text-white font-bold shadow-md' : 'bg-stone-800/80 hover:bg-stone-700 text-stone-200' }}">
-                    <i class="fa-solid fa-droplet text-red-400 text-sm"></i>
+
+                <a href="{{ route('donor-darah') }}" class="p-3 rounded-2xl flex flex-col items-center text-center gap-1.5 transition {{ request()->routeIs('donor-darah') ? 'bg-red-600 text-white shadow-lg font-bold' : 'bg-stone-900/90 border border-stone-800/80 text-stone-200 hover:bg-stone-800' }}">
+                    <div class="w-9 h-9 rounded-xl bg-white/10 flex items-center justify-center text-red-500 text-base">
+                        <i class="fa-solid fa-droplet"></i>
+                    </div>
                     <span class="text-xs font-bold">Donor Darah</span>
+                </a>
+
+                <a href="{{ route('kegiatan') }}" class="p-3 rounded-2xl flex flex-col items-center text-center gap-1.5 transition {{ request()->routeIs('kegiatan*') ? 'bg-red-600 text-white shadow-lg font-bold' : 'bg-stone-900/90 border border-stone-800/80 text-stone-200 hover:bg-stone-800' }}">
+                    <div class="w-9 h-9 rounded-xl bg-white/10 flex items-center justify-center text-emerald-400 text-base">
+                        <i class="fa-solid fa-calendar-check"></i>
+                    </div>
+                    <span class="text-xs font-bold">Agenda Kegiatan</span>
+                </a>
+
+                <a href="{{ route('galeri') }}" class="p-3 rounded-2xl flex flex-col items-center text-center gap-1.5 transition {{ request()->routeIs('galeri') ? 'bg-red-600 text-white shadow-lg font-bold' : 'bg-stone-900/90 border border-stone-800/80 text-stone-200 hover:bg-stone-800' }}">
+                    <div class="w-9 h-9 rounded-xl bg-white/10 flex items-center justify-center text-blue-400 text-base">
+                        <i class="fa-solid fa-images"></i>
+                    </div>
+                    <span class="text-xs font-bold">Galeri Dokumentasi</span>
                 </a>
             </div>
 
-            <!-- Submenu Info Section -->
-            <div class="bg-stone-800/60 rounded-2xl p-3.5 border border-stone-700/60 mb-4 space-y-1">
-                <div class="text-[10px] font-extrabold uppercase tracking-widest text-stone-400 px-2 pb-1.5">Informasi & Publikasi</div>
-                
-                <a href="{{ url('/prestasi') }}" class="flex items-center justify-between p-2.5 rounded-xl hover:bg-stone-700/80 text-stone-200 transition text-xs font-semibold {{ request()->is('prestasi*') ? 'bg-amber-600/30 text-amber-300 font-bold' : '' }}">
-                    <span class="flex items-center gap-2.5">
-                        <i class="fa-solid fa-trophy text-amber-400 w-4"></i> Jejak Prestasi & Galeri Piala
-                    </span>
-                    <i class="fa-solid fa-chevron-right text-[10px] text-stone-500"></i>
-                </a>
+            <!-- Submenu Regulasi & Publikasi (Sleek List - Mockup Match) -->
+            <div class="bg-stone-900/80 rounded-2xl p-3 border border-stone-800/80 mb-4 space-y-1">
+                <div class="text-[10px] font-black uppercase tracking-widest text-stone-400 px-2 pb-1.5 border-b border-stone-800/60 mb-1">
+                    Regulasi & Informasi
+                </div>
 
-                <a href="{{ route('pedoman-organisasi') }}" class="flex items-center justify-between p-2.5 rounded-xl hover:bg-stone-700/80 text-stone-200 transition text-xs font-semibold {{ request()->routeIs('pedoman-organisasi') ? 'bg-amber-600/30 text-amber-300 font-bold' : '' }}">
+                <a href="{{ route('pedoman-organisasi') }}" class="flex items-center justify-between p-2.5 rounded-xl hover:bg-stone-800 text-stone-300 transition text-xs font-semibold {{ request()->routeIs('pedoman-organisasi') ? 'bg-amber-500/20 text-amber-300 font-bold' : '' }}">
                     <span class="flex items-center gap-2.5">
                         <i class="fa-solid fa-book-bookmark text-amber-400 w-4"></i> Pedoman Organisasi (GBHO & PPUO)
                     </span>
                     <i class="fa-solid fa-chevron-right text-[10px] text-stone-500"></i>
                 </a>
 
-                <a href="{{ route('kegiatan') }}" class="flex items-center justify-between p-2.5 rounded-xl hover:bg-stone-700/80 text-stone-200 transition text-xs font-semibold">
+                <a href="{{ route('artikel.index') }}" class="flex items-center justify-between p-2.5 rounded-xl hover:bg-stone-800 text-stone-300 transition text-xs font-semibold {{ request()->routeIs('artikel.*') ? 'bg-emerald-500/20 text-emerald-300 font-bold' : '' }}">
                     <span class="flex items-center gap-2.5">
-                        <i class="fa-solid fa-calendar-check text-red-400 w-4"></i> Agenda Kegiatan
+                        <i class="fa-solid fa-newspaper text-emerald-400 w-4"></i> Artikel & Wawasan P3K
                     </span>
                     <i class="fa-solid fa-chevron-right text-[10px] text-stone-500"></i>
                 </a>
 
-                <a href="{{ route('galeri') }}" class="flex items-center justify-between p-2.5 rounded-xl hover:bg-stone-700/80 text-stone-200 transition text-xs font-semibold">
+                <a href="{{ route('kontak') }}" class="flex items-center justify-between p-2.5 rounded-xl hover:bg-stone-800 text-stone-300 transition text-xs font-semibold {{ request()->routeIs('kontak') ? 'bg-red-500/20 text-red-300 font-bold' : '' }}">
                     <span class="flex items-center gap-2.5">
-                        <i class="fa-solid fa-images text-blue-400 w-4"></i> Galeri Dokumentasi
-                    </span>
-                    <i class="fa-solid fa-chevron-right text-[10px] text-stone-500"></i>
-                </a>
-
-                <a href="{{ route('artikel.index') }}" class="flex items-center justify-between p-2.5 rounded-xl hover:bg-stone-700/80 text-stone-200 transition text-xs font-semibold">
-                    <span class="flex items-center gap-2.5">
-                        <i class="fa-solid fa-newspaper text-emerald-400 w-4"></i> Artikel & Edukasi P3K
+                        <i class="fa-solid fa-phone text-red-400 w-4"></i> Kontak Kami & Hotline UKS
                     </span>
                     <i class="fa-solid fa-chevron-right text-[10px] text-stone-500"></i>
                 </a>
             </div>
 
-            <!-- Call to Action Button in Mobile Menu -->
-            <div class="pt-1">
-                <a href="{{ route('kontak') }}#daftar" class="block text-center w-full bg-red-600 hover:bg-red-700 text-white font-extrabold py-3.5 rounded-xl shadow-lg shadow-red-950/50 text-xs uppercase tracking-wider flex items-center justify-center gap-2">
-                    <i class="fa-solid fa-hand-holding-heart text-sm"></i> Formulir Calon Anggota PMR
+            <!-- Call to Action Button in Mobile Menu (Full Width White Button - Mockup Match) -->
+            <div class="space-y-2 pt-1">
+                <a href="{{ route('kontak') }}#daftar" class="block text-center w-full bg-white hover:bg-red-50 text-pmr-primary font-black py-3.5 rounded-xl shadow-xl text-xs uppercase tracking-wider flex items-center justify-center gap-2 transition active:scale-95">
+                    <i class="fa-solid fa-hand-holding-heart text-red-600 text-sm"></i> Daftar Jadi Relawan PMR
                 </a>
+
+                @auth
+                    @if(auth()->user()->canAccessBackoffice())
+                        <a href="{{ route('admin.dashboard') }}" class="block text-center w-full bg-stone-900 border border-stone-800 text-emerald-400 hover:text-emerald-300 font-bold py-2.5 rounded-xl text-xs flex items-center justify-center gap-2 transition">
+                            <i class="fa-solid fa-gauge-high"></i> Masuk Panel Backoffice
+                        </a>
+                    @else
+                        <a href="{{ route('member.profile') }}" class="block text-center w-full bg-stone-900 border border-stone-800 text-amber-300 hover:text-amber-200 font-bold py-2.5 rounded-xl text-xs flex items-center justify-center gap-2 transition">
+                            <i class="fa-solid fa-user-circle"></i> Buka Area Biodata Anggota
+                        </a>
+                    @endif
+                @else
+                    <a href="{{ route('admin.login') }}" class="block text-center w-full bg-stone-900/60 border border-stone-800/80 text-stone-400 hover:text-white font-medium py-2 rounded-xl text-[11px] flex items-center justify-center gap-2 transition">
+                        <i class="fa-solid fa-lock text-xs"></i> Portal Login Admin & Pengurus
+                    </a>
+                @endauth
             </div>
         </div>
     </header>

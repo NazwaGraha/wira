@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Models\Achievement;
 use App\Models\Activity;
 use App\Models\Article;
 use App\Models\Category;
@@ -98,6 +99,24 @@ class ExampleTest extends TestCase
         $response = $this->actingAs($user)->get('/admin/prestasi');
         $response->assertStatus(200);
         $response->assertSee('Manajemen Prestasi');
+
+        // Access create prestasi
+        $response = $this->actingAs($user)->get('/admin/prestasi/create');
+        $response->assertStatus(200);
+        $response->assertSee('Tambah Prestasi Baru');
+
+        $achievement = Achievement::create([
+            'title' => 'Juara 1 Tingkat Nasional',
+            'event_name' => 'Jabar Open',
+            'event_date' => now(),
+            'level' => 'Nasional',
+            'rank' => 'Juara 1',
+        ]);
+
+        // Access edit prestasi
+        $response = $this->actingAs($user)->get("/admin/prestasi/{$achievement->id}/edit");
+        $response->assertStatus(200);
+        $response->assertSee('Edit Data Prestasi');
 
         // Access articles list
         $response = $this->actingAs($user)->get('/admin/artikel');
