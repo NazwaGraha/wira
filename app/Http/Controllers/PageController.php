@@ -18,6 +18,7 @@ use App\Models\MemberRegistration;
 use App\Models\OrganizationGuideline;
 use App\Models\OrganizationMember;
 use App\Models\OrganizationSetting;
+use App\Models\PopupBanner;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Schema;
 
@@ -57,7 +58,16 @@ class PageController extends Controller
             $featuredAchievements = collect();
         }
 
-        return view('pages.home', compact('heroSlides', 'featuredArticle', 'latestArticles', 'activities', 'bloodStocks', 'featuredAchievements'));
+        $activePopupBanner = null;
+        try {
+            if (Schema::hasTable('popup_banners')) {
+                $activePopupBanner = PopupBanner::currentlyActive()->latest()->first();
+            }
+        } catch (\Throwable $e) {
+            $activePopupBanner = null;
+        }
+
+        return view('pages.home', compact('heroSlides', 'featuredArticle', 'latestArticles', 'activities', 'bloodStocks', 'featuredAchievements', 'activePopupBanner'));
     }
 
     public function tentangKami()
@@ -244,5 +254,41 @@ class PageController extends Controller
         MemberRegistration::create($validated);
 
         return redirect()->route('kontak')->with('success', 'Selamat! Formulir pendaftaran relawan PMR Wira SMAN 1 Ciawi telah berhasil dikirim. Pengurus akan menghubungi Anda via WhatsApp.');
+    }
+
+    /**
+     * Hit click tracking dan redirect ke target URL popup banner.
+     */
+    public function popupBannerClick($id)
+    {
+        try {
+            $banner = PopupBanner::findOrFail($id);
+            $banner->increment('clicks_count');
+
+            if (! empty($banner->target_url)) {
+                return redirect()->away($banner->target_url);
+            }
+        } catch (\Throwable $e) {
+            // Ignore
+        }
+
+        return redirect()->route('home');
+    }
+
+    /**
+     * Hit impression tracking via AJAX.
+     */
+    public function popupBannerImpression($id)
+    {
+        try {
+            $banner = PopupBanner::find($id);
+            if ($banner) {
+                $banner->increment('impressions_count');
+            }
+        } catch (\Throwable $e) {
+            // Ignore
+        }
+
+        return response()->json(['success' => true]);
     }
 }

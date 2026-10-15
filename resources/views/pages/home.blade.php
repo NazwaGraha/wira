@@ -366,6 +366,71 @@
         </a>
     </div>
 </section>
+
+@if(isset($activePopupBanner) && $activePopupBanner)
+    <!-- Modal Popup Banner Iklan / Pengumuman (Sesuai Mockup) -->
+    <div id="home-popup-banner-modal" class="fixed inset-0 z-[60] bg-stone-950/80 backdrop-blur-md hidden flex items-center justify-center p-3 sm:p-4 select-none animate-in fade-in duration-300">
+        
+        <!-- Modal Card Container -->
+        <div class="relative bg-stone-900 border border-amber-500/30 rounded-3xl max-w-lg w-full shadow-2xl overflow-hidden flex flex-col p-4 sm:p-6 text-center animate-in zoom-in-95 duration-300">
+            
+            <!-- Tombol Close (X) di Pojok Kanan Atas -->
+            <button type="button" onclick="closeHomePopupBanner()" class="absolute top-3.5 right-3.5 w-8 h-8 rounded-full bg-white/20 hover:bg-white text-white hover:text-stone-950 flex items-center justify-center transition text-sm z-20 shadow-md" title="Tutup Pengumuman">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+
+            <!-- Badge Pengumuman Resmi -->
+            <div class="mb-3">
+                <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-pmr-primary text-white text-[10px] font-black uppercase tracking-wider shadow-md border border-red-400/40">
+                    <i class="fa-solid fa-bullhorn text-amber-300"></i> Pengumuman Resmi
+                </span>
+            </div>
+
+            <!-- Konten Gambar Banner (Dapat Diklik jika ada target_url) -->
+            <div class="rounded-2xl overflow-hidden bg-stone-950 border border-white/10 shadow-inner mb-4 relative group {{ !empty($activePopupBanner->target_url) ? 'cursor-pointer' : '' }}">
+                @if(!empty($activePopupBanner->target_url))
+                    <a href="{{ route('popup-banner.click', $activePopupBanner->id) }}" {{ $activePopupBanner->open_in_new_tab ? 'target=_blank' : '' }} onclick="recordPopupClick()" class="block">
+                        <img src="{{ $activePopupBanner->image_url }}" alt="{{ $activePopupBanner->title }}" class="w-full h-auto max-h-[55vh] object-contain mx-auto group-hover:scale-102 transition-transform duration-300">
+                    </a>
+                @else
+                    <img src="{{ $activePopupBanner->image_url }}" alt="{{ $activePopupBanner->title }}" class="w-full h-auto max-h-[55vh] object-contain mx-auto">
+                @endif
+            </div>
+
+            <!-- Judul Pengumuman -->
+            @if($activePopupBanner->title)
+                <h3 class="text-sm sm:text-base font-black text-white leading-snug mb-3">
+                    {{ $activePopupBanner->title }}
+                </h3>
+            @endif
+
+            <!-- Tombol Aksi: Sesuai Permintaan User (Hanya Tombol Info & Tombol Lewati/Tutup) -->
+            <div class="flex flex-col sm:flex-row items-center justify-center gap-2.5 pt-1">
+                @if(!empty($activePopupBanner->target_url))
+                    <!-- Tombol Info Lebih Lanjut -->
+                    <a href="{{ route('popup-banner.click', $activePopupBanner->id) }}" {{ $activePopupBanner->open_in_new_tab ? 'target=_blank' : '' }} onclick="recordPopupClick()" class="w-full sm:w-auto px-6 py-2.5 rounded-xl bg-pmr-primary hover:bg-pmr-dark text-white text-xs font-black uppercase tracking-wider transition shadow-lg flex items-center justify-center gap-2">
+                        <span>{{ $activePopupBanner->button_text ?: 'Info Lebih Lanjut' }}</span>
+                        <i class="fa-solid fa-arrow-right text-[11px]"></i>
+                    </a>
+                @endif
+
+                <!-- Tombol Lewati & Tutup -->
+                <button type="button" onclick="closeHomePopupBanner()" class="w-full sm:w-auto px-6 py-2.5 rounded-xl bg-white/15 hover:bg-white/25 text-stone-200 hover:text-white text-xs font-bold transition border border-white/20">
+                    Lewati & Tutup
+                </button>
+            </div>
+
+            <!-- Checkbox Opsi Cerdas: Jangan Tampilkan Lagi Hari Ini -->
+            <div class="mt-3 pt-2 border-t border-white/10 flex items-center justify-center">
+                <label class="inline-flex items-center gap-2 text-[11px] text-stone-400 cursor-pointer hover:text-stone-300">
+                    <input type="checkbox" id="dont-show-again-checkbox" class="w-3.5 h-3.5 rounded text-pmr-primary bg-stone-800 border-stone-700 focus:ring-pmr-primary">
+                    <span>Jangan tampilkan lagi hari ini</span>
+                </label>
+            </div>
+
+        </div>
+    </div>
+@endif
 @endsection
 
 @push('scripts')
@@ -434,6 +499,54 @@
 
     document.addEventListener('DOMContentLoaded', () => {
         startAutoSlide();
+
+        // Popup Banner Logic (Auto Delay & Dismiss)
+        @if(isset($activePopupBanner) && $activePopupBanner)
+            const popupBannerId = {{ $activePopupBanner->id }};
+            const storageKey = 'pmr_popup_closed_' + popupBannerId;
+            const lastClosed = localStorage.getItem(storageKey);
+            const now = new Date().getTime();
+            const oneDay = 24 * 60 * 60 * 1000;
+
+            if (!lastClosed || (now - parseInt(lastClosed)) > oneDay) {
+                setTimeout(() => {
+                    const modal = document.getElementById('home-popup-banner-modal');
+                    if (modal) {
+                        modal.classList.remove('hidden');
+                        
+                        // Kirim impression tracking secara silent via background fetch
+                        fetch("{{ route('popup-banner.impression', $activePopupBanner->id) }}", {
+                            method: 'POST',
+                            headers: {
+                                'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                                'Content-Type': 'application/json'
+                            }
+                        }).catch(() => {});
+                    }
+                }, 800);
+            }
+        @endif
     });
+
+    function closeHomePopupBanner() {
+        const modal = document.getElementById('home-popup-banner-modal');
+        if (modal) {
+            modal.classList.add('hidden');
+        }
+
+        @if(isset($activePopupBanner) && $activePopupBanner)
+            const checkbox = document.getElementById('dont-show-again-checkbox');
+            if (checkbox && checkbox.checked) {
+                localStorage.setItem('pmr_popup_closed_{{ $activePopupBanner->id }}', new Date().getTime().toString());
+            }
+        @endif
+    }
+
+    function recordPopupClick() {
+        @if(isset($activePopupBanner) && $activePopupBanner)
+            localStorage.setItem('pmr_popup_closed_{{ $activePopupBanner->id }}', new Date().getTime().toString());
+        @endif
+        closeHomePopupBanner();
+    }
 </script>
 @endpush

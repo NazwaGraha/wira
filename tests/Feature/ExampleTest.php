@@ -6,6 +6,7 @@ use App\Models\Achievement;
 use App\Models\Activity;
 use App\Models\Article;
 use App\Models\Category;
+use App\Models\PopupBanner;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -308,5 +309,56 @@ class ExampleTest extends TestCase
         $response->assertStatus(200);
         $response->assertSee('2027/2028');
         $response->assertSee('Digitalisasi Layanan Medis Sekolah');
+    }
+
+    public function test_popup_banner_feature_flow(): void
+    {
+        $admin = User::factory()->create();
+
+        // 1. Admin visits popup banner management
+        $response = $this->actingAs($admin)->get('/admin/popup-banner');
+        $response->assertStatus(200);
+        $response->assertSee('Popup Banner Iklan & Pengumuman');
+
+        // 2. Admin creates a popup banner
+        $banner = PopupBanner::create([
+            'title' => 'Open Recruitment Relawan PMR 2026',
+            'image_path' => '/mockups/mockup_popup_banner_publik.png',
+            'target_url' => 'https://pmrwirasmanic.or.id/kontak',
+            'button_text' => 'Daftar Sekarang',
+            'open_in_new_tab' => true,
+            'start_date' => now()->subDay(),
+            'end_date' => now()->addDays(7),
+            'is_active' => true,
+        ]);
+
+        $this->assertDatabaseHas('popup_banners', [
+            'title' => 'Open Recruitment Relawan PMR 2026',
+            'is_active' => true,
+        ]);
+
+        // 3. Public visitor views home and sees popup banner
+        $response = $this->get('/');
+        $response->assertStatus(200);
+        $response->assertSee('Open Recruitment Relawan PMR 2026');
+        $response->assertSee('home-popup-banner-modal');
+        $response->assertSee('Daftar Sekarang');
+        $response->assertSeeText('Lewati & Tutup');
+
+        // 4. Public impression tracking
+        $response = $this->postJson("/popup-banner/{$banner->id}/impression");
+        $response->assertStatus(200);
+        $response->assertJson(['success' => true]);
+        $this->assertEquals(1, $banner->fresh()->impressions_count);
+
+        // 5. Public click tracking and redirect
+        $response = $this->get("/popup-banner/{$banner->id}/click");
+        $response->assertRedirect('https://pmrwirasmanic.or.id/kontak');
+        $this->assertEquals(1, $banner->fresh()->clicks_count);
+
+        // 6. Admin toggles banner
+        $response = $this->actingAs($admin)->post("/admin/popup-banner/{$banner->id}/toggle");
+        $response->assertSessionHas('success');
+        $this->assertFalse($banner->fresh()->is_active);
     }
 }

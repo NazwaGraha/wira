@@ -25,6 +25,7 @@ use App\Http\Controllers\Admin\HeroSlideController;
 use App\Http\Controllers\Admin\MemberController;
 use App\Http\Controllers\Admin\OrganizationController;
 use App\Http\Controllers\Admin\OrganizationGuidelineController;
+use App\Http\Controllers\Admin\PopupBannerController;
 use App\Http\Controllers\ArticleController;
 use App\Http\Controllers\CompetitionController;
 use App\Http\Controllers\MemberAreaController;
@@ -49,6 +50,8 @@ Route::get('/galeri', [PageController::class, 'galeri'])->name('galeri');
 Route::get('/donor-darah', [PageController::class, 'donorDarah'])->name('donor-darah');
 Route::get('/kontak', [PageController::class, 'kontak'])->name('kontak');
 Route::get('/prestasi', [AchievementController::class, 'publicIndex'])->name('prestasi.index');
+Route::get('/popup-banner/{id}/click', [PageController::class, 'popupBannerClick'])->name('popup-banner.click');
+Route::post('/popup-banner/{id}/impression', [PageController::class, 'popupBannerImpression'])->name('popup-banner.impression');
 Route::post('/daftar-anggota', [PageController::class, 'storeRegistration'])->name('daftar-anggota.store');
 Route::post('/donor-darah/daftar', [PageController::class, 'storeDonorRegistration'])->name('donor-darah.store');
 
@@ -116,6 +119,12 @@ Route::prefix('admin')->name('admin.')->group(function () {
             'update' => 'hero-slides.update',
             'destroy' => 'hero-slides.destroy',
         ]);
+
+        // Pengaturan Popup Banner Iklan & Pengumuman
+        Route::get('/popup-banner', [PopupBannerController::class, 'index'])->name('popup-banner.index');
+        Route::post('/popup-banner', [PopupBannerController::class, 'store'])->name('popup-banner.store');
+        Route::post('/popup-banner/{id}/toggle', [PopupBannerController::class, 'toggle'])->name('popup-banner.toggle');
+        Route::delete('/popup-banner/{id}', [PopupBannerController::class, 'destroy'])->name('popup-banner.destroy');
 
         // Kelola Kegiatan & Agenda
         Route::resource('kegiatan', ActivityController::class)->names([
