@@ -147,9 +147,9 @@
                         Beranda
                     </a>
 
-                    <!-- Dropdown Menu: Tentang Kami (Profil, Struktur, Pedoman Organisasi) -->
+                    <!-- Dropdown Menu: Tentang Kami (Profil, Prestasi, Pedoman Organisasi) -->
                     @php
-                        $isAboutActive = request()->routeIs('tentang-kami') || request()->routeIs('pedoman-organisasi');
+                        $isAboutActive = request()->routeIs('tentang-kami') || request()->routeIs('pedoman-organisasi') || request()->is('prestasi*');
                     @endphp
                     <div class="relative group">
                         <button type="button" class="px-3.5 py-2 rounded-xl transition flex items-center gap-1.5 whitespace-nowrap {{ $isAboutActive ? 'bg-black/25 text-white font-bold shadow-inner' : 'hover:bg-white/10 text-white/90' }}">
@@ -158,7 +158,7 @@
                         </button>
                         
                         <!-- Dropdown Popup -->
-                        <div class="absolute left-0 top-full pt-2 w-72 hidden group-hover:block transition-all duration-200 z-50">
+                        <div class="absolute left-0 top-full pt-2 w-80 hidden group-hover:block transition-all duration-200 z-50">
                             <div class="bg-white text-slate-800 rounded-2xl shadow-2xl border border-slate-100 p-2 space-y-1">
                                 <a href="{{ route('tentang-kami') }}" class="flex items-center gap-3 px-3.5 py-3 rounded-xl hover:bg-red-50 text-slate-700 hover:text-pmr-primary transition {{ request()->routeIs('tentang-kami') ? 'bg-red-50 text-pmr-primary font-bold' : '' }}">
                                     <div class="w-8 h-8 rounded-lg bg-red-100 text-pmr-primary flex items-center justify-center flex-shrink-0">
@@ -170,8 +170,21 @@
                                     </div>
                                 </a>
 
+                                <a href="{{ url('/prestasi') }}" class="flex items-center gap-3 px-3.5 py-3 rounded-xl hover:bg-amber-50 text-slate-700 hover:text-amber-800 transition {{ request()->is('prestasi*') ? 'bg-amber-50 text-amber-800 font-bold' : '' }}">
+                                    <div class="w-8 h-8 rounded-lg bg-amber-100 text-amber-600 flex items-center justify-center flex-shrink-0">
+                                        <i class="fa-solid fa-trophy text-sm"></i>
+                                    </div>
+                                    <div>
+                                        <div class="text-sm font-bold leading-tight flex items-center gap-1.5">
+                                            <span>Etalase Prestasi</span>
+                                            <span class="bg-amber-100 text-amber-700 text-[10px] px-1.5 py-0.5 rounded-full font-black uppercase">Juara</span>
+                                        </div>
+                                        <div class="text-[11px] text-slate-400 font-normal">Koleksi trofi & penghargaan ajang</div>
+                                    </div>
+                                </a>
+
                                 <a href="{{ route('pedoman-organisasi') }}" class="flex items-center gap-3 px-3.5 py-3 rounded-xl hover:bg-red-50 text-slate-700 hover:text-pmr-primary transition {{ request()->routeIs('pedoman-organisasi') ? 'bg-red-50 text-pmr-primary font-bold' : '' }}">
-                                    <div class="w-8 h-8 rounded-lg bg-amber-100 text-amber-700 flex items-center justify-center flex-shrink-0">
+                                    <div class="w-8 h-8 rounded-lg bg-red-100 text-pmr-primary flex items-center justify-center flex-shrink-0">
                                         <i class="fa-solid fa-book-bookmark text-sm"></i>
                                     </div>
                                     <div>
@@ -182,12 +195,6 @@
                             </div>
                         </div>
                     </div>
-
-                    <!-- Menu Prestasi -->
-                    <a href="{{ url('/prestasi') }}" class="px-3.5 py-2 rounded-xl transition flex items-center gap-1.5 whitespace-nowrap {{ request()->is('prestasi*') ? 'bg-black/25 text-white font-bold shadow-inner' : 'hover:bg-white/10 text-white/90' }}">
-                        <span>Prestasi</span>
-                        <i class="fa-solid fa-trophy text-amber-400 text-xs"></i>
-                    </a>
 
                     <!-- Dropdown Menu: Info & Kegiatan (Kegiatan, Galeri, Donor Darah, Artikel) -->
                     @php
@@ -473,6 +480,7 @@
                     <ul class="space-y-2 text-xs">
                         <li><a href="{{ route('home') }}" class="hover:text-white transition flex items-center gap-1.5"><i class="fa-solid fa-angle-right text-[10px] text-pmr-primary"></i> Beranda</a></li>
                         <li><a href="{{ route('tentang-kami') }}" class="hover:text-white transition flex items-center gap-1.5"><i class="fa-solid fa-angle-right text-[10px] text-pmr-primary"></i> Profil & Visi Misi</a></li>
+                        <li><a href="{{ url('/prestasi') }}" class="hover:text-white transition flex items-center gap-1.5"><i class="fa-solid fa-angle-right text-[10px] text-amber-400"></i> Etalase Prestasi Juara</a></li>
                         <li><a href="{{ route('pedoman-organisasi') }}" class="hover:text-white transition flex items-center gap-1.5"><i class="fa-solid fa-angle-right text-[10px] text-pmr-primary"></i> Pedoman Organisasi (GBHO & PPUO)</a></li>
                         <li><a href="{{ route('kegiatan') }}" class="hover:text-white transition flex items-center gap-1.5"><i class="fa-solid fa-angle-right text-[10px] text-pmr-primary"></i> Agenda & Program Kerja</a></li>
                         <li><a href="{{ route('galeri') }}" class="hover:text-white transition flex items-center gap-1.5"><i class="fa-solid fa-angle-right text-[10px] text-pmr-primary"></i> Galeri Dokumentasi</a></li>

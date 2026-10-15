@@ -916,6 +916,28 @@
             </a>
         </div>
 
+        <!-- Banner Prestasi & Jejak Juara -->
+        <div class="mt-6 bg-gradient-to-r from-amber-600 via-amber-700 to-amber-900 text-white p-6 sm:p-8 rounded-3xl shadow-xl flex flex-col sm:flex-row items-center justify-between gap-6 border border-amber-500/30">
+            <div class="flex items-center gap-4 text-center sm:text-left">
+                <div class="w-12 h-12 rounded-2xl bg-white/20 border border-white/30 text-amber-200 flex items-center justify-center text-2xl flex-shrink-0 shadow-inner">
+                    <i class="fa-solid fa-trophy"></i>
+                </div>
+                <div>
+                    <div class="inline-flex items-center gap-1.5 bg-white/20 px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider mb-1">
+                        Pencapaian & Kehormatan
+                    </div>
+                    <h4 class="font-extrabold text-base sm:text-lg text-white">Etalase Prestasi & Galeri Juara PMR Wira</h4>
+                    <p class="text-xs sm:text-sm text-amber-100/90 mt-0.5">
+                        Telusuri rekam jejak trofi juara, sertifikat kejuaraan, dan dokumentasi penyerahan piala kontingen relawan.
+                    </p>
+                </div>
+            </div>
+            <a href="{{ url('/prestasi') }}" class="px-6 py-3 rounded-xl bg-white hover:bg-amber-50 text-amber-900 font-black text-xs uppercase tracking-wider transition whitespace-nowrap shadow-md flex items-center gap-2">
+                <span>Lihat Koleksi Prestasi</span>
+                <i class="fa-solid fa-trophy text-amber-600"></i>
+            </a>
+        </div>
+
     </div>
 </section>
 
