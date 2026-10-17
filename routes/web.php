@@ -53,6 +53,7 @@ Route::get('/kontak', [PageController::class, 'kontak'])->name('kontak');
 Route::get('/prestasi', [AchievementController::class, 'publicIndex'])->name('prestasi.index');
 Route::get('/popup-banner/{id}/click', [PageController::class, 'popupBannerClick'])->name('popup-banner.click');
 Route::post('/popup-banner/{id}/impression', [PageController::class, 'popupBannerImpression'])->name('popup-banner.impression');
+Route::get('/mars-pmi-audio', [BackgroundMusicController::class, 'streamAudio'])->name('mars-pmi.stream');
 Route::post('/daftar-anggota', [PageController::class, 'storeRegistration'])->name('daftar-anggota.store');
 Route::post('/donor-darah/daftar', [PageController::class, 'storeDonorRegistration'])->name('donor-darah.store');
 
@@ -312,7 +313,17 @@ Route::get('/server-sync-update-pmr', function () {
         Artisan::call('config:clear');
         Artisan::call('cache:clear');
         Artisan::call('optimize:clear');
-        Artisan::call('migrate', ['--force' => true]);
+        try {
+            Artisan::call('migrate', ['--force' => true]);
+        } catch (Throwable $e) {
+            // Ignore if migration already applied
+        }
+
+        try {
+            BackgroundMusicController::ensureTableExists();
+        } catch (Throwable $e) {
+            // Ignore
+        }
 
         // Seed data prestasi jika tabel kosong
         if (Schema::hasTable('achievements') && DB::table('achievements')->count() === 0) {

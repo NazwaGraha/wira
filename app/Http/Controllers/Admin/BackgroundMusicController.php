@@ -12,6 +12,51 @@ use Illuminate\Support\Facades\Schema;
 class BackgroundMusicController extends Controller
 {
     /**
+     * Stream berkas audio dengan header HTTP audio yang benar dan aman dari blokir web server.
+     */
+    public function streamAudio()
+    {
+        self::ensureTableExists();
+
+        $music = BackgroundMusic::first();
+        $path = null;
+
+        if ($music && $music->audio_path) {
+            $candidate = public_path(ltrim($music->audio_path, '/'));
+            if (file_exists($candidate)) {
+                $path = $candidate;
+            }
+        }
+
+        if (! $path) {
+            if (file_exists(public_path('audio/mars-pmi.mp3'))) {
+                $path = public_path('audio/mars-pmi.mp3');
+            } elseif (file_exists(public_path('audio/mars-pmi.m4a'))) {
+                $path = public_path('audio/mars-pmi.m4a');
+            }
+        }
+
+        if (! $path || ! file_exists($path)) {
+            abort(404, 'Berkas audio Mars PMI tidak ditemukan.');
+        }
+
+        $extension = strtolower(pathinfo($path, PATHINFO_EXTENSION));
+        $mime = match ($extension) {
+            'mp3' => 'audio/mpeg',
+            'm4a', 'mp4' => 'audio/mp4',
+            'ogg' => 'audio/ogg',
+            'wav' => 'audio/wav',
+            default => 'audio/mp4',
+        };
+
+        return response()->file($path, [
+            'Content-Type' => $mime,
+            'Accept-Ranges' => 'bytes',
+            'Cache-Control' => 'public, max-age=604800',
+        ]);
+    }
+
+    /**
      * Tampilkan halaman pengelolaan musik latar (Mars PMI).
      */
     public function index()

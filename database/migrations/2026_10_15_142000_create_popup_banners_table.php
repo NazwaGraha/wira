@@ -11,20 +11,22 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('popup_banners', function (Blueprint $table) {
-            $table->id();
-            $table->string('title');
-            $table->string('image_path');
-            $table->string('target_url', 500)->nullable();
-            $table->string('button_text', 100)->default('Info Lebih Lanjut');
-            $table->boolean('open_in_new_tab')->default(true);
-            $table->dateTime('start_date')->nullable();
-            $table->dateTime('end_date')->nullable();
-            $table->boolean('is_active')->default(true);
-            $table->unsignedInteger('impressions_count')->default(0);
-            $table->unsignedInteger('clicks_count')->default(0);
-            $table->timestamps();
-        });
+        if (! Schema::hasTable('popup_banners')) {
+            Schema::create('popup_banners', function (Blueprint $table) {
+                $table->id();
+                $table->string('title');
+                $table->string('image_path');
+                $table->string('target_url', 500)->nullable();
+                $table->string('button_text', 100)->default('Info Lebih Lanjut');
+                $table->boolean('open_in_new_tab')->default(true);
+                $table->dateTime('start_date')->nullable();
+                $table->dateTime('end_date')->nullable();
+                $table->boolean('is_active')->default(true);
+                $table->unsignedInteger('impressions_count')->default(0);
+                $table->unsignedInteger('clicks_count')->default(0);
+                $table->timestamps();
+            });
+        }
     }
 
     /**

@@ -3,6 +3,13 @@
         Options -MultiViews -Indexes
     </IfModule>
 
+    <IfModule mod_mime.c>
+        AddType audio/mp4 .m4a
+        AddType audio/mpeg .mp3
+        AddType audio/ogg .ogg
+        AddType audio/wav .wav
+    </IfModule>
+
     RewriteEngine On
 
     # Force HTTPS Redirect

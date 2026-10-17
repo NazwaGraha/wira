@@ -35,22 +35,26 @@ class BackgroundMusic extends Model
      */
     public function getAudioUrlAttribute(): string
     {
-        if (empty($this->audio_path)) {
-            if (file_exists(public_path('audio/mars-pmi.mp3'))) {
-                return asset('audio/mars-pmi.mp3');
+        try {
+            return route('mars-pmi.stream');
+        } catch (\Throwable $e) {
+            if (empty($this->audio_path)) {
+                if (file_exists(public_path('audio/mars-pmi.mp3'))) {
+                    return asset('audio/mars-pmi.mp3');
+                }
+
+                return asset('audio/mars-pmi.m4a');
             }
 
-            return asset('audio/mars-pmi.m4a');
-        }
+            if (str_starts_with($this->audio_path, 'http://') || str_starts_with($this->audio_path, 'https://')) {
+                return $this->audio_path;
+            }
 
-        if (str_starts_with($this->audio_path, 'http://') || str_starts_with($this->audio_path, 'https://')) {
-            return $this->audio_path;
-        }
+            if (str_starts_with($this->audio_path, '/')) {
+                return asset(ltrim($this->audio_path, '/'));
+            }
 
-        if (str_starts_with($this->audio_path, '/')) {
-            return asset(ltrim($this->audio_path, '/'));
+            return Storage::url($this->audio_path);
         }
-
-        return Storage::url($this->audio_path);
     }
 }
