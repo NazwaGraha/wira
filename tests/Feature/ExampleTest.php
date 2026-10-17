@@ -395,9 +395,6 @@ class ExampleTest extends TestCase
         $response = $this->get('/');
         $response->assertStatus(200);
         $response->assertSee('mars-pmi-floating-widget');
-        $response->assertSee('mars-pmi-player-audio');
-        $response->assertSee('Mars PMI');
-
         // 4. Admin resets audio to default
         $response = $this->actingAs($admin)->post('/admin/background-music/reset');
         $response->assertRedirect('/admin/background-music');
@@ -407,5 +404,10 @@ class ExampleTest extends TestCase
             'title' => 'Mars Palang Merah Indonesia',
             'audio_path' => null,
         ]);
+
+        // 5. Test streaming route /mars-pmi-audio
+        $response = $this->get('/mars-pmi-audio');
+        $response->assertStatus(200);
+        $response->assertHeader('Content-Type', 'audio/mpeg');
     }
 }

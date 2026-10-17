@@ -586,11 +586,14 @@
     @if($marsPmiMusic && $marsPmiMusic->is_active)
         <!-- Hidden Audio Element -->
         <audio id="mars-pmi-player-audio" preload="auto" {{ $marsPmiMusic->loop ? 'loop' : '' }}>
+            <source src="{{ $marsPmiMusic->audio_url }}" type="audio/mpeg">
+            <source src="{{ $marsPmiMusic->audio_url }}" type="audio/mp4">
             @if(file_exists(public_path('audio/mars-pmi.mp3')))
                 <source src="{{ asset('audio/mars-pmi.mp3') }}" type="audio/mpeg">
             @endif
-            <source src="{{ $marsPmiMusic->audio_url }}" type="audio/mp4">
-            <source src="{{ $marsPmiMusic->audio_url }}" type="audio/mpeg">
+            @if(file_exists(public_path('audio/mars-pmi.m4a')))
+                <source src="{{ asset('audio/mars-pmi.m4a') }}" type="audio/mp4">
+            @endif
         </audio>
 
         <!-- Floating Player Container (Bottom Left) -->

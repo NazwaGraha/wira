@@ -292,8 +292,8 @@
                 <!-- Audio Controller -->
                 <div class="bg-white/10 rounded-2xl p-4 border border-white/10 space-y-3">
                     <audio id="admin-preview-audio" preload="metadata">
-                        <source src="{{ $music->audio_url }}" type="audio/mp4">
                         <source src="{{ $music->audio_url }}" type="audio/mpeg">
+                        <source src="{{ $music->audio_url }}" type="audio/mp4">
                     </audio>
 
                     <div class="flex items-center justify-between text-[11px] font-mono text-stone-400">

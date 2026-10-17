@@ -22,9 +22,13 @@ class BackgroundMusicController extends Controller
         $path = null;
 
         if ($music && $music->audio_path) {
-            $candidate = public_path(ltrim($music->audio_path, '/'));
-            if (file_exists($candidate)) {
-                $path = $candidate;
+            if (str_contains($music->audio_path, 'mars-pmi') && file_exists(public_path('audio/mars-pmi.mp3'))) {
+                $path = public_path('audio/mars-pmi.mp3');
+            } else {
+                $candidate = public_path(ltrim($music->audio_path, '/'));
+                if (file_exists($candidate)) {
+                    $path = $candidate;
+                }
             }
         }
 
@@ -46,7 +50,7 @@ class BackgroundMusicController extends Controller
             'm4a', 'mp4' => 'audio/mp4',
             'ogg' => 'audio/ogg',
             'wav' => 'audio/wav',
-            default => 'audio/mp4',
+            default => 'audio/mpeg',
         };
 
         return response()->file($path, [
