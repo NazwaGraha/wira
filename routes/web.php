@@ -5,6 +5,7 @@ use App\Http\Controllers\Admin\ActivityController;
 use App\Http\Controllers\Admin\AdvisorController;
 use App\Http\Controllers\Admin\ArticleController as AdminArticleController;
 use App\Http\Controllers\Admin\AuthController;
+use App\Http\Controllers\Admin\BackgroundMusicController;
 use App\Http\Controllers\Admin\BloodDonationEventController;
 use App\Http\Controllers\Admin\BloodDonorRegistrationController;
 use App\Http\Controllers\Admin\BloodStockController;
@@ -125,6 +126,11 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::post('/popup-banner', [PopupBannerController::class, 'store'])->name('popup-banner.store');
         Route::post('/popup-banner/{id}/toggle', [PopupBannerController::class, 'toggle'])->name('popup-banner.toggle');
         Route::delete('/popup-banner/{id}', [PopupBannerController::class, 'destroy'])->name('popup-banner.destroy');
+
+        // Pengaturan Musik Latar (Mars PMI)
+        Route::get('/background-music', [BackgroundMusicController::class, 'index'])->name('background-music.index');
+        Route::put('/background-music', [BackgroundMusicController::class, 'update'])->name('background-music.update');
+        Route::post('/background-music/reset', [BackgroundMusicController::class, 'resetDefault'])->name('background-music.reset');
 
         // Kelola Kegiatan & Agenda
         Route::resource('kegiatan', ActivityController::class)->names([

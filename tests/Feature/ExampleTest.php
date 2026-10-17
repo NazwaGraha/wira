@@ -361,4 +361,51 @@ class ExampleTest extends TestCase
         $response->assertSessionHas('success');
         $this->assertFalse($banner->fresh()->is_active);
     }
+
+    public function test_background_music_admin_and_public_floating_player(): void
+    {
+        $admin = User::factory()->create();
+
+        // 1. Admin accesses background music page
+        $response = $this->actingAs($admin)->get('/admin/background-music');
+        $response->assertStatus(200);
+        $response->assertSee('Sound Mars PMI');
+        $response->assertSee('Mars Palang Merah Indonesia');
+
+        // 2. Admin updates background music settings
+        $response = $this->actingAs($admin)->put('/admin/background-music', [
+            'title' => 'Mars Palang Merah Indonesia (Aransemen Resmi)',
+            'subtitle' => 'Karya Mochtar H. S. - Korps Sukarela & PMR Wira',
+            'default_volume' => 40,
+            'is_active' => '1',
+            'autoplay_on_first_interaction' => '1',
+            'loop' => '1',
+            'lyrics' => "Palang Merah Indonesia\nSumber kasih umat manusia...",
+        ]);
+        $response->assertRedirect('/admin/background-music');
+        $response->assertSessionHas('success');
+
+        $this->assertDatabaseHas('background_musics', [
+            'title' => 'Mars Palang Merah Indonesia (Aransemen Resmi)',
+            'default_volume' => 40,
+            'is_active' => true,
+        ]);
+
+        // 3. Public visitor visits home and sees the floating Mars PMI player widget
+        $response = $this->get('/');
+        $response->assertStatus(200);
+        $response->assertSee('mars-pmi-floating-widget');
+        $response->assertSee('mars-pmi-player-audio');
+        $response->assertSee('Mars PMI');
+
+        // 4. Admin resets audio to default
+        $response = $this->actingAs($admin)->post('/admin/background-music/reset');
+        $response->assertRedirect('/admin/background-music');
+        $response->assertSessionHas('success');
+
+        $this->assertDatabaseHas('background_musics', [
+            'title' => 'Mars Palang Merah Indonesia',
+            'audio_path' => null,
+        ]);
+    }
 }

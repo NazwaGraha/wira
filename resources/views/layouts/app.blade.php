@@ -557,6 +557,357 @@
             }
         }
     </script>
+
+    {{-- ========================================================================= --}}
+    {{-- FLOATING MARS PMI AUDIO PLAYER (Global Background Music)                  --}}
+    {{-- ========================================================================= --}}
+    @php
+        $marsPmiMusic = null;
+        try {
+            if (\Illuminate\Support\Facades\Schema::hasTable('background_musics')) {
+                $marsPmiMusic = \App\Models\BackgroundMusic::first();
+            }
+        } catch (\Throwable $e) {}
+
+        if (!$marsPmiMusic) {
+            $marsPmiMusic = (object)[
+                'title' => 'Mars Palang Merah Indonesia',
+                'subtitle' => 'Ciptaan: Mochtar H. S. • PMR Wira SMAN 1 Ciawi',
+                'audio_url' => asset('audio/mars-pmi.m4a'),
+                'is_active' => true,
+                'autoplay_on_first_interaction' => true,
+                'default_volume' => 30,
+                'loop' => true,
+                'lyrics' => "Palang Merah Indonesia\nSumber kasih umat manusia\nWarisan luhur, nusa dan bangsa\nWujud nyata pengayom Pancasila\n\nGerak juangnya ke seluruh nusa\nMendarmabaktikan bagi ampera\nTunaikan tugas suci tujuan PMI\nDi persada bunda pertiwi\n\nUntuk umat manusia\nDi seluruh dunia\nPMI menghantarkan jasa",
+            ];
+        }
+    @endphp
+
+    @if($marsPmiMusic && $marsPmiMusic->is_active)
+        <!-- Hidden Audio Element -->
+        <audio id="mars-pmi-player-audio" preload="auto" {{ $marsPmiMusic->loop ? 'loop' : '' }}>
+            @if(file_exists(public_path('audio/mars-pmi.mp3')))
+                <source src="{{ asset('audio/mars-pmi.mp3') }}" type="audio/mpeg">
+            @endif
+            <source src="{{ $marsPmiMusic->audio_url }}" type="audio/mp4">
+            <source src="{{ $marsPmiMusic->audio_url }}" type="audio/mpeg">
+        </audio>
+
+        <!-- Floating Player Container (Bottom Left) -->
+        <div id="mars-pmi-floating-widget" class="fixed bottom-4 left-4 z-50 select-none font-sans">
+            
+            <!-- Compact Pill Bar (Default View) -->
+            <div id="mars-pmi-pill" class="flex items-center gap-2.5 bg-stone-900/95 hover:bg-stone-900 text-white pl-2.5 pr-3 py-2 rounded-full shadow-2xl border border-white/20 backdrop-blur-md transition-all duration-300 transform hover:scale-102">
+                
+                <!-- Play/Pause Toggle Button with Animated Disc / Equalizer -->
+                <button type="button" onclick="toggleMarsPmiPlay()" class="w-8 h-8 rounded-full bg-pmr-primary hover:bg-rose-600 text-white flex items-center justify-center text-xs shadow-md transition flex-shrink-0 relative group" title="Putar / Jeda Mars PMI">
+                    <i id="mars-pmi-play-icon" class="fa-solid fa-play text-[11px] ml-0.5"></i>
+                    
+                    <!-- Pulse ping effect when playing -->
+                    <span id="mars-pmi-ping" class="absolute inset-0 rounded-full bg-rose-500 animate-ping opacity-40 hidden"></span>
+                </button>
+
+                <!-- Equalizer Waves Animation (Active when playing) -->
+                <div class="flex items-center gap-0.5 h-4 px-1" onclick="toggleMarsPmiPlay()" style="cursor: pointer;">
+                    <span class="w-1 h-2 bg-rose-500 rounded-full mars-eq-bar [animation-delay:0.1s]"></span>
+                    <span class="w-1 h-3.5 bg-amber-400 rounded-full mars-eq-bar [animation-delay:0.3s]"></span>
+                    <span class="w-1 h-4 bg-red-500 rounded-full mars-eq-bar [animation-delay:0.2s]"></span>
+                    <span class="w-1 h-2.5 bg-amber-300 rounded-full mars-eq-bar [animation-delay:0.4s]"></span>
+                </div>
+
+                <!-- Title & Status Info -->
+                <div class="flex flex-col cursor-pointer pr-1" onclick="toggleMarsPmiPlay()">
+                    <span class="text-[11px] font-black tracking-tight text-white leading-tight flex items-center gap-1.5">
+                        <span>Mars PMI</span>
+                        <span id="mars-pmi-status-badge" class="text-[9px] font-bold text-amber-300 uppercase px-1.5 py-0.2 rounded bg-white/10">Audio</span>
+                    </span>
+                    <span id="mars-pmi-subtext" class="text-[9px] text-stone-400 leading-none mt-0.5">Klik untuk memutar</span>
+                </div>
+
+                <!-- Button to Open Expanded Panel & Lyrics -->
+                <button type="button" onclick="toggleMarsPmiPanel()" class="w-6 h-6 rounded-full bg-white/10 hover:bg-white/25 text-stone-300 hover:text-white flex items-center justify-center text-[10px] transition ml-1" title="Lihat kontrol & lirik lagu">
+                    <i class="fa-solid fa-sliders"></i>
+                </button>
+            </div>
+
+            <!-- Expanded Control & Lyrics Panel Card (Hidden by Default) -->
+            <div id="mars-pmi-panel" class="hidden absolute bottom-12 left-0 w-80 sm:w-88 bg-stone-900/98 text-white rounded-3xl p-5 shadow-2xl border border-white/20 backdrop-blur-xl mb-2 animate-in fade-in slide-in-from-bottom-3 duration-200">
+                
+                <!-- Panel Header -->
+                <div class="flex items-start justify-between border-b border-white/10 pb-3 mb-3">
+                    <div class="flex items-center gap-2.5">
+                        <div class="w-9 h-9 rounded-xl bg-pmr-primary flex items-center justify-center text-white text-sm shadow-md">
+                            <i class="fa-solid fa-music"></i>
+                        </div>
+                        <div>
+                            <div class="text-xs font-black text-white leading-tight">Mars PMI</div>
+                            <div class="text-[10px] text-stone-400">Karya: Mochtar H. S.</div>
+                        </div>
+                    </div>
+                    <button type="button" onclick="toggleMarsPmiPanel()" class="w-6 h-6 rounded-full bg-white/10 hover:bg-white/20 text-stone-400 hover:text-white flex items-center justify-center text-xs transition">
+                        <i class="fa-solid fa-xmark"></i>
+                    </button>
+                </div>
+
+                <!-- Time Progress & Seekbar -->
+                <div class="space-y-1.5 mb-3">
+                    <div class="w-full bg-white/15 h-1.5 rounded-full overflow-hidden cursor-pointer" onclick="seekMarsAudio(event)">
+                        <div id="mars-pmi-progress-bar" class="bg-gradient-to-r from-amber-400 to-rose-500 h-full w-0 transition-all duration-150"></div>
+                    </div>
+                    <div class="flex items-center justify-between text-[10px] font-mono text-stone-400">
+                        <span id="mars-pmi-time-current">00:00</span>
+                        <span id="mars-pmi-time-duration">01:30</span>
+                    </div>
+                </div>
+
+                <!-- Volume & Control Bar -->
+                <div class="flex items-center justify-between gap-3 bg-white/5 p-2.5 rounded-2xl border border-white/10 mb-3">
+                    <button type="button" onclick="toggleMarsMute()" id="mars-pmi-mute-btn" class="w-7 h-7 rounded-lg bg-white/10 text-stone-300 hover:text-white flex items-center justify-center text-xs">
+                        <i class="fa-solid fa-volume-high" id="mars-pmi-mute-icon"></i>
+                    </button>
+                    <input type="range" id="mars-pmi-vol-slider" min="0" max="100" step="5" value="{{ $marsPmiMusic->default_volume ?? 30 }}" oninput="setMarsVolume(this.value)" class="flex-grow h-1.5 bg-white/20 rounded-lg appearance-none cursor-pointer accent-pmr-primary">
+                    <span id="mars-pmi-vol-text" class="text-[10px] font-bold text-stone-400 w-8 text-right">{{ $marsPmiMusic->default_volume ?? 30 }}%</span>
+                </div>
+
+                <!-- Lyrics Accordion / View -->
+                <div class="space-y-2">
+                    <button type="button" onclick="toggleMarsLyrics()" class="w-full py-2 px-3 rounded-xl bg-white/10 hover:bg-white/15 text-stone-200 text-xs font-bold flex items-center justify-between transition">
+                        <span class="flex items-center gap-1.5">
+                            <i class="fa-solid fa-book-open text-amber-400 text-[11px]"></i>
+                            <span>Buka Lirik Lagu Mars PMI</span>
+                        </span>
+                        <i id="mars-pmi-lyrics-chevron" class="fa-solid fa-chevron-down text-[10px] transition-transform"></i>
+                    </button>
+
+                    <div id="mars-pmi-lyrics-box" class="hidden max-h-48 overflow-y-auto p-3.5 rounded-2xl bg-stone-950/80 border border-white/10 text-stone-300 text-[11px] leading-relaxed font-serif whitespace-pre-line custom-scrollbar italic text-center">
+{{ $marsPmiMusic->lyrics }}
+                    </div>
+                </div>
+
+            </div>
+
+        </div>
+
+        <style>
+            .mars-eq-bar {
+                animation: marsEqualizer 1s ease-in-out infinite alternate;
+                animation-play-state: paused;
+            }
+            .mars-playing .mars-eq-bar {
+                animation-play-state: running;
+            }
+            @keyframes marsEqualizer {
+                0% { height: 4px; }
+                50% { height: 14px; }
+                100% { height: 6px; }
+            }
+        </style>
+
+        <script>
+            let marsAudio = null;
+            let marsIsPlaying = false;
+            let marsUserHasInteracted = false;
+            const marsDefaultVolume = {{ ($marsPmiMusic->default_volume ?? 30) / 100 }};
+            const marsAutoplayAllowed = {{ $marsPmiMusic->autoplay_on_first_interaction ? 'true' : 'false' }};
+
+            document.addEventListener('DOMContentLoaded', () => {
+                marsAudio = document.getElementById('mars-pmi-player-audio');
+                if (!marsAudio) return;
+
+                // Set initial volume
+                const savedVol = localStorage.getItem('pmr_mars_volume');
+                if (savedVol !== null) {
+                    marsAudio.volume = parseFloat(savedVol);
+                    const slider = document.getElementById('mars-pmi-vol-slider');
+                    const text = document.getElementById('mars-pmi-vol-text');
+                    if (slider) slider.value = Math.round(parseFloat(savedVol) * 100);
+                    if (text) text.textContent = Math.round(parseFloat(savedVol) * 100) + '%';
+                } else {
+                    marsAudio.volume = marsDefaultVolume;
+                }
+
+                // Audio events
+                marsAudio.addEventListener('timeupdate', updateMarsProgress);
+                marsAudio.addEventListener('ended', onMarsEnded);
+                marsAudio.addEventListener('play', () => setMarsPlayingState(true));
+                marsAudio.addEventListener('pause', () => setMarsPlayingState(false));
+
+                // Check user preference
+                const userPausedManually = localStorage.getItem('pmr_mars_paused') === 'true';
+
+                if (!userPausedManually && marsAutoplayAllowed) {
+                    // Try direct autoplay (some browsers allow if user previously interacted with domain)
+                    const playPromise = marsAudio.play();
+                    if (playPromise !== undefined) {
+                        playPromise.then(() => {
+                            setMarsPlayingState(true);
+                        }).catch(() => {
+                            // Browser Autoplay Policy blocked - register global gesture trigger
+                            setupSmartGestureAutoplay();
+                        });
+                    }
+                }
+            });
+
+            function setupSmartGestureAutoplay() {
+                const triggerPlay = () => {
+                    if (marsUserHasInteracted) return;
+                    marsUserHasInteracted = true;
+
+                    const userPausedManually = localStorage.getItem('pmr_mars_paused') === 'true';
+                    if (!userPausedManually && marsAudio && marsAudio.paused) {
+                        marsAudio.play().then(() => {
+                            setMarsPlayingState(true);
+                        }).catch(() => {});
+                    }
+
+                    // Remove listeners once interacted
+                    ['click', 'touchstart', 'keydown'].forEach(evt => {
+                        document.removeEventListener(evt, triggerPlay);
+                    });
+                };
+
+                ['click', 'touchstart', 'keydown'].forEach(evt => {
+                    document.addEventListener(evt, triggerPlay, { passive: true });
+                });
+            }
+
+            function toggleMarsPmiPlay() {
+                if (!marsAudio) return;
+                marsUserHasInteracted = true;
+
+                if (marsAudio.paused) {
+                    localStorage.setItem('pmr_mars_paused', 'false');
+                    marsAudio.play().then(() => {
+                        setMarsPlayingState(true);
+                    }).catch(err => {
+                        console.log('Audio play error:', err);
+                    });
+                } else {
+                    localStorage.setItem('pmr_mars_paused', 'true');
+                    marsAudio.pause();
+                    setMarsPlayingState(false);
+                }
+            }
+
+            function setMarsPlayingState(playing) {
+                marsIsPlaying = playing;
+                const widget = document.getElementById('mars-pmi-floating-widget');
+                const playIcon = document.getElementById('mars-pmi-play-icon');
+                const subtext = document.getElementById('mars-pmi-subtext');
+                const badge = document.getElementById('mars-pmi-status-badge');
+                const ping = document.getElementById('mars-pmi-ping');
+
+                if (playing) {
+                    if (widget) widget.classList.add('mars-playing');
+                    if (playIcon) {
+                        playIcon.classList.remove('fa-play', 'ml-0.5');
+                        playIcon.classList.add('fa-pause');
+                    }
+                    if (subtext) subtext.textContent = 'Sedang Berputar...';
+                    if (badge) {
+                        badge.textContent = 'Memutar';
+                        badge.classList.remove('text-amber-300', 'bg-white/10');
+                        badge.classList.add('text-emerald-300', 'bg-emerald-500/20');
+                    }
+                    if (ping) ping.classList.remove('hidden');
+                } else {
+                    if (widget) widget.classList.remove('mars-playing');
+                    if (playIcon) {
+                        playIcon.classList.remove('fa-pause');
+                        playIcon.classList.add('fa-play', 'ml-0.5');
+                    }
+                    if (subtext) subtext.textContent = 'Klik untuk memutar';
+                    if (badge) {
+                        badge.textContent = 'Jeda';
+                        badge.classList.remove('text-emerald-300', 'bg-emerald-500/20');
+                        badge.classList.add('text-amber-300', 'bg-white/10');
+                    }
+                    if (ping) ping.classList.add('hidden');
+                }
+            }
+
+            function updateMarsProgress() {
+                if (!marsAudio || !marsAudio.duration) return;
+                const pct = (marsAudio.currentTime / marsAudio.duration) * 100;
+                const bar = document.getElementById('mars-pmi-progress-bar');
+                const currentEl = document.getElementById('mars-pmi-time-current');
+                const durationEl = document.getElementById('mars-pmi-time-duration');
+
+                if (bar) bar.style.width = pct + '%';
+                if (currentEl) currentEl.textContent = formatMarsTime(marsAudio.currentTime);
+                if (durationEl) durationEl.textContent = formatMarsTime(marsAudio.duration);
+            }
+
+            function onMarsEnded() {
+                setMarsPlayingState(false);
+            }
+
+            function seekMarsAudio(e) {
+                if (!marsAudio || !marsAudio.duration) return;
+                const rect = e.currentTarget.getBoundingClientRect();
+                const pos = (e.clientX - rect.left) / rect.width;
+                marsAudio.currentTime = pos * marsAudio.duration;
+            }
+
+            function setMarsVolume(val) {
+                if (!marsAudio) return;
+                const v = val / 100;
+                marsAudio.volume = v;
+                localStorage.setItem('pmr_mars_volume', v.toString());
+                const text = document.getElementById('mars-pmi-vol-text');
+                const icon = document.getElementById('mars-pmi-mute-icon');
+                if (text) text.textContent = val + '%';
+                if (icon) {
+                    if (v === 0) {
+                        icon.className = 'fa-solid fa-volume-xmark text-rose-400';
+                    } else if (v < 0.5) {
+                        icon.className = 'fa-solid fa-volume-low';
+                    } else {
+                        icon.className = 'fa-solid fa-volume-high';
+                    }
+                }
+            }
+
+            function toggleMarsMute() {
+                if (!marsAudio) return;
+                const slider = document.getElementById('mars-pmi-vol-slider');
+                if (marsAudio.volume > 0) {
+                    marsAudio.dataset.prevVol = marsAudio.volume;
+                    setMarsVolume(0);
+                    if (slider) slider.value = 0;
+                } else {
+                    const prev = marsAudio.dataset.prevVol ? parseFloat(marsAudio.dataset.prevVol) * 100 : 30;
+                    setMarsVolume(prev);
+                    if (slider) slider.value = prev;
+                }
+            }
+
+            function toggleMarsPmiPanel() {
+                const panel = document.getElementById('mars-pmi-panel');
+                if (panel) {
+                    panel.classList.toggle('hidden');
+                }
+            }
+
+            function toggleMarsLyrics() {
+                const box = document.getElementById('mars-pmi-lyrics-box');
+                const chevron = document.getElementById('mars-pmi-lyrics-chevron');
+                if (box) {
+                    box.classList.toggle('hidden');
+                    if (chevron) {
+                        chevron.classList.toggle('rotate-180');
+                    }
+                }
+            }
+
+            function formatMarsTime(sec) {
+                const m = Math.floor(sec / 60);
+                const s = Math.floor(sec % 60);
+                return (m < 10 ? '0' : '') + m + ':' + (s < 10 ? '0' : '') + s;
+            }
+        </script>
+    @endif
     @stack('scripts')
 </body>
 </html>
