@@ -27,6 +27,7 @@ use App\Http\Controllers\Admin\MemberController;
 use App\Http\Controllers\Admin\OrganizationController;
 use App\Http\Controllers\Admin\OrganizationGuidelineController;
 use App\Http\Controllers\Admin\PopupBannerController;
+use App\Http\Controllers\Admin\UksHotlineController;
 use App\Http\Controllers\ArticleController;
 use App\Http\Controllers\CompetitionController;
 use App\Http\Controllers\MemberAreaController;
@@ -132,6 +133,11 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::get('/background-music', [BackgroundMusicController::class, 'index'])->name('background-music.index');
         Route::put('/background-music', [BackgroundMusicController::class, 'update'])->name('background-music.update');
         Route::post('/background-music/reset', [BackgroundMusicController::class, 'resetDefault'])->name('background-music.reset');
+
+        // Pengaturan Hotline & Siaga UKS
+        Route::get('/uks-hotline', [UksHotlineController::class, 'index'])->name('uks-hotline.index');
+        Route::put('/uks-hotline', [UksHotlineController::class, 'update'])->name('uks-hotline.update');
+        Route::match(['post', 'patch'], '/uks-hotline/toggle', [UksHotlineController::class, 'toggleStatus'])->name('uks-hotline.toggle');
 
         // Kelola Kegiatan & Agenda
         Route::resource('kegiatan', ActivityController::class)->names([

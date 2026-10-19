@@ -55,13 +55,34 @@
 </head>
 <body class="bg-slate-50 text-slate-800 font-sans antialiased flex flex-col min-h-screen">
 
+    @php
+        $hotlineUks = \App\Models\UksHotline::current();
+    @endphp
+
     <!-- Top Emergency & Announcement Bar -->
     <div class="bg-stone-900 text-white text-[11px] sm:text-xs py-2 px-3 sm:px-8 lg:px-12 border-b border-stone-800">
         <div class="w-full max-w-[1720px] mx-auto flex flex-wrap justify-between items-center gap-2">
-            <div class="flex items-center gap-2 sm:gap-3">
-                <span class="bg-pmr-primary text-white font-bold px-2 py-0.5 rounded text-[9px] sm:text-[10px] tracking-wider uppercase">Hotline UKS</span>
-                <span class="text-stone-300 truncate max-w-[240px] sm:max-w-none">Piket Medis: <strong class="text-white">+62 812-3456-7890</strong></span>
+            <!-- Left: Layanan Siaga Medis UKS (Interaktif & Jelas Fungsinya) -->
+            <div class="flex items-center gap-2 sm:gap-3 flex-wrap">
+                <span class="inline-flex items-center gap-1.5 {{ $hotlineUks->is_active ? 'bg-emerald-500/20 text-emerald-300 border-emerald-400/30' : 'bg-stone-800 text-stone-400 border-stone-700' }} border font-extrabold px-2.5 py-0.5 rounded-full text-[9px] sm:text-[10px] tracking-wider uppercase shadow-xs">
+                    <span class="w-1.5 h-1.5 rounded-full {{ $hotlineUks->is_active ? 'bg-emerald-400 animate-pulse' : 'bg-stone-500' }}"></span>
+                    {{ $hotlineUks->label }}
+                </span>
+
+                <div class="flex items-center gap-2 text-stone-300 text-[11px] sm:text-xs">
+                    <span class="hidden md:inline text-stone-400 font-medium">{{ $hotlineUks->service_name }}:</span>
+                    <a href="{{ $hotlineUks->whatsapp_url }}" target="_blank" rel="noopener noreferrer" class="font-black text-white hover:text-emerald-300 transition inline-flex items-center gap-1.5 group/phone" title="Klik untuk hubungi WhatsApp Piket Medis UKS">
+                        <i class="fa-brands fa-whatsapp text-emerald-400 text-sm group-hover/phone:scale-110 transition"></i>
+                        <span class="tracking-wide">{{ $hotlineUks->formatted_phone }}</span>
+                    </a>
+                    <button type="button" onclick="openUksHotlineModal()" class="inline-flex items-center gap-1 text-[10px] text-amber-300 hover:text-white bg-white/10 hover:bg-white/20 px-2 py-0.5 rounded-md transition font-bold cursor-pointer" title="Detail Layanan P3K Darurat UKS">
+                        <i class="fa-solid fa-circle-info text-[9px]"></i>
+                        <span>Info Siaga</span>
+                    </button>
+                </div>
             </div>
+
+            <!-- Right: Donor Darah & Area Login -->
             <div class="flex items-center gap-3 sm:gap-4 text-stone-400">
                 <a href="{{ route('donor-darah') }}" class="hover:text-red-400 transition flex items-center gap-1 font-medium">
                     <i class="fa-solid fa-droplet text-red-500"></i> <span class="hidden xs:inline">Info </span>Donor Darah
@@ -371,9 +392,34 @@
                     <i class="fa-solid fa-chevron-right text-[10px] text-stone-500"></i>
                 </a>
 
+                <!-- Emergency Hotline UKS Quick Box (Mobile) -->
+                <div class="p-3 rounded-2xl bg-gradient-to-br from-red-950/90 to-stone-900 border border-red-800/40 text-white space-y-2 shadow-inner my-1">
+                    <div class="flex items-center justify-between">
+                        <span class="inline-flex items-center gap-1.5 text-[9px] font-black uppercase text-amber-300">
+                            <span class="w-1.5 h-1.5 rounded-full {{ $hotlineUks->is_active ? 'bg-emerald-400 animate-pulse' : 'bg-stone-500' }}"></span>
+                            {{ $hotlineUks->label }}
+                        </span>
+                        <span class="text-[9px] text-emerald-300 font-bold bg-emerald-500/10 px-2 py-0.2 rounded-full border border-emerald-500/20">
+                            {{ $hotlineUks->status_text }}
+                        </span>
+                    </div>
+                    <div class="flex items-center justify-between text-xs">
+                        <span class="text-stone-300 text-[10px]">{{ $hotlineUks->service_name }}</span>
+                        <span class="font-black text-white font-mono">{{ $hotlineUks->formatted_phone }}</span>
+                    </div>
+                    <div class="grid grid-cols-2 gap-1.5 pt-0.5">
+                        <a href="{{ $hotlineUks->whatsapp_url }}" target="_blank" class="py-1.5 px-2 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-[11px] font-bold flex items-center justify-center gap-1.5 shadow-xs">
+                            <i class="fa-brands fa-whatsapp"></i> Chat WA
+                        </a>
+                        <a href="{{ $hotlineUks->tel_url }}" class="py-1.5 px-2 rounded-lg bg-white/15 hover:bg-white/25 text-white text-[11px] font-bold flex items-center justify-center gap-1.5">
+                            <i class="fa-solid fa-phone text-[10px]"></i> Panggil
+                        </a>
+                    </div>
+                </div>
+
                 <a href="{{ route('kontak') }}" class="flex items-center justify-between p-2.5 rounded-xl hover:bg-stone-800 text-stone-300 transition text-xs font-semibold {{ request()->routeIs('kontak') ? 'bg-red-500/20 text-red-300 font-bold' : '' }}">
                     <span class="flex items-center gap-2.5">
-                        <i class="fa-solid fa-phone text-red-400 w-4"></i> Kontak Kami & Hotline UKS
+                        <i class="fa-solid fa-phone text-red-400 w-4"></i> Kontak Sekretariat & Hotline UKS
                     </span>
                     <i class="fa-solid fa-chevron-right text-[10px] text-stone-500"></i>
                 </a>
@@ -911,6 +957,128 @@
             }
         </script>
     @endif
+
+    <!-- Modal Dialog Informasi & Siaga Hotline UKS -->
+    <div id="uks-hotline-modal" class="fixed inset-0 z-[120] hidden items-center justify-center p-4 bg-stone-950/80 backdrop-blur-sm transition-all duration-300">
+        <div class="bg-white rounded-3xl max-w-lg w-full overflow-hidden shadow-2xl border border-stone-200 animate-in fade-in zoom-in-95 duration-200">
+            <!-- Modal Header -->
+            <div class="relative bg-gradient-to-r from-stone-900 via-stone-850 to-red-950 text-white p-6 sm:p-7 border-b border-white/10">
+                <button type="button" onclick="closeUksHotlineModal()" class="absolute top-4 right-4 w-9 h-9 rounded-full bg-white/10 hover:bg-white/20 text-stone-300 hover:text-white flex items-center justify-center transition cursor-pointer" aria-label="Tutup Dialog">
+                    <i class="fa-solid fa-xmark text-sm"></i>
+                </button>
+                <div class="flex items-center gap-2.5 mb-2">
+                    <span class="inline-flex items-center gap-1.5 {{ $hotlineUks->is_active ? 'bg-emerald-500/20 text-emerald-300 border-emerald-400/30' : 'bg-stone-800 text-stone-400 border-stone-700' }} border px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider">
+                        <span class="w-2 h-2 rounded-full {{ $hotlineUks->is_active ? 'bg-emerald-400 animate-pulse' : 'bg-stone-500' }}"></span>
+                        {{ $hotlineUks->label }}
+                    </span>
+                    <span class="text-xs text-stone-300 font-semibold">{{ $hotlineUks->status_text }}</span>
+                </div>
+                <h3 class="text-xl sm:text-2xl font-black tracking-tight text-white flex items-center gap-2.5">
+                    <i class="fa-solid fa-kit-medical text-red-500"></i>
+                    <span>{{ $hotlineUks->service_name }}</span>
+                </h3>
+                <p class="text-xs text-stone-300 mt-1">Layanan respon cepat tanggap darurat medis & P3K siswa PMR Wira SMAN 1 Ciawi</p>
+            </div>
+
+            <!-- Modal Body -->
+            <div class="p-6 sm:p-7 space-y-4">
+                <!-- Contact Highlight Card -->
+                <div class="bg-stone-50 border border-stone-200/90 rounded-2xl p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                    <div>
+                        <div class="text-[10px] font-black uppercase tracking-wider text-stone-400">Nomor Telepon / WhatsApp Piket</div>
+                        <div class="text-xl font-black text-stone-900 tracking-wide font-mono mt-0.5">{{ $hotlineUks->formatted_phone }}</div>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <a href="{{ $hotlineUks->whatsapp_url }}" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs shadow-sm transition">
+                            <i class="fa-brands fa-whatsapp text-sm"></i> Chat WA
+                        </a>
+                        <a href="{{ $hotlineUks->tel_url }}" class="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-stone-800 hover:bg-stone-900 text-white font-bold text-xs shadow-sm transition">
+                            <i class="fa-solid fa-phone text-xs"></i> Panggil
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Info Grid -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
+                    <div class="p-3.5 rounded-xl bg-stone-50 border border-stone-200/70">
+                        <div class="text-stone-400 font-bold uppercase tracking-wider text-[10px] flex items-center gap-1.5 mb-1">
+                            <i class="fa-solid fa-user-shield text-red-600"></i> Petugas Siaga
+                        </div>
+                        <div class="font-extrabold text-stone-800">{{ $hotlineUks->officer_name }}</div>
+                    </div>
+                    <div class="p-3.5 rounded-xl bg-stone-50 border border-stone-200/70">
+                        <div class="text-stone-400 font-bold uppercase tracking-wider text-[10px] flex items-center gap-1.5 mb-1">
+                            <i class="fa-solid fa-clock text-amber-600"></i> Jam Operasional
+                        </div>
+                        <div class="font-extrabold text-stone-800">{{ $hotlineUks->operational_hours }}</div>
+                    </div>
+                    <div class="sm:col-span-2 p-3.5 rounded-xl bg-stone-50 border border-stone-200/70">
+                        <div class="text-stone-400 font-bold uppercase tracking-wider text-[10px] flex items-center gap-1.5 mb-1">
+                            <i class="fa-solid fa-location-dot text-emerald-600"></i> Lokasi Pos Medis
+                        </div>
+                        <div class="font-extrabold text-stone-800">{{ $hotlineUks->location }}</div>
+                    </div>
+                </div>
+
+                <!-- Description / Purpose Info -->
+                <div class="bg-red-50/70 border border-red-200/80 rounded-2xl p-4 text-xs text-red-950 space-y-1.5">
+                    <div class="font-black flex items-center gap-1.5 text-red-900">
+                        <i class="fa-solid fa-circle-info"></i>
+                        <span>Kapan Harus Menghubungi Hotline UKS?</span>
+                    </div>
+                    <p class="text-stone-600 leading-relaxed">
+                        {{ $hotlineUks->description ?: 'Hotline ini difungsikan untuk pelaporan cepat siswa/guru yang mendadak sakit di kelas, pingsan saat upacara bendera, cedera saat olahraga/praktik, atau membutuhkan evakuasi tandu darurat ke Ruang UKS SMAN 1 Ciawi.' }}
+                    </p>
+                </div>
+            </div>
+
+            <!-- Modal Footer -->
+            <div class="bg-stone-50 px-6 py-4 border-t border-stone-200 flex items-center justify-between">
+                <span class="text-[11px] text-stone-500 font-medium">PMR Wira SMAN 1 Ciawi &bull; Sigap, Terlatih, Kemanusiaan</span>
+                <button type="button" onclick="closeUksHotlineModal()" class="px-4 py-2 rounded-xl bg-stone-200 hover:bg-stone-300 text-stone-700 font-bold text-xs transition cursor-pointer">
+                    Tutup
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function openUksHotlineModal() {
+            const modal = document.getElementById('uks-hotline-modal');
+            if (modal) {
+                modal.classList.remove('hidden');
+                modal.classList.add('flex');
+                document.body.style.overflow = 'hidden';
+            }
+        }
+
+        function closeUksHotlineModal() {
+            const modal = document.getElementById('uks-hotline-modal');
+            if (modal) {
+                modal.classList.add('hidden');
+                modal.classList.remove('flex');
+                document.body.style.overflow = '';
+            }
+        }
+
+        // Close on backdrop click & Escape key
+        document.addEventListener('DOMContentLoaded', () => {
+            const modal = document.getElementById('uks-hotline-modal');
+            if (modal) {
+                modal.addEventListener('click', (e) => {
+                    if (e.target === modal) {
+                        closeUksHotlineModal();
+                    }
+                });
+            }
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape') {
+                    closeUksHotlineModal();
+                }
+            });
+        });
+    </script>
+
     @stack('scripts')
 </body>
 </html>
