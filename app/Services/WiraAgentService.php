@@ -255,6 +255,10 @@ PROMPT;
         $context[] = '   • Prinsip 3A: Aman Diri, Aman Pasien/Korban, Aman Lingkungan.';
         $context[] = '   • Penilaian Dini: ASNT (Awas, Suara, Nyeri, Tidak Respon) / AVPU, CAB (Circulation, Airway, Breathing).';
         $context[] = '   • Resusitasi Jantung Paru (RJP/CPR): 30 kompresi dada : 2 napas buatan (kedalaman 5-6 cm, kecepatan 100-120x/menit di pertengahan tulang dada/sternum).';
+        $context[] = '   • Penanganan Kejang-kejang (Epilepsi/Step/Konvulsi): 3A, lindungi kepala dengan bantalan empuk, singkirkan benda tajam di sekitar, DILARANG KERAS menahan gerakan atau memasukkan benda apa pun (sendok, kayu, jari, air minum) ke mulut korban, longgarkan pakaian/kerah ketat, setelah kejang reda posisikan miring (recovery position), awasi napas, hubungi hotline UKS (0857-7024-6918) jika kejang > 5 menit atau pertama kali.';
+        $context[] = '   • Tersedak (Choking / Sumbatan Jalan Napas): Bila sadar beri 5 tepukan punggung (back blows) dan 5 hentakan perut (Heimlich Maneuver / abdominal thrusts). Bila pingsan lakukan RJP 30:2.';
+        $context[] = '   • Asma & Sesak Napas: Dudukkan condong ke depan, longgarkan pakaian, bantu inhaler bronkodilator pribadi, pastikan sirkulasi udara baik.';
+        $context[] = '   • Gigitan Ular Berbisa: Imobilisasi anggota gerak dengan balut tekan dan bidai (Pressure Immobilization Technique / PIT). JANGAN hisap bisa, jangan sayat luka, jangan pasang tourniquet kencang! Rujuk darurat ke RS untuk SABU.';
         $context[] = '   • Penanganan Pendarahan: Direct pressure (tekan langsung kassa steril), balut tekan dengan mitela, elevasi (tinggikan luka di atas jantung bila tidak ada patah tulang), titik tekan nadi.';
         $context[] = '   • Patah Tulang (Fraktur): Pembidaian melewati minimal 2 sendi (sendi di atas dan di bawah fraktur), jangan meluruskan tulang paksa, wajib cek PMS (Pulsa, Motorik, Sensorik) sebelum dan sesudah pembidaian.';
         $context[] = '   • Luka Bakar: Segera dinginkan dengan air bersih mengalir selama 10-20 menit. JANGAN menggunakan odol, mentega, kecap, atau minyak karena memicu infeksi. Tutup kassa steril lembab.';
@@ -508,6 +512,32 @@ PROMPT;
             return 'Mohon maaf Sahabat Kemanusiaan, demi menjaga keamanan dan privasi data organisasi, informasi kredensial akun dan akses login Backoffice bersifat rahasia dan tidak dapat diberikan. Jika Kakak adalah pengurus yang sah dan mengalami kendala akun, silakan gunakan fitur Lupa Kata Sandi di halaman login resmi atau hubungi Pembina PMR ya! ❤️';
         }
 
+        // A. Pertanyaan Spesifik 5 Bidang (Ketua maupun seluruh staf anggota)
+        $specificBidang = $this->handleSpecificBidangInquiry($lower);
+        if ($specificBidang !== null) {
+            return $specificBidang;
+        }
+
+        // B. Pertolongan Pertama: Kejang-kejang (Epilepsi / Step / Konvulsi)
+        if (str_contains($lower, 'kejang') || str_contains($lower, 'epilepsi') || str_contains($lower, 'step') || str_contains($lower, 'konvulsi')) {
+            return "Halo Sahabat Kemanusiaan! 🩹\n\nJika menemui seseorang yang mengalami **Kejang-kejang (Epilepsi / Step / Konvulsi)**, berikut adalah **Protokol Pertolongan Pertama Resmi PMR Wira** yang wajib dilakukan secara tenang dan tepat:\n\n🛡️ **1. AMANKAN KORBAN & LINGKUNGAN (Prinsip 3A):**\n• Tetap tenang dan jangan panik.\n• Singkirkan benda-benda keras, tajam, atau berbahaya di sekitar korban (meja, kursi, pecahan kaca, dsb) agar korban tidak terbentur saat kejang.\n• Letakkan alas empuk (bantal, jaket lipat, atau kain) di bawah kepala korban untuk melindungi kepala dari benturan lantai.\n\n🚫 **2. HAL-HAL YANG DILARANG KERAS (JANGAN DILAKUKAN):**\n• ❌ **JANGAN PERNAH menahan gerakan kejang** atau memegangi/menindih tubuh korban secara paksa, karena dapat memicu dislokasi sendi atau patah tulang!\n• ❌ **DILARANG KERAS memasukkan benda apa pun ke dalam mulut korban** (seperti sendok, kayu, jari tangan, kain, atau air minum). Korban tidak akan menelan lidahnya sendiri; memasukkan benda justru berisiko mematahkan gigi, melukai gusi, atau menyumbat saluran napas yang berakibat fatal!\n• ❌ **JANGAN memberi makan atau minum** saat korban masih kejang atau belum sadar penuh.\n\n👔 **3. LONGGARKAN PAKAIAN:**\n• Kendurkan pakaian yang ketat, terutama di bagian leher (kerah baju, dasi, jilbab/syal, atau kancing atas) agar jalan napas tidak tertekan.\n\n🛌 **4. POSISI PEMULIHAN (RECOVERY POSITION) SETELAH KEJANG:**\n• Saat sentakan kejang telah reda, miringkan tubuh korban ke satu sisi (posisi pemulihan/miring mantap).\n• Posisi miring ini sangat penting agar cairan liur atau muntahan mengalir keluar dan tidak menyumbat jalan napas.\n• Temani korban dengan sabar hingga ia sadar sepenuhnya (biasanya korban akan merasa lemas atau bingung setelah kejang).\n\n📞 **5. HUBUNGI BANTUAN MEDIS DARURAT JIKA:**\n• Kejang berlangsung lebih dari 5 menit.\n• Kejang berulang dalam waktu singkat tanpa korban sempat pulih kesadarannya.\n• Korban mengalami kesulitan bernapas setelah kejang berhenti.\n• Korban mengalami cedera benturan atau kejang terjadi di dalam air.\n• Ini adalah kejang pertama kali yang dialami korban.\n\nSegera hubungi tim medis sekolah di **Hotline UKS (0857-7024-6918)** atau rujuk ke Puskesmas/RS terdekat!";
+        }
+
+        // C. Pertolongan Pertama: Tersedak (Choking / Sumbatan Jalan Napas)
+        if (str_contains($lower, 'tersedak') || str_contains($lower, 'choking') || str_contains($lower, 'heimlich')) {
+            return "Halo Teman Relawan! 🫁\n\nPenanganan **Tersedak (Choking / Sumbatan Jalan Napas)**:\n\n1. 🗣️ **Jika Korban Masih Sadar & Batuk:**\n• Dorong korban untuk terus batuk sekuat tenaga agar benda asing keluar secara alami.\n• JANGAN beri minum air karena dapat mendorong sumbatan lebih dalam.\n\n2. ✋ **Jika Korban Tidak Bisa Bersuara / Memegangi Leher (Tanda Universal Tersedak):**\n• **5 Tepukan Punggung (Back Blows):** Condongkan tubuh korban ke depan, berikan 5 tepukan tegas dengan tumit tangan di antara kedua tulang belikat.\n• **5 Hentakan Perut (Heimlich Maneuver / Abdominal Thrusts):** Berdiri di belakang korban, lingkarkan tangan di pinggang korban. Kepalkan satu tangan tepat di atas pusar dan di bawah tulang dada, genggam kepalan tersebut dengan tangan lainnya, lalu hentakkan ke arah dalam dan ke atas secara cepat sebanyak 5 kali.\n• Ulangi 5 back blows dan 5 abdominal thrusts bergantian hingga sumbatan keluar.\n\n3. ⚡ **Jika Korban Hilang Kesadaran (Pingsan):**\n• Baringkan di lantai datar, segera hubungi tim medis UKS (**0857-7024-6918**) dan lakukan **RJP (30 kompresi dada : 2 napas buatan)**. Cek mulut korban sebelum memberi napas buatan, ambil benda asing HANYA jika terlihat jelas!";
+        }
+
+        // D. Pertolongan Pertama: Asma / Sesak Napas
+        if (str_contains($lower, 'asma') || str_contains($lower, 'sesak napas') || str_contains($lower, 'sesak nafas') || str_contains($lower, 'inhaler')) {
+            return "Halo Teman Relawan! 🌬️\n\nPenanganan **Asma & Sesak Napas Akut** di lingkungan sekolah:\n\n1. 🪑 **Posisi Duduk Condong ke Depan:** Dudukkan korban dengan tenang agak condong ke depan (jangan baringkan terlentang karena memperberat kerja pernapasan).\n2. 💨 **Bantu Penggunaan Inhaler:** Jika korban membawa obat pereda (inhaler bronkodilator pribadi seperti Salbutamol/Ventolin), bantu korban menghirupnya 1-2 semprotan sesuai petunjuk dokter.\n3. 👔 **Longgarkan Pakaian:** Buka kancing kerah baju, lepaskan dasi/ikat pinggang.\n4. 🌳 **Pastikan Sirkulasi Udara:** Bawa ke ruangan dengan sirkulasi udara baik, jauhkan dari debu, asap rokok, bau menyengat, atau kerumunan orang.\n5. ⚠️ Jika setelah 10-15 menit sesak tidak membaik atau bibir membiru (sianosis), segera bawa ke Ruang UKS untuk pemberian oksigen atau rujuk ke Puskesmas/RS!";
+        }
+
+        // E. Pertolongan Pertama: Gigitan Ular Berbisa
+        if (str_contains($lower, 'gigitan ular') || str_contains($lower, 'ular') || str_contains($lower, 'bisa ular') || str_contains($lower, 'dipatok ular')) {
+            return "Halo Sahabat Kemanusiaan! 🐍\n\nPenanganan **Gigitan Ular Berbisa (Snakebite)** sesuai pedoman medis PMR Wira:\n\n🛡️ **1. IMOBILISASI TOTAL (Prinsip Utama):**\n• Tenangkan korban dan instruksikan agar **TIDAK BANYAK BERGERAK**, karena gerakan otot mempercepat penyebaran bisa melalui kelenjar getah bening.\n• Pasang balut tekan (Pressure Immobilization Technique / PIT) menggunakan perban elastis dan bidai penyangga kayu agar anggota gerak yang digigit benar-benar diam (tidak bergerak).\n• Pertahankan posisi anggota gerak yang digigit setinggi atau lebih rendah dari posisi jantung.\n\n🚫 **2. DILARANG KERAS (BAHAYA FATAL):**\n• ❌ JANGAN menghisap atau menyedot bisa ular dengan mulut!\n• ❌ JANGAN menyayat, menusuk, atau membedah luka gigitan!\n• ❌ JANGAN memasang ikatan kencang (tourniquet) yang menghentikan aliran darah, karena berisiko pembusukan jaringan (gangren) hingga amputasi!\n• ❌ JANGAN menempelkan es batu, ramuan jamu, atau bahan kimia.\n\n🏥 **3. EVAKUASI CEPAT KE RUMAH SAKIT:**\n• Ingat atau foto ciri fisik ular (warna, bentuk kepala) jika memungkinkan tanpa membahayakan diri.\n• Segera bawa korban ke IGD Rumah Sakit terdekat untuk pemberian **Serum Anti Bisa Ular (SABU)**!";
+        }
+
         // 1. Mars Palang Merah Indonesia
         if (str_contains($lower, 'mars pmi') || str_contains($lower, 'lagu mars') || str_contains($lower, 'lirik mars') || str_contains($lower, 'pencipta mars') || str_contains($lower, 'mochtar m') || (str_contains($lower, 'mars') && str_contains($lower, 'pmi'))) {
             return "Halo Sahabat Kemanusiaan! 🎶\n\n**Mars Palang Merah Indonesia** adalah lagu resmi organisasi yang diciptakan oleh komponis **Mochtar M.**\n\n📜 **LIRIK RESMI MARS PALANG MERAH INDONESIA:**\n\n*Palang Merah Indonesia*\n*Wujud kepedulian nyata*\n*Berbakti tanpa pamrih*\n*Untuk sesama manusia*\n\n*Tujuh Prinsip Dasar Palang Merah*\n*Menjadi pedoman langkah kita*\n*Kemanusiaan, Kesamaan,*\n*Kenetralan, Kemandirian,*\n*Kesukarelaan, Kesatuan,*\n*Dan Kesemestaan*\n\n*Maju terus Palang Merah*\n*Mengabdi tuk nusa dan bangsa*\n*Menjunjung tinggi kemanusiaan*\n*Demi kejayaan Indonesia*\n\n✨ **Makna Lagu:** Menggambarkan dedikasi suci relawan untuk menolong sesama tanpa pamrih dan tanpa membeda-bedakan latar belakang, dengan senantiasa memegang teguh 7 Prinsip Dasar Palang Merah!";
@@ -655,7 +685,7 @@ PROMPT;
         }
 
         // 28. Pertanyaan seputar Bergabung / Pendaftaran Relawan
-        if (str_contains($lower, 'gabung') || str_contains($lower, 'daftar') || str_contains($lower, 'relawan') || str_contains($lower, 'rekrutmen') || str_contains($lower, 'anggota') || str_contains($lower, 'ekskul')) {
+        if (str_contains($lower, 'gabung') || str_contains($lower, 'syarat daftar') || str_contains($lower, 'cara daftar') || str_contains($lower, 'rekrutmen') || str_contains($lower, 'anggota baru') || str_contains($lower, 'syarat relawan') || str_contains($lower, 'daftar relawan') || str_contains($lower, 'gabung relawan') || (str_contains($lower, 'daftar') && (str_contains($lower, 'pmr') || str_contains($lower, 'ekskul')))) {
             return "Selamat datang Sahabat Kemanusiaan! Bangga sekali melihat tekadmu untuk mengabdi bersama kami! 🤝\n\n**Syarat Bergabung PMR Wira SMAN 1 Ciawi (Ragana Dwi Pantara):**\n1. Siswa-siswi aktif SMA Negeri 1 Ciawi (Kelas X atau XI).\n2. Memiliki jiwa kerelawanan dan dedikasi sosial.\n3. Bersedia mengikuti Diklatsar Ruang & Lapangan.\n4. Memperoleh persetujuan orang tua/wali.\n\nPendaftaran dibuka setiap awal tahun ajaran baru atau saat demo ekskul. Formulir pra-pendaftaran online dapat diisi di menu **Kontak & Gabung Relawan** pada website kami!";
         }
 
@@ -664,8 +694,129 @@ PROMPT;
             return "Halo Sahabat Relawan! 🏫\n\n• **Organisasi:** PMR Wira Unit SMAN 1 Ciawi (Terakreditasi A).\n• **Alamat:** Ruang UKS/PMR SMAN 1 Ciawi, Jl. Veteran No. 46, Pandansari, Ciawi, Bogor.\n• **Hotline Siaga UKS:** 0857-7024-6918 (WhatsApp & Panggilan Cepat Langsung).\n• **Jam Layanan:** Senin - Jumat (07.00 - 16.00 WIB).\n• **Email Resmi:** pmrwirasman1c@gmail.com\n\nDi pojok kanan bawah website ini juga tersedia tombol WhatsApp langsung yang menghubungkan Kakak ke petugas medis siaga UKS!";
         }
 
-        // Default Ramah & Komprehensif
-        return "Halo Sahabat Kemanusiaan! Salam hangat dari Wira Agent. 🌟\n\nSaya asisten virtual resmi yang menguasai seluruh konten publik website PMR Wira SMAN 1 Ciawi dan ensiklopedia materi kepalangmerahan PMR Wira (Masa Bakti Ragana Dwi Pantara 2026/2027).\n\nKakak dapat menanyakan apa pun tentang:\n• 👑 **Pimpinan & Struktur Organisasi** (Ketua, Pembina, Wakil, 5 Bidang, KTA Digital)\n• 📜 **Materi Kepalangmerahan & PMI** (Henry Dunant, 7 Prinsip, Tri Bakti, Mars PMI)\n• 🩹 **Pertolongan Pertama (P3K)** (RJP 30:2, Pembidaian Patah Tulang, RICE, Luka Bakar, Pingsan)\n• 🪵 **Tandu Darurat** (Ukuran bambu 225 cm, tali 13-14 m, simpul jangkar & palang)\n• 🏆 **Syarat & Cabang Lomba PMR** (Sua Bhakti Berkarya)\n• 🩸 **Donor Darah Sukarela & Syarat Pendonor**\n• 🚨 **Ayo Siaga Bencana (ASB)** (Drop-Cover-Hold On gempa bumi, kebakaran, TSB)\n• 🧼 **Remaja Sehat (RSPS) & PHBS** (6 Langkah cuci tangan WHO, anemia, gizi seimbang)\n• 📘 **Pedoman Organisasi** (GBHO, PPUO 2026, Syal Kuning 120x90x90cm)\n• 🏥 **Layanan Hotline UKS** (0857-7024-6918)\n\nSilakan tanyakan apa saja yang ingin Kakak ketahui!";
+        // 30. Smart Knowledge Base (RAG) Fallback Search
+        $ragSearchResults = $this->knowledgeSearch->search($message, limit: 1);
+        if (! empty($ragSearchResults)) {
+            $topResult = $ragSearchResults[0];
+            if (($topResult['score'] ?? 0) >= 15 && ! empty($topResult['content'])) {
+                $topicTitle = $topResult['title'] ?? 'Informasi PMR Wira';
+
+                return "Halo Sahabat Kemanusiaan! 🌟\n\nBerdasarkan materi resmi PMR Wira SMAN 1 Ciawi mengenai **{$topicTitle}**:\n\n".$topResult['content'];
+            }
+        }
+
+        // 31. Pertanyaan Terbuka / Luar Materi (Open-Domain Fallback)
+        return "Halo Sahabat Kemanusiaan! Salam hangat dari Wira Agent. 🌟\n\nSaya asisten virtual resmi PMR Wira SMAN 1 Ciawi (Masa Bakti Ragana Dwi Pantara 2026/2027).\n\nUntuk pertanyaan umum di luar kurikulum kepalangmerahan dan konten website, Wira Agent dapat memanfaatkan kecerdasan Google Gemini AI apabila variabel `GEMINI_API_KEY` telah disetel pada berkas `.env` server.\n\nSaat ini, Kakak dapat menanyakan informasi resmi kami, antara lain:\n• 👑 **Pimpinan & Struktur Organisasi** (Ketua Umum, Pembina, Wakil, BPH, 5 Bidang, dan seluruh staf anggota)\n• 🩹 **Pertolongan Pertama (P3K)** (Kejang-kejang, Tersedak, Asma, Gigitan Ular, RJP 30:2, Patah Tulang, Keseleo, Luka Bakar, Pingsan)\n• 🪵 **Tandu Darurat** (Ukuran bambu 225 cm, tali 13-14 m, simpul jangkar & palang)\n• 📜 **Materi Kepalangmerahan & PMI** (Henry Dunant, 7 Prinsip PMI, Tri Bakti, Mars PMI)\n• 🏆 **Syarat & Cabang Lomba PMR** (Sua Bhakti Berkarya)\n• 🩸 **Donor Darah Sukarela & Syarat Pendonor**\n• 🚨 **Ayo Siaga Bencana (ASB)** & Mitigasi Gempa/Kebakaran\n• 🏥 **Layanan Kontak & Hotline UKS** (0857-7024-6918)\n\nSilakan tanyakan materi di atas atau sebutkan nama pimpinan/anggota yang ingin Kakak ketahui!";
+    }
+
+    /**
+     * Menangani pertanyaan spesifik mengenai pimpinan maupun seluruh staf anggota pada 5 Bidang Kepengurusan.
+     */
+    public function handleSpecificBidangInquiry(string $lower): ?string
+    {
+        // Jika menanyakan nama anggota tertentu secara spesifik, serahkan ke findSpecificMemberBiodata
+        $specificIndividualNames = [
+            'rian', 'siti fatimah', 'deni',
+            'anisa', 'budi santoso', 'dewi sartika',
+            'fajar pratama', 'maya',
+            'gilang', 'tiara andini', 'kevin julio',
+            'putri marino', 'aldi taher',
+        ];
+        foreach ($specificIndividualNames as $indName) {
+            if (str_contains($lower, $indName)) {
+                return null;
+            }
+        }
+
+        $isAskingKetua = str_contains($lower, 'ketua') || str_contains($lower, 'pimpinan') || str_contains($lower, 'kabid') || str_contains($lower, 'kepala') || str_contains($lower, 'koordinator');
+        $isAskingAnggota = str_contains($lower, 'anggota') || str_contains($lower, 'staf') || str_contains($lower, 'staff') || str_contains($lower, 'tim') || str_contains($lower, 'siapa saja') || str_contains($lower, 'nama') || str_contains($lower, 'daftar');
+
+        // 1. Bidang Diklat
+        if (str_contains($lower, 'diklat') || str_contains($lower, 'pendidikan dan pelatihan') || (str_contains($lower, 'pendidikan') && str_contains($lower, 'pelatihan'))) {
+            if ($isAskingKetua && ! $isAskingAnggota) {
+                return $this->getBiodataCard(
+                    name: 'Reza Rahadian',
+                    position: 'Ketua Bidang Pendidikan & Pelatihan (Diklat)',
+                    levelOrClass: 'Kelas XI',
+                    idNumber: 'NRI: 24.49.040 PRT',
+                    roleDescription: 'Penyusunan kurikulum 7 Materi Pokok PMR Wira, penyelenggaraan Diklatsar Ruang & Lapangan, serta pelatihan rutin mingguan.',
+                    motto: 'Pendidikan kepalangmerahan yang unggul mencetak relawan yang tangguh dan terampil.',
+                    title: 'BIODATA KETUA BIDANG DIKLAT'
+                );
+            }
+
+            return "Halo Teman Relawan! 📚\n\nBerikut adalah susunan kepengurusan lengkap **Bidang Pendidikan & Pelatihan (Diklat)** PMR Wira SMAN 1 Ciawi Masa Bakti Ragana Dwi Pantara 2026/2027:\n\n👑 **Ketua Bidang Diklat:**\n• **Reza Rahadian** (Kelas XI • NRI: 24.49.040 PRT)\n  *Tugas:* Penyusunan kurikulum 7 Materi Pokok PMR Wira, penyelenggaraan Diklatsar Ruang & Lapangan, serta memimpin pelatihan rutin mingguan.\n  *Motto:* 'Pendidikan kepalangmerahan yang unggul mencetak relawan yang tangguh dan terampil.'\n\n👥 **Staf Anggota Bidang Diklat:**\n1. **Fajar Pratama** (Kelas X-4 • NRI: 25.50.033 PRT)\n   *Tugas:* Instruktur materi pertolongan pertama dasar, pembimbingan simulasi RJP dan balut bidai bagi calon anggota baru.\n   *Motto:* 'Belajar tiada henti demi pertolongan pertama yang tepat dan terstandar.'\n2. **Maya Anggraini** (Kelas XI-3 • NRI: 24.49.042 PRT)\n   *Tugas:* Pendampingan kontingen lomba ketangkasan PMR, modul evaluasi traveling kepalangmerahan, serta absensi latihan rutin.\n   *Motto:* 'Semangat berbagi ilmu dan melatih sesama calon relawan.'\n\n🎯 **Fokus Program Kerja:**\n• Diklatsar Ruang & Lapangan bagi calon relawan baru.\n• Pelatihan rutin mingguan materi P3K, Tandu, dan Mitigasi Bencana.\n• Bimbingan intensif kontingen kejuaraan kepalangmerahan.\n\nKakak dapat menanyakan *'Biodata Reza Rahadian'* atau *'Biodata Fajar Pratama'* untuk melihat KTA digital masing-masing!";
+        }
+
+        // 2. Bidang Markas
+        if (str_contains($lower, 'markas') || str_contains($lower, 'logistik')) {
+            if ($isAskingKetua && ! $isAskingAnggota) {
+                return $this->getBiodataCard(
+                    name: 'Indra Gunawan',
+                    position: 'Ketua Bidang Markas & Logistik UKS',
+                    levelOrClass: 'Kelas XI',
+                    idNumber: 'NRI: 24.49.029 PRT',
+                    roleDescription: 'Koordinator sarana prasarana UKS, pengecekan berkala masa kedaluwarsa obat, pemeliharaan tandu darurat & spalk bidai, serta jadwal piket markas.',
+                    motto: 'Markas yang tertata dan siap siaga adalah cerminan respon medis yang tanggap.',
+                    title: 'BIODATA KETUA BIDANG MARKAS'
+                );
+            }
+
+            return "Halo Teman Relawan! 📦\n\nBerikut adalah susunan kepengurusan lengkap **Bidang Markas & Logistik UKS** PMR Wira SMAN 1 Ciawi Masa Bakti Ragana Dwi Pantara 2026/2027:\n\n👑 **Ketua Bidang Markas:**\n• **Indra Gunawan** (Kelas XI • NRI: 24.49.029 PRT)\n  *Tugas:* Koordinator sarana prasarana UKS, pengecekan berkala obat kedaluwarsa, pemeliharaan tandu darurat & spalk bidai, serta jadwal piket markas.\n  *Motto:* 'Markas yang tertata dan siap siaga adalah cerminan respon medis yang tanggap.'\n\n👥 **Staf Anggota Bidang Markas:**\n1. **Rian Ardiansyah** (Kelas X-1 • NRI: 25.50.007 PRT)\n   *Tugas:* Perawatan alat evakuasi tandu bambu 225 cm, penyusunan stok kasa & mitela steril, serta kebersihan ruang posko UKS.\n   *Motto:* 'Siap sedia merawat sarana evakuasi untuk keselamatan bersama.'\n2. **Siti Fatimah** (Kelas X-3 • NRI: 25.50.014 PRT)\n   *Tugas:* Pencatatan inventaris obat masuk dan keluar, pemeriksaan kotak P3K kelas, dan kesiapan tabung oksigen UKS.\n   *Motto:* 'Disiplin mengelola logistik medis demi kelancaran tugas kemanusiaan.'\n3. **Deni Prasetyo** (Kelas XI-2 • NRI: 24.49.031 PRT)\n   *Tugas:* Pemeliharaan perangkat darurat, uji kekuatan simpul tandu, serta logistik simulasi mitigasi bencana sekolah.\n   *Motto:* 'Ketangguhan fisik dan ketelitian merawat perlengkapan medis.'\n\n🎯 **Fokus Program Kerja:**\n• Standarisasi kotak P3K di setiap ruang kelas dan laboratorium.\n• Kalibrasi alat medis tensimeter, termometer digital, dan tabung O2.\n• Perawatan bambu tandu 225 cm dan tali tandu 13-14 m.\n\nKakak dapat menanyakan nama beliau (misal: *'Biodata Indra Gunawan'* atau *'Biodata Siti Fatimah'*) untuk melihat KTA digital resminya!";
+        }
+
+        // 3. Bidang Pelayanan
+        if (str_contains($lower, 'pelayanan') || str_contains($lower, 'pelayanan medis')) {
+            if ($isAskingKetua && ! $isAskingAnggota) {
+                return $this->getBiodataCard(
+                    name: 'Sarah Azhari',
+                    position: 'Ketua Bidang Pelayanan Medis & Donor Darah',
+                    levelOrClass: 'Kelas XI',
+                    idNumber: 'NRI: 24.49.034 PRT',
+                    roleDescription: 'Penanggung jawab posko medis upacara bendera, koordinasi aksi donor darah bersama PMI Kab. Bogor, serta posyandu remaja sekolah.',
+                    motto: 'Melayani dengan empati, sigap menolong sesama tanpa pamrih.',
+                    title: 'BIODATA KETUA BIDANG PELAYANAN'
+                );
+            }
+
+            return "Halo Teman Relawan! 🩹\n\nBerikut adalah susunan kepengurusan lengkap **Bidang Pelayanan Medis & Donor Darah** PMR Wira SMAN 1 Ciawi Masa Bakti Ragana Dwi Pantara 2026/2027:\n\n👑 **Ketua Bidang Pelayanan:**\n• **Sarah Azhari** (Kelas XI • NRI: 24.49.034 PRT)\n  *Tugas:* Penanggung jawab posko medis upacara bendera, koordinasi aksi donor darah bersama PMI Kab. Bogor, serta posyandu remaja sekolah.\n  *Motto:* 'Melayani dengan empati, sigap menolong sesama tanpa pamrih.'\n\n👥 **Staf Anggota Bidang Pelayanan:**\n1. **Anisa Rahma** (Kelas X-2 • NRI: 25.50.019 PRT)\n   *Tugas:* Piket medis harian UKS, pemeriksaan tanda vital (tensi darah, suhu tubuh), serta pendampingan siswa sakit di ruang isolasi.\n   *Motto:* 'Tangan terampil, hati tulus melayani mereka yang membutuhkan.'\n2. **Budi Santoso** (Kelas XI-1 • NRI: 24.49.035 PRT)\n   *Tugas:* Tim evakuasi lapangan, pengawalan medis kegiatan olahraga & ekstrakurikuler, serta penanganan kasus cedera.\n   *Motto:* 'Sigap dalam bertindak, tenang dalam pertolongan darurat.'\n3. **Dewi Sartika** (Kelas X-5 • NRI: 25.50.028 PRT)\n   *Tugas:* Edukasi pencegahan anemia remaja putri (pembagian tablet tambah darah), pencatatan rekam medis harian UKS.\n   *Motto:* 'Kemanusiaan adalah panggilan jiwa untuk meringankan penderitaan sesama.'\n\n🎯 **Fokus Program Kerja:**\n• Siaga Pos Medis Upacara Bendera setiap hari Senin.\n• Aksi Donor Darah Sukarela rutin bekerjasama dengan UTD PMI Kab. Bogor.\n• Pembagian Tablet Tambah Darah (TTD) dan Posyandu Remaja.\n\nKakak dapat menanyakan nama beliau (misal: *'Biodata Sarah Azhari'* atau *'Biodata Anisa Rahma'*) untuk melihat KTA digital resminya!";
+        }
+
+        // 4. Bidang Humas
+        if (str_contains($lower, 'humas') || str_contains($lower, 'hubungan masyarakat')) {
+            if ($isAskingKetua && ! $isAskingAnggota) {
+                return $this->getBiodataCard(
+                    name: 'Dian Sastrowardoyo',
+                    position: 'Ketua Bidang Hubungan Masyarakat (Humas)',
+                    levelOrClass: 'Kelas XI',
+                    idNumber: 'NRI: 24.49.044 PRT',
+                    roleDescription: 'Hubungan eksternal dengan PMI Kabupaten Bogor, jejaring antar-pangkalan PMR se-Bogor Raya, serta publikasi berita kemanusiaan.',
+                    motto: 'Menyuarakan pesan kemanusiaan dan merajut persaudaraan tanpa batas.',
+                    title: 'BIODATA KETUA BIDANG HUMAS'
+                );
+            }
+
+            return "Halo Teman Relawan! 📢\n\nBerikut adalah susunan kepengurusan lengkap **Bidang Hubungan Masyarakat (Humas)** PMR Wira SMAN 1 Ciawi Masa Bakti Ragana Dwi Pantara 2026/2027:\n\n👑 **Ketua Bidang Humas:**\n• **Dian Sastrowardoyo** (Kelas XI • NRI: 24.49.044 PRT)\n  *Tugas:* Hubungan eksternal dengan PMI Kabupaten Bogor, jejaring antar-pangkalan PMR se-Bogor Raya, serta publikasi berita kemanusiaan.\n  *Motto:* 'Menyuarakan pesan kemanusiaan dan merajut persaudaraan tanpa batas.'\n\n👥 **Staf Anggota Bidang Humas:**\n1. **Gilang Ramadhan** (Kelas X-1 • NRI: 25.50.045 PRT)\n   *Tugas:* Pengelolaan media sosial resmi organisasi, dokumentasi buletin mading sekolah, serta penyebaran info kegiatan relawan.\n   *Motto:* 'Kreatif menyampaikan aksi relawan demi menginspirasi generasi muda.'\n2. **Tiara Andini** (Kelas XI-4 • NRI: 24.49.049 PRT)\n   *Tugas:* Penghubung komunikasi antar-ekstrakurikuler sekolah, pendataan relawan tamu saat latihan gabungan, dan sosialisasi program UKS.\n   *Motto:* 'Komunikasi ramah dan hangat mempererat ikatan persahabatan relawan.'\n3. **Kevin Julio** (Kelas X-3 • NRI: 25.50.052 PRT)\n   *Tugas:* Pengelolaan layanan informasi pengunjung, hotline pertanyaan calon anggota, serta publikasi agenda donor darah.\n   *Motto:* 'Menghubungkan kepedulian sosial dengan aksi kemanusiaan nyata.'\n\n🎯 **Fokus Program Kerja:**\n• Pengelolaan media sosial Instagram, TikTok, dan YouTube resmi PMR Wira.\n• Jejaring silaturahmi dengan Forum Remaja Palang Merah Indonesia (FORPIS).\n• Publikasi buletin mading kemanusiaan dan promosi kegiatan donor darah.\n\nKakak dapat menanyakan *'Biodata Dian Sastrowardoyo'* atau *'Biodata Gilang Ramadhan'* untuk melihat KTA resminya!";
+        }
+
+        // 5. Bidang Kreasi
+        if (str_contains($lower, 'kreasi') || str_contains($lower, 'media kreatif') || str_contains($lower, 'kreatif')) {
+            if ($isAskingKetua && ! $isAskingAnggota) {
+                return $this->getBiodataCard(
+                    name: 'Nicholas Saputra',
+                    position: 'Ketua Bidang Media Kreatif & Publikasi',
+                    levelOrClass: 'Kelas XI',
+                    idNumber: 'NRI: 24.49.055 PRT',
+                    roleDescription: 'Pengarah artistik publikasi, perancangan poster edukasi kesehatan, pembuatan video animasi P3K, dan desain KTA digital.',
+                    motto: 'Kreativitas tanpa batas untuk mengedukasi dan menggerakkan empati kemanusiaan.',
+                    title: 'BIODATA KETUA BIDANG KREASI'
+                );
+            }
+
+            return "Halo Teman Relawan! 🎨\n\nBerikut adalah susunan kepengurusan lengkap **Bidang Media Kreatif & Publikasi (Kreasi)** PMR Wira SMAN 1 Ciawi Masa Bakti Ragana Dwi Pantara 2026/2027:\n\n👑 **Ketua Bidang Kreasi:**\n• **Nicholas Saputra** (Kelas XI • NRI: 24.49.055 PRT)\n  *Tugas:* Pengarah artistik publikasi, perancangan poster edukasi kesehatan, pembuatan video animasi P3K, dan desain KTA digital.\n  *Motto:* 'Kreativitas tanpa batas untuk mengedukasi dan menggerakkan empati kemanusiaan.'\n\n👥 **Staf Anggota Bidang Kreasi:**\n1. **Putri Marino** (Kelas X-2 • NRI: 25.50.058 PRT)\n   *Tugas:* Desain infografis pola hidup sehat (PHBS), ilustrasi pertolongan pertama, dan tata letak materi e-book organisasi.\n   *Motto:* 'Karya visual yang indah membawa pesan keselamatan untuk semua.'\n2. **Aldi Taher** (Kelas XI-5 • NRI: 24.49.061 PRT)\n   *Tugas:* Editing video kampanye donor darah, dokumentasi sinematik kegiatan diklatsar, dan desain merchandise relawan.\n   *Motto:* 'Semangat berkarya dan berinovasi demi syiar kepalangmerahan.'\n\n🎯 **Fokus Program Kerja:**\n• Desain infografis pertolongan pertama dan poster PHBS mingguan.\n• Produksi video edukasi RJP dan tandu darurat untuk edukasi publik.\n• Perancangan desain identitas visual, seragam kontingen, dan KTA digital.\n\nKakak dapat menanyakan *'Biodata Nicholas Saputra'* atau *'Biodata Putri Marino'* untuk melihat KTA resminya!";
+        }
+
+        return null;
     }
 
     /**

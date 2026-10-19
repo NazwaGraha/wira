@@ -586,4 +586,98 @@ class WiraAgentTest extends TestCase
         ]);
         $this->assertStringContainsString('fotosintesis', $response->json('reply'));
     }
+
+    public function test_wira_agent_answers_kejang_kejang_first_aid(): void
+    {
+        Config::set('services.gemini.key', null);
+
+        $response = $this->postJson('/api/wira-agent/chat', [
+            'message' => 'JIka ada yang kejang-kejang apa yang harus saya lakukan',
+        ]);
+
+        $response->assertStatus(200);
+        $reply = $response->json('reply');
+        $this->assertStringContainsString('Kejang-kejang', $reply);
+        $this->assertStringContainsString('3A', $reply);
+        $this->assertStringContainsString('JANGAN PERNAH menahan gerakan kejang', $reply);
+        $this->assertStringContainsString('DILARANG KERAS memasukkan benda apa pun ke dalam mulut', $reply);
+        $this->assertStringContainsString('POSISI PEMULIHAN', $reply);
+    }
+
+    public function test_wira_agent_answers_ketua_bidang_diklat_specifically(): void
+    {
+        Config::set('services.gemini.key', null);
+
+        $response = $this->postJson('/api/wira-agent/chat', [
+            'message' => 'siapa ketua bidang diklat',
+        ]);
+
+        $response->assertStatus(200);
+        $reply = $response->json('reply');
+        $this->assertStringContainsString('Reza Rahadian', $reply);
+        $this->assertStringContainsString('BIODATA KETUA BIDANG DIKLAT', $reply);
+    }
+
+    public function test_wira_agent_answers_anggota_bidang_markas_specifically(): void
+    {
+        Config::set('services.gemini.key', null);
+
+        $response = $this->postJson('/api/wira-agent/chat', [
+            'message' => 'siapa anggota bidang markas',
+        ]);
+
+        $response->assertStatus(200);
+        $reply = $response->json('reply');
+        $this->assertStringContainsString('Indra Gunawan', $reply);
+        $this->assertStringContainsString('Rian Ardiansyah', $reply);
+        $this->assertStringContainsString('Siti Fatimah', $reply);
+        $this->assertStringContainsString('Deni Prasetyo', $reply);
+    }
+
+    public function test_wira_agent_answers_anggota_bidang_pelayanan_and_diklat(): void
+    {
+        Config::set('services.gemini.key', null);
+
+        // Anggota Bidang Pelayanan
+        $resPelayanan = $this->postJson('/api/wira-agent/chat', [
+            'message' => 'siapa saja anggota bidang pelayanan',
+        ]);
+        $resPelayanan->assertStatus(200);
+        $replyPelayanan = $resPelayanan->json('reply');
+        $this->assertStringContainsString('Sarah Azhari', $replyPelayanan);
+        $this->assertStringContainsString('Anisa Rahma', $replyPelayanan);
+        $this->assertStringContainsString('Budi Santoso', $replyPelayanan);
+        $this->assertStringContainsString('Dewi Sartika', $replyPelayanan);
+
+        // Anggota Bidang Diklat
+        $resDiklat = $this->postJson('/api/wira-agent/chat', [
+            'message' => 'siapa saja anggota bidang diklat',
+        ]);
+        $resDiklat->assertStatus(200);
+        $replyDiklat = $resDiklat->json('reply');
+        $this->assertStringContainsString('Reza Rahadian', $replyDiklat);
+        $this->assertStringContainsString('Fajar Pratama', $replyDiklat);
+        $this->assertStringContainsString('Maya Anggraini', $replyDiklat);
+    }
+
+    public function test_wira_agent_answers_other_p3k_emergencies(): void
+    {
+        Config::set('services.gemini.key', null);
+
+        // Tersedak
+        $resTersedak = $this->postJson('/api/wira-agent/chat', [
+            'message' => 'bagaimana cara menolong orang yang tersedak makanan?',
+        ]);
+        $resTersedak->assertStatus(200);
+        $this->assertStringContainsString('Heimlich', $resTersedak->json('reply'));
+        $this->assertStringContainsString('Back Blows', $resTersedak->json('reply'));
+
+        // Gigitan Ular
+        $resUlar = $this->postJson('/api/wira-agent/chat', [
+            'message' => 'pertolongan pertama jika digigit ular berbisa',
+        ]);
+        $resUlar->assertStatus(200);
+        $this->assertStringContainsString('IMOBILISASI', $resUlar->json('reply'));
+        $this->assertStringContainsString('SABU', $resUlar->json('reply'));
+    }
 }

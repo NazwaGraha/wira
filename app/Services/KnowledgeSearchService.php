@@ -209,6 +209,36 @@ class KnowledgeSearchService
         if (str_contains($queryLower, 'tri bakti') && ($topic['id'] ?? '') === 'tri_bakti_pmr') {
             $score += 50;
         }
+        if ((str_contains($queryLower, 'kejang') || str_contains($queryLower, 'epilepsi') || str_contains($queryLower, 'step') || str_contains($queryLower, 'konvulsi')) && ($topic['id'] ?? '') === 'p3k_kejang_kejang') {
+            $score += 70;
+        }
+        if ((str_contains($queryLower, 'tersedak') || str_contains($queryLower, 'choking') || str_contains($queryLower, 'heimlich')) && ($topic['id'] ?? '') === 'p3k_tersedak_choking') {
+            $score += 70;
+        }
+        if ((str_contains($queryLower, 'asma') || str_contains($queryLower, 'sesak')) && ($topic['id'] ?? '') === 'p3k_asma_sesak_napas') {
+            $score += 70;
+        }
+        if ((str_contains($queryLower, 'ular') || str_contains($queryLower, 'patok')) && ($topic['id'] ?? '') === 'p3k_gigitan_ular_bisa') {
+            $score += 70;
+        }
+        if (str_contains($queryLower, 'syok') && ($topic['id'] ?? '') === 'p3k_syok_darurat') {
+            $score += 70;
+        }
+        if (str_contains($queryLower, 'markas') && ($topic['id'] ?? '') === 'susunan_anggota_bidang_markas') {
+            $score += 45;
+        }
+        if (str_contains($queryLower, 'pelayanan') && ($topic['id'] ?? '') === 'susunan_anggota_bidang_pelayanan') {
+            $score += 45;
+        }
+        if (str_contains($queryLower, 'diklat') && ($topic['id'] ?? '') === 'susunan_anggota_bidang_diklat') {
+            $score += 45;
+        }
+        if (str_contains($queryLower, 'humas') && ($topic['id'] ?? '') === 'susunan_anggota_bidang_humas') {
+            $score += 45;
+        }
+        if (str_contains($queryLower, 'kreasi') && ($topic['id'] ?? '') === 'susunan_anggota_bidang_kreasi') {
+            $score += 45;
+        }
 
         return $score;
     }
