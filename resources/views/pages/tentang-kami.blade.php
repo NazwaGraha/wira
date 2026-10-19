@@ -993,130 +993,191 @@
     </div>
 </div>
 
-<!-- POPUP MODAL BIODATA ANGGOTA LENGKAP -->
-<div id="biodata-modal" class="fixed inset-0 z-50 bg-stone-950/80 backdrop-blur-sm hidden flex items-center justify-center p-4">
-    <div class="bg-white rounded-3xl max-w-xl w-full max-h-[90vh] shadow-2xl flex flex-col overflow-hidden animate-in fade-in zoom-in-95 duration-200 border border-red-100">
+<!-- POPUP MODAL BIODATA ANGGOTA LENGKAP (KTA DIGITAL RELAWAN) -->
+<div id="biodata-modal" class="fixed inset-0 z-50 bg-stone-950/80 backdrop-blur-md hidden flex items-center justify-center p-3 sm:p-4 animate-in fade-in duration-200">
+    <div class="bg-slate-50 rounded-3xl max-w-2xl w-full max-h-[92vh] shadow-2xl flex flex-col overflow-hidden border border-red-200/60 animate-in zoom-in-95 duration-200">
         
-        <!-- Modal Top Header Banner -->
-        <div class="relative bg-gradient-to-r from-pmr-primary via-red-700 to-pmr-dark text-white p-6 sm:p-7 flex items-center justify-between">
-            <div class="flex items-center gap-3">
-                <div class="w-10 h-10 rounded-2xl bg-white/20 backdrop-blur-xs text-white flex items-center justify-center text-lg shadow-inner">
+        <!-- Modal Top Header Banner (KTA Style) -->
+        <div class="relative bg-gradient-to-r from-stone-950 via-pmr-primary to-stone-900 text-white p-5 sm:p-6 flex items-center justify-between border-b border-red-900/40 relative overflow-hidden">
+            <!-- Glow Accent -->
+            <div class="absolute -right-10 -bottom-10 w-44 h-44 bg-red-600/20 rounded-full blur-2xl pointer-events-none"></div>
+
+            <div class="flex items-center gap-3 relative z-10 min-w-0">
+                <div class="w-11 h-11 rounded-2xl bg-white/15 backdrop-blur-xs text-white flex items-center justify-center text-xl shadow-inner border border-white/20 flex-shrink-0">
                     <i class="fa-solid fa-id-card-clip"></i>
                 </div>
-                <div>
-                    <span class="text-[10px] uppercase font-black tracking-widest text-red-200 bg-red-900/40 px-2 py-0.5 rounded-full">Biodata Anggota</span>
-                    <h3 class="text-base sm:text-lg font-black leading-tight text-white mt-0.5">PMR Wira SMAN 1 Ciawi</h3>
+                <div class="min-w-0">
+                    <div class="inline-flex items-center gap-1.5 text-[10px] uppercase font-black tracking-widest text-amber-300 bg-white/10 px-2.5 py-0.5 rounded-full border border-amber-300/30 mb-0.5">
+                        <i class="fa-solid fa-certificate text-[9px]"></i> KTA ELEKTRONIK RESMI
+                    </div>
+                    <h3 class="text-base sm:text-lg font-black leading-tight text-white truncate">Biodata Relawan PMR Wira</h3>
                 </div>
             </div>
-            <button type="button" onclick="closeBiodataModal()" class="w-9 h-9 rounded-xl bg-white/10 hover:bg-white/30 text-white flex items-center justify-center transition">
-                <i class="fa-solid fa-xmark text-lg"></i>
-            </button>
+
+            <div class="flex items-center gap-2.5 relative z-10 flex-shrink-0">
+                <span class="hidden sm:inline-flex items-center gap-1.5 bg-emerald-500/20 text-emerald-300 border border-emerald-400/30 px-3 py-1 rounded-full text-[11px] font-extrabold uppercase tracking-wider">
+                    <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span> Relawan Aktif
+                </span>
+                <button type="button" onclick="closeBiodataModal()" class="w-9 h-9 rounded-full bg-white/15 hover:bg-white/30 text-white flex items-center justify-center transition border border-white/20 shadow-sm" title="Tutup Modal">
+                    <i class="fa-solid fa-xmark text-base"></i>
+                </button>
+            </div>
         </div>
 
         <!-- Modal Body Content -->
-        <div class="p-6 sm:p-7 overflow-y-auto flex-grow space-y-6">
+        <div class="p-5 sm:p-7 overflow-y-auto flex-grow space-y-5 custom-scrollbar">
             
-            <!-- Hero Profile Card -->
-            <div class="flex flex-col sm:flex-row items-center gap-5 sm:gap-6 bg-slate-50 p-5 sm:p-6 rounded-3xl border border-slate-200/80">
-                <div class="w-32 h-40 sm:w-36 sm:h-46 rounded-3xl overflow-hidden border-4 border-white shadow-xl flex-shrink-0 bg-slate-100 ring-2 ring-red-100">
-                    <img id="bio-photo" src="" alt="Foto Anggota" class="w-full h-full object-cover object-top" style="object-position: center 15%;">
+            <!-- Hero Profile Card: Foto Wajah Besar, Tajam & Berwibawa -->
+            <div class="bg-white p-5 sm:p-6 rounded-3xl border border-slate-200/90 shadow-sm flex flex-col sm:flex-row items-center sm:items-start gap-6 relative overflow-hidden">
+                <!-- Background Seal Watermark -->
+                <div class="absolute -right-8 -bottom-8 w-36 h-36 bg-red-500/5 rounded-full pointer-events-none flex items-center justify-center text-red-900/10 text-7xl font-black">
+                    <i class="fa-solid fa-shield-halved"></i>
                 </div>
-                <div class="text-center sm:text-left min-w-0">
-                    <div class="inline-flex items-center gap-1.5 bg-red-100 text-pmr-primary px-3 py-0.5 rounded-full text-xs font-black uppercase tracking-wider mb-1.5" id="bio-badge-pos">
+
+                <!-- Foto Portrait Besar (Focus Head & Shoulders) -->
+                <div class="relative flex-shrink-0">
+                    <div class="w-36 h-48 sm:w-44 sm:h-56 rounded-3xl overflow-hidden border-4 border-white shadow-xl ring-4 ring-red-500/20 bg-slate-100 flex-shrink-0">
+                        <img id="bio-photo" src="" alt="Foto Anggota" class="w-full h-full object-cover object-top" style="object-position: center 15%;">
+                    </div>
+                    <!-- Badge KTA Terverifikasi -->
+                    <span class="absolute -bottom-2.5 inset-x-0 mx-auto w-max bg-gradient-to-r from-amber-500 to-amber-600 text-stone-950 font-black text-[10px] px-3 py-0.5 rounded-full shadow-md border-2 border-white flex items-center justify-center gap-1 z-10 uppercase tracking-wider">
+                        <i class="fa-solid fa-circle-check text-[9px]"></i> Terverifikasi
+                    </span>
+                </div>
+
+                <!-- Detail Utama Profil -->
+                <div class="text-center sm:text-left min-w-0 flex-grow pt-1">
+                    <div class="inline-flex items-center gap-1.5 bg-red-100 text-pmr-primary px-3 py-1 rounded-full text-xs font-black uppercase tracking-wider mb-2 border border-red-200/60" id="bio-badge-pos">
                         <!-- Position Badge -->
                     </div>
-                    <h2 class="text-xl sm:text-2xl font-black text-slate-900 leading-tight" id="bio-name"></h2>
-                    <p class="text-xs sm:text-sm text-slate-600 font-semibold mt-1" id="bio-class"></p>
+                    <h2 class="text-2xl sm:text-3xl font-black text-slate-900 leading-tight tracking-tight" id="bio-name">
+                        <!-- Name -->
+                    </h2>
+                    <p class="text-xs sm:text-sm text-slate-600 font-bold mt-1.5 flex items-center justify-center sm:justify-start gap-1.5" id="bio-class">
+                        <!-- Class / Subtitle -->
+                    </p>
+                    <div class="text-xs text-slate-400 font-medium mt-1 flex items-center justify-center sm:justify-start gap-1.5">
+                        <i class="fa-solid fa-shield-heart text-pmr-primary text-xs"></i>
+                        <span>Masa Bakti Ragana Dwi Pantara 2026/2027</span>
+                    </div>
+
+                    <!-- Digital Token / Barcode Box -->
+                    <div class="mt-4 pt-3 border-t border-slate-100 flex flex-wrap items-center justify-center sm:justify-start gap-3">
+                        <div class="inline-flex items-center gap-2 px-3 py-1.5 rounded-xl bg-slate-50 border border-slate-200/90 text-slate-600 font-mono text-[11px]">
+                            <i class="fa-solid fa-barcode text-base text-slate-700"></i>
+                            <span class="tracking-widest font-extrabold text-slate-800" id="bio-token-id">PMR-WIRA-2026</span>
+                        </div>
+                        <span class="text-[11px] text-slate-400 font-medium">Unit SMAN 1 Ciawi</span>
+                    </div>
                 </div>
             </div>
 
-            <!-- Detailed Grid Information -->
+            <!-- Bento Grid: Data Identitas Terstruktur -->
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
                 
-                <!-- NIS -->
-                <div class="bg-white p-3.5 rounded-2xl border border-slate-200/90 shadow-xs flex items-center gap-3.5">
-                    <div class="w-10 h-10 rounded-xl bg-red-50 text-pmr-primary flex items-center justify-center text-base flex-shrink-0 font-bold">
+                <!-- NRI -->
+                <div class="bg-white p-4 rounded-2xl border border-slate-200/90 shadow-2xs hover:border-red-300 transition flex items-center gap-3.5 group">
+                    <div class="w-10 h-10 rounded-xl bg-red-50 text-pmr-primary flex items-center justify-center text-base flex-shrink-0 font-bold group-hover:scale-105 transition-transform">
                         <i class="fa-solid fa-address-card"></i>
                     </div>
                     <div class="min-w-0">
-                        <div class="text-[11px] font-bold text-slate-400 uppercase tracking-wider">NRI (Nomor Registrasi Induk)</div>
-                        <div class="text-xs sm:text-sm font-extrabold text-slate-800 truncate mt-0.5" id="bio-nis">-</div>
+                        <div class="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider">NRI (Nomor Registrasi Induk)</div>
+                        <div class="text-xs sm:text-sm font-black text-slate-900 truncate mt-0.5" id="bio-nis">-</div>
                     </div>
                 </div>
 
                 <!-- Jenis Kelamin -->
-                <div class="bg-white p-3.5 rounded-2xl border border-slate-200/90 shadow-xs flex items-center gap-3.5">
-                    <div class="w-10 h-10 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center text-base flex-shrink-0 font-bold">
+                <div class="bg-white p-4 rounded-2xl border border-slate-200/90 shadow-2xs hover:border-blue-300 transition flex items-center gap-3.5 group">
+                    <div class="w-10 h-10 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center text-base flex-shrink-0 font-bold group-hover:scale-105 transition-transform">
                         <i class="fa-solid fa-venus-mars"></i>
                     </div>
                     <div class="min-w-0">
-                        <div class="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Jenis Kelamin</div>
-                        <div class="text-xs sm:text-sm font-extrabold text-slate-800 truncate mt-0.5" id="bio-gender">-</div>
+                        <div class="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider">Jenis Kelamin</div>
+                        <div class="text-xs sm:text-sm font-black text-slate-900 truncate mt-0.5" id="bio-gender">-</div>
                     </div>
                 </div>
 
                 <!-- Tempat, Tanggal Lahir -->
-                <div class="bg-white p-3.5 rounded-2xl border border-slate-200/90 shadow-xs flex items-center gap-3.5 sm:col-span-2">
-                    <div class="w-10 h-10 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center text-base flex-shrink-0 font-bold">
+                <div class="bg-white p-4 rounded-2xl border border-slate-200/90 shadow-2xs hover:border-amber-300 transition flex items-center gap-3.5 sm:col-span-2 group">
+                    <div class="w-10 h-10 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center text-base flex-shrink-0 font-bold group-hover:scale-105 transition-transform">
                         <i class="fa-solid fa-cake-candles"></i>
                     </div>
                     <div class="min-w-0">
-                        <div class="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Tempat, Tanggal Lahir</div>
-                        <div class="text-xs sm:text-sm font-extrabold text-slate-800 truncate mt-0.5" id="bio-ttl">-</div>
+                        <div class="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider">Tempat, Tanggal Lahir</div>
+                        <div class="text-xs sm:text-sm font-black text-slate-900 truncate mt-0.5" id="bio-ttl">-</div>
                     </div>
                 </div>
 
                 <!-- Alamat Domisili -->
-                <div class="bg-white p-3.5 rounded-2xl border border-slate-200/90 shadow-xs flex items-center gap-3.5 sm:col-span-2">
-                    <div class="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center text-base flex-shrink-0 font-bold">
+                <div class="bg-white p-4 rounded-2xl border border-slate-200/90 shadow-2xs hover:border-emerald-300 transition flex items-center gap-3.5 sm:col-span-2 group">
+                    <div class="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center text-base flex-shrink-0 font-bold group-hover:scale-105 transition-transform">
                         <i class="fa-solid fa-location-dot"></i>
                     </div>
                     <div class="min-w-0">
-                        <div class="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Alamat Domisili</div>
-                        <div class="text-xs sm:text-sm font-extrabold text-slate-800 mt-0.5 leading-snug" id="bio-address">-</div>
-                    </div>
-                </div>
-
-                <!-- No. WhatsApp / HP -->
-                <div class="bg-white p-3.5 rounded-2xl border border-slate-200/90 shadow-xs flex items-center gap-3.5">
-                    <div class="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center text-base flex-shrink-0 font-bold">
-                        <i class="fa-brands fa-whatsapp"></i>
-                    </div>
-                    <div class="min-w-0">
-                        <div class="text-[11px] font-bold text-slate-400 uppercase tracking-wider">No. Telepon / WA</div>
-                        <div class="text-xs sm:text-sm font-extrabold text-slate-800 truncate mt-0.5" id="bio-phone">-</div>
-                    </div>
-                </div>
-
-                <!-- Email -->
-                <div class="bg-white p-3.5 rounded-2xl border border-slate-200/90 shadow-xs flex items-center gap-3.5">
-                    <div class="w-10 h-10 rounded-xl bg-purple-50 text-purple-600 flex items-center justify-center text-base flex-shrink-0 font-bold">
-                        <i class="fa-solid fa-envelope"></i>
-                    </div>
-                    <div class="min-w-0">
-                        <div class="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Email</div>
-                        <div class="text-xs sm:text-sm font-extrabold text-slate-800 truncate mt-0.5" id="bio-email">-</div>
+                        <div class="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider">Alamat Domisili</div>
+                        <div class="text-xs sm:text-sm font-bold text-slate-800 mt-0.5 leading-snug" id="bio-address">-</div>
                     </div>
                 </div>
 
             </div>
 
-            <!-- Motto Box -->
-            <div id="bio-motto-container" class="p-4 rounded-2xl bg-gradient-to-r from-red-50 to-rose-50 border border-red-100 flex items-start gap-3">
-                <i class="fa-solid fa-quote-left text-pmr-primary text-xl flex-shrink-0 mt-0.5"></i>
-                <div>
-                    <div class="text-[11px] font-extrabold uppercase tracking-wider text-pmr-primary">Motto Hidup Relawan</div>
-                    <p class="text-xs sm:text-sm font-medium italic text-slate-700 mt-1 leading-relaxed" id="bio-motto"></p>
+            <!-- Tombol Aksi Kontak Cepat (Direct Interactive Chips) -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
+                <!-- WhatsApp Button -->
+                <a id="bio-wa-link" href="#" target="_blank" rel="noopener noreferrer" class="flex items-center justify-between p-3.5 rounded-2xl bg-gradient-to-r from-emerald-600 to-emerald-700 hover:from-emerald-700 hover:to-emerald-800 text-white font-extrabold text-xs shadow-sm hover:shadow-md transition duration-200 group">
+                    <div class="flex items-center gap-3 min-w-0">
+                        <div class="w-9 h-9 rounded-xl bg-white/20 flex items-center justify-center text-lg flex-shrink-0 shadow-inner">
+                            <i class="fa-brands fa-whatsapp"></i>
+                        </div>
+                        <div class="text-left min-w-0">
+                            <div class="text-[10px] text-emerald-100 font-bold uppercase tracking-wider">WhatsApp / Telepon</div>
+                            <div class="text-xs font-black truncate max-w-[170px]" id="bio-phone">-</div>
+                        </div>
+                    </div>
+                    <i class="fa-solid fa-arrow-up-right-from-square text-xs opacity-75 group-hover:opacity-100 transition mr-1 flex-shrink-0"></i>
+                </a>
+
+                <!-- Email Button -->
+                <a id="bio-email-link" href="#" class="flex items-center justify-between p-3.5 rounded-2xl bg-gradient-to-r from-stone-800 to-stone-900 hover:from-slate-900 hover:to-black text-white font-extrabold text-xs shadow-sm hover:shadow-md transition duration-200 group">
+                    <div class="flex items-center gap-3 min-w-0">
+                        <div class="w-9 h-9 rounded-xl bg-white/20 flex items-center justify-center text-base flex-shrink-0 shadow-inner">
+                            <i class="fa-solid fa-envelope"></i>
+                        </div>
+                        <div class="text-left min-w-0">
+                            <div class="text-[10px] text-slate-300 font-bold uppercase tracking-wider">Surat Elektronik (Email)</div>
+                            <div class="text-xs font-black truncate max-w-[170px]" id="bio-email">-</div>
+                        </div>
+                    </div>
+                    <i class="fa-solid fa-arrow-up-right-from-square text-xs opacity-75 group-hover:opacity-100 transition mr-1 flex-shrink-0"></i>
+                </a>
+            </div>
+
+            <!-- Kotak Motto Pengabdian Relawan (Inspirational Quote Box) -->
+            <div id="bio-motto-container" class="p-5 rounded-2xl bg-gradient-to-r from-red-50 via-rose-50 to-amber-50 border border-red-200/80 shadow-2xs flex items-start gap-3.5 relative overflow-hidden">
+                <div class="w-9 h-9 rounded-xl bg-pmr-primary text-white flex items-center justify-center text-sm font-bold flex-shrink-0 shadow-sm mt-0.5">
+                    <i class="fa-solid fa-quote-left"></i>
+                </div>
+                <div class="min-w-0 pr-4">
+                    <div class="text-[11px] font-black uppercase tracking-wider text-pmr-primary flex items-center gap-1.5">
+                        <i class="fa-solid fa-heart-pulse text-xs"></i>
+                        <span>Motto Pengabdian Relawan</span>
+                    </div>
+                    <p class="text-xs sm:text-sm font-semibold italic text-slate-800 mt-1.5 leading-relaxed" id="bio-motto"></p>
                 </div>
             </div>
 
         </div>
 
         <!-- Modal Footer -->
-        <div class="px-6 py-4 bg-slate-50 border-t border-slate-100 flex items-center justify-between">
-            <span class="text-xs text-slate-500 font-medium">Masa Bakti Ragana Dwi Pantara 2026/2027</span>
-            <button type="button" onclick="closeBiodataModal()" class="px-6 py-2.5 rounded-xl bg-pmr-primary hover:bg-pmr-dark text-white text-xs font-extrabold shadow-md transition">
-                Tutup
+        <div class="px-6 py-4 bg-white border-t border-slate-200/80 flex items-center justify-between">
+            <div class="flex items-center gap-2 text-xs text-slate-500 font-bold">
+                <i class="fa-solid fa-shield-heart text-pmr-primary"></i>
+                <span class="hidden sm:inline">PMR Wira SMAN 1 Ciawi •</span>
+                <span>Ragana Dwi Pantara</span>
+            </div>
+            <button type="button" onclick="closeBiodataModal()" class="px-6 py-2.5 rounded-xl bg-stone-900 hover:bg-pmr-primary text-white text-xs font-black uppercase tracking-wider shadow-sm hover:shadow-md transition flex items-center gap-2">
+                <span>Tutup Biodata</span>
+                <i class="fa-solid fa-xmark"></i>
             </button>
         </div>
     </div>
@@ -1132,11 +1193,14 @@
         const badgeEl = document.getElementById('bio-badge-pos');
         const classEl = document.getElementById('bio-class');
         const nisEl = document.getElementById('bio-nis');
+        const tokenEl = document.getElementById('bio-token-id');
         const genderEl = document.getElementById('bio-gender');
         const ttlEl = document.getElementById('bio-ttl');
         const addressEl = document.getElementById('bio-address');
         const phoneEl = document.getElementById('bio-phone');
         const emailEl = document.getElementById('bio-email');
+        const waLink = document.getElementById('bio-wa-link');
+        const emailLink = document.getElementById('bio-email-link');
         const mottoEl = document.getElementById('bio-motto');
         const mottoBox = document.getElementById('bio-motto-container');
 
@@ -1145,6 +1209,7 @@
         if (badgeEl) badgeEl.textContent = data.position || 'Anggota PMR';
         if (classEl) classEl.textContent = data.class_grade ? `Tingkat / Kelas: ${data.class_grade}` : (data.subtitle || '');
         if (nisEl) nisEl.textContent = data.nis || '-';
+        if (tokenEl) tokenEl.textContent = (data.nis && data.nis !== '-' && !data.nis.startsWith('NIP')) ? data.nis : 'PMR-WIRA-2026';
         if (genderEl) genderEl.textContent = data.gender || '-';
         
         let ttlStr = '';
@@ -1160,8 +1225,34 @@
         if (ttlEl) ttlEl.textContent = ttlStr;
 
         if (addressEl) addressEl.textContent = data.address || '-';
-        if (phoneEl) phoneEl.textContent = data.phone || '-';
-        if (emailEl) emailEl.textContent = data.email || '-';
+        
+        // Kontak Telepon / WhatsApp
+        const phoneVal = data.phone || '-';
+        if (phoneEl) phoneEl.textContent = phoneVal;
+        if (waLink) {
+            if (phoneVal !== '-' && phoneVal.trim() !== '') {
+                const cleanPhone = phoneVal.replace(/[^0-9]/g, '');
+                const waNumber = cleanPhone.startsWith('0') ? '62' + cleanPhone.substring(1) : cleanPhone;
+                waLink.href = 'https://wa.me/' + waNumber;
+                waLink.classList.remove('pointer-events-none', 'opacity-60');
+            } else {
+                waLink.href = '#';
+                waLink.classList.add('pointer-events-none', 'opacity-60');
+            }
+        }
+
+        // Email
+        const emailVal = data.email || '-';
+        if (emailEl) emailEl.textContent = emailVal;
+        if (emailLink) {
+            if (emailVal !== '-' && emailVal.trim() !== '') {
+                emailLink.href = 'mailto:' + emailVal;
+                emailLink.classList.remove('pointer-events-none', 'opacity-60');
+            } else {
+                emailLink.href = '#';
+                emailLink.classList.add('pointer-events-none', 'opacity-60');
+            }
+        }
 
         if (mottoEl && mottoBox) {
             if (data.motto && data.motto.trim() !== '') {
