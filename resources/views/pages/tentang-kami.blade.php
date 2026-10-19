@@ -375,9 +375,11 @@
                                 'photo' => $photoUrl,
                             ];
                         @endphp
-                        <div class="bg-stone-900 text-white p-6 sm:p-7 rounded-3xl shadow-xl flex flex-col sm:flex-row items-center gap-6 min-w-[320px] max-w-lg border-t-4 border-pmr-primary hover:shadow-2xl transition duration-300 group">
+                        <div class="bg-stone-900 text-white p-6 sm:p-8 rounded-3xl shadow-xl flex flex-col sm:flex-row items-center gap-6 sm:gap-7 min-w-[340px] max-w-xl border-t-4 border-pmr-primary hover:shadow-2xl transition duration-300 group">
                             <div class="relative cursor-pointer group/photo flex-shrink-0" onclick="openBiodataModal({!! htmlspecialchars(json_encode($biodata), ENT_QUOTES, 'UTF-8') !!})">
-                                <img src="{{ $photoUrl }}" alt="{{ $m->name }}" class="w-28 h-28 sm:w-32 sm:h-32 rounded-3xl object-cover border-4 border-red-500 shadow-xl group-hover/photo:scale-105 transition-transform duration-300">
+                                <div class="w-32 h-42 sm:w-36 sm:h-48 rounded-3xl overflow-hidden border-4 border-red-500 shadow-xl group-hover/photo:scale-105 transition-transform duration-300 bg-stone-950">
+                                    <img src="{{ $photoUrl }}" alt="{{ $m->name }}" class="w-full h-full object-cover object-top" style="object-position: center 15%;">
+                                </div>
                                 <div class="absolute inset-0 rounded-3xl bg-black/40 opacity-0 group-hover/photo:opacity-100 flex items-center justify-center transition text-white text-xs font-bold gap-1.5 backdrop-blur-xs">
                                     <i class="fa-solid fa-id-card"></i> Biodata
                                 </div>
@@ -392,7 +394,7 @@
                                 @elseif($m->subtitle)
                                     <div class="text-xs sm:text-sm text-stone-400 mt-1">{{ $m->subtitle }}</div>
                                 @endif
-                                <button type="button" onclick="openBiodataModal({!! htmlspecialchars(json_encode($biodata), ENT_QUOTES, 'UTF-8') !!})" class="mt-3 inline-flex items-center gap-1.5 text-xs font-bold text-red-300 hover:text-white bg-white/10 hover:bg-red-600/60 px-3 py-1.5 rounded-full transition">
+                                <button type="button" onclick="openBiodataModal({!! htmlspecialchars(json_encode($biodata), ENT_QUOTES, 'UTF-8') !!})" class="mt-3.5 inline-flex items-center gap-1.5 text-xs font-bold text-red-300 hover:text-white bg-white/10 hover:bg-red-600/60 px-3.5 py-1.5 rounded-full transition">
                                     <i class="fa-solid fa-address-card text-xs"></i> Lihat Biodata
                                 </button>
                             </div>
@@ -428,9 +430,11 @@
                                 'photo' => $photoUrl,
                             ];
                         @endphp
-                        <div class="bg-gradient-to-br from-pmr-primary via-red-700 to-pmr-dark text-white p-7 sm:p-9 rounded-3xl shadow-2xl flex flex-col sm:flex-row items-center gap-7 min-w-[340px] max-w-2xl border border-red-400/30 hover:shadow-red-950/30 transition duration-300 group">
+                        <div class="bg-gradient-to-br from-pmr-primary via-red-700 to-pmr-dark text-white p-7 sm:p-9 rounded-3xl shadow-2xl flex flex-col sm:flex-row items-center gap-7 sm:gap-8 min-w-[340px] max-w-2xl border border-red-400/30 hover:shadow-red-950/30 transition duration-300 group">
                             <div class="relative cursor-pointer group/photo flex-shrink-0" onclick="openBiodataModal({!! htmlspecialchars(json_encode($biodata), ENT_QUOTES, 'UTF-8') !!})">
-                                <img src="{{ $photoUrl }}" alt="{{ $m->name }}" class="w-28 h-28 sm:w-32 sm:h-32 rounded-3xl object-cover border-4 border-white/90 shadow-2xl ring-2 ring-red-400 group-hover/photo:scale-105 transition-transform duration-300">
+                                <div class="w-36 h-48 sm:w-44 sm:h-56 rounded-3xl overflow-hidden border-4 border-white/95 shadow-2xl ring-4 ring-amber-400/50 group-hover/photo:scale-105 transition-transform duration-300 bg-red-950">
+                                    <img src="{{ $photoUrl }}" alt="{{ $m->name }}" class="w-full h-full object-cover object-top" style="object-position: center 15%;">
+                                </div>
                                 <div class="absolute inset-0 rounded-3xl bg-black/40 opacity-0 group-hover/photo:opacity-100 flex items-center justify-center transition text-white text-xs font-bold gap-1.5 backdrop-blur-xs">
                                     <i class="fa-solid fa-id-card"></i> Biodata
                                 </div>
@@ -443,7 +447,7 @@
                                 @if($m->subtitle)
                                     <div class="text-sm sm:text-base text-red-100/90 mt-1 font-medium">{{ $m->subtitle }}</div>
                                 @endif
-                                <button type="button" onclick="openBiodataModal({!! htmlspecialchars(json_encode($biodata), ENT_QUOTES, 'UTF-8') !!})" class="mt-3 inline-flex items-center gap-1.5 text-xs font-bold text-white bg-white/20 hover:bg-white hover:text-pmr-primary px-3.5 py-1.5 rounded-full transition shadow-xs">
+                                <button type="button" onclick="openBiodataModal({!! htmlspecialchars(json_encode($biodata), ENT_QUOTES, 'UTF-8') !!})" class="mt-3.5 inline-flex items-center gap-1.5 text-xs font-bold text-white bg-white/20 hover:bg-white hover:text-pmr-primary px-4 py-2 rounded-full transition shadow-xs">
                                     <i class="fa-solid fa-address-card text-xs"></i> Lihat Biodata Pribadi
                                 </button>
                             </div>
@@ -479,9 +483,11 @@
                                 'photo' => $photoUrl,
                             ];
                         @endphp
-                        <div class="bg-gradient-to-br from-slate-900 via-red-950 to-slate-900 text-white p-6 sm:p-8 rounded-3xl shadow-xl flex flex-col sm:flex-row items-center gap-6 min-w-[320px] max-w-xl border border-amber-500/30 hover:shadow-2xl transition duration-300 group">
+                        <div class="bg-gradient-to-br from-slate-900 via-red-950 to-slate-900 text-white p-6 sm:p-8 rounded-3xl shadow-xl flex flex-col sm:flex-row items-center gap-6 sm:gap-7 min-w-[320px] max-w-xl border border-amber-500/30 hover:shadow-2xl transition duration-300 group">
                             <div class="relative cursor-pointer group/photo flex-shrink-0" onclick="openBiodataModal({!! htmlspecialchars(json_encode($biodata), ENT_QUOTES, 'UTF-8') !!})">
-                                <img src="{{ $photoUrl }}" alt="{{ $m->name }}" class="w-28 h-28 sm:w-32 sm:h-32 rounded-3xl object-cover border-4 border-amber-400 shadow-xl group-hover/photo:scale-105 transition-transform duration-300">
+                                <div class="w-32 h-42 sm:w-36 sm:h-48 rounded-3xl overflow-hidden border-4 border-amber-400 shadow-xl ring-2 ring-amber-400/20 group-hover/photo:scale-105 transition-transform duration-300 bg-slate-950">
+                                    <img src="{{ $photoUrl }}" alt="{{ $m->name }}" class="w-full h-full object-cover object-top" style="object-position: center 15%;">
+                                </div>
                                 <div class="absolute inset-0 rounded-3xl bg-black/40 opacity-0 group-hover/photo:opacity-100 flex items-center justify-center transition text-white text-xs font-bold gap-1.5 backdrop-blur-xs">
                                     <i class="fa-solid fa-id-card"></i> Biodata
                                 </div>
@@ -494,7 +500,7 @@
                                 @if($m->subtitle)
                                     <div class="text-xs sm:text-sm text-slate-300 mt-1 font-medium">{{ $m->subtitle }}</div>
                                 @endif
-                                <button type="button" onclick="openBiodataModal({!! htmlspecialchars(json_encode($biodata), ENT_QUOTES, 'UTF-8') !!})" class="mt-3 inline-flex items-center gap-1.5 text-xs font-bold text-amber-200 bg-white/10 hover:bg-amber-500 hover:text-slate-950 px-3.5 py-1.5 rounded-full transition shadow-xs">
+                                <button type="button" onclick="openBiodataModal({!! htmlspecialchars(json_encode($biodata), ENT_QUOTES, 'UTF-8') !!})" class="mt-3.5 inline-flex items-center gap-1.5 text-xs font-bold text-amber-200 bg-white/10 hover:bg-amber-500 hover:text-slate-950 px-3.5 py-1.5 rounded-full transition shadow-xs">
                                     <i class="fa-solid fa-address-card text-xs"></i> Lihat Biodata
                                 </button>
                             </div>
@@ -530,9 +536,11 @@
                                 'photo' => $photoUrl,
                             ];
                         @endphp
-                        <div class="bg-white p-6 sm:p-7 rounded-3xl shadow-lg border border-slate-200/90 flex flex-col sm:flex-row items-center gap-5 hover:shadow-2xl hover:border-pmr-primary transition duration-300 group">
+                        <div class="bg-white p-6 sm:p-7 rounded-3xl shadow-lg border border-slate-200/90 flex flex-col sm:flex-row items-center gap-5 sm:gap-6 hover:shadow-2xl hover:border-pmr-primary transition duration-300 group">
                             <div class="relative cursor-pointer group/photo flex-shrink-0" onclick="openBiodataModal({!! htmlspecialchars(json_encode($biodata), ENT_QUOTES, 'UTF-8') !!})">
-                                <img src="{{ $photoUrl }}" alt="{{ $m->name }}" class="w-28 h-28 sm:w-32 sm:h-32 rounded-3xl object-cover border-4 border-slate-100 shadow-md group-hover/photo:scale-105 transition-transform duration-300">
+                                <div class="w-30 h-40 sm:w-34 sm:h-46 rounded-3xl overflow-hidden border-4 border-slate-100 shadow-md ring-2 ring-red-100 group-hover/photo:scale-105 transition-transform duration-300 bg-slate-50">
+                                    <img src="{{ $photoUrl }}" alt="{{ $m->name }}" class="w-full h-full object-cover object-top" style="object-position: center 15%;">
+                                </div>
                                 <div class="absolute inset-0 rounded-3xl bg-black/40 opacity-0 group-hover/photo:opacity-100 flex items-center justify-center transition text-white text-xs font-bold gap-1.5 backdrop-blur-xs">
                                     <i class="fa-solid fa-id-card"></i> Biodata
                                 </div>
@@ -545,7 +553,7 @@
                                 @if($m->subtitle)
                                     <div class="text-xs sm:text-sm text-slate-500 mt-1 font-medium">{{ $m->subtitle }}</div>
                                 @endif
-                                <button type="button" onclick="openBiodataModal({!! htmlspecialchars(json_encode($biodata), ENT_QUOTES, 'UTF-8') !!})" class="mt-2.5 inline-flex items-center gap-1.5 text-xs font-bold text-pmr-primary hover:text-white bg-red-50 hover:bg-pmr-primary px-3 py-1.5 rounded-full transition border border-red-100">
+                                <button type="button" onclick="openBiodataModal({!! htmlspecialchars(json_encode($biodata), ENT_QUOTES, 'UTF-8') !!})" class="mt-3 inline-flex items-center gap-1.5 text-xs font-bold text-pmr-primary hover:text-white bg-red-50 hover:bg-pmr-primary px-3.5 py-1.5 rounded-full transition border border-red-100">
                                     <i class="fa-solid fa-address-card text-xs"></i> Lihat Biodata
                                 </button>
                             </div>
@@ -566,7 +574,7 @@
 
                 <div class="w-full space-y-6 sm:space-y-7 mt-2">
                     @foreach($seksiChunks as $chunkIndex => $chunk)
-                        <div class="{{ $chunk->count() === 2 ? 'grid grid-cols-1 md:grid-cols-2 gap-6 sm:gap-7 w-full max-w-4xl mx-auto justify-center' : ($chunk->count() === 1 ? 'flex justify-center w-full max-w-md mx-auto' : 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-7 w-full max-w-7xl mx-auto') }}">
+                        <div class="{{ $chunk->count() === 2 ? 'grid grid-cols-1 md:grid-cols-2 gap-6 sm:gap-7 w-full max-w-5xl mx-auto justify-center' : ($chunk->count() === 1 ? 'flex justify-center w-full max-w-md mx-auto' : 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-7 w-full max-w-7xl mx-auto') }}">
                             @foreach($chunk as $m)
                                 @php
                                     $mem = $m->member ?? ($allMembers->get($m->name) ?? null);
@@ -606,49 +614,51 @@
                                         </span>
                                     </div>
 
-                                    <!-- Ketua Bidang -->
-                                    <div class="p-5 flex flex-col items-center text-center bg-gradient-to-b from-red-50/40 via-white to-white border-b border-slate-100">
+                                    <!-- Ketua Bidang (Foto Portrait Lebih Besar & Jelas) -->
+                                    <div class="p-6 flex flex-col items-center text-center bg-gradient-to-b from-red-50/50 via-white to-white border-b border-slate-100">
                                         <div class="relative cursor-pointer group/photo" onclick="openBiodataModal({!! htmlspecialchars(json_encode($leaderBiodata), ENT_QUOTES, 'UTF-8') !!})">
-                                            <img src="{{ $photoUrl }}" alt="{{ $m->name }}" class="w-20 h-20 sm:w-24 sm:h-24 rounded-full object-cover border-4 border-white ring-2 ring-red-400 shadow-md group-hover/photo:scale-105 transition-transform duration-300">
-                                            <span class="absolute -bottom-1 -right-1 bg-pmr-primary text-white text-[10px] font-black px-2 py-0.5 rounded-full shadow border-2 border-white flex items-center gap-1">
-                                                <i class="fa-solid fa-crown text-[8px] text-amber-300"></i> Ketua
+                                            <div class="w-28 h-36 sm:w-32 sm:h-42 rounded-3xl overflow-hidden border-4 border-white ring-2 ring-red-400 shadow-xl group-hover/photo:scale-105 transition-transform duration-300 bg-red-50">
+                                                <img src="{{ $photoUrl }}" alt="{{ $m->name }}" class="w-full h-full object-cover object-top" style="object-position: center 15%;">
+                                            </div>
+                                            <span class="absolute -bottom-2.5 inset-x-0 mx-auto w-max bg-pmr-primary text-white text-[10px] font-black px-3 py-0.5 rounded-full shadow-md border-2 border-white flex items-center justify-center gap-1 z-10">
+                                                <i class="fa-solid fa-crown text-[8px] text-amber-300"></i> Ketua Bidang
                                             </span>
-                                            <div class="absolute inset-0 rounded-full bg-black/40 opacity-0 group-hover/photo:opacity-100 flex items-center justify-center transition text-white text-[10px] font-bold gap-1 backdrop-blur-xs">
+                                            <div class="absolute inset-0 rounded-3xl bg-black/40 opacity-0 group-hover/photo:opacity-100 flex items-center justify-center transition text-white text-xs font-bold gap-1 backdrop-blur-xs">
                                                 <i class="fa-solid fa-id-card"></i> Biodata
                                             </div>
                                         </div>
-                                        <div class="mt-3">
-                                            <div class="font-extrabold text-slate-900 text-sm sm:text-base leading-snug cursor-pointer hover:text-pmr-primary transition" onclick="openBiodataModal({!! htmlspecialchars(json_encode($leaderBiodata), ENT_QUOTES, 'UTF-8') !!})" title="{{ $m->name }}">
+                                        <div class="mt-4">
+                                            <div class="font-black text-slate-900 text-base sm:text-lg leading-snug cursor-pointer hover:text-pmr-primary transition" onclick="openBiodataModal({!! htmlspecialchars(json_encode($leaderBiodata), ENT_QUOTES, 'UTF-8') !!})" title="{{ $m->name }}">
                                                 {{ $m->name }}
                                             </div>
                                             <div class="text-xs text-pmr-primary font-bold mt-0.5">
                                                 {{ $m->subtitle ?: 'Ketua ' . $m->position }}
                                             </div>
-                                            <button type="button" onclick="openBiodataModal({!! htmlspecialchars(json_encode($leaderBiodata), ENT_QUOTES, 'UTF-8') !!})" class="mt-1.5 text-[11px] font-bold text-slate-500 hover:text-pmr-primary inline-flex items-center gap-1 transition">
+                                            <button type="button" onclick="openBiodataModal({!! htmlspecialchars(json_encode($leaderBiodata), ENT_QUOTES, 'UTF-8') !!})" class="mt-2 text-xs font-bold text-slate-500 hover:text-pmr-primary inline-flex items-center gap-1 transition">
                                                 <i class="fa-solid fa-address-card text-xs text-pmr-primary"></i> Biodata Ketua &rarr;
                                             </button>
                                         </div>
                                     </div>
 
-                                    <!-- Area Staf Anggota (Mini-Grid Avatars yang Rapi & Muat Banyak) -->
-                                    <div class="p-4 bg-slate-50/70 flex-grow flex flex-col justify-between">
-                                        <div class="flex items-center justify-between pb-2 mb-3 border-b border-slate-200/70">
-                                            <span class="text-[11px] font-black uppercase tracking-wider text-slate-600 flex items-center gap-1.5">
+                                    <!-- Area Staf Anggota (Foto Besar, Jelas & Nama Terbaca Utuh) -->
+                                    <div class="p-5 bg-slate-50/80 flex-grow flex flex-col justify-between">
+                                        <div class="flex items-center justify-between pb-3 mb-4 border-b border-slate-200/80">
+                                            <span class="text-xs font-black uppercase tracking-wider text-slate-700 flex items-center gap-1.5">
                                                 <i class="fa-solid fa-users text-pmr-primary text-xs"></i> Staf Anggota Bidang
                                             </span>
-                                            <span class="text-[10px] font-bold text-slate-400">
-                                                Klik foto untuk biodata
+                                            <span class="text-[11px] font-bold text-slate-500 bg-white px-2.5 py-0.5 rounded-full border border-slate-200 shadow-2xs">
+                                                {{ count($staffList) }} Anggota
                                             </span>
                                         </div>
 
                                         @if(!empty($staffList) && count($staffList) > 0)
-                                            <div class="grid grid-cols-3 sm:grid-cols-4 gap-2.5 sm:gap-3">
+                                            <div class="grid grid-cols-2 sm:grid-cols-3 gap-3 sm:gap-3.5">
                                                 @foreach($staffList as $st)
                                                     @php
                                                         $stName = $st['name'] ?? '';
                                                         $stMem = $allMembers->get($stName);
                                                         $stClass = $st['class_grade'] ?? ($stMem?->class_grade ?? '');
-                                                        $stPhoto = $st['photo'] ?? ($stMem?->photo_url ?? ('https://ui-avatars.com/api/?name=' . urlencode($stName) . '&background=dc2626&color=ffffff&bold=true&size=300'));
+                                                        $stPhoto = $st['photo'] ?? ($stMem?->photo_url ?? ('https://ui-avatars.com/api/?name=' . urlencode($stName) . '&background=991b1b&color=ffffff&bold=true&size=300'));
                                                         $stBiodata = [
                                                             'name' => $stName,
                                                             'position' => 'Staf ' . $m->position,
@@ -665,21 +675,24 @@
                                                             'photo' => $stPhoto,
                                                         ];
                                                     @endphp
-                                                    <div class="group/staf flex flex-col items-center text-center cursor-pointer p-1.5 rounded-xl hover:bg-white hover:shadow-xs transition"
+                                                    <div class="group/staf flex flex-col items-center text-center cursor-pointer p-2.5 rounded-2xl bg-white border border-slate-200/80 hover:border-pmr-primary hover:shadow-md transition-all duration-300"
                                                          onclick="openBiodataModal({!! htmlspecialchars(json_encode($stBiodata), ENT_QUOTES, 'UTF-8') !!})"
                                                          title="Klik untuk melihat biodata {{ $stName }}">
-                                                        <div class="relative w-14 h-14 sm:w-16 sm:h-16 flex-shrink-0">
-                                                            <img src="{{ $stPhoto }}" alt="{{ $stName }}" class="w-full h-full rounded-full object-cover border-2 border-white ring-2 ring-red-200 shadow-xs group-hover/staf:scale-105 group-hover/staf:ring-pmr-primary transition-transform duration-200">
-                                                            <div class="absolute inset-0 rounded-full bg-black/40 opacity-0 group-hover/staf:opacity-100 flex items-center justify-center transition text-white text-[9px] font-bold backdrop-blur-xs">
-                                                                <i class="fa-solid fa-id-card"></i>
+                                                        <!-- Foto Portrait Besar & Tajam -->
+                                                        <div class="relative w-20 h-26 sm:w-22 sm:h-28 rounded-xl overflow-hidden border-2 border-white ring-2 ring-slate-200/80 shadow-xs group-hover/staf:ring-pmr-primary group-hover/staf:scale-105 transition-all duration-300 flex-shrink-0 bg-slate-100">
+                                                            <img src="{{ $stPhoto }}" alt="{{ $stName }}" class="w-full h-full object-cover object-top" style="object-position: center 15%;">
+                                                            <div class="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent opacity-0 group-hover/staf:opacity-100 flex items-end justify-center pb-1 transition text-white text-[10px] font-bold gap-1 backdrop-blur-2xs">
+                                                                <i class="fa-solid fa-address-card text-amber-300"></i>
+                                                                <span>Biodata</span>
                                                             </div>
                                                         </div>
-                                                        <div class="mt-1.5 w-full">
-                                                            <div class="text-[11px] font-bold text-slate-800 group-hover/staf:text-pmr-primary truncate leading-tight transition" title="{{ $stName }}">
+                                                        <!-- Nama Lengkap 2 Baris & Kelas -->
+                                                        <div class="mt-2 w-full">
+                                                            <div class="text-xs font-bold text-slate-800 group-hover/staf:text-pmr-primary leading-tight line-clamp-2 transition" title="{{ $stName }}">
                                                                 {{ $stName }}
                                                             </div>
                                                             @if($stClass)
-                                                                <div class="text-[9px] text-slate-400 font-medium truncate mt-0.5">
+                                                                <div class="text-[10px] text-slate-500 font-semibold mt-1 inline-block px-1.5 py-0.5 rounded bg-slate-100 border border-slate-200/60 leading-none">
                                                                     {{ $stClass }}
                                                                 </div>
                                                             @endif
@@ -688,8 +701,9 @@
                                                 @endforeach
                                             </div>
                                         @else
-                                            <div class="text-xs text-slate-400 italic py-6 text-center">
-                                                Belum ada staf operasional terdaftar
+                                            <div class="text-xs text-slate-400 italic py-8 text-center flex flex-col items-center justify-center gap-1.5">
+                                                <i class="fa-solid fa-user-slash text-slate-300 text-lg"></i>
+                                                <span>Belum ada staf operasional terdaftar</span>
                                             </div>
                                         @endif
                                     </div>
@@ -1003,8 +1017,10 @@
         <div class="p-6 sm:p-7 overflow-y-auto flex-grow space-y-6">
             
             <!-- Hero Profile Card -->
-            <div class="flex flex-col sm:flex-row items-center gap-5 sm:gap-6 bg-slate-50 p-5 rounded-3xl border border-slate-200/80">
-                <img id="bio-photo" src="" alt="Foto Anggota" class="w-28 h-28 sm:w-32 sm:h-32 rounded-3xl object-cover border-4 border-white shadow-xl flex-shrink-0">
+            <div class="flex flex-col sm:flex-row items-center gap-5 sm:gap-6 bg-slate-50 p-5 sm:p-6 rounded-3xl border border-slate-200/80">
+                <div class="w-32 h-40 sm:w-36 sm:h-46 rounded-3xl overflow-hidden border-4 border-white shadow-xl flex-shrink-0 bg-slate-100 ring-2 ring-red-100">
+                    <img id="bio-photo" src="" alt="Foto Anggota" class="w-full h-full object-cover object-top" style="object-position: center 15%;">
+                </div>
                 <div class="text-center sm:text-left min-w-0">
                     <div class="inline-flex items-center gap-1.5 bg-red-100 text-pmr-primary px-3 py-0.5 rounded-full text-xs font-black uppercase tracking-wider mb-1.5" id="bio-badge-pos">
                         <!-- Position Badge -->
