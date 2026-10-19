@@ -1079,6 +1079,9 @@
         });
     </script>
 
+    <!-- Floating Widgets: Wira Agent AI + WhatsApp Berkedip -->
+    @include('partials.floating-widgets')
+
     @stack('scripts')
 </body>
 </html>

@@ -32,6 +32,7 @@ use App\Http\Controllers\ArticleController;
 use App\Http\Controllers\CompetitionController;
 use App\Http\Controllers\MemberAreaController;
 use App\Http\Controllers\PageController;
+use App\Http\Controllers\WiraAgentController;
 use App\Services\OrganizationSyncService;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\File;
@@ -61,6 +62,9 @@ Route::post('/donor-darah/daftar', [PageController::class, 'storeDonorRegistrati
 // Artikel Publik
 Route::get('/artikel', [ArticleController::class, 'index'])->name('artikel.index');
 Route::get('/artikel/{slug}', [ArticleController::class, 'show'])->name('artikel.show');
+
+// Chatbot AI Wira Agent
+Route::post('/api/wira-agent/chat', [WiraAgentController::class, 'chat'])->name('wira-agent.chat');
 
 // Fallback redirect for auth middleware default login route
 Route::get('/login', function () {
