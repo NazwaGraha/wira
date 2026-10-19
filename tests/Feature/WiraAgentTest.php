@@ -447,4 +447,143 @@ class WiraAgentTest extends TestCase
         $this->assertStringContainsString('VISI PMR WIRA', $response->json('reply'));
         $this->assertStringContainsString('5 MISI UTAMA', $response->json('reply'));
     }
+
+    public function test_wira_agent_displays_secretary_and_treasurer_biodata(): void
+    {
+        Config::set('services.gemini.key', null);
+
+        // Sekretaris
+        $resSekretaris = $this->postJson('/api/wira-agent/chat', [
+            'message' => 'Siapa sekretaris PMR yang sekarang?',
+        ]);
+        $resSekretaris->assertStatus(200);
+        $this->assertStringContainsString('Putri Raisya Anjani', $resSekretaris->json('reply'));
+        $this->assertStringContainsString('BIODATA SEKRETARIS UMUM PMR WIRA', $resSekretaris->json('reply'));
+        $this->assertStringContainsString('24.49.018 PRT', $resSekretaris->json('reply'));
+
+        // Bendahara
+        $resBendahara = $this->postJson('/api/wira-agent/chat', [
+            'message' => 'Tampilkan biodata bendahara PMR',
+        ]);
+        $resBendahara->assertStatus(200);
+        $this->assertStringContainsString('Nisa Nurul Aulia', $resBendahara->json('reply'));
+        $this->assertStringContainsString('BIODATA BENDAHARA UMUM PMR WIRA', $resBendahara->json('reply'));
+        $this->assertStringContainsString('24.49.023 PRT', $resBendahara->json('reply'));
+    }
+
+    public function test_wira_agent_displays_bidang_markas_and_staff_biodata(): void
+    {
+        Config::set('services.gemini.key', null);
+
+        // Ketua Markas
+        $resKetua = $this->postJson('/api/wira-agent/chat', [
+            'message' => 'Siapa ketua bidang markas?',
+        ]);
+        $resKetua->assertStatus(200);
+        $this->assertStringContainsString('Indra Gunawan', $resKetua->json('reply'));
+        $this->assertStringContainsString('BIODATA KETUA BIDANG MARKAS', $resKetua->json('reply'));
+
+        // Staf Markas
+        $resStaf = $this->postJson('/api/wira-agent/chat', [
+            'message' => 'Biodata Rian Ardiansyah staf markas',
+        ]);
+        $resStaf->assertStatus(200);
+        $this->assertStringContainsString('Rian Ardiansyah', $resStaf->json('reply'));
+        $this->assertStringContainsString('BIODATA STAF BIDANG MARKAS', $resStaf->json('reply'));
+        $this->assertStringContainsString('25.50.007 PRT', $resStaf->json('reply'));
+    }
+
+    public function test_wira_agent_displays_bidang_pelayanan_diklat_humas_kreasi_biodatas(): void
+    {
+        Config::set('services.gemini.key', null);
+
+        // Pelayanan (Sarah Azhari & Anisa Rahma)
+        $resPelayanan = $this->postJson('/api/wira-agent/chat', [
+            'message' => 'Biodata Sarah Azhari ketua pelayanan',
+        ]);
+        $resPelayanan->assertStatus(200);
+        $this->assertStringContainsString('Sarah Azhari', $resPelayanan->json('reply'));
+        $this->assertStringContainsString('BIODATA KETUA BIDANG PELAYANAN', $resPelayanan->json('reply'));
+
+        // Diklat (Reza Rahadian)
+        $resDiklat = $this->postJson('/api/wira-agent/chat', [
+            'message' => 'Siapa ketua bidang diklat?',
+        ]);
+        $resDiklat->assertStatus(200);
+        $this->assertStringContainsString('Reza Rahadian', $resDiklat->json('reply'));
+        $this->assertStringContainsString('BIODATA KETUA BIDANG DIKLAT', $resDiklat->json('reply'));
+
+        // Humas (Dian Sastrowardoyo)
+        $resHumas = $this->postJson('/api/wira-agent/chat', [
+            'message' => 'Siapa ketua humas PMR?',
+        ]);
+        $resHumas->assertStatus(200);
+        $this->assertStringContainsString('Dian Sastrowardoyo', $resHumas->json('reply'));
+        $this->assertStringContainsString('BIODATA KETUA BIDANG HUMAS', $resHumas->json('reply'));
+
+        // Kreasi (Nicholas Saputra)
+        $resKreasi = $this->postJson('/api/wira-agent/chat', [
+            'message' => 'Siapa ketua kreasi PMR?',
+        ]);
+        $resKreasi->assertStatus(200);
+        $this->assertStringContainsString('Nicholas Saputra', $resKreasi->json('reply'));
+        $this->assertStringContainsString('BIODATA KETUA BIDANG KREASI', $resKreasi->json('reply'));
+    }
+
+    public function test_wira_agent_displays_full_organization_roster(): void
+    {
+        Config::set('services.gemini.key', null);
+
+        $response = $this->postJson('/api/wira-agent/chat', [
+            'message' => 'Tolong tampilkan struktur organisasi PMR dari pembina sampai seluruh anggota',
+        ]);
+
+        $response->assertStatus(200);
+        $this->assertStringContainsString('LEVEL 1: DEWAN PEMBINA PMR', $response->json('reply'));
+        $this->assertStringContainsString('Abdul Hamid Saputra, S.Hum., M.Pd.', $response->json('reply'));
+        $this->assertStringContainsString('LEVEL 2: PIMPINAN UTAMA', $response->json('reply'));
+        $this->assertStringContainsString('Sulthan Arkana Putra R.', $response->json('reply'));
+        $this->assertStringContainsString('LEVEL 3: WAKIL PIMPINAN', $response->json('reply'));
+        $this->assertStringContainsString('Imam Abdul Jabbar', $response->json('reply'));
+        $this->assertStringContainsString('LEVEL 4: BADAN PENGURUS HARIAN (BPH)', $response->json('reply'));
+        $this->assertStringContainsString('Putri Raisya Anjani', $response->json('reply'));
+        $this->assertStringContainsString('Nisa Nurul Aulia', $response->json('reply'));
+        $this->assertStringContainsString('LEVEL 5: 5 BIDANG & SELURUH STAF ANGGOTA', $response->json('reply'));
+        $this->assertStringContainsString('Bidang Markas', $response->json('reply'));
+        $this->assertStringContainsString('Bidang Pelayanan', $response->json('reply'));
+        $this->assertStringContainsString('Bidang Diklat', $response->json('reply'));
+        $this->assertStringContainsString('Bidang Humas', $response->json('reply'));
+        $this->assertStringContainsString('Bidang Kreasi', $response->json('reply'));
+    }
+
+    public function test_wira_agent_calls_gemini_for_open_domain_questions(): void
+    {
+        Config::set('services.gemini.key', 'fake-gemini-key');
+        Config::set('services.gemini.model', 'gemini-1.5-flash');
+
+        Http::fake([
+            'generativelanguage.googleapis.com/*' => Http::response([
+                'candidates' => [
+                    [
+                        'content' => [
+                            'parts' => [
+                                ['text' => 'Halo Sahabat Kemanusiaan! Rumus fotosintesis adalah 6CO2 + 6H2O + Cahaya Matahari -> C6H12O6 + 6O2.'],
+                            ],
+                        ],
+                    ],
+                ],
+            ], 200),
+        ]);
+
+        $response = $this->postJson('/api/wira-agent/chat', [
+            'message' => 'Apa rumus fotosintesis pada tumbuhan?',
+        ]);
+
+        $response->assertStatus(200);
+        $response->assertJson([
+            'success' => true,
+            'provider' => 'gemini',
+        ]);
+        $this->assertStringContainsString('fotosintesis', $response->json('reply'));
+    }
 }
