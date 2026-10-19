@@ -259,4 +259,192 @@ class WiraAgentTest extends TestCase
         $responseWakil->assertStatus(200);
         $this->assertStringContainsString('Imam Abdul Jabbar', $responseWakil->json('reply'));
     }
+
+    public function test_wira_agent_answers_mars_pmi_and_composer(): void
+    {
+        Config::set('services.gemini.key', null);
+
+        $response = $this->postJson('/api/wira-agent/chat', [
+            'message' => 'Apa lirik Mars PMI dan siapa penciptanya?',
+        ]);
+
+        $response->assertStatus(200);
+        $this->assertStringContainsString('Mochtar M.', $response->json('reply'));
+        $this->assertStringContainsString('Palang Merah Indonesia', $response->json('reply'));
+        $this->assertStringContainsString('Tujuh Prinsip Dasar Palang Merah', $response->json('reply'));
+    }
+
+    public function test_wira_agent_answers_red_cross_history_and_henry_dunant(): void
+    {
+        Config::set('services.gemini.key', null);
+
+        $response = $this->postJson('/api/wira-agent/chat', [
+            'message' => 'Ceritakan sejarah Jean Henry Dunant dan pertempuran Solferino',
+        ]);
+
+        $response->assertStatus(200);
+        $this->assertStringContainsString('Jean Henry Dunant', $response->json('reply'));
+        $this->assertStringContainsString('Solferino', $response->json('reply'));
+        $this->assertStringContainsString('Un Souvenir de Solferino', $response->json('reply'));
+        $this->assertStringContainsString('17 September 1945', $response->json('reply'));
+        $this->assertStringContainsString('Mohammad Hatta', $response->json('reply'));
+    }
+
+    public function test_wira_agent_answers_seven_fundamental_principles(): void
+    {
+        Config::set('services.gemini.key', null);
+
+        $response = $this->postJson('/api/wira-agent/chat', [
+            'message' => 'Sebutkan 7 Prinsip Dasar Palang Merah',
+        ]);
+
+        $response->assertStatus(200);
+        $this->assertStringContainsString('Kemanusiaan (Humanity)', $response->json('reply'));
+        $this->assertStringContainsString('Kesamaan (Impartiality)', $response->json('reply'));
+        $this->assertStringContainsString('Kenetralan (Neutrality)', $response->json('reply'));
+        $this->assertStringContainsString('Kesemestaan (Universality)', $response->json('reply'));
+    }
+
+    public function test_wira_agent_answers_tri_bakti_pmr(): void
+    {
+        Config::set('services.gemini.key', null);
+
+        $response = $this->postJson('/api/wira-agent/chat', [
+            'message' => 'Apa saja isi Tri Bakti PMR?',
+        ]);
+
+        $response->assertStatus(200);
+        $this->assertStringContainsString('Meningkatkan Keterampilan Hidup Sehat', $response->json('reply'));
+        $this->assertStringContainsString('Berkarya dan Berbakti di Masyarakat', $response->json('reply'));
+        $this->assertStringContainsString('Mempererat Persahabatan', $response->json('reply'));
+    }
+
+    public function test_wira_agent_answers_cpr_rjp_protocol(): void
+    {
+        Config::set('services.gemini.key', null);
+
+        $response = $this->postJson('/api/wira-agent/chat', [
+            'message' => 'Bagaimana teknik RJP atau CPR yang benar untuk henti jantung?',
+        ]);
+
+        $response->assertStatus(200);
+        $this->assertStringContainsString('30 Kompresi : 2 Napas Buatan', $response->json('reply'));
+        $this->assertStringContainsString('5 hingga 6 cm', $response->json('reply'));
+        $this->assertStringContainsString('100 - 120 kali per menit', $response->json('reply'));
+    }
+
+    public function test_wira_agent_answers_emergency_stretcher_specifications(): void
+    {
+        Config::set('services.gemini.key', null);
+
+        $response = $this->postJson('/api/wira-agent/chat', [
+            'message' => 'Berapa ukuran bambu tandu darurat dan tali yang digunakan?',
+        ]);
+
+        $response->assertStatus(200);
+        $this->assertStringContainsString('225 cm', $response->json('reply'));
+        $this->assertStringContainsString('60 cm', $response->json('reply'));
+        $this->assertStringContainsString('13 hingga 14 meter', $response->json('reply'));
+        $this->assertStringContainsString('Simpul Jangkar', $response->json('reply'));
+    }
+
+    public function test_wira_agent_answers_fracture_splinting_and_pms(): void
+    {
+        Config::set('services.gemini.key', null);
+
+        $response = $this->postJson('/api/wira-agent/chat', [
+            'message' => 'Bagaimana cara membidai patah tulang dan apa itu PMS?',
+        ]);
+
+        $response->assertStatus(200);
+        $this->assertStringContainsString('Minimal Melewati 2 Sendi', $response->json('reply'));
+        $this->assertStringContainsString('Pulsa', $response->json('reply'));
+        $this->assertStringContainsString('Motorik', $response->json('reply'));
+        $this->assertStringContainsString('Sensorik', $response->json('reply'));
+    }
+
+    public function test_wira_agent_answers_burn_first_aid_and_prohibits_toothpaste(): void
+    {
+        Config::set('services.gemini.key', null);
+
+        $response = $this->postJson('/api/wira-agent/chat', [
+            'message' => 'Bolehkah luka bakar dioles odol atau mentega?',
+        ]);
+
+        $response->assertStatus(200);
+        $this->assertStringContainsString('air bersih yang mengalir', $response->json('reply'));
+        $this->assertStringContainsString('10 hingga 20 menit', $response->json('reply'));
+        $this->assertStringContainsString('JANGAN mengoleskan pasta gigi / odol', $response->json('reply'));
+    }
+
+    public function test_wira_agent_answers_rice_method_for_sprains(): void
+    {
+        Config::set('services.gemini.key', null);
+
+        $response = $this->postJson('/api/wira-agent/chat', [
+            'message' => 'Bagaimana penanganan kaki keseleo terkilir dengan metode RICE?',
+        ]);
+
+        $response->assertStatus(200);
+        $this->assertStringContainsString('REST', $response->json('reply'));
+        $this->assertStringContainsString('ICE', $response->json('reply'));
+        $this->assertStringContainsString('COMPRESSION', $response->json('reply'));
+        $this->assertStringContainsString('ELEVATION', $response->json('reply'));
+    }
+
+    public function test_wira_agent_answers_earthquake_mitigation_drop_cover_hold(): void
+    {
+        Config::set('services.gemini.key', null);
+
+        $response = $this->postJson('/api/wira-agent/chat', [
+            'message' => 'Apa yang harus dilakukan saat terjadi gempa bumi di sekolah?',
+        ]);
+
+        $response->assertStatus(200);
+        $this->assertStringContainsString('DROP', $response->json('reply'));
+        $this->assertStringContainsString('COVER', $response->json('reply'));
+        $this->assertStringContainsString('HOLD ON', $response->json('reply'));
+        $this->assertStringContainsString('Titik Kumpul Aman', $response->json('reply'));
+    }
+
+    public function test_wira_agent_answers_gbho_ppuo_and_yellow_scarf_specifications(): void
+    {
+        Config::set('services.gemini.key', null);
+
+        $response = $this->postJson('/api/wira-agent/chat', [
+            'message' => 'Berapa ukuran syal kuning PMR Wira sesuai PPUO 2026?',
+        ]);
+
+        $response->assertStatus(200);
+        $this->assertStringContainsString('120 cm x 90 cm x 90 cm', $response->json('reply'));
+        $this->assertStringContainsString('GBHO', $response->json('reply'));
+        $this->assertStringContainsString('PPUO', $response->json('reply'));
+    }
+
+    public function test_wira_agent_answers_achievements_hall_of_fame(): void
+    {
+        Config::set('services.gemini.key', null);
+
+        $response = $this->postJson('/api/wira-agent/chat', [
+            'message' => 'Berapa banyak piala dan prestasi yang pernah diraih PMR Wira SMAN 1 Ciawi?',
+        ]);
+
+        $response->assertStatus(200);
+        $this->assertStringContainsString('48+ Piala & Trofi', $response->json('reply'));
+        $this->assertStringContainsString('Juara Umum', $response->json('reply'));
+    }
+
+    public function test_wira_agent_answers_vision_mission_and_motto(): void
+    {
+        Config::set('services.gemini.key', null);
+
+        $response = $this->postJson('/api/wira-agent/chat', [
+            'message' => 'Apa visi misi dan semboyan PMR Wira SMAN 1 Ciawi?',
+        ]);
+
+        $response->assertStatus(200);
+        $this->assertStringContainsString('Siamo Tutti Fratelli', $response->json('reply'));
+        $this->assertStringContainsString('VISI PMR WIRA', $response->json('reply'));
+        $this->assertStringContainsString('5 MISI UTAMA', $response->json('reply'));
+    }
 }
