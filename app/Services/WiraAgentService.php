@@ -134,7 +134,10 @@ SUMBER DATA KONTEN TERKINI WEBSITE PMR WIRA SMAN 1 CIAWI (ACUAN JAWABAN ANDA):
 
 INSTRUKSI MENJAWAB:
 - Jawablah semua pertanyaan pengguna secara cerdas, akurat, dan solutif berdasarkan DATA KONTEN TERKINI di atas.
-- Jika pengguna bertanya tentang siapa Ketua PMR periode saat ini, sebutkan nama Ketua Umum (Sulthan Arkana Putra R.) beserta kabinet Ragana Dwi Pantara 2026/2027 dan pengurus terkait.
+- Jika pengguna bertanya tentang siapa Pembina PMR, sebutkan nama Pembina PMR resmi (Abdul Hamid Saputra, S.Hum., M.Pd. / Drs. H. Mulyadi) dan tampilkan kartu biodata resminya (Nama, NIP/Status, Jabatan, Instansi, Peran Pembinaan, dan Motto).
+- Jika pengguna bertanya tentang siapa Wakil Ketua PMR, sebutkan nama Wakil Ketua Umum (Imam Abdul Jabbar), Masa Bakti Ragana Dwi Pantara 2026/2027, dan tampilkan kartu biodata resminya (Nama, Jabatan, Masa Bakti, Peran, dan Motto).
+- Jika pengguna bertanya tentang siapa Ketua PMR, sebutkan nama Ketua Umum (Sulthan Arkana Putra R.), Masa Bakti Ragana Dwi Pantara 2026/2027, dan tampilkan kartu biodata resminya.
+- Jika pengguna meminta menampilkan biodata pengurus/pimpinan, sajikan format Kartu Biodata yang elegan dengan garis pemisah, poin-poin tebal, dan beri tahu bahwa foto potret resolusi tinggi serta kartu identitas digital (KTA) dapat dilihat langsung di halaman Tentang Kami pada bagan struktur organisasi website.
 - Jika pengguna bertanya tentang syarat lomba, jelaskan cabang lomba aktif, syarat pendaftaran, berkas yang dibutuhkan (surat tugas, kartu pelajar, foto bersyal), dan arahkan untuk memantau menu Lomba di website.
 - Format jawaban dengan Markdown yang rapi (gunakan poin-poin/bullet points dan cetak tebal).
 - Berikan edukasi P3K dasar secara bijak; jika kasus medis berat, ingatkan segera membawa korban ke Puskesmas/RS atau menghubungi Hotline UKS (0857-7024-6918).
@@ -431,27 +434,55 @@ PROMPT;
             return 'Mohon maaf Sahabat Kemanusiaan, demi menjaga keamanan dan privasi data organisasi, informasi kredensial akun dan akses login Backoffice bersifat rahasia dan tidak dapat diberikan. Jika Kakak adalah pengurus yang sah dan mengalami kendala akun, silakan gunakan fitur Lupa Kata Sandi di halaman login resmi atau hubungi Pembina PMR ya! ❤️';
         }
 
-        // Pertanyaan: Siapa Ketua PMR / Pimpinan Periode Sekarang?
-        if (str_contains($lower, 'ketua') || str_contains($lower, 'wakil ketua') || str_contains($lower, 'pimpinan') || str_contains($lower, 'struktur') || str_contains($lower, 'pengurus')) {
-            $ketuaName = 'Sulthan Arkana Putra R.';
-            $wakilName = 'Imam Abdul Jabbar';
-            $periodeTitle = 'Struktur Organisasi 2026/2027';
-            $periodeSub = 'Masa Bakti Ragana Dwi Pantara';
+        // 1. Pertanyaan: Siapa Pembina PMR yang sekarang?
+        if (str_contains($lower, 'pembina') || str_contains($lower, 'guru pembina') || str_contains($lower, 'pembimbing')) {
             $pembinaName = 'Abdul Hamid Saputra, S.Hum., M.Pd.';
+            $pembinaPosition = 'Guru Pembina PMR Wira';
+            $pembinaNip = '19820415 200801 1 008';
+            $pembinaMotto = 'Mendidik relawan muda yang berkarakter tangguh, disiplin, berakhlak mulia, dan berjiwa kemanusiaan tinggi.';
 
             try {
                 if (Schema::hasTable('organization_members')) {
-                    $k = OrganizationMember::where('level', 2)->first();
-                    if ($k) {
-                        $ketuaName = $k->name;
-                    }
-                    $w = OrganizationMember::where('level', 3)->first();
-                    if ($w) {
-                        $wakilName = $w->name;
-                    }
                     $p = OrganizationMember::where('level', 1)->first();
                     if ($p) {
                         $pembinaName = $p->name;
+                        $pembinaPosition = $p->position ?: $pembinaPosition;
+                    }
+                }
+                if (Schema::hasTable('advisors')) {
+                    $adv = Advisor::where('name', $pembinaName)->first() ?: Advisor::where('is_active', true)->first();
+                    if ($adv) {
+                        $pembinaName = $adv->name;
+                        $pembinaNip = $adv->nip ?: $pembinaNip;
+                        $pembinaMotto = $adv->motto ?: $pembinaMotto;
+                    }
+                }
+            } catch (\Throwable $e) {
+                // Gunakan default aman
+            }
+
+            return "Halo Sahabat Kemanusiaan! 👨‍🏫\n\nBerdasarkan struktur organisasi resmi PMR Wira SMAN 1 Ciawi, **Pembina PMR** yang membimbing dan menaungi organisasi saat ini adalah:\n\n🪪 **BIODATA PEMBINA PMR WIRA SMAN 1 CIAWI**\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n• 👤 **Nama Lengkap:** {$pembinaName}\n• 🎖️ **Jabatan:** {$pembinaPosition}\n• 🏫 **Instansi / Unit:** SMA Negeri 1 Ciawi, Kabupaten Bogor\n• 📑 **NIP / Status:** {$pembinaNip} (Pembina Aktif)\n• 🧭 **Peran Pembinaan:** Membimbing manajemen organisasi, mengawasi kurikulum pelatihan medis & P3K relawan, serta membina operasional Pos UKS sekolah.\n• 💬 **Motto Pembina:** \"{$pembinaMotto}\"\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n✨ Kakak juga dapat melihat profil pembina dan dewan pembina kehormatan langsung di menu **Tentang Kami** pada bagan struktur organisasi website!";
+        }
+
+        // 2. Pertanyaan: Siapa Wakil Ketua PMR yang sekarang?
+        if (str_contains($lower, 'wakil ketua') || (str_contains($lower, 'wakil') && (str_contains($lower, 'pmr') || str_contains($lower, 'ketua') || str_contains($lower, 'siapa') || str_contains($lower, 'sekarang')))) {
+            $wakilName = 'Imam Abdul Jabbar';
+            $wakilPosition = 'Wakil Ketua Umum PMR Wira';
+            $wakilClass = 'Kelas XI • SMAN 1 Ciawi';
+            $wakilMotto = 'Berani melangkah, setia mengabdi, dan menjaga soliditas korsa demi kemanusiaan.';
+            $periodeTitle = 'Struktur Organisasi 2026/2027';
+            $periodeSub = 'Masa Bakti Ragana Dwi Pantara';
+
+            try {
+                if (Schema::hasTable('organization_members')) {
+                    $w = OrganizationMember::where('level', 3)->first();
+                    if ($w) {
+                        $wakilName = $w->name;
+                        $wakilPosition = $w->position ?: $wakilPosition;
+                        if ($w->member) {
+                            $wakilClass = ($w->member->class_grade ?: 'Kelas XI').' • SMAN 1 Ciawi';
+                            $wakilMotto = $w->member->motto ?: $wakilMotto;
+                        }
                     }
                 }
                 if (Schema::hasTable('organization_settings')) {
@@ -465,7 +496,59 @@ PROMPT;
                 // Gunakan default aman
             }
 
-            return "Halo Sahabat Kemanusiaan! 🌟\n\nBerdasarkan data resmi bagan kepengurusan ({$periodeTitle} — {$periodeSub}), berikut adalah pimpinan PMR Wira SMAN 1 Ciawi saat ini:\n\n• 👑 **Ketua Umum:** {$ketuaName}\n• 🛡️ **Wakil Ketua Umum:** {$wakilName}\n• 👨‍🏫 **Pembina PMR:** {$pembinaName}\n• 📋 **Sekretaris Umum:** Putri Raisya Anjani\n• 💰 **Bendahara Umum:** Nisa Nurul Aulia\n\nKepengurusan juga diperkuat oleh **5 Bidang Utama** (Bidang Markas, Bidang Pelayanan, Bidang Diklat, Bidang Humas, dan Bidang Kreasi). Kakak dapat melihat bagan dan biodata lengkap pengurus di halaman **Tentang Kami** pada website ini!";
+            return "Halo Sahabat Kemanusiaan! 🛡️\n\nBerdasarkan struktur kepengurusan resmi ({$periodeTitle} — {$periodeSub}), **Wakil Ketua Umum PMR Wira SMAN 1 Ciawi** saat ini adalah:\n\n🪪 **BIODATA WAKIL KETUA UMUM PMR WIRA**\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n• 👤 **Nama Lengkap:** {$wakilName}\n• 🎖️ **Jabatan:** {$wakilPosition}\n• 📅 **Masa Bakti:** {$periodeSub} (2026/2027)\n• 🏫 **Kelas / Unit:** {$wakilClass}\n• 🔰 **Status Anggota:** Relawan Aktif (Tingkat Wira)\n• ⚙️ **Tugas & Peran:** Mendampingi Ketua Umum, mengoordinasikan 5 bidang teknis kepengurusan (Markas, Pelayanan, Diklat, Humas, Kreasi), serta memastikan kesiapsiagaan operasional relawan di lapangan.\n• 💬 **Motto Pengabdian:** \"{$wakilMotto}\"\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n✨ Kakak dapat melihat foto potret close-up resmi dan kartu biodata digital beliau di halaman **Tentang Kami** pada bagan struktur organisasi!";
+        }
+
+        // 3. Pertanyaan: Siapa Ketua PMR yang sekarang?
+        if (str_contains($lower, 'ketua') && ! str_contains($lower, 'bidang')) {
+            $ketuaName = 'Sulthan Arkana Putra R.';
+            $ketuaPosition = 'Ketua Umum PMR Wira';
+            $ketuaClass = 'Kelas XI • SMAN 1 Ciawi';
+            $ketuaNri = '24.49.004 PRT';
+            $ketuaMotto = 'Siamo Tutti Fratelli — Memimpin dengan keteladanan, melayani sesama dengan ketulusan hati dan jiwa korsa yang pantang menyerah.';
+            $periodeTitle = 'Struktur Organisasi 2026/2027';
+            $periodeSub = 'Masa Bakti Ragana Dwi Pantara';
+
+            try {
+                if (Schema::hasTable('organization_members')) {
+                    $k = OrganizationMember::where('level', 2)->first();
+                    if ($k) {
+                        $ketuaName = $k->name;
+                        $ketuaPosition = $k->position ?: $ketuaPosition;
+                        if ($k->member) {
+                            $ketuaClass = ($k->member->class_grade ?: 'Kelas XI').' • SMAN 1 Ciawi';
+                            $ketuaNri = $k->member->nri ?: $ketuaNri;
+                            $ketuaMotto = $k->member->motto ?: $ketuaMotto;
+                        }
+                    }
+                }
+                if (Schema::hasTable('organization_settings')) {
+                    $s = OrganizationSetting::first();
+                    if ($s) {
+                        $periodeTitle = $s->title ?: $periodeTitle;
+                        $periodeSub = $s->subtitle ?: $periodeSub;
+                    }
+                }
+            } catch (\Throwable $e) {
+                // Gunakan default aman
+            }
+
+            return "Halo Sahabat Kemanusiaan! 👑\n\nBerdasarkan struktur kepengurusan resmi ({$periodeTitle} — {$periodeSub}), **Ketua Umum PMR Wira SMAN 1 Ciawi** saat ini adalah:\n\n🪪 **BIODATA KETUA UMUM PMR WIRA**\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n• 👤 **Nama Lengkap:** {$ketuaName}\n• 👑 **Jabatan:** {$ketuaPosition}\n• 📅 **Masa Bakti:** {$periodeSub} (2026/2027)\n• 🏫 **Kelas / Unit:** {$ketuaClass}\n• 🆔 **Nomor Registrasi (NRI):** {$ketuaNri}\n• 🔰 **Status Anggota:** Relawan Aktif (KTA Terverifikasi)\n• 💬 **Motto Pengabdian:** \"{$ketuaMotto}\"\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n✨ Foto potret resmi berseragam lengkap dan kartu identitas digital (KTA) beliau dapat dilihat langsung di menu **Tentang Kami** pada bagan struktur organisasi website!";
+        }
+
+        // 4. Permintaan Biodata Anggota / Pengurus Langsung
+        if (str_contains($lower, 'biodata') || str_contains($lower, 'profil')) {
+            if (str_contains($lower, 'pembina') || str_contains($lower, 'hamid') || str_contains($lower, 'mulyadi')) {
+                return $this->generateKnowledgeResponse('pembina');
+            }
+            if (str_contains($lower, 'wakil') || str_contains($lower, 'imam')) {
+                return $this->generateKnowledgeResponse('wakil ketua');
+            }
+            if (str_contains($lower, 'ketua') || str_contains($lower, 'sulthan')) {
+                return $this->generateKnowledgeResponse('ketua');
+            }
+
+            return "Halo Sahabat Kemanusiaan! 🪪\n\nUntuk melihat **Biodata Resmi Pengurus PMR Wira SMAN 1 Ciawi**, Kakak dapat membuka halaman **Tentang Kami** pada website ini.\n\nDi sana, setiap foto pengurus (Pembina, Ketua Umum, Wakil Ketua, BPH, dan 5 Ketua Bidang) dapat diklik langsung untuk memunculkan **Kartu Tanda Anggota (KTA) Digital** yang memuat:\n• Foto Potret Wajah HD Berseragam PMR Lengkap Syal Kuning\n• Nomor Registrasi Induk (NRI / NIS)\n• Tempat & Tanggal Lahir\n• Domisili & Kontak Cepat (WhatsApp/Email)\n• Motto Pengabdian Relawan\n\nKakak juga bisa langsung menanyakan ke saya: *\"Siapa pembina PMR?\"*, *\"Siapa ketua PMR?\"*, atau *\"Siapa wakil ketua PMR?\"* untuk melihat ringkasan biodatanya secara langsung di sini! ✨";
         }
 
         // Pertanyaan: Syarat Mengikuti Lomba PMR / Informasi Lomba

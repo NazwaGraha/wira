@@ -213,4 +213,50 @@ class WiraAgentTest extends TestCase
         $this->assertStringContainsString('Kartu Pelajar', $response->json('reply'));
         $this->assertStringContainsString('Pendaftaran Online', $response->json('reply'));
     }
+
+    public function test_wira_agent_answers_who_is_current_pembina_with_biodata(): void
+    {
+        Config::set('services.gemini.key', null);
+
+        $response = $this->postJson('/api/wira-agent/chat', [
+            'message' => 'Siapa pembina PMR yang sekarang?',
+        ]);
+
+        $response->assertStatus(200);
+        $this->assertStringContainsString('Abdul Hamid Saputra, S.Hum., M.Pd.', $response->json('reply'));
+        $this->assertStringContainsString('BIODATA PEMBINA PMR WIRA', $response->json('reply'));
+    }
+
+    public function test_wira_agent_answers_who_is_current_wakil_ketua_with_biodata(): void
+    {
+        Config::set('services.gemini.key', null);
+
+        $response = $this->postJson('/api/wira-agent/chat', [
+            'message' => 'Siapa wakil ketua PMR yang sekarang?',
+        ]);
+
+        $response->assertStatus(200);
+        $this->assertStringContainsString('Imam Abdul Jabbar', $response->json('reply'));
+        $this->assertStringContainsString('BIODATA WAKIL KETUA UMUM PMR WIRA', $response->json('reply'));
+    }
+
+    public function test_wira_agent_displays_biodata_when_requested(): void
+    {
+        Config::set('services.gemini.key', null);
+
+        $response = $this->postJson('/api/wira-agent/chat', [
+            'message' => 'Tampilkan biodata ketua PMR',
+        ]);
+
+        $response->assertStatus(200);
+        $this->assertStringContainsString('Sulthan Arkana Putra R.', $response->json('reply'));
+        $this->assertStringContainsString('BIODATA KETUA UMUM PMR WIRA', $response->json('reply'));
+
+        $responseWakil = $this->postJson('/api/wira-agent/chat', [
+            'message' => 'Bisa lihat biodata wakil ketua?',
+        ]);
+
+        $responseWakil->assertStatus(200);
+        $this->assertStringContainsString('Imam Abdul Jabbar', $responseWakil->json('reply'));
+    }
 }
