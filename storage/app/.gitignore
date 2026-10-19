@@ -1,4 +1,8 @@
 *
 !private/
 !public/
+!knowledge/
+!knowledge/**
 !.gitignore
+
+
