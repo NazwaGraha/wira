@@ -297,6 +297,34 @@
       "title": "Susunan Lengkap Ketua & Seluruh Anggota Bidang Kreasi",
       "keywords": ["anggota bidang kreasi", "staf bidang kreasi", "anggota kreasi", "staf kreasi", "siapa anggota bidang kreasi", "siapa saja di bidang kreasi", "tim bidang kreasi", "pengurus bidang kreasi", "ketua bidang kreasi"],
       "content": "Susunan Lengkap Kepengurusan Bidang Media Kreatif & Publikasi / Kreasi (Kabinet Ragana Dwi Pantara 2026/2027):\n• Ketua Bidang: Nicholas Saputra (Kelas XI • NRI: 24.49.055 PRT)\n  - Tugas: Pengarah artistik publikasi, perancangan poster edukasi kesehatan, pembuatan video animasi P3K, dan desain KTA digital. Motto: 'Kreativitas tanpa batas untuk mengedukasi dan menggerakkan empati kemanusiaan.'\n• Seluruh Staf Anggota Bidang Kreasi:\n  1. Putri Marino (Kelas X-2 • NRI: 25.50.058 PRT) - Motto: 'Karya visual yang indah membawa pesan keselamatan untuk semua.'\n  2. Aldi Taher (Kelas XI-5 • NRI: 24.49.061 PRT) - Motto: 'Semangat berkarya dan berinovasi demi syiar kepalangmerahan.'"
+    },
+    {
+      "id": "p3k_keracunan",
+      "category": "p3k",
+      "title": "Pertolongan Pertama Keracunan (Makanan, Zat Kimia, Gas Beracun)",
+      "keywords": ["keracunan", "racun", "termakan racun", "minum racun", "keracunan makanan", "zat kimia", "gas beracun", "bisa", "antidot"],
+      "content": "Protokol Resmi Pertolongan Pertama Keracunan PMR Wira:\n1. Amankan 3A (Aman Diri, Aman Pasien, Aman Lingkungan).\n2. Identifikasi sumber racun: apakah melalui mulut (tertelan), pernapasan (inhalasi gas), atau kontak kulit.\n3. DILARANG memicu muntah jika zat racun bersifat korosif (asam/basa kuat, pemutih, bensin, pembersih lantai) atau jika korban tidak sadar penuh.\n4. Bila korban sadar dan racun bukan zat korosif, berikan air putih atau tablet arang aktif (norit) untuk menyerap racun.\n5. Jika keracunan gas (asap/CO), segera evakuasi korban ke udara terbuka yang segar.\n6. Amankan wadah/sisa zat racun atau muntahan untuk diserahkan ke dokter.\n7. Segera hubungi tim medis, ruang UKS (0857-7024-6918), atau fasilitas kesehatan terdekat selagi langkah pertolongan pertama ini dilakukan."
+    },
+    {
+      "id": "ksr_triage_bencana",
+      "category": "ksr",
+      "title": "Triage Lapangan Bencana PMI (Metode START)",
+      "keywords": ["triage", "triase", "metode start", "tag merah", "tag kuning", "tag hijau", "tag hitam", "prioritas korban", "bencana massal"],
+      "content": "Panduan Triage Lapangan Bencana KSR & PMI (Metode START - Simple Triage and Rapid Treatment):\n• Tag Merah (Prioritas 1 - Gawat Darurat): Ancaman jiwa segera, pernapasan > 30x/menit, CRT > 2 detik, tidak dapat mengikuti perintah sederhana. Butuh stabilisasi dan evakuasi segera.\n• Tag Kuning (Prioritas 2 - Darurat Tidak Gawat): Cedera berat/sedang namun hemodinamik stabil (patah tulang tertutup, luka bakar tanpa gangguan jalan napas). Evakuasi dapat ditunda setelah korban merah tertangani.\n• Tag Hijau (Prioritas 3 - Tidak Gawat Tidak Darurat): Korban cedera ringan yang dapat berjalan sendiri (walking wounded). Diarahkan ke pos penampungan medis sekunder.\n• Tag Hitam (Prioritas 0 - Meninggal Dunia): Korban tidak bernapas meskipun jalan napas telah dibuka dan dibebaskan, atau mengalami cedera fatal yang tidak memungkinkan diselamatkan."
+    },
+    {
+      "id": "ksr_hukum_perikemanusiaan_internasional",
+      "category": "hpi",
+      "title": "Hukum Perikemanusiaan Internasional (HPI) & Konvensi Jenewa",
+      "keywords": ["hpi", "hukum perikemanusiaan internasional", "konvensi jenewa", "protokol tambahan", "perlindungan korban perang", "lambang palang merah"],
+      "content": "Rangkuman Pokok Hukum Perikemanusiaan Internasional (HPI / International Humanitarian Law):\n• Landasan Utama: 4 Konvensi Jenewa 12 Agustus 1949 dan Protokol Tambahan 1977 & 2005.\n• Tujuan: Membatasi dampak pertikaian bersenjata dan melindungi orang-orang yang tidak atau sudah tidak lagi terlibat dalam pertempuran (penduduk sipil, tawanan perang, tentara yang luka/sakit).\n• Prinsip Pembedaan (Distinction): Wajib membedakan antara kombatan dan penduduk sipil, serta antara sasaran militer dan objek sipil.\n• Perlindungan Lambang: Personel medis, rumah sakit, ambulans, dan relawan yang menggunakan lambang Palang Merah, Bulan Sabit Merah, atau Kristal Merah dilindungi oleh hukum internasional dan DILARANG dijadikan sasaran serangan militer."
+    },
+    {
+      "id": "ksr_manajemen_posko",
+      "category": "ksr",
+      "title": "Manajemen Posko Tanggap Darurat Bencana PMI",
+      "keywords": ["manajemen posko", "posko pmi", "tanggap darurat", "pos komando", "wash", "dapur umum", "shelter", "kaji cepat"],
+      "content": "Manajemen Posko Tanggap Darurat Bencana PMI & Relawan:\n• Struktur Posko: Pos Komando Lapangan (Posko), Unit Assessment (Kaji Cepat Situasi Bencana), Pos Medis Lapangan, Logistik Bantuan, Dapur Umum (DU), Shelter (Penampungan Sementara), dan Unit WASH (Water, Sanitation, and Hygiene).\n• Alur Operasional: Kaji cepat kebutuhan darurat korban -> mobilisasi regu pertolongan pertama & evakuasi -> pendistribusian bantuan logistik terpadu -> pelayanan kesehatan pengungsian -> pemulihan hubungan keluarga (Restoring Family Links / RFL)."
     }
   ]
 }

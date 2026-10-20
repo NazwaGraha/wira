@@ -239,6 +239,18 @@ class KnowledgeSearchService
         if (str_contains($queryLower, 'kreasi') && ($topic['id'] ?? '') === 'susunan_anggota_bidang_kreasi') {
             $score += 45;
         }
+        if ((str_contains($queryLower, 'racun') || str_contains($queryLower, 'keracunan')) && ($topic['id'] ?? '') === 'p3k_keracunan') {
+            $score += 70;
+        }
+        if ((str_contains($queryLower, 'triage') || str_contains($queryLower, 'triase') || str_contains($queryLower, 'start')) && ($topic['id'] ?? '') === 'ksr_triage_bencana') {
+            $score += 70;
+        }
+        if ((str_contains($queryLower, 'hpi') || str_contains($queryLower, 'perikemanusiaan')) && ($topic['id'] ?? '') === 'ksr_hukum_perikemanusiaan_internasional') {
+            $score += 70;
+        }
+        if ((str_contains($queryLower, 'posko') || str_contains($queryLower, 'manajemen posko')) && ($topic['id'] ?? '') === 'ksr_manajemen_posko') {
+            $score += 70;
+        }
 
         return $score;
     }
