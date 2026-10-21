@@ -28,6 +28,7 @@ use App\Http\Controllers\Admin\OrganizationController;
 use App\Http\Controllers\Admin\OrganizationGuidelineController;
 use App\Http\Controllers\Admin\PopupBannerController;
 use App\Http\Controllers\Admin\UksHotlineController;
+use App\Http\Controllers\Admin\WiraAgentKnowledgeController;
 use App\Http\Controllers\ArticleController;
 use App\Http\Controllers\CompetitionController;
 use App\Http\Controllers\MemberAreaController;
@@ -272,6 +273,10 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::post('/competition-info-menus/{id}/toggle-active', [CompetitionInfoMenuController::class, 'toggleActive'])->name('competition-info-menus.toggle-active');
         Route::post('/competition-info-menus/{id}/quick-upload', [CompetitionInfoMenuController::class, 'quickUpload'])->name('competition-info-menus.quick-upload');
         Route::post('/competition-info-menus-reset-defaults', [CompetitionInfoMenuController::class, 'resetDefaults'])->name('competition-info-menus.reset-defaults');
+
+        // Otak & Pengetahuan Wira Agent AI (Sinkronisasi Konten Website)
+        Route::post('/wira-agent/sync-knowledge', [WiraAgentKnowledgeController::class, 'sync'])->name('wira-agent.sync-knowledge');
+        Route::get('/wira-agent/knowledge-status', [WiraAgentKnowledgeController::class, 'status'])->name('wira-agent.knowledge-status');
 
         // System Utility: Bersihkan Cache & Sinkronisasi Server
         Route::get('/clear-cache', function () {

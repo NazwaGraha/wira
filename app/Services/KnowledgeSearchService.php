@@ -35,6 +35,14 @@ class KnowledgeSearchService
     }
 
     /**
+     * Reset cache topik pengetahuan dalam memori.
+     */
+    public function clearCache(): void
+    {
+        $this->topicsCache = null;
+    }
+
+    /**
      * Ambil seluruh topik knowledge base dari storage JSON atau fallback default.
      *
      * @return array<int, array<string, mixed>>

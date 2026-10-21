@@ -3,12 +3,17 @@
 namespace App\Services;
 
 use App\Models\Achievement;
+use App\Models\Activity;
+use App\Models\Article;
+use App\Models\BloodStock;
 use App\Models\CompetitionCategory;
 use App\Models\CompetitionEvent;
+use App\Models\PopupBanner;
 use App\Models\UksHotline;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Str;
 
 class WiraAgentService
 {
@@ -411,6 +416,66 @@ PROMPT;
         $context[] = "\n=== PENDAFTARAN ANGGOTA BARU (REKRUTMEN) ===";
         $context[] = '• Syarat Bergabung: Siswa-siswi aktif SMAN 1 Ciawi (Kelas X & XI), berjiwa kemanusiaan, izin orang tua/wali, bersedia mengikuti Diklatsar ruang dan lapangan.';
         $context[] = '• Cara Mendaftar: Mengisi formulir online di menu "Kontak & Gabung Relawan" pada website resmi https://pmrwirasmanic.or.id.';
+
+        // 11. Publikasi Artikel & Berita Terkini
+        try {
+            if (Schema::hasTable('articles')) {
+                $recentArticles = Article::with('category')->where('status', 'published')->latest()->take(5)->get();
+                if ($recentArticles->isNotEmpty()) {
+                    $context[] = "\n=== ARTIKEL & BERITA RESMI TERBIT ===";
+                    foreach ($recentArticles as $art) {
+                        $catName = $art->category ? $art->category->name : 'Umum';
+                        $excerpt = $art->excerpt ?: Str::limit(strip_tags($art->body ?? ''), 120);
+                        $context[] = "• \"{$art->title}\" (Kategori: {$catName}): {$excerpt}";
+                    }
+                }
+            }
+        } catch (\Throwable $e) {
+        }
+
+        // 12. Agenda & Kegiatan Mendatang / Terkini
+        try {
+            if (Schema::hasTable('activities')) {
+                $recentActivities = Activity::latest('event_date')->take(5)->get();
+                if ($recentActivities->isNotEmpty()) {
+                    $context[] = "\n=== AGENDA KEGIATAN RELAWAN TERKINI ===";
+                    foreach ($recentActivities as $act) {
+                        $date = $act->event_date ? $act->event_date->format('d M Y') : 'Terjadwal';
+                        $loc = $act->location ?: 'Kampus SMAN 1 Ciawi';
+                        $context[] = "• \"{$act->title}\" ({$date} di {$loc})";
+                    }
+                }
+            }
+        } catch (\Throwable $e) {
+        }
+
+        // 13. Stok Darah & Donor Darah
+        try {
+            if (Schema::hasTable('blood_stocks')) {
+                $stocks = BloodStock::all();
+                if ($stocks->isNotEmpty()) {
+                    $stockList = [];
+                    foreach ($stocks as $st) {
+                        $stockList[] = "Gol {$st->blood_type}: {$st->quantity} kantong";
+                    }
+                    $context[] = "\n=== STOK DARAH TERSEDIA DI MARKAS / UTD PMI ===";
+                    $context[] = '• '.implode(' | ', $stockList);
+                }
+            }
+        } catch (\Throwable $e) {
+        }
+
+        // 14. Pengumuman Popup Banner Aktif
+        try {
+            if (Schema::hasTable('popup_banners')) {
+                $popup = PopupBanner::where('is_active', true)->first();
+                if ($popup) {
+                    $context[] = "\n=== PENGUMUMAN POPUP BANNER AKTIF ===";
+                    $context[] = "• {$popup->title} (Tautan: {$popup->target_url})";
+                }
+            }
+        } catch (\Throwable $e) {
+        }
 
         return implode("\n", $context);
     }

@@ -131,6 +131,49 @@
 
     <!-- Right Side: Live Blood Stock & Recent Candidate Registrations (4 Cols) -->
     <div class="lg:col-span-4 space-y-6">
+        <!-- Wira Agent AI Knowledge Hub Widget -->
+        <div class="bg-gradient-to-br from-slate-900 via-slate-800 to-red-950 rounded-3xl p-6 text-white shadow-lg border border-red-900/40 relative overflow-hidden">
+            <div class="absolute -right-6 -bottom-6 w-28 h-28 bg-red-600/10 rounded-full blur-2xl pointer-events-none"></div>
+
+            <div class="flex items-center justify-between mb-3 relative z-10">
+                <div class="flex items-center gap-2">
+                    <div class="w-8 h-8 rounded-xl bg-red-600 text-white flex items-center justify-center text-xs shadow-md shadow-red-600/40">
+                        <i class="fa-solid fa-robot"></i>
+                    </div>
+                    <div>
+                        <h4 class="font-extrabold text-white text-sm">Wira Agent AI</h4>
+                        <div class="text-[10px] text-red-200">Otak & Pengetahuan Web</div>
+                    </div>
+                </div>
+                <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
+                    <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span> Siap
+                </span>
+            </div>
+
+            <p class="text-xs text-slate-300 leading-relaxed mb-4 relative z-10">
+                Sinkronkan seluruh konten website (artikel, kegiatan, prestasi, struktur organisasi, dan pedoman) agar Wira Agent selalu menguasai informasi terkini.
+            </p>
+
+            <div class="bg-white/10 backdrop-blur-sm rounded-2xl p-3 border border-white/10 mb-4 text-xs space-y-1 relative z-10">
+                <div class="flex justify-between items-center text-slate-300 text-[11px]">
+                    <span>Topik Terindeks:</span>
+                    <span class="font-bold text-white">{{ $wiraKnowledgeStats['total_topics'] ?? 0 }} Topik</span>
+                </div>
+                <div class="flex justify-between items-center text-slate-300 text-[11px]">
+                    <span>Terakhir Diserap:</span>
+                    <span class="font-bold text-amber-300">{{ $wiraKnowledgeStats['updated_at'] ?? 'Belum disinkronkan' }}</span>
+                </div>
+            </div>
+
+            <form action="{{ route('admin.wira-agent.sync-knowledge') }}" method="POST" class="relative z-10">
+                @csrf
+                <button type="submit" onclick="this.disabled=true; this.innerHTML='<i class=\'fa-solid fa-spinner fa-spin mr-1.5\'></i> Menyerap Seluruh Web...'; this.form.submit();" class="w-full bg-gradient-to-r from-red-600 to-red-700 hover:from-red-500 hover:to-red-600 text-white font-bold py-2.5 px-4 rounded-xl text-xs shadow-md shadow-red-900/50 transition flex items-center justify-center gap-2 cursor-pointer active:scale-95">
+                    <i class="fa-solid fa-arrows-rotate"></i>
+                    <span>Sinkronkan Pengetahuan Sekarang</span>
+                </button>
+            </form>
+        </div>
+
         <!-- Bagan Kepengurusan Widget -->
         <div class="bg-white rounded-3xl p-6 border border-slate-200 shadow-sm">
             <div class="flex items-center justify-between mb-3">
