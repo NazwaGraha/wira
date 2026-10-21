@@ -190,6 +190,21 @@ class KnowledgeSearchService
         if (str_contains($queryLower, 'bendahara') && ($topic['id'] ?? '') === 'biodata_bendahara') {
             $score += 50;
         }
+        if (str_contains($queryLower, 'diklat') && (($topic['id'] ?? '') === 'member_reza-rahadian' || str_contains($topic['id'] ?? '', 'diklat'))) {
+            $score += 80;
+        }
+        if (str_contains($queryLower, 'markas') && (($topic['id'] ?? '') === 'member_indra-gunawan' || str_contains($topic['id'] ?? '', 'markas'))) {
+            $score += 80;
+        }
+        if (str_contains($queryLower, 'pelayanan') && (($topic['id'] ?? '') === 'member_sarah-azhari' || str_contains($topic['id'] ?? '', 'pelayanan'))) {
+            $score += 80;
+        }
+        if (str_contains($queryLower, 'humas') && (($topic['id'] ?? '') === 'member_dian-sastrowardoyo' || str_contains($topic['id'] ?? '', 'humas'))) {
+            $score += 80;
+        }
+        if (str_contains($queryLower, 'kreasi') && (($topic['id'] ?? '') === 'member_nicholas-saputra' || str_contains($topic['id'] ?? '', 'kreasi'))) {
+            $score += 80;
+        }
         if (str_contains($queryLower, 'mars') && ($topic['id'] ?? '') === 'mars_pmi') {
             $score += 60;
         }

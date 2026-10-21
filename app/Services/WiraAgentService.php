@@ -60,6 +60,8 @@ class WiraAgentService
             ];
         }
 
+        $lower = strtolower(trim($message));
+
         // 2. RAG Retrieval: Ambil konteks paling relevan dari Smart Knowledge Base
         $ragContext = $this->knowledgeSearch->getRelevantContext($message, limit: 5);
         $systemPrompt = $this->buildSystemPrompt($ragContext);
@@ -71,9 +73,12 @@ class WiraAgentService
         if (! empty($geminiKey)) {
             $geminiResponse = $this->callGemini($geminiKey, $systemPrompt, $message, $history);
             if ($geminiResponse !== null && trim($geminiResponse) !== '') {
+                // Validasi agar respon LLM tidak melakukan generalisasi malas saat ditanya pimpinan spesifik
+                $validatedResponse = $this->validateLeadershipResponse($lower, $geminiResponse);
+
                 return [
                     'success' => true,
-                    'reply' => $geminiResponse,
+                    'reply' => $validatedResponse,
                     'provider' => 'gemini',
                     'timestamp' => now()->format('H:i'),
                 ];
@@ -84,9 +89,11 @@ class WiraAgentService
         if (! empty($openaiKey)) {
             $openaiResponse = $this->callOpenAi($openaiKey, $systemPrompt, $message, $history);
             if ($openaiResponse !== null && trim($openaiResponse) !== '') {
+                $validatedResponse = $this->validateLeadershipResponse($lower, $openaiResponse);
+
                 return [
                     'success' => true,
-                    'reply' => $openaiResponse,
+                    'reply' => $validatedResponse,
                     'provider' => 'openai',
                     'timestamp' => now()->format('H:i'),
                 ];
@@ -102,6 +109,107 @@ class WiraAgentService
             'provider' => 'knowledge_engine',
             'timestamp' => now()->format('H:i'),
         ];
+    }
+
+    /**
+     * Validasi respons LLM untuk pertanyaan kepengurusan agar tidak menghasilkan ringkasan umum saat ditanya ketua/anggota tertentu.
+     */
+    public function validateLeadershipResponse(string $lower, string $response): string
+    {
+        // 1. Ketua Bidang Diklat
+        if (str_contains($lower, 'ketua') && str_contains($lower, 'diklat') && ! str_contains($response, 'Reza Rahadian')) {
+            return $this->handleSpecificBidangInquiry($lower) ?: $response;
+        }
+
+        // 2. Ketua Bidang Markas
+        if (str_contains($lower, 'ketua') && str_contains($lower, 'markas') && ! str_contains($response, 'Indra Gunawan')) {
+            return $this->handleSpecificBidangInquiry($lower) ?: $response;
+        }
+
+        // 3. Ketua Bidang Pelayanan
+        if (str_contains($lower, 'ketua') && str_contains($lower, 'pelayanan') && ! str_contains($response, 'Sarah Azhari')) {
+            return $this->handleSpecificBidangInquiry($lower) ?: $response;
+        }
+
+        // 4. Ketua Bidang Humas
+        if (str_contains($lower, 'ketua') && str_contains($lower, 'humas') && ! str_contains($response, 'Dian Sastrowardoyo')) {
+            return $this->handleSpecificBidangInquiry($lower) ?: $response;
+        }
+
+        // 5. Ketua Bidang Kreasi
+        if (str_contains($lower, 'ketua') && str_contains($lower, 'kreasi') && ! str_contains($response, 'Nicholas Saputra')) {
+            return $this->handleSpecificBidangInquiry($lower) ?: $response;
+        }
+
+        // 6. Anggota Bidang Diklat
+        if ((str_contains($lower, 'anggota') || str_contains($lower, 'staf') || str_contains($lower, 'siapa saja')) && str_contains($lower, 'diklat') && ! str_contains($response, 'Fajar Pratama')) {
+            return $this->handleSpecificBidangInquiry($lower) ?: $response;
+        }
+
+        // 7. Anggota Bidang Markas
+        if ((str_contains($lower, 'anggota') || str_contains($lower, 'staf') || str_contains($lower, 'siapa saja')) && str_contains($lower, 'markas') && ! str_contains($response, 'Rian Ardiansyah')) {
+            return $this->handleSpecificBidangInquiry($lower) ?: $response;
+        }
+
+        // 8. Anggota Bidang Pelayanan
+        if ((str_contains($lower, 'anggota') || str_contains($lower, 'staf') || str_contains($lower, 'siapa saja')) && str_contains($lower, 'pelayanan') && ! str_contains($response, 'Anisa Rahma')) {
+            return $this->handleSpecificBidangInquiry($lower) ?: $response;
+        }
+
+        // 9. Ketua Umum PMR
+        if ((str_contains($lower, 'ketua umum') || (str_contains($lower, 'ketua') && (str_contains($lower, 'pmr') || str_contains($lower, 'sekarang')) && ! str_contains($lower, 'bidang') && ! str_contains($lower, 'wakil'))) && ! str_contains($response, 'Sulthan Arkana')) {
+            return $this->matchDeterministicInquiry($lower) ?: $response;
+        }
+
+        // 10. Wakil Ketua
+        if (str_contains($lower, 'wakil') && ! str_contains($response, 'Imam Abdul Jabbar')) {
+            return $this->findSpecificMemberBiodata($lower) ?: $response;
+        }
+
+        // 11. Pembina PMR
+        if (str_contains($lower, 'pembina') && ! str_contains($lower, 'anggota') && ! str_contains($lower, 'sampai') && ! str_contains($response, 'Abdul Hamid')) {
+            return $this->findSpecificMemberBiodata($lower) ?: $response;
+        }
+
+        return $response;
+    }
+
+    /**
+     * Cocokkan pertanyaan spesifik kepengurusan, pimpinan, ketua bidang, dan anggota (Prioritas 1).
+     */
+    public function matchDeterministicInquiry(string $lower): ?string
+    {
+        // A. Cek jika meminta struktur organisasi lengkap / seluruh susunan
+        if (str_contains($lower, 'struktur organisasi') || str_contains($lower, 'bagan organisasi') || str_contains($lower, 'susunan pengurus') || str_contains($lower, 'semua pengurus') || str_contains($lower, 'daftar pengurus') || str_contains($lower, 'siapa saja pengurus') || (str_contains($lower, 'pembina') && (str_contains($lower, 'sampai') || str_contains($lower, 'seluruh') || str_contains($lower, 'semua') || str_contains($lower, 'anggota'))) || str_contains($lower, 'seluruh anggota')) {
+            return $this->renderFullOrganizationStructure();
+        }
+
+        // B. Cek pertanyaan spesifik mengenai bidang tertentu (Ketua Bidang / Anggota Bidang)
+        $bidangInquiry = $this->handleSpecificBidangInquiry($lower);
+        if ($bidangInquiry !== null) {
+            return $bidangInquiry;
+        }
+
+        // C. Cek pencarian biodata spesifik anggota/pimpinan (Pembina, Ketua, Wakil, BPH, Staf)
+        $memberBiodata = $this->findSpecificMemberBiodata($lower);
+        if ($memberBiodata !== null) {
+            return $memberBiodata;
+        }
+
+        // D. Cek jika menanyakan Ketua Umum PMR (misal: "siapa ketua pmr", "siapa ketua periode sekarang", "ketua umum")
+        if (str_contains($lower, 'ketua umum') || ((str_contains($lower, 'siapa') || str_contains($lower, 'biodata')) && str_contains($lower, 'ketua') && (str_contains($lower, 'pmr') || str_contains($lower, 'sekarang') || str_contains($lower, 'periode')) && ! str_contains($lower, 'bidang'))) {
+            return $this->getBiodataCard(
+                name: 'Sulthan Arkana Putra R.',
+                position: 'Ketua Umum PMR Wira (Kabinet Ragana Dwi Pantara)',
+                levelOrClass: 'Kelas XI',
+                idNumber: 'NRI: 24.49.004 PRT',
+                roleDescription: 'Memimpin jalannya organisasi, penanggung jawab umum program kerja kepalangmerahan, koordinasi pimpinan sekolah & PMI, serta mengarahkan 5 bidang operasional relawan.',
+                motto: 'Siamo Tutti Fratelli — Memimpin dengan keteladanan, melayani sesama dengan ketulusan hati.',
+                title: 'BIODATA KETUA UMUM PMR WIRA'
+            );
+        }
+
+        return null;
     }
 
     /**
@@ -155,7 +263,9 @@ Dalam menjawab setiap pertanyaan pengguna, lakukan penalaran secara berurutan se
 Jadikan seluruh data dan modul pada website https://pmrwirasmanic.or.id sebagai rujukan utama:
 1. Struktur Organisasi & Data Anggota:
    - Pelajari seluruh susunan kepengurusan dan data anggota dari Beranda, Tentang Kami, Profil, hingga Kontak (dari Pembina, Ketua Umum, Wakil Ketua, BPH, hingga seluruh staf anggota 5 bidang: Markas, Pelayanan, Diklat, Humas, Kreasi).
-   - Pahami korelasi dua arah: Jika ditanya jabatan (misal: "Siapa Ketua Bidang Markas?"), sebutkan nama pengurus terkait. Jika ditanya nama seseorang, jelaskan posisinya dalam struktur kepengurusan dan tampilkan kartu biodata resminya.
+   - Pahami korelasi dua arah: Jika ditanya jabatan atau ketua bidang (misal: "Siapa Ketua Bidang Diklat?"), WAJIB LANGSUNG sebutkan nama pejabat terkait (Reza Rahadian) beserta biodata resminya (NRI, Kelas, Tugas Pokok, Motto). JANGAN PERNAH hanya merangkum 5 bidang secara umum bila ditanya nama ketua atau pengurus bidang tertentu!
+   - Jika ditanya pimpinan utama: Ketua Umum adalah Sulthan Arkana Putra R., Wakil Ketua Umum adalah Imam Abdul Jabbar, Pembina adalah Abdul Hamid Saputra, S.Hum., M.Pd., Sekretaris adalah Putri Raisya Anjani, Bendahara adalah Nisa Nurul Aulia.
+   - Jika ditanya nama seseorang, jelaskan posisinya dalam struktur kepengurusan dan tampilkan kartu biodata resminya.
    - Jangan pernah menebak atau memanipulasi nama pejabat/anggota jika data tidak ditemukan.
 2. Dokumen Pedoman Organisasi:
    - Rujuk aturan resmi pada GBHO 2026 dan PPUO 2026 (27 Bab) terkait tata kerja organisasi, persidangan, seragam/atribut (Syal Kuning 120x90x90cm), hak & kewajiban anggota, serta tata tertib piket UKS.

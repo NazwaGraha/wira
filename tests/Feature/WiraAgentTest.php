@@ -754,4 +754,58 @@ class WiraAgentTest extends TestCase
         $this->assertStringContainsString('Pos Komando', $replyPosko);
         $this->assertStringContainsString('Dapur Umum', $replyPosko);
     }
+
+    public function test_wira_agent_answers_who_is_ketua_bidang_diklat_with_name_and_biodata(): void
+    {
+        $response = $this->postJson('/api/wira-agent/chat', [
+            'message' => 'siapa ketua bidang diklat',
+        ]);
+
+        $response->assertStatus(200);
+        $reply = $response->json('reply');
+        $this->assertStringContainsString('Reza Rahadian', $reply);
+        $this->assertStringContainsString('BIODATA KETUA BIDANG DIKLAT', $reply);
+        $this->assertStringContainsString('24.49.040 PRT', $reply);
+    }
+
+    public function test_wira_agent_answers_who_is_ketua_bidang_markas_with_name_and_biodata(): void
+    {
+        $response = $this->postJson('/api/wira-agent/chat', [
+            'message' => 'siapa ketua bidang markas',
+        ]);
+
+        $response->assertStatus(200);
+        $reply = $response->json('reply');
+        $this->assertStringContainsString('Indra Gunawan', $reply);
+        $this->assertStringContainsString('BIODATA KETUA BIDANG MARKAS', $reply);
+        $this->assertStringContainsString('24.49.029 PRT', $reply);
+    }
+
+    public function test_wira_agent_auto_corrects_lazy_llm_response_with_leader_biodata(): void
+    {
+        Config::set('services.gemini.key', 'fake-key');
+
+        Http::fake([
+            'generativelanguage.googleapis.com/*' => Http::response([
+                'candidates' => [
+                    [
+                        'content' => [
+                            'parts' => [
+                                ['text' => 'Kepengurusan PMR ditopang oleh 5 bidang: Bidang Markas, Bidang Pelayanan, Bidang Diklat...'],
+                            ],
+                        ],
+                    ],
+                ],
+            ], 200),
+        ]);
+
+        $response = $this->postJson('/api/wira-agent/chat', [
+            'message' => 'siapa ketua bidang diklat',
+        ]);
+
+        $response->assertStatus(200);
+        $reply = $response->json('reply');
+        $this->assertStringContainsString('Reza Rahadian', $reply);
+        $this->assertStringContainsString('BIODATA KETUA BIDANG DIKLAT', $reply);
+    }
 }
