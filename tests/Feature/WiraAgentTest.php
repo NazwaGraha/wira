@@ -1129,4 +1129,119 @@ class WiraAgentTest extends TestCase
         $this->assertStringContainsString('08123456703', $replyDhiora);
         $this->assertStringNotContainsString('Delia Putri', $replyDhiora);
     }
+
+    public function test_wira_agent_answers_all_bidang_work_programs(): void
+    {
+        Config::set('services.gemini.key', null);
+
+        // Pertanyaan user: "DI masing-masing Bidang memiliki program kerja, sekarang Wira Agen haru supdate dan memiliki pengetahuan dan data program kerja untuk masing-masing bidang apa saja"
+        $response = $this->postJson('/api/wira-agent/chat', [
+            'message' => 'DI masing-masing Bidang memiliki program kerja, sekarang Wira Agen haru supdate dan memiliki pengetahuan dan data program kerja untuk masing-masing bidang apa saja',
+        ]);
+
+        $response->assertStatus(200);
+        $reply = $response->json('reply');
+
+        // Memuat seluruh 5 Bidang
+        $this->assertStringContainsString('Bidang Markas & Logistik UKS', $reply);
+        $this->assertStringContainsString('Bidang Pelayanan Medis & Donor Darah', $reply);
+        $this->assertStringContainsString('Bidang Pendidikan & Pelatihan (Diklat)', $reply);
+        $this->assertStringContainsString('Bidang Hubungan Masyarakat (Humas)', $reply);
+        $this->assertStringContainsString('Bidang Media Kreatif & Publikasi (Kreasi)', $reply);
+
+        // Memuat program kerja dari tiap bidang
+        $this->assertStringContainsString('Pengelolaan dan inventarisasi obat-obatan', $reply);
+        $this->assertStringContainsString('Penyiagaan tim & posko medis darurat', $reply);
+        $this->assertStringContainsString('Latihan rutin mingguan pertolongan pertama', $reply);
+        $this->assertStringContainsString('Pengelolaan akun media sosial resmi', $reply);
+        $this->assertStringContainsString('Produksi media kreatif visual', $reply);
+    }
+
+    public function test_wira_agent_answers_specific_bidang_work_programs(): void
+    {
+        Config::set('services.gemini.key', null);
+
+        // 1. Bidang Markas
+        $resMarkas = $this->postJson('/api/wira-agent/chat', [
+            'message' => 'apa saja program kerja bidang markas',
+        ]);
+        $resMarkas->assertStatus(200);
+        $replyMarkas = $resMarkas->json('reply');
+        $this->assertStringContainsString('Program Kerja & Tugas Pokok Bidang Markas & Logistik UKS', $replyMarkas);
+        $this->assertStringContainsString('Pengelolaan dan inventarisasi obat-obatan', $replyMarkas);
+        $this->assertStringContainsString('tandu darurat UKS', $replyMarkas);
+
+        // 2. Bidang Diklat
+        $resDiklat = $this->postJson('/api/wira-agent/chat', [
+            'message' => 'program kerja bidang diklat apa saja',
+        ]);
+        $resDiklat->assertStatus(200);
+        $replyDiklat = $resDiklat->json('reply');
+        $this->assertStringContainsString('Program Kerja & Tugas Pokok Bidang Pendidikan & Pelatihan (Diklat)', $replyDiklat);
+        $this->assertStringContainsString('Latihan rutin mingguan pertolongan pertama', $replyDiklat);
+        $this->assertStringContainsString('JUMBARA', $replyDiklat);
+
+        // 3. Bidang Pelayanan
+        $resPelayanan = $this->postJson('/api/wira-agent/chat', [
+            'message' => 'proker bidang pelayanan',
+        ]);
+        $resPelayanan->assertStatus(200);
+        $replyPelayanan = $resPelayanan->json('reply');
+        $this->assertStringContainsString('Program Kerja & Tugas Pokok Bidang Pelayanan Medis & Donor Darah', $replyPelayanan);
+        $this->assertStringContainsString('donor darah sukarela', $replyPelayanan);
+
+        // 4. Bidang Humas
+        $resHumas = $this->postJson('/api/wira-agent/chat', [
+            'message' => 'apa proker bidang humas',
+        ]);
+        $resHumas->assertStatus(200);
+        $replyHumas = $resHumas->json('reply');
+        $this->assertStringContainsString('Program Kerja & Tugas Pokok Bidang Hubungan Masyarakat (Humas)', $replyHumas);
+        $this->assertStringContainsString('media sosial resmi', $replyHumas);
+
+        // 5. Bidang Kreasi
+        $resKreasi = $this->postJson('/api/wira-agent/chat', [
+            'message' => 'program kerja bidang kreasi apa saja',
+        ]);
+        $resKreasi->assertStatus(200);
+        $replyKreasi = $resKreasi->json('reply');
+        $this->assertStringContainsString('Program Kerja & Tugas Pokok Bidang Media Kreatif & Publikasi (Kreasi)', $replyKreasi);
+        $this->assertStringContainsString('Produksi media kreatif visual', $replyKreasi);
+    }
+
+    public function test_wira_agent_answers_specific_bidang_work_program_with_custom_db_program(): void
+    {
+        Config::set('services.gemini.key', null);
+
+        $ikhsan = Member::create([
+            'name' => 'Muhammad Ikhsan Fadhil',
+            'position' => 'Ketua Bidang Markas & Logistik UKS',
+            'class_grade' => 'XI-4',
+            'nri' => '24.49.008 PRT',
+            'motto' => 'Siap siaga menjaga ruang markas dan perlengkapan medis.',
+            'is_active' => true,
+        ]);
+
+        OrganizationMember::create([
+            'name' => 'Muhammad Ikhsan Fadhil',
+            'position' => 'Ketua Bidang Markas',
+            'level' => 5,
+            'member_id' => $ikhsan->id,
+            'work_program' => "1. Uji kelayakan 10 unit tandu darurat bambu setiap bulan\n2. Digitalisasi pencatatan stok obat-obatan UKS\n3. Pengadaan seragam operasional piket markas",
+            'is_active' => true,
+        ]);
+
+        $response = $this->postJson('/api/wira-agent/chat', [
+            'message' => 'apa saja agenda dan program kerja bidang markas',
+        ]);
+
+        $response->assertStatus(200);
+        $reply = $response->json('reply');
+
+        // Menampilkan nama ketua dari database riil
+        $this->assertStringContainsString('Muhammad Ikhsan Fadhil', $reply);
+        // Menampilkan work program kustom dari database
+        $this->assertStringContainsString('Uji kelayakan 10 unit tandu darurat bambu', $reply);
+        $this->assertStringContainsString('Digitalisasi pencatatan stok obat-obatan UKS', $reply);
+    }
 }

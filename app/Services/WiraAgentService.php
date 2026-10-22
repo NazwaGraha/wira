@@ -29,35 +29,35 @@ class WiraAgentService
             'fullLabel' => 'Markas & Logistik UKS',
             'icon' => '📦',
             'keywords' => ['markas', 'logistik'],
-            'defaultProgram' => 'Pengelolaan inventaris obat UKS, perawatan tandu darurat & spalk bidai, piket kebersihan markas relawan.',
+            'defaultProgram' => "1. Pengelolaan dan inventarisasi obat-obatan serta tandu darurat UKS\n2. Pemeliharaan kebersihan, kenyamanan, dan kesiapan ruang markas PMR\n3. Pengadaan logistik medis darurat dan perawatan peralatan medis (spalk, bidai, mitela)\n4. Pengaturan jadwal piket harian markas dan siaga operasional sekolah",
         ],
         'pelayanan' => [
             'label' => 'Pelayanan',
             'fullLabel' => 'Pelayanan Medis & Donor Darah',
             'icon' => '🩹',
             'keywords' => ['pelayanan', 'kesehatan'],
-            'defaultProgram' => 'Siaga posko medis upacara bendera, donor darah sukarela bersama UTD PMI Kab. Bogor, posyandu remaja & pembagian TTD.',
+            'defaultProgram' => "1. Penyiagaan tim & posko medis darurat pada upacara bendera dan event olahraga sekolah\n2. Pelaksanaan aksi donor darah sukarela bersama UDD PMI Kab. Bogor\n3. Pelayanan kesehatan remaja, posyandu remaja, dan pembagian Tablet Tambah Darah (TTD)\n4. Bakti sosial kemanusiaan, pemeriksaan tensi berkala, dan kepedulian lingkungan warga sekitar sekolah",
         ],
         'diklat' => [
             'label' => 'Diklat',
             'fullLabel' => 'Pendidikan & Pelatihan (Diklat)',
             'icon' => '📚',
             'keywords' => ['diklat', 'pendidikan dan pelatihan', 'pelatihan'],
-            'defaultProgram' => 'Silabus kurikulum P3K, Diklatsar ruang dan lapangan, latihan mingguan, pembinaan kontingen lomba.',
+            'defaultProgram' => "1. Latihan rutin mingguan pertolongan pertama (PP), pembidaian, dan evakuasi tandu\n2. Pembekalan materi 7 Prinsip Dasar Palang Merah & Hukum Humaniter Internasional (HPI)\n3. Simulasi mitigasi kesiapsiagaan bencana gempa bumi & evakuasi kebakaran sekolah\n4. Pemusatan latihan kontingen lomba Jumpa Bakti Gembira (JUMBARA) & evaluasi ketangkasan relawan",
         ],
         'humas' => [
             'label' => 'Humas',
             'fullLabel' => 'Hubungan Masyarakat (Humas)',
             'icon' => '📢',
             'keywords' => ['humas', 'hubungan masyarakat'],
-            'defaultProgram' => 'Publikasi media sosial, buletin mading sekolah, kemitraan PMI Kab. Bogor, rekrutmen anggota.',
+            'defaultProgram' => "1. Pengelolaan akun media sosial resmi dan dokumentasi seluruh agenda kegiatan PMR\n2. Penerbitan buletin mading berkala, infografis kesehatan, dan konten edukasi medis\n3. Membangun kemitraan strategis dengan PMI Cabang, Puskesmas, sekolah mitra, dan ikatan alumni\n4. Sosialisasi kepalangmerahan saat MPLS dan rekrutmen anggota baru PMR Wira",
         ],
         'kreasi' => [
             'label' => 'Kreasi',
             'fullLabel' => 'Media Kreatif & Publikasi (Kreasi)',
             'icon' => '🎨',
             'keywords' => ['kreasi', 'media kreatif', 'kreatif'],
-            'defaultProgram' => 'Poster visual edukasi kesehatan, konten video pertolongan pertama, desain ID card & merchandise relawan.',
+            'defaultProgram' => "1. Produksi media kreatif visual, video edukasi pertolongan pertama, dan podcast kesehatan kemanusiaan\n2. Pameran karya kreasi relawan dan gelar aksi seni peringatan Hari Palang Merah Sedunia\n3. Inovasi pembuatan alat peraga simulasi medis dari bahan daur ulang ramah lingkungan (eco-friendly)\n4. Perancangan merchandise resmi, KTA digital, poster kampanye donor darah, dan desain visual organisasi",
         ],
     ];
 
@@ -171,6 +171,13 @@ class WiraAgentService
      */
     public function validateLeadershipResponse(string $lower, string $response): string
     {
+        if (str_contains($lower, 'program kerja') || str_contains($lower, 'proker')) {
+            $prokerReply = $this->handleBidangWorkProgramInquiry($lower);
+            if ($prokerReply !== null) {
+                return $prokerReply;
+            }
+        }
+
         $bidangKeywords = ['diklat', 'markas', 'pelayanan', 'humas', 'kreasi'];
         $isAskingKetua = str_contains($lower, 'ketua') || str_contains($lower, 'pimpinan') ||
             str_contains($lower, 'kabid') || str_contains($lower, 'kepala') || str_contains($lower, 'koordinator') ||
@@ -265,7 +272,13 @@ class WiraAgentService
             return $memberBiodata;
         }
 
-        // C. Pertanyaan spesifik mengenai bidang tertentu (Ketua Bidang / Anggota Bidang)
+        // C. Pertanyaan spesifik mengenai program kerja bidang (seluruh bidang maupun per bidang)
+        $prokerInquiry = $this->handleBidangWorkProgramInquiry($lower);
+        if ($prokerInquiry !== null) {
+            return $prokerInquiry;
+        }
+
+        // D. Pertanyaan spesifik mengenai bidang tertentu (Ketua Bidang / Anggota Bidang)
         $bidangInquiry = $this->handleSpecificBidangInquiry($lower);
         if ($bidangInquiry !== null) {
             return $bidangInquiry;
@@ -1208,6 +1221,132 @@ PROMPT;
             'work_program' => $workProgram,
             'staff_list' => $staffList,
         ];
+    }
+
+    /**
+     * Menangani pertanyaan program kerja bidang (baik seluruh bidang maupun bidang spesifik).
+     */
+    public function handleBidangWorkProgramInquiry(string $lower): ?string
+    {
+        $hasWorkProgramKeyword = str_contains($lower, 'program kerja') ||
+            str_contains($lower, 'proker') ||
+            str_contains($lower, 'tugas pokok') ||
+            str_contains($lower, 'rencana kerja') ||
+            str_contains($lower, 'agenda kerja') ||
+            str_contains($lower, 'program kegiatan') ||
+            (str_contains($lower, 'program') && (str_contains($lower, 'bidang') || str_contains($lower, 'kerja'))) ||
+            (str_contains($lower, 'kerja') && str_contains($lower, 'bidang')) ||
+            (str_contains($lower, 'tugas') && str_contains($lower, 'bidang'));
+
+        if (! $hasWorkProgramKeyword) {
+            return null;
+        }
+
+        // Cek apakah menanyakan bidang spesifik tertentu
+        $matchedBidang = null;
+        $matchCount = 0;
+        foreach (self::BIDANG_DEFINITIONS as $key => $bidang) {
+            foreach ($bidang['keywords'] as $kw) {
+                if (str_contains($lower, $kw)) {
+                    $matchedBidang = $bidang;
+                    $matchCount++;
+                    break;
+                }
+            }
+        }
+
+        $explicitAllBidang = str_contains($lower, 'masing-masing') ||
+            str_contains($lower, 'masing masing') ||
+            str_contains($lower, 'tiap bidang') ||
+            str_contains($lower, 'setiap bidang') ||
+            str_contains($lower, 'semua bidang') ||
+            str_contains($lower, 'seluruh bidang') ||
+            str_contains($lower, '5 bidang') ||
+            str_contains($lower, 'lima bidang') ||
+            str_contains($lower, 'daftar bidang');
+
+        // Jika ada bidang spesifik yang cocok dan pengguna tidak secara eksplisit meminta seluruh bidang
+        if ($matchedBidang !== null && $matchCount === 1 && ! $explicitAllBidang) {
+            return $this->renderSpecificBidangWorkProgram($matchedBidang);
+        }
+
+        // Jika tidak ada bidang spesifik, atau meminta seluruh/masing-masing bidang, atau cocok lebih dari 1 bidang
+        return $this->renderAllBidangWorkPrograms();
+    }
+
+    /**
+     * Render daftar program kerja lengkap seluruh 5 bidang PMR Wira SMAN 1 Ciawi.
+     */
+    public function renderAllBidangWorkPrograms(): string
+    {
+        $reply = "Halo Sahabat Kemanusiaan! 🏛️✨\n\n"
+            ."Seluruh bidang dalam kepengurusan **PMR Wira SMAN 1 Ciawi (Masa Bakti Ragana Dwi Pantara 2026/2027)** memiliki program kerja strategis yang terarah untuk mengabdi pada kemanusiaan sesuai Tri Bakti PMR dan 7 Prinsip Dasar Palang Merah.\n\n"
+            ."Berikut rincian **Program Kerja untuk 5 Bidang Utama**:\n\n";
+
+        $counter = 1;
+        foreach (self::BIDANG_DEFINITIONS as $key => $bidang) {
+            $info = $this->getRealBidangInfo($bidang);
+            $icon = $bidang['icon'];
+            $fullLabel = $bidang['fullLabel'];
+            $ketuaStr = $info['ketua_name'] ? "**{$info['ketua_name']}**" : '*Belum ditetapkan pada sistem*';
+            $proker = $info['work_program'];
+
+            $reply .= "### {$counter}. {$icon} Bidang {$fullLabel}\n"
+                ."• **Ketua Bidang:** {$ketuaStr}\n"
+                ."• **Program Kerja & Tugas Pokok:**\n"
+                ."{$proker}\n\n";
+
+            $counter++;
+        }
+
+        $reply .= "📌 *Seluruh program kerja di atas dijalankan secara dinamis dan dapat dipantau perkembangannya pada menu **Tentang Kami** dan **Kegiatan** di website resmi PMR Wira SMAN 1 Ciawi.*\n\n"
+            .'💡 *Kakak juga dapat menanyakan program kerja bidang tertentu secara spesifik (contoh: "Program kerja Bidang Markas" atau "Proker Bidang Diklat")!*';
+
+        return $reply;
+    }
+
+    /**
+     * Render program kerja spesifik untuk satu bidang dengan data live dari database.
+     *
+     * @param  array{label: string, fullLabel: string, icon: string, keywords: array<int, string>, defaultProgram: string}  $bidang
+     */
+    public function renderSpecificBidangWorkProgram(array $bidang): string
+    {
+        $info = $this->getRealBidangInfo($bidang);
+        $icon = $bidang['icon'];
+        $fullLabel = $bidang['fullLabel'];
+        $ketuaName = $info['ketua_name'];
+        $ketuaMember = $info['ketua_member'];
+        $workProgram = $info['work_program'];
+
+        $reply = "Halo Sahabat Kemanusiaan! {$icon}✨\n\n"
+            ."Berikut rincian resmi **Program Kerja & Tugas Pokok Bidang {$fullLabel}** PMR Wira SMAN 1 Ciawi (Masa Bakti Ragana Dwi Pantara 2026/2027):\n\n";
+
+        if ($ketuaName) {
+            $ketuaKelas = $ketuaMember?->class_grade ? 'Kelas '.$ketuaMember->class_grade : 'Kelas XI';
+            $ketuaNri = $ketuaMember?->nri ? 'NRI: '.$ketuaMember->nri : '-';
+            $ketuaMotto = $ketuaMember?->motto ?: 'Siap sedia mengabdi untuk kemanusiaan.';
+
+            $reply .= "👑 **Ketua / Koordinator Bidang:**\n"
+                ."• **{$ketuaName}** ({$ketuaKelas} • {$ketuaNri})\n"
+                ."  *Motto:* \"{$ketuaMotto}\"\n\n";
+        } else {
+            $reply .= "👑 **Ketua / Koordinator Bidang:** *Belum ada pengurus yang ditetapkan pada sistem.*\n\n";
+        }
+
+        $reply .= "📋 **Daftar Program Kerja & Agenda Unggulan:**\n"
+            ."{$workProgram}\n\n";
+
+        if (! empty($info['staff_list'])) {
+            $totalStaf = count($info['staff_list']);
+            $staffNames = collect($info['staff_list'])->pluck('name')->implode(', ');
+            $reply .= "👥 **Didukung oleh {$totalStaf} Staf Relawan:**\n"
+                ."{$staffNames}\n\n";
+        }
+
+        $reply .= '💡 *Program kerja ini dirancang untuk mewujudkan relawan yang sigap, tangguh, dan berjiwa kemanusiaan sesuai Tri Bakti PMR dan 7 Prinsip Dasar Palang Merah.*';
+
+        return $reply;
     }
 
     /**

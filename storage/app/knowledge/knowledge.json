@@ -2,8 +2,8 @@
     "version": "2.0.0",
     "organization": "PMR Wira SMAN 1 Ciawi",
     "cabinet": "Ragana Dwi Pantara 2026/2027",
-    "updated_at": "2026-10-22T16:50:37+07:00",
-    "total_topics": 32,
+    "updated_at": "2026-10-22T17:12:17+07:00",
+    "total_topics": 38,
     "topics": [
         {
             "id": "profil_organisasi",
@@ -75,6 +75,105 @@
                 "5 bidang"
             ],
             "content": "Struktur Organisasi PMR Wira SMAN 1 Ciawi Masa Bakti Ragana Dwi Pantara 2026/2027 terdiri dari:\n• Level 1 (Dewan Pembina): Pembina Utama Abdul Hamid Saputra, S.Hum., M.Pd. (NIP: 19820415 200801 1 008) & Drs. H. Mulyadi, M.Pd.\n• Level 2 (Ketua Umum): Sulthan Arkana Putra R. (Kelas XI • NRI: 24.49.004 PRT)\n• Level 3 (Wakil Ketua Umum): Imam Abdul Jabbar (Kelas XI • NRI: 24.49.012 PRT)\n• Level 4 (BPH): Sekretaris Umum Putri Raisya Anjani (Kelas XI • NRI: 24.49.018 PRT) & Bendahara Umum Nisa Nurul Aulia (Kelas XI • NRI: 24.49.023 PRT)\n• Level 5 (5 Bidang Utama & Staf):\n  1. Bidang Markas: (Ketua belum ditetapkan di sistem). Tugas: Pengelolaan inventaris obat UKS, perawatan tandu darurat & spalk bidai, piket markas.\n  2. Bidang Pelayanan: (Ketua belum ditetapkan di sistem). Tugas: Siaga posko medis upacara bendera, donor darah sukarela bersama UTD PMI Kab. Bogor, posyandu remaja & pembagian TTD.\n  3. Bidang Diklat: (Ketua belum ditetapkan di sistem). Tugas: Silabus kurikulum P3K, Diklatsar ruang dan lapangan, latihan mingguan, pembinaan lomba.\n  4. Bidang Humas: (Ketua belum ditetapkan di sistem). Tugas: Publikasi media, kemitraan PMI Kab. Bogor, rekrutmen anggota.\n  5. Bidang Kreasi: (Ketua belum ditetapkan di sistem). Tugas: Desain poster edukasi, video materi P3K, merchandise dan ID card relawan."
+        },
+        {
+            "id": "program_kerja_bidang_markas",
+            "category": "program_kerja",
+            "title": "Program Kerja Bidang Markas & Logistik UKS",
+            "keywords": [
+                "program kerja markas",
+                "proker markas",
+                "tugas pokok markas",
+                "bidang markas",
+                "logistik uks",
+                "program kerja logistik",
+                "tugas markas"
+            ],
+            "content": "Program Kerja Bidang Markas & Logistik UKS PMR Wira SMAN 1 Ciawi (Masa Bakti Ragana Dwi Pantara 2026/2027):\nKetua: Belum ditetapkan pada sistem\n\nRincian Program Kerja:\n1. Pengelolaan dan inventarisasi obat-obatan serta tandu darurat UKS\n2. Pemeliharaan kebersihan, kenyamanan, dan kesiapan ruang markas PMR\n3. Pengadaan logistik medis darurat dan perawatan peralatan medis (spalk, bidai, mitela)\n4. Pengaturan jadwal piket harian markas dan siaga operasional sekolah"
+        },
+        {
+            "id": "program_kerja_bidang_pelayanan",
+            "category": "program_kerja",
+            "title": "Program Kerja Bidang Pelayanan Medis & Donor Darah",
+            "keywords": [
+                "program kerja pelayanan",
+                "proker pelayanan",
+                "tugas pokok pelayanan",
+                "bidang pelayanan",
+                "pelayanan medis",
+                "donor darah bidang pelayanan",
+                "tugas pelayanan"
+            ],
+            "content": "Program Kerja Bidang Pelayanan Medis & Donor Darah PMR Wira SMAN 1 Ciawi (Masa Bakti Ragana Dwi Pantara 2026/2027):\nKetua: Belum ditetapkan pada sistem\n\nRincian Program Kerja:\n1. Penyiagaan tim & posko medis darurat pada upacara bendera dan event olahraga sekolah\n2. Pelaksanaan aksi donor darah sukarela bersama UDD PMI Kab. Bogor\n3. Pelayanan kesehatan remaja, posyandu remaja, dan pembagian Tablet Tambah Darah (TTD)\n4. Bakti sosial kemanusiaan, pemeriksaan tensi berkala, dan kepedulian lingkungan warga sekitar sekolah"
+        },
+        {
+            "id": "program_kerja_bidang_diklat",
+            "category": "program_kerja",
+            "title": "Program Kerja Bidang Pendidikan & Pelatihan (Diklat)",
+            "keywords": [
+                "program kerja diklat",
+                "proker diklat",
+                "tugas pokok diklat",
+                "bidang diklat",
+                "pelatihan diklat",
+                "pendidikan dan pelatihan",
+                "tugas diklat"
+            ],
+            "content": "Program Kerja Bidang Pendidikan & Pelatihan (Diklat) PMR Wira SMAN 1 Ciawi (Masa Bakti Ragana Dwi Pantara 2026/2027):\nKetua: Belum ditetapkan pada sistem\n\nRincian Program Kerja:\n1. Latihan rutin mingguan pertolongan pertama (PP), pembidaian, dan evakuasi tandu\n2. Pembekalan materi 7 Prinsip Dasar Palang Merah & Hukum Humaniter Internasional (HPI)\n3. Simulasi mitigasi kesiapsiagaan bencana gempa bumi & evakuasi kebakaran sekolah\n4. Pemusatan latihan kontingen lomba Jumpa Bakti Gembira (JUMBARA) & evaluasi ketangkasan relawan"
+        },
+        {
+            "id": "program_kerja_bidang_humas",
+            "category": "program_kerja",
+            "title": "Program Kerja Bidang Hubungan Masyarakat (Humas)",
+            "keywords": [
+                "program kerja humas",
+                "proker humas",
+                "tugas pokok humas",
+                "bidang humas",
+                "hubungan masyarakat",
+                "kemitraan humas",
+                "tugas humas"
+            ],
+            "content": "Program Kerja Bidang Hubungan Masyarakat (Humas) PMR Wira SMAN 1 Ciawi (Masa Bakti Ragana Dwi Pantara 2026/2027):\nKetua: Belum ditetapkan pada sistem\n\nRincian Program Kerja:\n1. Pengelolaan akun media sosial resmi dan dokumentasi seluruh agenda kegiatan PMR\n2. Penerbitan buletin mading berkala, infografis kesehatan, dan konten edukasi medis\n3. Membangun kemitraan strategis dengan PMI Cabang, Puskesmas, sekolah mitra, dan ikatan alumni\n4. Sosialisasi kepalangmerahan saat MPLS dan rekrutmen anggota baru PMR Wira"
+        },
+        {
+            "id": "program_kerja_bidang_kreasi",
+            "category": "program_kerja",
+            "title": "Program Kerja Bidang Media Kreatif & Publikasi (Kreasi)",
+            "keywords": [
+                "program kerja kreasi",
+                "proker kreasi",
+                "tugas pokok kreasi",
+                "bidang kreasi",
+                "media kreatif",
+                "publikasi kreasi",
+                "tugas kreasi"
+            ],
+            "content": "Program Kerja Bidang Media Kreatif & Publikasi (Kreasi) PMR Wira SMAN 1 Ciawi (Masa Bakti Ragana Dwi Pantara 2026/2027):\nKetua: Belum ditetapkan pada sistem\n\nRincian Program Kerja:\n1. Produksi media kreatif visual, video edukasi pertolongan pertama, dan podcast kesehatan kemanusiaan\n2. Pameran karya kreasi relawan dan gelar aksi seni peringatan Hari Palang Merah Sedunia\n3. Inovasi pembuatan alat peraga simulasi medis dari bahan daur ulang ramah lingkungan (eco-friendly)\n4. Perancangan merchandise resmi, KTA digital, poster kampanye donor darah, dan desain visual organisasi"
+        },
+        {
+            "id": "program_kerja_seluruh_bidang",
+            "category": "program_kerja",
+            "title": "Program Kerja 5 Bidang PMR Wira SMAN 1 Ciawi (Markas, Pelayanan, Diklat, Humas, Kreasi)",
+            "keywords": [
+                "program kerja",
+                "proker",
+                "program kerja bidang",
+                "proker bidang",
+                "program kerja masing-masing bidang",
+                "tugas pokok bidang",
+                "rencana kerja bidang",
+                "agenda kerja bidang",
+                "program kerja seluruh bidang",
+                "5 bidang",
+                "program kerja markas",
+                "program kerja pelayanan",
+                "program kerja diklat",
+                "program kerja humas",
+                "program kerja kreasi",
+                "tugas masing-masing bidang"
+            ],
+            "content": "Daftar Program Kerja 5 Bidang Kepengurusan PMR Wira SMAN 1 Ciawi (Masa Bakti Ragana Dwi Pantara 2026/2027):\n\n• Bidang Markas & Logistik UKS (Ketua: Belum ditetapkan pada sistem):\n1. Pengelolaan dan inventarisasi obat-obatan serta tandu darurat UKS\n2. Pemeliharaan kebersihan, kenyamanan, dan kesiapan ruang markas PMR\n3. Pengadaan logistik medis darurat dan perawatan peralatan medis (spalk, bidai, mitela)\n4. Pengaturan jadwal piket harian markas dan siaga operasional sekolah\n\n• Bidang Pelayanan Medis & Donor Darah (Ketua: Belum ditetapkan pada sistem):\n1. Penyiagaan tim & posko medis darurat pada upacara bendera dan event olahraga sekolah\n2. Pelaksanaan aksi donor darah sukarela bersama UDD PMI Kab. Bogor\n3. Pelayanan kesehatan remaja, posyandu remaja, dan pembagian Tablet Tambah Darah (TTD)\n4. Bakti sosial kemanusiaan, pemeriksaan tensi berkala, dan kepedulian lingkungan warga sekitar sekolah\n\n• Bidang Pendidikan & Pelatihan (Diklat) (Ketua: Belum ditetapkan pada sistem):\n1. Latihan rutin mingguan pertolongan pertama (PP), pembidaian, dan evakuasi tandu\n2. Pembekalan materi 7 Prinsip Dasar Palang Merah & Hukum Humaniter Internasional (HPI)\n3. Simulasi mitigasi kesiapsiagaan bencana gempa bumi & evakuasi kebakaran sekolah\n4. Pemusatan latihan kontingen lomba Jumpa Bakti Gembira (JUMBARA) & evaluasi ketangkasan relawan\n\n• Bidang Hubungan Masyarakat (Humas) (Ketua: Belum ditetapkan pada sistem):\n1. Pengelolaan akun media sosial resmi dan dokumentasi seluruh agenda kegiatan PMR\n2. Penerbitan buletin mading berkala, infografis kesehatan, dan konten edukasi medis\n3. Membangun kemitraan strategis dengan PMI Cabang, Puskesmas, sekolah mitra, dan ikatan alumni\n4. Sosialisasi kepalangmerahan saat MPLS dan rekrutmen anggota baru PMR Wira\n\n• Bidang Media Kreatif & Publikasi (Kreasi) (Ketua: Belum ditetapkan pada sistem):\n1. Produksi media kreatif visual, video edukasi pertolongan pertama, dan podcast kesehatan kemanusiaan\n2. Pameran karya kreasi relawan dan gelar aksi seni peringatan Hari Palang Merah Sedunia\n3. Inovasi pembuatan alat peraga simulasi medis dari bahan daur ulang ramah lingkungan (eco-friendly)\n4. Perancangan merchandise resmi, KTA digital, poster kampanye donor darah, dan desain visual organisasi"
         },
         {
             "id": "biodata_pembina",

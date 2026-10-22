@@ -39,6 +39,9 @@ class WiraKnowledgeSyncService
         // 4. Struktur Organisasi & Bagan Kepengurusan Lengkap
         $topics[] = $this->buildOrganizationStructureTopic();
 
+        // 4b. Program Kerja 5 Bidang Utama (Dinamis dari Database)
+        $topics = array_merge($topics, $this->buildBidangWorkProgramsTopics());
+
         // 5. Biodata Pimpinan & Dewan Pembina
         $topics = array_merge($topics, $this->buildLeadershipBiodataTopics());
 
@@ -775,5 +778,126 @@ class WiraKnowledgeSyncService
                 'content' => "8 Unit Utama Manajemen Posko Tanggap Darurat Bencana PMI:\n1. Pos Komando (Posko): Pengendalian operasi tanggap bencana.\n2. Unit Kaji Cepat (Assessment): Pendataan kerusakan dan kebutuhan penyintas.\n3. Pos Pelayanan Medis Lapangan: Pertolongan pertama dan rujukan.\n4. Unit Dapur Umum (DU): Distribusi makanan bergizi.\n5. Unit Logistik & Gudang: Distribusi bantuan adil dan terdata.\n6. Unit Shelter: Tenda pengungsian sementara yang aman.\n7. Unit WASH: Pasokan air bersih dan sanitasi higienis.\n8. Unit RFL (Restoring Family Links): Pemulihan kontak keluarga yang terpisah.",
             ],
         ];
+    }
+
+    /**
+     * Topik Program Kerja 5 Bidang PMR Wira SMAN 1 Ciawi (Dinamis dari Database & Default Resmi).
+     *
+     * @return array<int, array<string, mixed>>
+     */
+    protected function buildBidangWorkProgramsTopics(): array
+    {
+        $bidangDefs = [
+            'markas' => [
+                'id' => 'program_kerja_bidang_markas',
+                'label' => 'Markas',
+                'fullLabel' => 'Markas & Logistik UKS',
+                'keywords' => ['program kerja markas', 'proker markas', 'tugas pokok markas', 'bidang markas', 'logistik uks', 'program kerja logistik', 'tugas markas'],
+                'default' => "1. Pengelolaan dan inventarisasi obat-obatan serta tandu darurat UKS\n2. Pemeliharaan kebersihan, kenyamanan, dan kesiapan ruang markas PMR\n3. Pengadaan logistik medis darurat dan perawatan peralatan medis (spalk, bidai, mitela)\n4. Pengaturan jadwal piket harian markas dan siaga operasional sekolah",
+            ],
+            'pelayanan' => [
+                'id' => 'program_kerja_bidang_pelayanan',
+                'label' => 'Pelayanan',
+                'fullLabel' => 'Pelayanan Medis & Donor Darah',
+                'keywords' => ['program kerja pelayanan', 'proker pelayanan', 'tugas pokok pelayanan', 'bidang pelayanan', 'pelayanan medis', 'donor darah bidang pelayanan', 'tugas pelayanan'],
+                'default' => "1. Penyiagaan tim & posko medis darurat pada upacara bendera dan event olahraga sekolah\n2. Pelaksanaan aksi donor darah sukarela bersama UDD PMI Kab. Bogor\n3. Pelayanan kesehatan remaja, posyandu remaja, dan pembagian Tablet Tambah Darah (TTD)\n4. Bakti sosial kemanusiaan, pemeriksaan tensi berkala, dan kepedulian lingkungan warga sekitar sekolah",
+            ],
+            'diklat' => [
+                'id' => 'program_kerja_bidang_diklat',
+                'label' => 'Diklat',
+                'fullLabel' => 'Pendidikan & Pelatihan (Diklat)',
+                'keywords' => ['program kerja diklat', 'proker diklat', 'tugas pokok diklat', 'bidang diklat', 'pelatihan diklat', 'pendidikan dan pelatihan', 'tugas diklat'],
+                'default' => "1. Latihan rutin mingguan pertolongan pertama (PP), pembidaian, dan evakuasi tandu\n2. Pembekalan materi 7 Prinsip Dasar Palang Merah & Hukum Humaniter Internasional (HPI)\n3. Simulasi mitigasi kesiapsiagaan bencana gempa bumi & evakuasi kebakaran sekolah\n4. Pemusatan latihan kontingen lomba Jumpa Bakti Gembira (JUMBARA) & evaluasi ketangkasan relawan",
+            ],
+            'humas' => [
+                'id' => 'program_kerja_bidang_humas',
+                'label' => 'Humas',
+                'fullLabel' => 'Hubungan Masyarakat (Humas)',
+                'keywords' => ['program kerja humas', 'proker humas', 'tugas pokok humas', 'bidang humas', 'hubungan masyarakat', 'kemitraan humas', 'tugas humas'],
+                'default' => "1. Pengelolaan akun media sosial resmi dan dokumentasi seluruh agenda kegiatan PMR\n2. Penerbitan buletin mading berkala, infografis kesehatan, dan konten edukasi medis\n3. Membangun kemitraan strategis dengan PMI Cabang, Puskesmas, sekolah mitra, dan ikatan alumni\n4. Sosialisasi kepalangmerahan saat MPLS dan rekrutmen anggota baru PMR Wira",
+            ],
+            'kreasi' => [
+                'id' => 'program_kerja_bidang_kreasi',
+                'label' => 'Kreasi',
+                'fullLabel' => 'Media Kreatif & Publikasi (Kreasi)',
+                'keywords' => ['program kerja kreasi', 'proker kreasi', 'tugas pokok kreasi', 'bidang kreasi', 'media kreatif', 'publikasi kreasi', 'tugas kreasi'],
+                'default' => "1. Produksi media kreatif visual, video edukasi pertolongan pertama, dan podcast kesehatan kemanusiaan\n2. Pameran karya kreasi relawan dan gelar aksi seni peringatan Hari Palang Merah Sedunia\n3. Inovasi pembuatan alat peraga simulasi medis dari bahan daur ulang ramah lingkungan (eco-friendly)\n4. Perancangan merchandise resmi, KTA digital, poster kampanye donor darah, dan desain visual organisasi",
+            ],
+        ];
+
+        $orgBidangs = collect();
+        if (Schema::hasTable('organization_members')) {
+            try {
+                $orgBidangs = OrganizationMember::with('member')->where('level', 5)->where('is_active', true)->get();
+            } catch (\Throwable $e) {
+            }
+        }
+
+        $allBidangSummaries = [];
+        $topics = [];
+
+        foreach ($bidangDefs as $key => $b) {
+            $orgMatch = $orgBidangs->first(function ($om) use ($b) {
+                $pos = strtolower(($om->position ?? '').' '.($om->subtitle ?? '').' '.($om->name ?? ''));
+
+                return str_contains($pos, strtolower($b['label']));
+            });
+
+            $ketuaName = null;
+            $proker = $b['default'];
+
+            if ($orgMatch) {
+                if (! empty($orgMatch->work_program)) {
+                    $proker = $orgMatch->work_program;
+                }
+                if ($orgMatch->member) {
+                    $ketuaName = $orgMatch->member->name;
+                } elseif (! empty($orgMatch->name)) {
+                    $ketuaName = $orgMatch->name;
+                }
+            }
+
+            if (! $ketuaName && Schema::hasTable('members')) {
+                try {
+                    $m = Member::where('position', 'like', '%ketua%'.$b['label'].'%')
+                        ->orWhere('position', 'like', '%kabid%'.$b['label'].'%')
+                        ->where('is_active', true)->first();
+                    if ($m) {
+                        $ketuaName = $m->name;
+                    }
+                } catch (\Throwable $e) {
+                }
+            }
+
+            $ketuaText = $ketuaName ? "Ketua: {$ketuaName}" : 'Ketua: Belum ditetapkan pada sistem';
+
+            $topics[] = [
+                'id' => $b['id'],
+                'category' => 'program_kerja',
+                'title' => "Program Kerja Bidang {$b['fullLabel']}",
+                'keywords' => $b['keywords'],
+                'content' => "Program Kerja Bidang {$b['fullLabel']} PMR Wira SMAN 1 Ciawi (Masa Bakti Ragana Dwi Pantara 2026/2027):\n"
+                    ."{$ketuaText}\n\n"
+                    ."Rincian Program Kerja:\n{$proker}",
+            ];
+
+            $allBidangSummaries[] = "• Bidang {$b['fullLabel']} ({$ketuaText}):\n{$proker}";
+        }
+
+        $topics[] = [
+            'id' => 'program_kerja_seluruh_bidang',
+            'category' => 'program_kerja',
+            'title' => 'Program Kerja 5 Bidang PMR Wira SMAN 1 Ciawi (Markas, Pelayanan, Diklat, Humas, Kreasi)',
+            'keywords' => [
+                'program kerja', 'proker', 'program kerja bidang', 'proker bidang', 'program kerja masing-masing bidang',
+                'tugas pokok bidang', 'rencana kerja bidang', 'agenda kerja bidang', 'program kerja seluruh bidang',
+                '5 bidang', 'program kerja markas', 'program kerja pelayanan', 'program kerja diklat', 'program kerja humas', 'program kerja kreasi',
+                'tugas masing-masing bidang',
+            ],
+            'content' => "Daftar Program Kerja 5 Bidang Kepengurusan PMR Wira SMAN 1 Ciawi (Masa Bakti Ragana Dwi Pantara 2026/2027):\n\n"
+                .implode("\n\n", $allBidangSummaries),
+        ];
+
+        return $topics;
     }
 }
