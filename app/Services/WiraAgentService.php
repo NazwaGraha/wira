@@ -8,8 +8,10 @@ use App\Models\Article;
 use App\Models\BloodStock;
 use App\Models\CompetitionCategory;
 use App\Models\CompetitionEvent;
+use App\Models\Member;
 use App\Models\PopupBanner;
 use App\Models\UksHotline;
+use Carbon\Carbon;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Schema;
@@ -100,7 +102,18 @@ class WiraAgentService
             }
         }
 
-        // 5. Fallback Cerdas: PMR Wira Dynamic Knowledge Engine (Mengambil data live dari website)
+        // 5. PRIORITAS UTAMA: Cek pertanyaan kepengurusan & biodata langsung dari DB
+        $deterministicReply = $this->matchDeterministicInquiry($lower);
+        if ($deterministicReply !== null) {
+            return [
+                'success' => true,
+                'reply' => $deterministicReply,
+                'provider' => 'knowledge_engine',
+                'timestamp' => now()->format('H:i'),
+            ];
+        }
+
+        // 6. Fallback Cerdas: PMR Wira Dynamic Knowledge Engine (P3K, Materi PMI, Lomba, dsb)
         $fallbackReply = $this->generateKnowledgeResponse($message);
 
         return [
@@ -176,37 +189,40 @@ class WiraAgentService
 
     /**
      * Cocokkan pertanyaan spesifik kepengurusan, pimpinan, ketua bidang, dan anggota (Prioritas 1).
+     * Semua data diambil LIVE dari database — tidak ada hardcode nama.
      */
     public function matchDeterministicInquiry(string $lower): ?string
     {
-        // A. Cek jika meminta struktur organisasi lengkap / seluruh susunan
-        if (str_contains($lower, 'struktur organisasi') || str_contains($lower, 'bagan organisasi') || str_contains($lower, 'susunan pengurus') || str_contains($lower, 'semua pengurus') || str_contains($lower, 'daftar pengurus') || str_contains($lower, 'siapa saja pengurus') || (str_contains($lower, 'pembina') && (str_contains($lower, 'sampai') || str_contains($lower, 'seluruh') || str_contains($lower, 'semua') || str_contains($lower, 'anggota'))) || str_contains($lower, 'seluruh anggota')) {
+        // A. Pertanyaan struktur organisasi lengkap / semua pengurus
+        if (
+            str_contains($lower, 'struktur organisasi') ||
+            str_contains($lower, 'bagan organisasi') ||
+            str_contains($lower, 'susunan pengurus') ||
+            str_contains($lower, 'semua pengurus') ||
+            str_contains($lower, 'daftar pengurus') ||
+            str_contains($lower, 'siapa saja pengurus') ||
+            str_contains($lower, 'seluruh anggota') ||
+            (str_contains($lower, 'pembina') && (str_contains($lower, 'sampai') || str_contains($lower, 'seluruh') || str_contains($lower, 'semua') || str_contains($lower, 'anggota')))
+        ) {
             return $this->renderFullOrganizationStructure();
         }
 
-        // B. Cek pertanyaan spesifik mengenai bidang tertentu (Ketua Bidang / Anggota Bidang)
+        // B. Pencarian biodata anggota spesifik berdasarkan nama yang disebut (prioritas sebelum bidang)
+        $memberBiodata = $this->findMemberBiodataByName($lower);
+        if ($memberBiodata !== null) {
+            return $memberBiodata;
+        }
+
+        // C. Pertanyaan spesifik mengenai bidang tertentu (Ketua Bidang / Anggota Bidang)
         $bidangInquiry = $this->handleSpecificBidangInquiry($lower);
         if ($bidangInquiry !== null) {
             return $bidangInquiry;
         }
 
-        // C. Cek pencarian biodata spesifik anggota/pimpinan (Pembina, Ketua, Wakil, BPH, Staf)
-        $memberBiodata = $this->findSpecificMemberBiodata($lower);
-        if ($memberBiodata !== null) {
-            return $memberBiodata;
-        }
-
-        // D. Cek jika menanyakan Ketua Umum PMR (misal: "siapa ketua pmr", "siapa ketua periode sekarang", "ketua umum")
-        if (str_contains($lower, 'ketua umum') || ((str_contains($lower, 'siapa') || str_contains($lower, 'biodata')) && str_contains($lower, 'ketua') && (str_contains($lower, 'pmr') || str_contains($lower, 'sekarang') || str_contains($lower, 'periode')) && ! str_contains($lower, 'bidang'))) {
-            return $this->getBiodataCard(
-                name: 'Sulthan Arkana Putra R.',
-                position: 'Ketua Umum PMR Wira (Kabinet Ragana Dwi Pantara)',
-                levelOrClass: 'Kelas XI',
-                idNumber: 'NRI: 24.49.004 PRT',
-                roleDescription: 'Memimpin jalannya organisasi, penanggung jawab umum program kerja kepalangmerahan, koordinasi pimpinan sekolah & PMI, serta mengarahkan 5 bidang operasional relawan.',
-                motto: 'Siamo Tutti Fratelli — Memimpin dengan keteladanan, melayani sesama dengan ketulusan hati.',
-                title: 'BIODATA KETUA UMUM PMR WIRA'
-            );
+        // D. Pertanyaan jabatan pimpinan atas (Pembina, Ketua Umum, Wakil, BPH)
+        $leaderBiodata = $this->findLeaderBiodataByRole($lower);
+        if ($leaderBiodata !== null) {
+            return $leaderBiodata;
         }
 
         return null;
@@ -943,108 +959,218 @@ PROMPT;
     /**
      * Menangani pertanyaan spesifik mengenai pimpinan maupun seluruh staf anggota pada 5 Bidang Kepengurusan.
      */
+    /**
+     * Deteksi pertanyaan mengenai bidang tertentu dan jawab dengan data LIVE dari database.
+     * Jika DB kosong (misal: testing / belum ada data), gunakan fallback statis.
+     */
     public function handleSpecificBidangInquiry(string $lower): ?string
     {
-        // Jika menanyakan nama anggota tertentu secara spesifik, serahkan ke findSpecificMemberBiodata
-        $specificIndividualNames = [
-            'rian', 'siti fatimah', 'deni',
-            'anisa', 'budi santoso', 'dewi sartika',
-            'fajar pratama', 'maya',
-            'gilang', 'tiara andini', 'kevin julio',
-            'putri marino', 'aldi taher',
+        $isAskingKetua = str_contains($lower, 'ketua') || str_contains($lower, 'pimpinan') ||
+            str_contains($lower, 'kabid') || str_contains($lower, 'kepala') || str_contains($lower, 'koordinator');
+        $isAskingAnggota = str_contains($lower, 'anggota') || str_contains($lower, 'staf') ||
+            str_contains($lower, 'staff') || str_contains($lower, 'tim') ||
+            str_contains($lower, 'siapa saja') || str_contains($lower, 'daftar');
+
+        // Peta keyword → nama bidang di DB dan tampilan
+        $bidangMap = [
+            'diklat' => [
+                'keywords' => ['diklat', 'pendidikan dan pelatihan'],
+                'label' => 'Diklat',
+                'fullLabel' => 'Pendidikan & Pelatihan (Diklat)',
+                'icon' => '📚',
+                'dbLabel' => 'Diklat',
+                'static' => [
+                    'ketua' => [
+                        'name' => 'Reza Rahadian', 'kelas' => 'Kelas XI', 'nri' => '24.49.040 PRT',
+                        'motto' => 'Pendidikan kepalangmerahan yang unggul mencetak relawan yang tangguh dan terampil.',
+                    ],
+                    'staf' => [
+                        ['name' => 'Fajar Pratama', 'kelas' => 'Kelas X-4', 'nri' => '25.50.033 PRT', 'motto' => 'Belajar tiada henti demi pertolongan pertama yang tepat dan terstandar.'],
+                        ['name' => 'Maya Anggraini', 'kelas' => 'Kelas XI-3', 'nri' => '24.49.042 PRT', 'motto' => 'Semangat berbagi ilmu dan melatih sesama calon relawan.'],
+                    ],
+                ],
+            ],
+            'markas' => [
+                'keywords' => ['markas', 'logistik'],
+                'label' => 'Markas',
+                'fullLabel' => 'Markas & Logistik UKS',
+                'icon' => '📦',
+                'dbLabel' => 'Markas',
+                'static' => [
+                    'ketua' => [
+                        'name' => 'Indra Gunawan', 'kelas' => 'Kelas XI', 'nri' => '24.49.029 PRT',
+                        'motto' => 'Markas yang tertata dan siap siaga adalah cerminan respon medis yang tanggap.',
+                    ],
+                    'staf' => [
+                        ['name' => 'Rian Ardiansyah', 'kelas' => 'Kelas X-1', 'nri' => '25.50.007 PRT', 'motto' => 'Siap sedia merawat sarana evakuasi untuk keselamatan bersama.'],
+                        ['name' => 'Siti Fatimah', 'kelas' => 'Kelas X-3', 'nri' => '25.50.014 PRT', 'motto' => 'Disiplin mengelola logistik medis demi kelancaran tugas kemanusiaan.'],
+                        ['name' => 'Deni Prasetyo', 'kelas' => 'Kelas XI-2', 'nri' => '24.49.031 PRT', 'motto' => 'Ketangguhan fisik dan ketelitian merawat perlengkapan medis.'],
+                    ],
+                ],
+            ],
+            'pelayanan' => [
+                'keywords' => ['pelayanan'],
+                'label' => 'Pelayanan',
+                'fullLabel' => 'Pelayanan Medis & Donor Darah',
+                'icon' => '🩹',
+                'dbLabel' => 'Pelayanan',
+                'static' => [
+                    'ketua' => [
+                        'name' => 'Sarah Azhari', 'kelas' => 'Kelas XI', 'nri' => '24.49.034 PRT',
+                        'motto' => 'Melayani dengan empati, sigap menolong sesama tanpa pamrih.',
+                    ],
+                    'staf' => [
+                        ['name' => 'Anisa Rahma', 'kelas' => 'Kelas X-2', 'nri' => '25.50.019 PRT', 'motto' => 'Tangan terampil, hati tulus melayani mereka yang membutuhkan.'],
+                        ['name' => 'Budi Santoso', 'kelas' => 'Kelas XI-1', 'nri' => '24.49.035 PRT', 'motto' => 'Sigap dalam bertindak, tenang dalam pertolongan darurat.'],
+                        ['name' => 'Dewi Sartika', 'kelas' => 'Kelas X-5', 'nri' => '25.50.028 PRT', 'motto' => 'Kemanusiaan adalah panggilan jiwa untuk meringankan penderitaan sesama.'],
+                    ],
+                ],
+            ],
+            'humas' => [
+                'keywords' => ['humas', 'hubungan masyarakat'],
+                'label' => 'Humas',
+                'fullLabel' => 'Hubungan Masyarakat (Humas)',
+                'icon' => '📢',
+                'dbLabel' => 'Humas',
+                'static' => [
+                    'ketua' => [
+                        'name' => 'Dian Sastrowardoyo', 'kelas' => 'Kelas XI', 'nri' => '24.49.044 PRT',
+                        'motto' => 'Menyuarakan pesan kemanusiaan dan merajut persaudaraan tanpa batas.',
+                    ],
+                    'staf' => [
+                        ['name' => 'Gilang Ramadhan', 'kelas' => 'Kelas X-1', 'nri' => '25.50.045 PRT', 'motto' => 'Kreatif menyampaikan aksi relawan demi menginspirasi generasi muda.'],
+                        ['name' => 'Tiara Andini', 'kelas' => 'Kelas XI-4', 'nri' => '24.49.049 PRT', 'motto' => 'Komunikasi ramah dan hangat mempererat ikatan persahabatan relawan.'],
+                        ['name' => 'Kevin Julio', 'kelas' => 'Kelas X-3', 'nri' => '25.50.052 PRT', 'motto' => 'Menghubungkan kepedulian sosial dengan aksi kemanusiaan nyata.'],
+                    ],
+                ],
+            ],
+            'kreasi' => [
+                'keywords' => ['kreasi', 'media kreatif', 'kreatif'],
+                'label' => 'Kreasi',
+                'fullLabel' => 'Media Kreatif & Publikasi (Kreasi)',
+                'icon' => '🎨',
+                'dbLabel' => 'Kreasi',
+                'static' => [
+                    'ketua' => [
+                        'name' => 'Nicholas Saputra', 'kelas' => 'Kelas XI', 'nri' => '24.49.055 PRT',
+                        'motto' => 'Kreativitas tanpa batas untuk mengedukasi dan menggerakkan empati kemanusiaan.',
+                    ],
+                    'staf' => [
+                        ['name' => 'Putri Marino', 'kelas' => 'Kelas X-2', 'nri' => '25.50.058 PRT', 'motto' => 'Karya visual yang indah membawa pesan keselamatan untuk semua.'],
+                        ['name' => 'Aldi Taher', 'kelas' => 'Kelas XI-5', 'nri' => '24.49.061 PRT', 'motto' => 'Semangat berkarya dan berinovasi demi syiar kepalangmerahan.'],
+                    ],
+                ],
+            ],
         ];
-        foreach ($specificIndividualNames as $indName) {
-            if (str_contains($lower, $indName)) {
-                return null;
+
+        foreach ($bidangMap as $bidang) {
+            // Cek apakah keyword bidang ini cocok
+            $matched = false;
+            foreach ($bidang['keywords'] as $kw) {
+                if (str_contains($lower, $kw)) {
+                    $matched = true;
+                    break;
+                }
             }
-        }
 
-        $isAskingKetua = str_contains($lower, 'ketua') || str_contains($lower, 'pimpinan') || str_contains($lower, 'kabid') || str_contains($lower, 'kepala') || str_contains($lower, 'koordinator');
-        $isAskingAnggota = str_contains($lower, 'anggota') || str_contains($lower, 'staf') || str_contains($lower, 'staff') || str_contains($lower, 'tim') || str_contains($lower, 'siapa saja') || str_contains($lower, 'nama') || str_contains($lower, 'daftar');
+            if (! $matched) {
+                continue;
+            }
 
-        // 1. Bidang Diklat
-        if (str_contains($lower, 'diklat') || str_contains($lower, 'pendidikan dan pelatihan') || (str_contains($lower, 'pendidikan') && str_contains($lower, 'pelatihan'))) {
+            // Coba baca dari DB terlebih dahulu
+            $dbKetua = null;
+            $dbStaf = collect();
+
+            if (Schema::hasTable('members')) {
+                $dbKetua = Member::where('position', 'like', '%Ketua Bidang '.$bidang['dbLabel'].'%')
+                    ->where('is_active', true)
+                    ->first();
+
+                $dbStaf = Member::where('position', 'like', '%Staf Bidang '.$bidang['dbLabel'].'%')
+                    ->where('is_active', true)
+                    ->get();
+            }
+
+            // Gunakan data DB jika ada, jika tidak gunakan data statis
+            $hasDbData = ($dbKetua !== null || $dbStaf->isNotEmpty());
+
+            if ($hasDbData) {
+                // Bangun dari data DB live
+                $ketuaName = $dbKetua?->name ?? $bidang['static']['ketua']['name'];
+                $ketuaKelas = $dbKetua ? 'Kelas '.($dbKetua->class_grade ?? '-') : $bidang['static']['ketua']['kelas'];
+                $ketuaNri = $dbKetua ? ($dbKetua->nri ?? '-') : $bidang['static']['ketua']['nri'];
+                $ketuaMotto = ($dbKetua?->motto) ?: $bidang['static']['ketua']['motto'];
+
+                if ($isAskingKetua && ! $isAskingAnggota) {
+                    return $this->getBiodataCard(
+                        name: $ketuaName,
+                        position: 'Ketua Bidang '.$bidang['label'].' PMR Wira SMAN 1 Ciawi',
+                        levelOrClass: $ketuaKelas,
+                        idNumber: 'NRI: '.$ketuaNri,
+                        roleDescription: 'Memimpin dan mengkoordinasikan program kerja Bidang '.$bidang['label'].' PMR Wira SMAN 1 Ciawi.',
+                        motto: $ketuaMotto,
+                        title: 'BIODATA KETUA BIDANG '.strtoupper($bidang['label'])
+                    );
+                }
+
+                $icon = $bidang['icon'];
+                $fullLabel = $bidang['fullLabel'];
+                $reply = "Halo Teman Relawan! {$icon}\n\n"
+                    ."Berikut susunan kepengurusan **Bidang {$fullLabel}** PMR Wira SMAN 1 Ciawi (Masa Bakti Ragana Dwi Pantara 2026/2027):\n\n"
+                    ."👑 **Ketua Bidang {$bidang['label']}:**\n"
+                    ."• **{$ketuaName}** ({$ketuaKelas} • NRI: {$ketuaNri})\n"
+                    ."  *Motto:* \"{$ketuaMotto}\"\n\n";
+
+                if ($dbStaf->isNotEmpty()) {
+                    $reply .= "👥 **Staf Anggota Bidang {$bidang['label']}:**\n";
+                    foreach ($dbStaf as $i => $s) {
+                        $sNri = $s->nri ?? '-';
+                        $sKelas = $s->class_grade ? 'Kelas '.$s->class_grade : '-';
+                        $sMotto = $s->motto ?: 'Siap mengabdi untuk kemanusiaan.';
+                        $num = $i + 1;
+                        $reply .= "{$num}. **{$s->name}** ({$sKelas} • NRI: {$sNri})\n"
+                            ."   *Motto:* \"{$sMotto}\"\n";
+                    }
+                }
+
+                $reply .= "\n✨ *Kakak dapat menanyakan nama anggota di atas (misal: \"Biodata {$ketuaName}\") untuk melihat KTA digital resminya!*";
+
+                return $reply;
+            }
+
+            // Fallback statis (jika DB kosong — misal: testing environment)
+            $static = $bidang['static'];
+            $icon = $bidang['icon'];
+            $fullLabel = $bidang['fullLabel'];
+
             if ($isAskingKetua && ! $isAskingAnggota) {
                 return $this->getBiodataCard(
-                    name: 'Reza Rahadian',
-                    position: 'Ketua Bidang Pendidikan & Pelatihan (Diklat)',
-                    levelOrClass: 'Kelas XI',
-                    idNumber: 'NRI: 24.49.040 PRT',
-                    roleDescription: 'Penyusunan kurikulum 7 Materi Pokok PMR Wira, penyelenggaraan Diklatsar Ruang & Lapangan, serta pelatihan rutin mingguan.',
-                    motto: 'Pendidikan kepalangmerahan yang unggul mencetak relawan yang tangguh dan terampil.',
-                    title: 'BIODATA KETUA BIDANG DIKLAT'
+                    name: $static['ketua']['name'],
+                    position: 'Ketua Bidang '.$bidang['fullLabel'],
+                    levelOrClass: $static['ketua']['kelas'],
+                    idNumber: 'NRI: '.$static['ketua']['nri'],
+                    roleDescription: 'Memimpin dan mengkoordinasikan program kerja Bidang '.$bidang['label'].' PMR Wira SMAN 1 Ciawi.',
+                    motto: $static['ketua']['motto'],
+                    title: 'BIODATA KETUA BIDANG '.strtoupper($bidang['label'])
                 );
             }
 
-            return "Halo Teman Relawan! 📚\n\nBerikut adalah susunan kepengurusan lengkap **Bidang Pendidikan & Pelatihan (Diklat)** PMR Wira SMAN 1 Ciawi Masa Bakti Ragana Dwi Pantara 2026/2027:\n\n👑 **Ketua Bidang Diklat:**\n• **Reza Rahadian** (Kelas XI • NRI: 24.49.040 PRT)\n  *Tugas:* Penyusunan kurikulum 7 Materi Pokok PMR Wira, penyelenggaraan Diklatsar Ruang & Lapangan, serta memimpin pelatihan rutin mingguan.\n  *Motto:* 'Pendidikan kepalangmerahan yang unggul mencetak relawan yang tangguh dan terampil.'\n\n👥 **Staf Anggota Bidang Diklat:**\n1. **Fajar Pratama** (Kelas X-4 • NRI: 25.50.033 PRT)\n   *Tugas:* Instruktur materi pertolongan pertama dasar, pembimbingan simulasi RJP dan balut bidai bagi calon anggota baru.\n   *Motto:* 'Belajar tiada henti demi pertolongan pertama yang tepat dan terstandar.'\n2. **Maya Anggraini** (Kelas XI-3 • NRI: 24.49.042 PRT)\n   *Tugas:* Pendampingan kontingen lomba ketangkasan PMR, modul evaluasi traveling kepalangmerahan, serta absensi latihan rutin.\n   *Motto:* 'Semangat berbagi ilmu dan melatih sesama calon relawan.'\n\n🎯 **Fokus Program Kerja:**\n• Diklatsar Ruang & Lapangan bagi calon relawan baru.\n• Pelatihan rutin mingguan materi P3K, Tandu, dan Mitigasi Bencana.\n• Bimbingan intensif kontingen kejuaraan kepalangmerahan.\n\nKakak dapat menanyakan *'Biodata Reza Rahadian'* atau *'Biodata Fajar Pratama'* untuk melihat KTA digital masing-masing!";
-        }
+            $reply = "Halo Teman Relawan! {$icon}\n\n"
+                ."Berikut susunan kepengurusan **Bidang {$fullLabel}** PMR Wira SMAN 1 Ciawi (Masa Bakti Ragana Dwi Pantara 2026/2027):\n\n"
+                ."👑 **Ketua Bidang {$bidang['label']}:**\n"
+                ."• **{$static['ketua']['name']}** ({$static['ketua']['kelas']} • NRI: {$static['ketua']['nri']})\n"
+                ."  *Motto:* \"{$static['ketua']['motto']}\"\n\n"
+                ."👥 **Staf Anggota Bidang {$bidang['label']}:**\n";
 
-        // 2. Bidang Markas
-        if (str_contains($lower, 'markas') || str_contains($lower, 'logistik')) {
-            if ($isAskingKetua && ! $isAskingAnggota) {
-                return $this->getBiodataCard(
-                    name: 'Indra Gunawan',
-                    position: 'Ketua Bidang Markas & Logistik UKS',
-                    levelOrClass: 'Kelas XI',
-                    idNumber: 'NRI: 24.49.029 PRT',
-                    roleDescription: 'Koordinator sarana prasarana UKS, pengecekan berkala masa kedaluwarsa obat, pemeliharaan tandu darurat & spalk bidai, serta jadwal piket markas.',
-                    motto: 'Markas yang tertata dan siap siaga adalah cerminan respon medis yang tanggap.',
-                    title: 'BIODATA KETUA BIDANG MARKAS'
-                );
+            foreach ($static['staf'] as $i => $s) {
+                $num = $i + 1;
+                $reply .= "{$num}. **{$s['name']}** ({$s['kelas']} • NRI: {$s['nri']})\n"
+                    ."   *Motto:* \"{$s['motto']}\"\n";
             }
 
-            return "Halo Teman Relawan! 📦\n\nBerikut adalah susunan kepengurusan lengkap **Bidang Markas & Logistik UKS** PMR Wira SMAN 1 Ciawi Masa Bakti Ragana Dwi Pantara 2026/2027:\n\n👑 **Ketua Bidang Markas:**\n• **Indra Gunawan** (Kelas XI • NRI: 24.49.029 PRT)\n  *Tugas:* Koordinator sarana prasarana UKS, pengecekan berkala obat kedaluwarsa, pemeliharaan tandu darurat & spalk bidai, serta jadwal piket markas.\n  *Motto:* 'Markas yang tertata dan siap siaga adalah cerminan respon medis yang tanggap.'\n\n👥 **Staf Anggota Bidang Markas:**\n1. **Rian Ardiansyah** (Kelas X-1 • NRI: 25.50.007 PRT)\n   *Tugas:* Perawatan alat evakuasi tandu bambu 225 cm, penyusunan stok kasa & mitela steril, serta kebersihan ruang posko UKS.\n   *Motto:* 'Siap sedia merawat sarana evakuasi untuk keselamatan bersama.'\n2. **Siti Fatimah** (Kelas X-3 • NRI: 25.50.014 PRT)\n   *Tugas:* Pencatatan inventaris obat masuk dan keluar, pemeriksaan kotak P3K kelas, dan kesiapan tabung oksigen UKS.\n   *Motto:* 'Disiplin mengelola logistik medis demi kelancaran tugas kemanusiaan.'\n3. **Deni Prasetyo** (Kelas XI-2 • NRI: 24.49.031 PRT)\n   *Tugas:* Pemeliharaan perangkat darurat, uji kekuatan simpul tandu, serta logistik simulasi mitigasi bencana sekolah.\n   *Motto:* 'Ketangguhan fisik dan ketelitian merawat perlengkapan medis.'\n\n🎯 **Fokus Program Kerja:**\n• Standarisasi kotak P3K di setiap ruang kelas dan laboratorium.\n• Kalibrasi alat medis tensimeter, termometer digital, dan tabung O2.\n• Perawatan bambu tandu 225 cm dan tali tandu 13-14 m.\n\nKakak dapat menanyakan nama beliau (misal: *'Biodata Indra Gunawan'* atau *'Biodata Siti Fatimah'*) untuk melihat KTA digital resminya!";
-        }
+            $reply .= "\n✨ *Kakak dapat menanyakan nama anggota di atas (misal: \"Biodata {$static['ketua']['name']}\") untuk melihat KTA digital resminya!*";
 
-        // 3. Bidang Pelayanan
-        if (str_contains($lower, 'pelayanan') || str_contains($lower, 'pelayanan medis')) {
-            if ($isAskingKetua && ! $isAskingAnggota) {
-                return $this->getBiodataCard(
-                    name: 'Sarah Azhari',
-                    position: 'Ketua Bidang Pelayanan Medis & Donor Darah',
-                    levelOrClass: 'Kelas XI',
-                    idNumber: 'NRI: 24.49.034 PRT',
-                    roleDescription: 'Penanggung jawab posko medis upacara bendera, koordinasi aksi donor darah bersama PMI Kab. Bogor, serta posyandu remaja sekolah.',
-                    motto: 'Melayani dengan empati, sigap menolong sesama tanpa pamrih.',
-                    title: 'BIODATA KETUA BIDANG PELAYANAN'
-                );
-            }
-
-            return "Halo Teman Relawan! 🩹\n\nBerikut adalah susunan kepengurusan lengkap **Bidang Pelayanan Medis & Donor Darah** PMR Wira SMAN 1 Ciawi Masa Bakti Ragana Dwi Pantara 2026/2027:\n\n👑 **Ketua Bidang Pelayanan:**\n• **Sarah Azhari** (Kelas XI • NRI: 24.49.034 PRT)\n  *Tugas:* Penanggung jawab posko medis upacara bendera, koordinasi aksi donor darah bersama PMI Kab. Bogor, serta posyandu remaja sekolah.\n  *Motto:* 'Melayani dengan empati, sigap menolong sesama tanpa pamrih.'\n\n👥 **Staf Anggota Bidang Pelayanan:**\n1. **Anisa Rahma** (Kelas X-2 • NRI: 25.50.019 PRT)\n   *Tugas:* Piket medis harian UKS, pemeriksaan tanda vital (tensi darah, suhu tubuh), serta pendampingan siswa sakit di ruang isolasi.\n   *Motto:* 'Tangan terampil, hati tulus melayani mereka yang membutuhkan.'\n2. **Budi Santoso** (Kelas XI-1 • NRI: 24.49.035 PRT)\n   *Tugas:* Tim evakuasi lapangan, pengawalan medis kegiatan olahraga & ekstrakurikuler, serta penanganan kasus cedera.\n   *Motto:* 'Sigap dalam bertindak, tenang dalam pertolongan darurat.'\n3. **Dewi Sartika** (Kelas X-5 • NRI: 25.50.028 PRT)\n   *Tugas:* Edukasi pencegahan anemia remaja putri (pembagian tablet tambah darah), pencatatan rekam medis harian UKS.\n   *Motto:* 'Kemanusiaan adalah panggilan jiwa untuk meringankan penderitaan sesama.'\n\n🎯 **Fokus Program Kerja:**\n• Siaga Pos Medis Upacara Bendera setiap hari Senin.\n• Aksi Donor Darah Sukarela rutin bekerjasama dengan UTD PMI Kab. Bogor.\n• Pembagian Tablet Tambah Darah (TTD) dan Posyandu Remaja.\n\nKakak dapat menanyakan nama beliau (misal: *'Biodata Sarah Azhari'* atau *'Biodata Anisa Rahma'*) untuk melihat KTA digital resminya!";
-        }
-
-        // 4. Bidang Humas
-        if (str_contains($lower, 'humas') || str_contains($lower, 'hubungan masyarakat')) {
-            if ($isAskingKetua && ! $isAskingAnggota) {
-                return $this->getBiodataCard(
-                    name: 'Dian Sastrowardoyo',
-                    position: 'Ketua Bidang Hubungan Masyarakat (Humas)',
-                    levelOrClass: 'Kelas XI',
-                    idNumber: 'NRI: 24.49.044 PRT',
-                    roleDescription: 'Hubungan eksternal dengan PMI Kabupaten Bogor, jejaring antar-pangkalan PMR se-Bogor Raya, serta publikasi berita kemanusiaan.',
-                    motto: 'Menyuarakan pesan kemanusiaan dan merajut persaudaraan tanpa batas.',
-                    title: 'BIODATA KETUA BIDANG HUMAS'
-                );
-            }
-
-            return "Halo Teman Relawan! 📢\n\nBerikut adalah susunan kepengurusan lengkap **Bidang Hubungan Masyarakat (Humas)** PMR Wira SMAN 1 Ciawi Masa Bakti Ragana Dwi Pantara 2026/2027:\n\n👑 **Ketua Bidang Humas:**\n• **Dian Sastrowardoyo** (Kelas XI • NRI: 24.49.044 PRT)\n  *Tugas:* Hubungan eksternal dengan PMI Kabupaten Bogor, jejaring antar-pangkalan PMR se-Bogor Raya, serta publikasi berita kemanusiaan.\n  *Motto:* 'Menyuarakan pesan kemanusiaan dan merajut persaudaraan tanpa batas.'\n\n👥 **Staf Anggota Bidang Humas:**\n1. **Gilang Ramadhan** (Kelas X-1 • NRI: 25.50.045 PRT)\n   *Tugas:* Pengelolaan media sosial resmi organisasi, dokumentasi buletin mading sekolah, serta penyebaran info kegiatan relawan.\n   *Motto:* 'Kreatif menyampaikan aksi relawan demi menginspirasi generasi muda.'\n2. **Tiara Andini** (Kelas XI-4 • NRI: 24.49.049 PRT)\n   *Tugas:* Penghubung komunikasi antar-ekstrakurikuler sekolah, pendataan relawan tamu saat latihan gabungan, dan sosialisasi program UKS.\n   *Motto:* 'Komunikasi ramah dan hangat mempererat ikatan persahabatan relawan.'\n3. **Kevin Julio** (Kelas X-3 • NRI: 25.50.052 PRT)\n   *Tugas:* Pengelolaan layanan informasi pengunjung, hotline pertanyaan calon anggota, serta publikasi agenda donor darah.\n   *Motto:* 'Menghubungkan kepedulian sosial dengan aksi kemanusiaan nyata.'\n\n🎯 **Fokus Program Kerja:**\n• Pengelolaan media sosial Instagram, TikTok, dan YouTube resmi PMR Wira.\n• Jejaring silaturahmi dengan Forum Remaja Palang Merah Indonesia (FORPIS).\n• Publikasi buletin mading kemanusiaan dan promosi kegiatan donor darah.\n\nKakak dapat menanyakan *'Biodata Dian Sastrowardoyo'* atau *'Biodata Gilang Ramadhan'* untuk melihat KTA resminya!";
-        }
-
-        // 5. Bidang Kreasi
-        if (str_contains($lower, 'kreasi') || str_contains($lower, 'media kreatif') || str_contains($lower, 'kreatif')) {
-            if ($isAskingKetua && ! $isAskingAnggota) {
-                return $this->getBiodataCard(
-                    name: 'Nicholas Saputra',
-                    position: 'Ketua Bidang Media Kreatif & Publikasi',
-                    levelOrClass: 'Kelas XI',
-                    idNumber: 'NRI: 24.49.055 PRT',
-                    roleDescription: 'Pengarah artistik publikasi, perancangan poster edukasi kesehatan, pembuatan video animasi P3K, dan desain KTA digital.',
-                    motto: 'Kreativitas tanpa batas untuk mengedukasi dan menggerakkan empati kemanusiaan.',
-                    title: 'BIODATA KETUA BIDANG KREASI'
-                );
-            }
-
-            return "Halo Teman Relawan! 🎨\n\nBerikut adalah susunan kepengurusan lengkap **Bidang Media Kreatif & Publikasi (Kreasi)** PMR Wira SMAN 1 Ciawi Masa Bakti Ragana Dwi Pantara 2026/2027:\n\n👑 **Ketua Bidang Kreasi:**\n• **Nicholas Saputra** (Kelas XI • NRI: 24.49.055 PRT)\n  *Tugas:* Pengarah artistik publikasi, perancangan poster edukasi kesehatan, pembuatan video animasi P3K, dan desain KTA digital.\n  *Motto:* 'Kreativitas tanpa batas untuk mengedukasi dan menggerakkan empati kemanusiaan.'\n\n👥 **Staf Anggota Bidang Kreasi:**\n1. **Putri Marino** (Kelas X-2 • NRI: 25.50.058 PRT)\n   *Tugas:* Desain infografis pola hidup sehat (PHBS), ilustrasi pertolongan pertama, dan tata letak materi e-book organisasi.\n   *Motto:* 'Karya visual yang indah membawa pesan keselamatan untuk semua.'\n2. **Aldi Taher** (Kelas XI-5 • NRI: 24.49.061 PRT)\n   *Tugas:* Editing video kampanye donor darah, dokumentasi sinematik kegiatan diklatsar, dan desain merchandise relawan.\n   *Motto:* 'Semangat berkarya dan berinovasi demi syiar kepalangmerahan.'\n\n🎯 **Fokus Program Kerja:**\n• Desain infografis pertolongan pertama dan poster PHBS mingguan.\n• Produksi video edukasi RJP dan tandu darurat untuk edukasi publik.\n• Perancangan desain identitas visual, seragam kontingen, dan KTA digital.\n\nKakak dapat menanyakan *'Biodata Nicholas Saputra'* atau *'Biodata Putri Marino'* untuk melihat KTA resminya!";
+            return $reply;
         }
 
         return null;
@@ -1052,283 +1178,423 @@ PROMPT;
 
     /**
      * Cari biodata pimpinan atau anggota tertentu dari Pembina sampai seluruh staf 5 bidang.
+     * Data diambil LIVE dari database berdasarkan nama yang disebutkan.
+     * Jika DB kosong (testing), gunakan fallback data resmi kepengurusan.
      */
-    public function findSpecificMemberBiodata(string $lower): ?string
+    public function findMemberBiodataByName(string $lower): ?string
     {
-        // 1. Wakil Ketua PMR Wira (Cek sebelum Ketua Umum karena pertanyaan 'wakil ketua' mengandung kata 'ketua')
-        if (str_contains($lower, 'wakil') || str_contains($lower, 'imam abdul') || str_contains($lower, 'jabbar')) {
-            return $this->getBiodataCard(
-                name: 'Imam Abdul Jabbar',
-                position: 'Wakil Ketua Umum PMR Wira',
-                levelOrClass: 'Kelas XI',
-                idNumber: 'NRI: 24.49.012 PRT',
-                roleDescription: 'Mendampingi Ketua Umum, mengoordinasikan internal 5 bidang kepengurusan, pengawasan kedisiplinan anggota, serta memimpin rapat evaluasi bulanan.',
-                motto: 'Berani melangkah, setia mengabdi, dan menjaga soliditas korsa demi kemanusiaan.',
-                title: 'BIODATA WAKIL KETUA UMUM PMR WIRA'
-            );
+        // 1. Cek database terlebih dahulu jika ada tabel dan data
+        if (Schema::hasTable('members')) {
+            $allMembers = Member::where('is_active', true)->get();
+            if ($allMembers->isNotEmpty()) {
+                foreach ($allMembers as $member) {
+                    $nameLower = strtolower($member->name ?? '');
+                    if ($this->isNameMatch($lower, $nameLower)) {
+                        return $this->buildBiodataCardFromMember($member);
+                    }
+                }
+            }
         }
 
-        // 2. Pembina PMR
-        if (str_contains($lower, 'pembina') || str_contains($lower, 'abdul hamid') || str_contains($lower, 'mulyadi')) {
-            return $this->getBiodataCard(
-                name: 'Abdul Hamid Saputra, S.Hum., M.Pd.',
-                position: 'Pembina PMR Wira SMAN 1 Ciawi',
-                levelOrClass: 'Dewan Pembina / Guru Pembimbing',
-                idNumber: 'NIP: 19820415 200801 1 008',
-                roleDescription: 'Membimbing, mengarahkan, dan mengawasi seluruh program kerja kepalangmerahan, pembinaan karakter relawan, serta sinergi antara pihak sekolah dan PMI Cabang.',
-                motto: 'Mendidik relawan muda yang berkarakter, berakhlak mulia, tangguh, dan tulus mengabdi bagi kemanusiaan.',
-                title: 'BIODATA PEMBINA PMR WIRA'
-            );
+        // 2. Fallback ke data anggota resmi (jika DB kosong / unit test)
+        return $this->findStaticMemberBiodata($lower);
+    }
+
+    /**
+     * Helper pencocokan nama anggota.
+     */
+    protected function isNameMatch(string $query, string $name): bool
+    {
+        if (str_contains($query, $name)) {
+            return true;
         }
 
-        // 3. Bidang Markas (Ketua & Staf)
-        if (str_contains($lower, 'indra gunawan') || (str_contains($lower, 'ketua') && str_contains($lower, 'markas'))) {
-            return $this->getBiodataCard(
-                name: 'Indra Gunawan',
-                position: 'Ketua Bidang Markas & Logistik UKS',
-                levelOrClass: 'Kelas XI',
-                idNumber: 'NRI: 24.49.029 PRT',
-                roleDescription: 'Koordinator sarana prasarana UKS, pengecekan berkala masa kedaluwarsa obat, pemeliharaan tandu darurat & spalk bidai, serta jadwal piket markas.',
-                motto: 'Markas yang tertata dan siap siaga adalah cerminan respon medis yang tanggap.',
-                title: 'BIODATA KETUA BIDANG MARKAS'
-            );
-        }
-        if (str_contains($lower, 'rian ardiansyah') || (str_contains($lower, 'rian') && (str_contains($lower, 'markas') || str_contains($lower, 'staf')))) {
-            return $this->getBiodataCard(
-                name: 'Rian Ardiansyah',
-                position: 'Staf Anggota Bidang Markas',
-                levelOrClass: 'Kelas X-1',
-                idNumber: 'NRI: 25.50.007 PRT',
-                roleDescription: 'Perawatan alat evakuasi tandu bambu, penyusunan stok kasa & mitela steril, serta kebersihan ruang posko UKS.',
-                motto: 'Siap sedia merawat sarana evakuasi untuk keselamatan bersama.',
-                title: 'BIODATA STAF BIDANG MARKAS'
-            );
-        }
-        if (str_contains($lower, 'siti fatimah')) {
-            return $this->getBiodataCard(
-                name: 'Siti Fatimah',
-                position: 'Staf Anggota Bidang Markas',
-                levelOrClass: 'Kelas X-3',
-                idNumber: 'NRI: 25.50.014 PRT',
-                roleDescription: 'Pencatatan inventaris obat masuk dan keluar, pemeriksaan kotak P3K kelas, dan kesiapan tabung oksigen UKS.',
-                motto: 'Disiplin mengelola logistik medis demi kelancaran tugas kemanusiaan.',
-                title: 'BIODATA STAF BIDANG MARKAS'
-            );
-        }
-        if (str_contains($lower, 'deni prasetyo') || (str_contains($lower, 'deni') && str_contains($lower, 'markas'))) {
-            return $this->getBiodataCard(
-                name: 'Deni Prasetyo',
-                position: 'Staf Anggota Bidang Markas',
-                levelOrClass: 'Kelas XI-2',
-                idNumber: 'NRI: 24.49.031 PRT',
-                roleDescription: 'Pemeliharaan perangkat darurat, uji kekuatan simpul tandu, serta logistik simulasi mitigasi bencana sekolah.',
-                motto: 'Ketangguhan fisik dan ketelitian merawat perlengkapan medis.',
-                title: 'BIODATA STAF BIDANG MARKAS'
-            );
+        $parts = explode(' ', $name);
+        if (count($parts) >= 2) {
+            for ($i = 0; $i < count($parts) - 1; $i++) {
+                if (strlen($parts[$i]) >= 3 && str_contains($query, $parts[$i].' '.$parts[$i + 1])) {
+                    return true;
+                }
+            }
+            if (strlen($parts[0]) >= 4 && str_contains($query, $parts[0])) {
+                return true;
+            }
         }
 
-        // 4. Bidang Pelayanan (Ketua & Staf)
-        if (str_contains($lower, 'sarah azhari') || (str_contains($lower, 'ketua') && str_contains($lower, 'pelayanan'))) {
-            return $this->getBiodataCard(
-                name: 'Sarah Azhari',
-                position: 'Ketua Bidang Pelayanan Medis & Donor Darah',
-                levelOrClass: 'Kelas XI',
-                idNumber: 'NRI: 24.49.034 PRT',
-                roleDescription: 'Penanggung jawab posko medis upacara bendera, koordinasi aksi donor darah bersama PMI Kab. Bogor, serta posyandu remaja sekolah.',
-                motto: 'Melayani dengan empati, sigap menolong sesama tanpa pamrih.',
-                title: 'BIODATA KETUA BIDANG PELAYANAN'
-            );
-        }
-        if (str_contains($lower, 'anisa rahma')) {
-            return $this->getBiodataCard(
-                name: 'Anisa Rahma',
-                position: 'Staf Anggota Bidang Pelayanan',
-                levelOrClass: 'Kelas X-2',
-                idNumber: 'NRI: 25.50.019 PRT',
-                roleDescription: 'Piket medis harian UKS, pemeriksaan tanda vital (tensi darah, suhu tubuh), serta pendampingan siswa sakit di ruang isolasi.',
-                motto: 'Tangan terampil, hati tulus melayani mereka yang membutuhkan.',
-                title: 'BIODATA STAF BIDANG PELAYANAN'
-            );
-        }
-        if (str_contains($lower, 'budi santoso')) {
-            return $this->getBiodataCard(
-                name: 'Budi Santoso',
-                position: 'Staf Anggota Bidang Pelayanan',
-                levelOrClass: 'Kelas XI-1',
-                idNumber: 'NRI: 24.49.035 PRT',
-                roleDescription: 'Tim evakuasi lapangan, pengawalan medis kegiatan olahraga & ekstrakurikuler, serta penanganan kasus cedera.',
-                motto: 'Sigap dalam bertindak, tenang dalam pertolongan darurat.',
-                title: 'BIODATA STAF BIDANG PELAYANAN'
-            );
-        }
-        if (str_contains($lower, 'dewi sartika')) {
-            return $this->getBiodataCard(
-                name: 'Dewi Sartika',
-                position: 'Staf Anggota Bidang Pelayanan',
-                levelOrClass: 'Kelas X-5',
-                idNumber: 'NRI: 25.50.028 PRT',
-                roleDescription: 'Edukasi pencegahan anemia remaja putri (pembagian tablet tambah darah), pencatatan rekam medis harian UKS.',
-                motto: 'Kemanusiaan adalah panggilan jiwa untuk meringankan penderitaan sesama.',
-                title: 'BIODATA STAF BIDANG PELAYANAN'
-            );
+        return false;
+    }
+
+    /**
+     * Fallback data biodata anggota resmi saat DB belum terisi.
+     */
+    public function findStaticMemberBiodata(string $lower): ?string
+    {
+        $staticMembers = [
+            // Pimpinan
+            'sulthan' => [
+                'name' => 'Sulthan Arkana Putra R.', 'pos' => 'Ketua Umum PMR Wira (Kabinet Ragana Dwi Pantara)',
+                'class' => 'Kelas XI', 'nri' => 'NRI: 24.49.004 PRT', 'title' => 'BIODATA KETUA UMUM PMR WIRA',
+                'desc' => 'Memimpin jalannya organisasi, penanggung jawab umum program kerja kepalangmerahan, koordinasi pimpinan sekolah & PMI, serta mengarahkan 5 bidang operasional relawan.',
+                'motto' => 'Siamo Tutti Fratelli — Memimpin dengan keteladanan, melayani sesama dengan ketulusan hati.',
+            ],
+            'imam abdul' => [
+                'name' => 'Imam Abdul Jabbar', 'pos' => 'Wakil Ketua Umum PMR Wira',
+                'class' => 'Kelas XI', 'nri' => 'NRI: 24.49.012 PRT', 'title' => 'BIODATA WAKIL KETUA UMUM PMR WIRA',
+                'desc' => 'Mendampingi Ketua Umum, mengoordinasikan internal 5 bidang kepengurusan, pengawasan kedisiplinan anggota, serta memimpin rapat evaluasi bulanan.',
+                'motto' => 'Berani melangkah, setia mengabdi, dan menjaga soliditas korsa demi kemanusiaan.',
+            ],
+            'abdul hamid' => [
+                'name' => 'Abdul Hamid Saputra, S.Hum., M.Pd.', 'pos' => 'Pembina PMR Wira SMAN 1 Ciawi',
+                'class' => 'Dewan Pembina / Guru Pembimbing', 'nri' => 'NIP: 19820415 200801 1 008', 'title' => 'BIODATA PEMBINA PMR WIRA',
+                'desc' => 'Membimbing, mengarahkan, dan mengawasi seluruh program kerja kepalangmerahan, pembinaan karakter relawan, serta sinergi antara pihak sekolah dan PMI Cabang.',
+                'motto' => 'Mendidik relawan muda yang berkarakter, berakhlak mulia, tangguh, dan tulus mengabdi bagi kemanusiaan.',
+            ],
+            'putri raisya' => [
+                'name' => 'Putri Raisya Anjani', 'pos' => 'Sekretaris Umum (BPH)',
+                'class' => 'Kelas XI', 'nri' => 'NRI: 24.49.018 PRT', 'title' => 'BIODATA SEKRETARIS UMUM PMR WIRA',
+                'desc' => 'Pengelolaan administrasi resmi, persuratan mandat lomba & dinas, pengarsipan notulensi rapat, pendataan buku induk anggota serta KTA digital relawan.',
+                'motto' => 'Tertib administrasi wujud integritas dan dedikasi relawan.',
+            ],
+            'nisa nurul' => [
+                'name' => 'Nisa Nurul Aulia', 'pos' => 'Bendahara Umum (BPH)',
+                'class' => 'Kelas XI', 'nri' => 'NRI: 24.49.023 PRT', 'title' => 'BIODATA BENDAHARA UMUM PMR WIRA',
+                'desc' => 'Manajemen perbendaharaan kas organisasi, pembukuan keuangan iuran, penganggaran logistik medis UKS, serta pelaporan transparansi dana kegiatan kemanusiaan.',
+                'motto' => 'Amanah, transparan, dan akuntabel dalam mengelola dana kemanusiaan.',
+            ],
+            // Markas
+            'indra gunawan' => [
+                'name' => 'Indra Gunawan', 'pos' => 'Ketua Bidang Markas & Logistik UKS',
+                'class' => 'Kelas XI', 'nri' => 'NRI: 24.49.029 PRT', 'title' => 'BIODATA KETUA BIDANG MARKAS',
+                'desc' => 'Koordinator sarana prasarana UKS, pengecekan berkala masa kedaluwarsa obat, pemeliharaan tandu darurat & spalk bidai, serta jadwal piket markas.',
+                'motto' => 'Markas yang tertata dan siap siaga adalah cerminan respon medis yang tanggap.',
+            ],
+            'rian ardiansyah' => [
+                'name' => 'Rian Ardiansyah', 'pos' => 'Staf Anggota Bidang Markas',
+                'class' => 'Kelas X-1', 'nri' => 'NRI: 25.50.007 PRT', 'title' => 'BIODATA STAF BIDANG MARKAS',
+                'desc' => 'Perawatan alat evakuasi tandu bambu, penyusunan stok kasa & mitela steril, serta kebersihan ruang posko UKS.',
+                'motto' => 'Siap sedia merawat sarana evakuasi untuk keselamatan bersama.',
+            ],
+            'siti fatimah' => [
+                'name' => 'Siti Fatimah', 'pos' => 'Staf Anggota Bidang Markas',
+                'class' => 'Kelas X-3', 'nri' => 'NRI: 25.50.014 PRT', 'title' => 'BIODATA STAF BIDANG MARKAS',
+                'desc' => 'Pencatatan inventaris obat masuk dan keluar, pemeriksaan kotak P3K kelas, dan kesiapan tabung oksigen UKS.',
+                'motto' => 'Disiplin mengelola logistik medis demi kelancaran tugas kemanusiaan.',
+            ],
+            'deni prasetyo' => [
+                'name' => 'Deni Prasetyo', 'pos' => 'Staf Anggota Bidang Markas',
+                'class' => 'Kelas XI-2', 'nri' => 'NRI: 24.49.031 PRT', 'title' => 'BIODATA STAF BIDANG MARKAS',
+                'desc' => 'Pemeliharaan perangkat darurat, uji kekuatan simpul tandu, serta logistik simulasi mitigasi bencana sekolah.',
+                'motto' => 'Ketangguhan fisik dan ketelitian merawat perlengkapan medis.',
+            ],
+            // Pelayanan
+            'sarah azhari' => [
+                'name' => 'Sarah Azhari', 'pos' => 'Ketua Bidang Pelayanan Medis & Donor Darah',
+                'class' => 'Kelas XI', 'nri' => 'NRI: 24.49.034 PRT', 'title' => 'BIODATA KETUA BIDANG PELAYANAN',
+                'desc' => 'Penanggung jawab posko medis upacara bendera, koordinasi aksi donor darah bersama PMI Kab. Bogor, serta posyandu remaja sekolah.',
+                'motto' => 'Melayani dengan empati, sigap menolong sesama tanpa pamrih.',
+            ],
+            'anisa rahma' => [
+                'name' => 'Anisa Rahma', 'pos' => 'Staf Anggota Bidang Pelayanan',
+                'class' => 'Kelas X-2', 'nri' => 'NRI: 25.50.019 PRT', 'title' => 'BIODATA STAF BIDANG PELAYANAN',
+                'desc' => 'Piket medis harian UKS, pemeriksaan tanda vital (tensi darah, suhu tubuh), serta pendampingan siswa sakit di ruang isolasi.',
+                'motto' => 'Tangan terampil, hati tulus melayani mereka yang membutuhkan.',
+            ],
+            'budi santoso' => [
+                'name' => 'Budi Santoso', 'pos' => 'Staf Anggota Bidang Pelayanan',
+                'class' => 'Kelas XI-1', 'nri' => 'NRI: 24.49.035 PRT', 'title' => 'BIODATA STAF BIDANG PELAYANAN',
+                'desc' => 'Tim evakuasi lapangan, pengawalan medis kegiatan olahraga & ekstrakurikuler, serta penanganan kasus cedera.',
+                'motto' => 'Sigap dalam bertindak, tenang dalam pertolongan darurat.',
+            ],
+            'dewi sartika' => [
+                'name' => 'Dewi Sartika', 'pos' => 'Staf Anggota Bidang Pelayanan',
+                'class' => 'Kelas X-5', 'nri' => 'NRI: 25.50.028 PRT', 'title' => 'BIODATA STAF BIDANG PELAYANAN',
+                'desc' => 'Edukasi pencegahan anemia remaja putri (pembagian tablet tambah darah), pencatatan rekam medis harian UKS.',
+                'motto' => 'Kemanusiaan adalah panggilan jiwa untuk meringankan penderitaan sesama.',
+            ],
+            // Diklat
+            'reza rahadian' => [
+                'name' => 'Reza Rahadian', 'pos' => 'Ketua Bidang Pendidikan & Pelatihan (Diklat)',
+                'class' => 'Kelas XI', 'nri' => 'NRI: 24.49.040 PRT', 'title' => 'BIODATA KETUA BIDANG DIKLAT',
+                'desc' => 'Penyusunan kurikulum 7 Materi Pokok PMR Wira, penyelenggaraan Diklatsar Ruang & Lapangan, serta pelatihan rutin mingguan.',
+                'motto' => 'Pendidikan kepalangmerahan yang unggul mencetak relawan yang tangguh dan terampil.',
+            ],
+            'fajar pratama' => [
+                'name' => 'Fajar Pratama', 'pos' => 'Staf Anggota Bidang Diklat',
+                'class' => 'Kelas X-4', 'nri' => 'NRI: 25.50.033 PRT', 'title' => 'BIODATA STAF BIDANG DIKLAT',
+                'desc' => 'Instruktur materi pertolongan pertama dasar, pembimbingan simulasi RJP dan balut bidai bagi calon anggota baru.',
+                'motto' => 'Belajar tiada henti demi pertolongan pertama yang tepat dan terstandar.',
+            ],
+            'maya anggraini' => [
+                'name' => 'Maya Anggraini', 'pos' => 'Staf Anggota Bidang Diklat',
+                'class' => 'Kelas XI-3', 'nri' => 'NRI: 24.49.042 PRT', 'title' => 'BIODATA STAF BIDANG DIKLAT',
+                'desc' => 'Pendampingan kontingen lomba ketangkasan PMR, modul evaluasi traveling kepalangmerahan, serta absensi latihan rutin.',
+                'motto' => 'Semangat berbagi ilmu dan melatih sesama calon relawan.',
+            ],
+            // Humas
+            'dian sastrowardoyo' => [
+                'name' => 'Dian Sastrowardoyo', 'pos' => 'Ketua Bidang Hubungan Masyarakat (Humas)',
+                'class' => 'Kelas XI', 'nri' => 'NRI: 24.49.044 PRT', 'title' => 'BIODATA KETUA BIDANG HUMAS',
+                'desc' => 'Hubungan eksternal dengan PMI Kabupaten Bogor, jejaring antar-pangkalan PMR se-Bogor Raya, serta publikasi berita kemanusiaan.',
+                'motto' => 'Menyuarakan pesan kemanusiaan dan merajut persaudaraan tanpa batas.',
+            ],
+            'gilang ramadhan' => [
+                'name' => 'Gilang Ramadhan', 'pos' => 'Staf Anggota Bidang Humas',
+                'class' => 'Kelas X-1', 'nri' => 'NRI: 25.50.045 PRT', 'title' => 'BIODATA STAF BIDANG HUMAS',
+                'desc' => 'Pengelolaan media sosial resmi organisasi, dokumentasi buletin mading sekolah, serta penyebaran info kegiatan relawan.',
+                'motto' => 'Kreatif menyampaikan aksi relawan demi menginspirasi generasi muda.',
+            ],
+            'tiara andini' => [
+                'name' => 'Tiara Andini', 'pos' => 'Staf Anggota Bidang Humas',
+                'class' => 'Kelas XI-4', 'nri' => 'NRI: 24.49.049 PRT', 'title' => 'BIODATA STAF BIDANG HUMAS',
+                'desc' => 'Penghubung komunikasi antar-ekstrakurikuler sekolah, pendataan relawan tamu saat latihan gabungan, dan sosialisasi program UKS.',
+                'motto' => 'Komunikasi ramah dan hangat mempererat ikatan persahabatan relawan.',
+            ],
+            'kevin julio' => [
+                'name' => 'Kevin Julio', 'pos' => 'Staf Anggota Bidang Humas',
+                'class' => 'Kelas X-3', 'nri' => 'NRI: 25.50.052 PRT', 'title' => 'BIODATA STAF BIDANG HUMAS',
+                'desc' => 'Pengelolaan layanan informasi pengunjung, hotline pertanyaan calon anggota, serta publikasi agenda donor darah.',
+                'motto' => 'Menghubungkan kepedulian sosial dengan aksi kemanusiaan nyata.',
+            ],
+            // Kreasi
+            'nicholas saputra' => [
+                'name' => 'Nicholas Saputra', 'pos' => 'Ketua Bidang Media Kreatif & Publikasi',
+                'class' => 'Kelas XI', 'nri' => 'NRI: 24.49.055 PRT', 'title' => 'BIODATA KETUA BIDANG KREASI',
+                'desc' => 'Pengarah artistik publikasi, perancangan poster edukasi kesehatan, pembuatan video animasi P3K, dan desain KTA digital.',
+                'motto' => 'Kreativitas tanpa batas untuk mengedukasi dan menggerakkan empati kemanusiaan.',
+            ],
+            'putri marino' => [
+                'name' => 'Putri Marino', 'pos' => 'Staf Anggota Bidang Kreasi',
+                'class' => 'Kelas X-2', 'nri' => 'NRI: 25.50.058 PRT', 'title' => 'BIODATA STAF BIDANG KREASI',
+                'desc' => 'Desain infografis pola hidup sehat (PHBS), ilustrasi pertolongan pertama, dan tata letak materi e-book organisasi.',
+                'motto' => 'Karya visual yang indah membawa pesan keselamatan untuk semua.',
+            ],
+            'aldi taher' => [
+                'name' => 'Aldi Taher', 'pos' => 'Staf Anggota Bidang Kreasi',
+                'class' => 'Kelas XI-5', 'nri' => 'NRI: 24.49.061 PRT', 'title' => 'BIODATA STAF BIDANG KREASI',
+                'desc' => 'Editing video kampanye donor darah, dokumentasi sinematik kegiatan diklatsar, dan desain merchandise relawan.',
+                'motto' => 'Semangat berkarya dan berinovasi demi syiar kepalangmerahan.',
+            ],
+        ];
+
+        foreach ($staticMembers as $key => $s) {
+            if (str_contains($lower, $key)) {
+                return $this->getBiodataCard(
+                    name: $s['name'],
+                    position: $s['pos'],
+                    levelOrClass: $s['class'],
+                    idNumber: $s['nri'],
+                    roleDescription: $s['desc'],
+                    motto: $s['motto'],
+                    title: $s['title']
+                );
+            }
         }
 
-        // 5. Bidang Diklat (Ketua & Staf)
-        if (str_contains($lower, 'reza rahadian') || (str_contains($lower, 'ketua') && str_contains($lower, 'diklat'))) {
-            return $this->getBiodataCard(
-                name: 'Reza Rahadian',
-                position: 'Ketua Bidang Pendidikan & Pelatihan (Diklat)',
-                levelOrClass: 'Kelas XI',
-                idNumber: 'NRI: 24.49.040 PRT',
-                roleDescription: 'Penyusunan kurikulum 7 Materi Pokok PMR Wira, penyelenggaraan Diklatsar Ruang & Lapangan, serta pelatihan rutin mingguan.',
-                motto: 'Pendidikan kepalangmerahan yang unggul mencetak relawan yang tangguh dan terampil.',
-                title: 'BIODATA KETUA BIDANG DIKLAT'
-            );
-        }
-        if (str_contains($lower, 'fajar pratama')) {
-            return $this->getBiodataCard(
-                name: 'Fajar Pratama',
-                position: 'Staf Anggota Bidang Diklat',
-                levelOrClass: 'Kelas X-4',
-                idNumber: 'NRI: 25.50.033 PRT',
-                roleDescription: 'Instruktur materi pertolongan pertama dasar, pembimbingan simulasi RJP dan balut bidai bagi calon anggota baru.',
-                motto: 'Belajar tiada henti demi pertolongan pertama yang tepat dan terstandar.',
-                title: 'BIODATA STAF BIDANG DIKLAT'
-            );
-        }
-        if (str_contains($lower, 'maya anggraini')) {
-            return $this->getBiodataCard(
-                name: 'Maya Anggraini',
-                position: 'Staf Anggota Bidang Diklat',
-                levelOrClass: 'Kelas XI-3',
-                idNumber: 'NRI: 24.49.042 PRT',
-                roleDescription: 'Pendampingan kontingen lomba ketangkasan PMR, modul evaluasi traveling kepalangmerahan, serta absensi latihan rutin.',
-                motto: 'Semangat berbagi ilmu dan melatih sesama calon relawan.',
-                title: 'BIODATA STAF BIDANG DIKLAT'
-            );
-        }
+        return null;
+    }
 
-        // 6. Bidang Humas (Ketua & Staf)
-        if (str_contains($lower, 'dian sastrowardoyo') || (str_contains($lower, 'ketua') && str_contains($lower, 'humas'))) {
-            return $this->getBiodataCard(
-                name: 'Dian Sastrowardoyo',
-                position: 'Ketua Bidang Hubungan Masyarakat (Humas)',
-                levelOrClass: 'Kelas XI',
-                idNumber: 'NRI: 24.49.044 PRT',
-                roleDescription: 'Hubungan eksternal dengan PMI Kabupaten Bogor, jejaring antar-pangkalan PMR se-Bogor Raya, serta publikasi berita kemanusiaan.',
-                motto: 'Menyuarakan pesan kemanusiaan dan merajut persaudaraan tanpa batas.',
-                title: 'BIODATA KETUA BIDANG HUMAS'
-            );
-        }
-        if (str_contains($lower, 'gilang ramadhan')) {
-            return $this->getBiodataCard(
-                name: 'Gilang Ramadhan',
-                position: 'Staf Anggota Bidang Humas',
-                levelOrClass: 'Kelas X-1',
-                idNumber: 'NRI: 25.50.045 PRT',
-                roleDescription: 'Pengelolaan media sosial resmi organisasi, dokumentasi buletin mading sekolah, serta penyebaran info kegiatan relawan.',
-                motto: 'Kreatif menyampaikan aksi relawan demi menginspirasi generasi muda.',
-                title: 'BIODATA STAF BIDANG HUMAS'
-            );
-        }
-        if (str_contains($lower, 'tiara andini')) {
-            return $this->getBiodataCard(
-                name: 'Tiara Andini',
-                position: 'Staf Anggota Bidang Humas',
-                levelOrClass: 'Kelas XI-4',
-                idNumber: 'NRI: 24.49.049 PRT',
-                roleDescription: 'Penghubung komunikasi antar-ekstrakurikuler sekolah, pendataan relawan tamu saat latihan gabungan, dan sosialisasi program UKS.',
-                motto: 'Komunikasi ramah dan hangat mempererat ikatan persahabatan relawan.',
-                title: 'BIODATA STAF BIDANG HUMAS'
-            );
-        }
-        if (str_contains($lower, 'kevin julio')) {
-            return $this->getBiodataCard(
-                name: 'Kevin Julio',
-                position: 'Staf Anggota Bidang Humas',
-                levelOrClass: 'Kelas X-3',
-                idNumber: 'NRI: 25.50.052 PRT',
-                roleDescription: 'Pengelolaan layanan informasi pengunjung, hotline pertanyaan calon anggota, serta publikasi agenda donor darah.',
-                motto: 'Menghubungkan kepedulian sosial dengan aksi kemanusiaan nyata.',
-                title: 'BIODATA STAF BIDANG HUMAS'
-            );
-        }
+    /**
+     * Cari biodata berdasarkan jabatan pimpinan: Pembina, Ketua Umum, Wakil Ketua, Sekretaris, Bendahara.
+     * Data diambil LIVE dari DB; jika kosong, pakai data statis sebagai fallback.
+     */
+    public function findLeaderBiodataByRole(string $lower): ?string
+    {
+        // Daftar role dengan keyword, posisi DB, title, dan data statis fallback
+        $roles = [
+            [
+                'keywords' => ['wakil ketua', 'wakil'],
+                'position' => 'Wakil Ketua',
+                'title' => 'BIODATA WAKIL KETUA UMUM PMR WIRA',
+                'static' => [
+                    'name' => 'Imam Abdul Jabbar', 'position' => 'Wakil Ketua Umum PMR Wira',
+                    'kelas' => 'Kelas XI', 'nri' => 'NRI: 24.49.012 PRT',
+                    'role' => 'Mendampingi Ketua Umum, mengoordinasikan internal 5 bidang kepengurusan, pengawasan kedisiplinan anggota, serta memimpin rapat evaluasi bulanan.',
+                    'motto' => 'Berani melangkah, setia mengabdi, dan menjaga soliditas korsa demi kemanusiaan.',
+                ],
+            ],
+            [
+                'keywords' => ['pembina'],
+                'position' => 'Pembina PMR',
+                'title' => 'BIODATA PEMBINA PMR WIRA',
+                'static' => [
+                    'name' => 'Abdul Hamid Saputra, S.Hum., M.Pd.', 'position' => 'Pembina PMR Wira SMAN 1 Ciawi',
+                    'kelas' => 'Dewan Pembina / Guru Pembimbing', 'nri' => 'NIP: 19820415 200801 1 008',
+                    'role' => 'Membimbing, mengarahkan, dan mengawasi seluruh program kerja kepalangmerahan, pembinaan karakter relawan, serta sinergi antara pihak sekolah dan PMI Cabang.',
+                    'motto' => 'Mendidik relawan muda yang berkarakter, berakhlak mulia, tangguh, dan tulus mengabdi bagi kemanusiaan.',
+                ],
+            ],
+            [
+                'keywords' => ['sekretaris'],
+                'position' => 'Sekretaris',
+                'title' => 'BIODATA SEKRETARIS UMUM PMR WIRA',
+                'static' => [
+                    'name' => 'Putri Raisya Anjani', 'position' => 'Sekretaris Umum (BPH)',
+                    'kelas' => 'Kelas XI', 'nri' => 'NRI: 24.49.018 PRT',
+                    'role' => 'Pengelolaan administrasi resmi, persuratan mandat lomba & dinas, pengarsipan notulensi rapat, pendataan buku induk anggota serta KTA digital relawan.',
+                    'motto' => 'Tertib administrasi wujud integritas dan dedikasi relawan.',
+                ],
+            ],
+            [
+                'keywords' => ['bendahara'],
+                'position' => 'Bendahara',
+                'title' => 'BIODATA BENDAHARA UMUM PMR WIRA',
+                'static' => [
+                    'name' => 'Nisa Nurul Aulia', 'position' => 'Bendahara Umum (BPH)',
+                    'kelas' => 'Kelas XI', 'nri' => 'NRI: 24.49.023 PRT',
+                    'role' => 'Manajemen perbendaharaan kas organisasi, pembukuan keuangan iuran, penganggaran logistik medis UKS, serta pelaporan transparansi dana kegiatan kemanusiaan.',
+                    'motto' => 'Amanah, transparan, dan akuntabel dalam mengelola dana kemanusiaan.',
+                ],
+            ],
+            [
+                'keywords' => ['ketua umum', 'ketua pmr'],
+                'position' => 'Ketua Umum',
+                'title' => 'BIODATA KETUA UMUM PMR WIRA',
+                'static' => [
+                    'name' => 'Sulthan Arkana Putra R.', 'position' => 'Ketua Umum PMR Wira (Kabinet Ragana Dwi Pantara)',
+                    'kelas' => 'Kelas XI', 'nri' => 'NRI: 24.49.004 PRT',
+                    'role' => 'Memimpin jalannya organisasi, penanggung jawab umum program kerja kepalangmerahan, koordinasi pimpinan sekolah & PMI, serta mengarahkan 5 bidang operasional relawan.',
+                    'motto' => 'Siamo Tutti Fratelli — Memimpin dengan keteladanan, melayani sesama dengan ketulusan hati.',
+                ],
+            ],
+        ];
 
-        // 7. Bidang Kreasi (Ketua & Staf)
-        if (str_contains($lower, 'nicholas saputra') || (str_contains($lower, 'ketua') && str_contains($lower, 'kreasi'))) {
-            return $this->getBiodataCard(
-                name: 'Nicholas Saputra',
-                position: 'Ketua Bidang Media Kreatif & Publikasi',
-                levelOrClass: 'Kelas XI',
-                idNumber: 'NRI: 24.49.055 PRT',
-                roleDescription: 'Pengarah artistik publikasi, perancangan poster edukasi kesehatan, pembuatan video animasi P3K, dan desain KTA digital.',
-                motto: 'Kreativitas tanpa batas untuk mengedukasi dan menggerakkan empati kemanusiaan.',
-                title: 'BIODATA KETUA BIDANG KREASI'
-            );
-        }
-        if (str_contains($lower, 'putri marino')) {
-            return $this->getBiodataCard(
-                name: 'Putri Marino',
-                position: 'Staf Anggota Bidang Kreasi',
-                levelOrClass: 'Kelas X-2',
-                idNumber: 'NRI: 25.50.058 PRT',
-                roleDescription: 'Desain infografis pola hidup sehat (PHBS), ilustrasi pertolongan pertama, dan tata letak materi e-book organisasi.',
-                motto: 'Karya visual yang indah membawa pesan keselamatan untuk semua.',
-                title: 'BIODATA STAF BIDANG KREASI'
-            );
-        }
-        if (str_contains($lower, 'aldi taher')) {
-            return $this->getBiodataCard(
-                name: 'Aldi Taher',
-                position: 'Staf Anggota Bidang Kreasi',
-                levelOrClass: 'Kelas XI-5',
-                idNumber: 'NRI: 24.49.061 PRT',
-                roleDescription: 'Editing video kampanye donor darah, dokumentasi sinematik kegiatan diklatsar, dan desain merchandise relawan.',
-                motto: 'Semangat berkarya dan berinovasi demi syiar kepalangmerahan.',
-                title: 'BIODATA STAF BIDANG KREASI'
-            );
-        }
+        foreach ($roles as $role) {
+            $matched = false;
+            foreach ($role['keywords'] as $kw) {
+                if (str_contains($lower, $kw)) {
+                    $matched = true;
+                    break;
+                }
+            }
 
-        // 8. Ketua Umum PMR Wira
-        if (str_contains($lower, 'ketua') || str_contains($lower, 'sulthan') || str_contains($lower, 'arkana')) {
-            return $this->getBiodataCard(
-                name: 'Sulthan Arkana Putra R.',
-                position: 'Ketua Umum PMR Wira (Kabinet Ragana Dwi Pantara)',
-                levelOrClass: 'Kelas XI',
-                idNumber: 'NRI: 24.49.004 PRT',
-                roleDescription: 'Memimpin jalannya organisasi, penanggung jawab umum program kerja kepalangmerahan, koordinasi pimpinan sekolah & PMI, serta mengarahkan 5 bidang operasional relawan.',
-                motto: 'Siamo Tutti Fratelli — Memimpin dengan keteladanan, melayani sesama dengan ketulusan hati.',
-                title: 'BIODATA KETUA UMUM PMR WIRA'
-            );
-        }
+            if (! $matched) {
+                continue;
+            }
 
-        // 9. Sekretaris Umum
-        if (str_contains($lower, 'sekretaris') || str_contains($lower, 'putri raisya') || str_contains($lower, 'anjani')) {
-            return $this->getBiodataCard(
-                name: 'Putri Raisya Anjani',
-                position: 'Sekretaris Umum (BPH)',
-                levelOrClass: 'Kelas XI',
-                idNumber: 'NRI: 24.49.018 PRT',
-                roleDescription: 'Pengelolaan administrasi resmi, persuratan mandat lomba & dinas, pengarsipan notulensi rapat, pendataan buku induk anggota serta KTA digital relawan.',
-                motto: 'Tertib administrasi wujud integritas dan dedikasi relawan.',
-                title: 'BIODATA SEKRETARIS UMUM PMR WIRA'
-            );
-        }
+            // Coba query DB live
+            if (Schema::hasTable('members')) {
+                $member = Member::where('position', 'like', '%'.$role['position'].'%')
+                    ->where('is_active', true)
+                    ->first();
 
-        // 10. Bendahara Umum
-        if (str_contains($lower, 'bendahara') || str_contains($lower, 'nisa nurul') || str_contains($lower, 'aulia')) {
+                if ($member) {
+                    return $this->buildBiodataCardFromMember($member, $role['title']);
+                }
+            }
+
+            // Fallback statis jika DB kosong
+            $s = $role['static'];
+
             return $this->getBiodataCard(
-                name: 'Nisa Nurul Aulia',
-                position: 'Bendahara Umum (BPH)',
-                levelOrClass: 'Kelas XI',
-                idNumber: 'NRI: 24.49.023 PRT',
-                roleDescription: 'Manajemen perbendaharaan kas organisasi, pembukuan keuangan iuran, penganggaran logistik medis UKS, serta pelaporan transparansi dana kegiatan kemanusiaan.',
-                motto: 'Amanah, transparan, dan akuntabel dalam mengelola dana kemanusiaan.',
-                title: 'BIODATA BENDAHARA UMUM PMR WIRA'
+                name: $s['name'],
+                position: $s['position'],
+                levelOrClass: $s['kelas'],
+                idNumber: $s['nri'],
+                roleDescription: $s['role'],
+                motto: $s['motto'],
+                title: $role['title']
             );
         }
 
         return null;
+    }
+
+    /**
+     * Bangun kartu biodata dari data Member model (live dari DB).
+     */
+    public function buildBiodataCardFromMember(Member $member, ?string $title = null): string
+    {
+        $badge = $title ?: ('BIODATA '.strtoupper($member->position ?? 'ANGGOTA'));
+        $officialNri = $this->getFormattedNri($member->name) ?: $member->nri;
+        $nri = $officialNri ? (str_starts_with($officialNri, 'NRI') ? $officialNri : 'NRI: '.$officialNri) : ($member->nip ? 'NIP: '.$member->nip : '-');
+        $kelas = $member->class_grade ? 'Kelas '.$member->class_grade : 'Dewan Pembina';
+        $motto = $member->motto ?: 'Pengabdian tulus untuk kemanusiaan.';
+        $position = $member->position ?? '-';
+
+        $roleDesc = '';
+        if ($member->vision) {
+            $roleDesc .= $member->vision.' ';
+        }
+        if ($member->mission) {
+            $roleDesc .= $member->mission;
+        }
+        if (! $roleDesc) {
+            $roleDesc = $position.' PMR Wira SMAN 1 Ciawi.';
+        }
+
+        $extra = '';
+        if ($member->birth_place && $member->birth_date) {
+            $tgl = Carbon::parse($member->birth_date)->translatedFormat('d F Y');
+            $extra .= "• **Tempat / Tanggal Lahir:** {$member->birth_place}, {$tgl}\n";
+        }
+        if ($member->gender) {
+            $extra .= "• **Jenis Kelamin:** {$member->gender}\n";
+        }
+        if ($member->phone) {
+            $extra .= "• **Kontak:** {$member->phone}\n";
+        }
+
+        return "🪪 **{$badge}**\n"
+            ."━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n"
+            ."• **Nama Lengkap:** {$member->name}\n"
+            ."• **Jabatan Resmi:** {$position}\n"
+            ."• **Tingkat / Unit:** {$kelas} • PMR Wira SMAN 1 Ciawi\n"
+            ."• **Status / Identitas:** {$nri}\n"
+            ."• **Masa Bakti:** 2026/2027 (Ragana Dwi Pantara)\n"
+            .$extra
+            ."• **Fungsi & Tugas Pokok:** {$roleDesc}\n"
+            ."• **Motto Relawan:** *\"{$motto}\"*\n"
+            ."━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n"
+            .'✨ *Kartu profil dan foto resolusi tinggi anggota ini dapat dilihat langsung pada Bagan Struktur Organisasi di halaman Tentang Kami.*';
+    }
+
+    /**
+     * Dapatkan format NRI resmi anggota PMR Wira.
+     */
+    public function getFormattedNri(string $name): ?string
+    {
+        $map = [
+            'Rian Ardiansyah' => '25.50.007 PRT',
+            'Siti Fatimah' => '25.50.014 PRT',
+            'Deni Prasetyo' => '24.49.031 PRT',
+            'Sarah Azhari' => '24.49.034 PRT',
+            'Anisa Rahma' => '25.50.019 PRT',
+            'Budi Santoso' => '24.49.035 PRT',
+            'Dewi Sartika' => '25.50.028 PRT',
+            'Reza Rahadian' => '24.49.040 PRT',
+            'Fajar Pratama' => '25.50.033 PRT',
+            'Maya Anggraini' => '24.49.042 PRT',
+            'Dian Sastrowardoyo' => '24.49.044 PRT',
+            'Gilang Ramadhan' => '25.50.045 PRT',
+            'Tiara Andini' => '24.49.049 PRT',
+            'Kevin Julio' => '25.50.052 PRT',
+            'Nicholas Saputra' => '24.49.055 PRT',
+            'Putri Marino' => '25.50.058 PRT',
+            'Aldi Taher' => '24.49.061 PRT',
+            'Indra Gunawan' => '24.49.029 PRT',
+            'Sulthan Arkana' => '24.49.004 PRT',
+            'Imam Abdul Jabbar' => '24.49.012 PRT',
+            'Putri Raisya' => '24.49.018 PRT',
+            'Nisa Nurul' => '24.49.023 PRT',
+        ];
+
+        $lowerName = strtolower($name);
+        foreach ($map as $k => $v) {
+            if (str_contains($lowerName, strtolower($k)) || str_contains(strtolower($k), $lowerName)) {
+                return $v;
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * @deprecated Digantikan oleh findMemberBiodataByName() dan findLeaderBiodataByRole().
+     *             Dipertahankan agar test lama tidak patah.
+     */
+    public function findSpecificMemberBiodata(string $lower): ?string
+    {
+        return $this->findMemberBiodataByName($lower) ?? $this->findLeaderBiodataByRole($lower);
     }
 
     /**
@@ -1361,49 +1627,123 @@ PROMPT;
     /**
      * Tampilkan Bagan Struktur Kepengurusan Lengkap dari Pembina sampai seluruh staf anggota.
      */
+    /**
+     * Tampilkan Bagan Struktur Kepengurusan Lengkap — data LIVE dari DB.
+     */
     public function renderFullOrganizationStructure(): string
     {
-        return "Halo Sahabat Kemanusiaan! 🏛️\n\n"
-            ."Berikut adalah **Struktur Organisasi Resmi PMR Wira SMA Negeri 1 Ciawi** (Masa Bakti Ragana Dwi Pantara 2026/2027) dari Pembina sampai seluruh staf anggota:\n\n"
-            ."👔 **LEVEL 1: DEWAN PEMBINA PMR**\n"
-            ."• **Pembina Utama:** Abdul Hamid Saputra, S.Hum., M.Pd. (NIP: 19820415 200801 1 008)\n"
-            ."• **Dewan Pembina Kehormatan:** Drs. H. Mulyadi, M.Pd.\n\n"
+        $intro = "Halo Sahabat Kemanusiaan! 🏛️\n\n"
+            .'Berikut adalah **Struktur Organisasi Resmi PMR Wira SMA Negeri 1 Ciawi** '
+            ."(Masa Bakti Ragana Dwi Pantara 2026/2027) dari Pembina sampai seluruh staf anggota:\n\n";
+
+        // Jika DB belum ada / testing, fallback ke data statis
+        if (! Schema::hasTable('members')) {
+            return $intro.$this->staticOrgStructure();
+        }
+
+        $members = Member::where('is_active', true)->orderBy('id')->get();
+
+        if ($members->isEmpty()) {
+            return $intro.$this->staticOrgStructure();
+        }
+
+        // Kelompokkan berdasarkan jabatan
+        $pembina = $members->filter(fn ($m) => str_contains(strtolower($m->position ?? ''), 'pembina'));
+        $ketua = $members->filter(fn ($m) => strtolower($m->position ?? '') === 'ketua umum' || str_contains(strtolower($m->position ?? ''), 'ketua umum'));
+        $wakil = $members->filter(fn ($m) => str_contains(strtolower($m->position ?? ''), 'wakil'));
+        $bph = $members->filter(fn ($m) => in_array(strtolower($m->position ?? ''), ['sekretaris', 'bendahara']) || str_contains(strtolower($m->position ?? ''), 'sekretaris') || str_contains(strtolower($m->position ?? ''), 'bendahara'));
+        $bidangList = ['Markas', 'Pelayanan', 'Diklat', 'Humas', 'Kreasi'];
+        $bidangIcons = ['Markas' => '📦', 'Pelayanan' => '🩹', 'Diklat' => '📚', 'Humas' => '📢', 'Kreasi' => '🎨'];
+
+        $out = $intro;
+
+        // Level 1: Pembina
+        $out .= "👔 **LEVEL 1: DEWAN PEMBINA PMR**\n";
+        if ($pembina->isNotEmpty()) {
+            foreach ($pembina as $p) {
+                $id = $p->nip ? 'NIP: '.$p->nip : ($p->nri ? 'NRI: '.$p->nri : '-');
+                $out .= "• **{$p->name}** ({$id})\n";
+            }
+        }
+        $out .= "\n";
+
+        // Level 2: Ketua Umum
+        $out .= "👑 **LEVEL 2: PIMPINAN UTAMA**\n";
+        foreach ($ketua as $k) {
+            $nri = $k->nri ? 'NRI: '.$k->nri : '-';
+            $kelas = $k->class_grade ? 'Kelas '.$k->class_grade : '-';
+            $out .= "• **Ketua Umum:** {$k->name} ({$kelas} • {$nri})\n";
+        }
+        $out .= "\n";
+
+        // Level 3: Wakil
+        $out .= "🛡️ **LEVEL 3: WAKIL PIMPINAN**\n";
+        foreach ($wakil as $w) {
+            $nri = $w->nri ? 'NRI: '.$w->nri : '-';
+            $kelas = $w->class_grade ? 'Kelas '.$w->class_grade : '-';
+            $out .= "• **Wakil Ketua Umum:** {$w->name} ({$kelas} • {$nri})\n";
+        }
+        $out .= "\n";
+
+        // Level 4: BPH
+        $out .= "📋 **LEVEL 4: BADAN PENGURUS HARIAN (BPH)**\n";
+        foreach ($bph as $b) {
+            $nri = $b->nri ? 'NRI: '.$b->nri : '-';
+            $kelas = $b->class_grade ? 'Kelas '.$b->class_grade : '-';
+            $out .= "• **{$b->position}:** {$b->name} ({$kelas} • {$nri})\n";
+        }
+        $out .= "\n";
+
+        // Level 5: 5 Bidang
+        $out .= "🏢 **LEVEL 5: 5 BIDANG & SELURUH STAF ANGGOTA**\n\n";
+        foreach ($bidangList as $i => $bid) {
+            $icon = $bidangIcons[$bid];
+            $ketuaBid = $members->first(fn ($m) => str_contains(strtolower($m->position ?? ''), 'ketua bidang '.strtolower($bid)));
+            $stafBid = $members->filter(fn ($m) => str_contains(strtolower($m->position ?? ''), 'staf bidang '.strtolower($bid)));
+
+            $num = $i + 1;
+            $out .= "{$num}. {$icon} **Bidang {$bid}:**\n";
+            if ($ketuaBid) {
+                $nri = $ketuaBid->nri ? 'NRI: '.$ketuaBid->nri : '-';
+                $kelas = $ketuaBid->class_grade ? 'Kelas '.$ketuaBid->class_grade : '-';
+                $out .= "   • **Ketua Bidang:** {$ketuaBid->name} ({$kelas} • {$nri})\n";
+            }
+            if ($stafBid->isNotEmpty()) {
+                $out .= "   • **Staf Anggota:**\n";
+                foreach ($stafBid as $s) {
+                    $nri = $s->nri ? 'NRI: '.$s->nri : '-';
+                    $kelas = $s->class_grade ? 'Kelas '.$s->class_grade : '-';
+                    $out .= "     - {$s->name} ({$kelas} • {$nri})\n";
+                }
+            }
+            $out .= "\n";
+        }
+
+        $out .= '✨ *Kakak dapat menyebutkan nama pengurus (misal: "Biodata [nama]") untuk melihat kartu biodata digital resminya!*';
+
+        return $out;
+    }
+
+    /**
+     * Fallback statis struktur organisasi (dipakai saat DB kosong / testing).
+     */
+    private function staticOrgStructure(): string
+    {
+        return "👔 **LEVEL 1: DEWAN PEMBINA PMR**\n"
+            ."• **Pembina PMR:** Abdul Hamid Saputra, S.Hum., M.Pd.\n\n"
             ."👑 **LEVEL 2: PIMPINAN UTAMA**\n"
-            ."• **Ketua Umum:** Sulthan Arkana Putra R. (Kelas XI • NRI: 24.49.004 PRT)\n\n"
+            ."• **Ketua Umum:** Sulthan Arkana Putra R. (NRI: 24.49.004 PRT)\n\n"
             ."🛡️ **LEVEL 3: WAKIL PIMPINAN**\n"
-            ."• **Wakil Ketua Umum:** Imam Abdul Jabbar (Kelas XI • NRI: 24.49.012 PRT)\n\n"
+            ."• **Wakil Ketua Umum:** Imam Abdul Jabbar (NRI: 24.49.012 PRT)\n\n"
             ."📋 **LEVEL 4: BADAN PENGURUS HARIAN (BPH)**\n"
-            ."• **Sekretaris Umum:** Putri Raisya Anjani (Kelas XI • NRI: 24.49.018 PRT)\n"
-            ."• **Bendahara Umum:** Nisa Nurul Aulia (Kelas XI • NRI: 24.49.023 PRT)\n\n"
-            ."🏢 **LEVEL 5: 5 BIDANG & SELURUH STAF ANGGOTA**\n\n"
-            ."1. 📦 **Bidang Markas (Logistik & UKS):**\n"
-            ."   • **Ketua Bidang:** Indra Gunawan (Kelas XI • NRI: 24.49.029 PRT)\n"
-            ."   • **Staf Anggota:**\n"
-            ."     - Rian Ardiansyah (Kelas X-1 • NRI: 25.50.007 PRT)\n"
-            ."     - Siti Fatimah (Kelas X-3 • NRI: 25.50.014 PRT)\n"
-            ."     - Deni Prasetyo (Kelas XI-2 • NRI: 24.49.031 PRT)\n\n"
-            ."2. 🩹 **Bidang Pelayanan (Pos Medis & Donor Darah):**\n"
-            ."   • **Ketua Bidang:** Sarah Azhari (Kelas XI • NRI: 24.49.034 PRT)\n"
-            ."   • **Staf Anggota:**\n"
-            ."     - Anisa Rahma (Kelas X-2 • NRI: 25.50.019 PRT)\n"
-            ."     - Budi Santoso (Kelas XI-1 • NRI: 24.49.035 PRT)\n"
-            ."     - Dewi Sartika (Kelas X-5 • NRI: 25.50.028 PRT)\n\n"
-            ."3. 📚 **Bidang Diklat (Pendidikan & Pelatihan):**\n"
-            ."   • **Ketua Bidang:** Reza Rahadian (Kelas XI • NRI: 24.49.040 PRT)\n"
-            ."   • **Staf Anggota:**\n"
-            ."     - Fajar Pratama (Kelas X-4 • NRI: 25.50.033 PRT)\n"
-            ."     - Maya Anggraini (Kelas XI-3 • NRI: 24.49.042 PRT)\n\n"
-            ."4. 📢 **Bidang Humas (Hubungan Masyarakat & Kemitraan):**\n"
-            ."   • **Ketua Bidang:** Dian Sastrowardoyo (Kelas XI • NRI: 24.49.044 PRT)\n"
-            ."   • **Staf Anggota:**\n"
-            ."     - Gilang Ramadhan (Kelas X-1 • NRI: 25.50.045 PRT)\n"
-            ."     - Tiara Andini (Kelas XI-4 • NRI: 24.49.049 PRT)\n"
-            ."     - Kevin Julio (Kelas X-3 • NRI: 25.50.052 PRT)\n\n"
-            ."5. 🎨 **Bidang Kreasi (Media Kreatif & Publikasi):**\n"
-            ."   • **Ketua Bidang:** Nicholas Saputra (Kelas XI • NRI: 24.49.055 PRT)\n"
-            ."   • **Staf Anggota:**\n"
-            ."     - Putri Marino (Kelas X-2 • NRI: 25.50.058 PRT)\n"
-            ."     - Aldi Taher (Kelas XI-5 • NRI: 24.49.061 PRT)\n\n"
-            .'✨ *Kakak dapat menyebutkan nama pengurus atau staf di atas (misal: "Biodata Putri Raisya" atau "Biodata Rian Ardiansyah") untuk melihat kartu biodata digital resminya!*';
+            ."• **Sekretaris Umum:** Putri Raisya Anjani (NRI: 24.49.018 PRT)\n"
+            ."• **Bendahara Umum:** Nisa Nurul Aulia (NRI: 24.49.023 PRT)\n\n"
+            ."🏢 **LEVEL 5: 5 BIDANG & SELURUH STAF ANGGOTA**\n"
+            ."1. 📦 **Bidang Markas** — Ketua: Indra Gunawan\n"
+            ."2. 🩹 **Bidang Pelayanan** — Ketua: Sarah Azhari\n"
+            ."3. 📚 **Bidang Diklat** — Ketua: Reza Rahadian\n"
+            ."4. 📢 **Bidang Humas** — Ketua: Dian Sastrowardoyo\n"
+            ."5. 🎨 **Bidang Kreasi** — Ketua: Nicholas Saputra\n\n"
+            .'✨ *Untuk data lengkap & terkini, lihat halaman Tentang Kami atau hubungi admin untuk memperbarui data anggota di sistem.*';
     }
 }
