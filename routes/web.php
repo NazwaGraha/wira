@@ -23,6 +23,7 @@ use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\GalleryCategoryController;
 use App\Http\Controllers\Admin\GalleryController;
 use App\Http\Controllers\Admin\HeroSlideController;
+use App\Http\Controllers\Admin\MediaManagerController;
 use App\Http\Controllers\Admin\MemberController;
 use App\Http\Controllers\Admin\OrganizationController;
 use App\Http\Controllers\Admin\OrganizationGuidelineController;
@@ -117,6 +118,11 @@ Route::prefix('admin')->name('admin.')->group(function () {
             'destroy' => 'categories.destroy',
         ]);
         Route::post('kategori-artikel/quick-store', [CategoryController::class, 'quickStore'])->name('categories.quick-store');
+
+        // Pusat Kelola Gambar & Media Web Terpadu
+        Route::get('/media-manager', [MediaManagerController::class, 'index'])->name('media-manager.index');
+        Route::post('/media-manager/section', [MediaManagerController::class, 'updateSection'])->name('media-manager.update-section');
+        Route::post('/media-manager/section/reset', [MediaManagerController::class, 'resetSection'])->name('media-manager.reset-section');
 
         // Pengaturan Slider Hero Banner
         Route::resource('hero-slides', HeroSlideController::class)->names([

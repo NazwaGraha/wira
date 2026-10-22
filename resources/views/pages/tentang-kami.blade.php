@@ -80,7 +80,7 @@
         <!-- Right: Official Image & Badge Card (5 Cols) -->
         <div class="lg:col-span-5 relative">
             <div class="rounded-3xl overflow-hidden shadow-2xl border-4 border-white bg-slate-900">
-                <img src="/mockups/02_tentang_kami.jpg" alt="PMR SMAN 1 Ciawi" class="w-full h-auto object-cover">
+                <img src="{{ $aboutIntroImage?->image_url ?? asset('mockups/02_tentang_kami.jpg') }}" alt="{{ $aboutIntroImage?->title ?? 'PMR SMAN 1 Ciawi' }}" class="w-full h-auto object-cover">
             </div>
 
             <!-- Floating Info Badge -->
@@ -89,8 +89,8 @@
                     <i class="fa-solid fa-shield-halved"></i>
                 </div>
                 <div>
-                    <div class="font-extrabold text-slate-800 text-sm">PMR Tingkat Wira</div>
-                    <div class="text-xs text-slate-500">Binaan PMI Kab. Bogor & SMAN 1 Ciawi</div>
+                    <div class="font-extrabold text-slate-800 text-sm">{{ $aboutIntroImage?->badge_text ?? 'PMR Tingkat Wira' }}</div>
+                    <div class="text-xs text-slate-500">{{ $aboutIntroImage?->badge_subtext ?? 'Binaan PMI Kab. Bogor & SMAN 1 Ciawi' }}</div>
                 </div>
             </div>
         </div>

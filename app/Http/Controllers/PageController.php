@@ -11,6 +11,7 @@ use App\Models\Article;
 use App\Models\BloodDonationEvent;
 use App\Models\BloodDonorRegistration;
 use App\Models\BloodStock;
+use App\Models\ContentSectionImage;
 use App\Models\Gallery;
 use App\Models\GalleryCategory;
 use App\Models\HeroSlide;
@@ -84,7 +85,9 @@ class PageController extends Controller
             $activePopupBanner = null;
         }
 
-        return view('pages.home', compact('heroSlides', 'featuredArticle', 'latestArticles', 'activities', 'bloodStocks', 'featuredAchievements', 'activePopupBanner'));
+        $homeProfileImage = ContentSectionImage::getSection('home_profile');
+
+        return view('pages.home', compact('heroSlides', 'featuredArticle', 'latestArticles', 'activities', 'bloodStocks', 'featuredAchievements', 'activePopupBanner', 'homeProfileImage'));
     }
 
     public function tentangKami()
@@ -178,8 +181,9 @@ class PageController extends Controller
             }
         }
         $guideline = OrganizationGuideline::current();
+        $aboutIntroImage = ContentSectionImage::getSection('about_intro');
 
-        return view('pages.tentang-kami', compact('organizationSetting', 'organizationMembers', 'allMembers', 'allAdvisors', 'guideline'));
+        return view('pages.tentang-kami', compact('organizationSetting', 'organizationMembers', 'allMembers', 'allAdvisors', 'guideline', 'aboutIntroImage'));
     }
 
     public function pedomanOrganisasi()

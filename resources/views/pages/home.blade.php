@@ -151,15 +151,15 @@
         </div>
         <div class="relative">
             <div class="rounded-3xl overflow-hidden shadow-2xl border-4 border-white bg-slate-200">
-                <img src="/mockups/02_tentang_kami.jpg" alt="PMR SMAN 1 Ciawi Team" class="w-full h-auto object-cover">
+                <img src="{{ $homeProfileImage?->image_url ?? asset('mockups/02_tentang_kami.jpg') }}" alt="{{ $homeProfileImage?->title ?? 'PMR SMAN 1 Ciawi Team' }}" class="w-full h-auto object-cover">
             </div>
             <div class="absolute -bottom-4 sm:-bottom-6 -left-4 sm:-left-6 bg-white p-4 sm:p-6 rounded-2xl shadow-xl border border-slate-100 flex items-center gap-3 sm:gap-4">
                 <div class="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-pmr-primary text-white flex items-center justify-center text-lg sm:text-xl">
                     <i class="fa-solid fa-certificate"></i>
                 </div>
                 <div>
-                    <div class="font-extrabold text-slate-800 text-xs sm:text-sm">Terakreditasi A</div>
-                    <div class="text-[10px] sm:text-xs text-slate-500">Unit PMR Wira Teladan Kab. Bogor</div>
+                    <div class="font-extrabold text-slate-800 text-xs sm:text-sm">{{ $homeProfileImage?->badge_text ?? 'Terakreditasi A' }}</div>
+                    <div class="text-[10px] sm:text-xs text-slate-500">{{ $homeProfileImage?->badge_subtext ?? 'Unit PMR Wira Teladan Kab. Bogor' }}</div>
                 </div>
             </div>
         </div>

@@ -118,9 +118,10 @@
             @endif
 
             @if(!in_array(auth()->user()?->role, ['anggota', 'staff_bidang'], true))
-            <a href="{{ route('admin.hero-slides.index') }}" class="flex items-center gap-3 px-3 py-2.5 rounded-xl font-medium text-sm transition {{ request()->routeIs('admin.hero-slides.*') ? 'bg-pmr-primary text-white shadow-md shadow-red-950/40' : 'hover:bg-slate-800 text-slate-300' }}">
-                <i class="fa-solid fa-sliders w-5 text-center"></i>
-                <span>Slider Hero Banner</span>
+            <a href="{{ route('admin.media-manager.index') }}" class="flex items-center gap-3 px-3 py-2.5 rounded-xl font-medium text-sm transition {{ request()->routeIs('admin.media-manager.*') || request()->routeIs('admin.hero-slides.*') ? 'bg-pmr-primary text-white shadow-md shadow-red-950/40' : 'hover:bg-slate-800 text-slate-300' }}">
+                <i class="fa-solid fa-photo-film w-5 text-center text-rose-400"></i>
+                <span>Kelola Gambar & Media</span>
+                <span class="ml-auto bg-white/20 text-white text-[10px] font-bold px-2 py-0.5 rounded-full">Web</span>
             </a>
 
             <a href="{{ route('admin.popup-banner.index') }}" class="flex items-center gap-3 px-3 py-2.5 rounded-xl font-medium text-sm transition {{ request()->routeIs('admin.popup-banner.*') ? 'bg-pmr-primary text-white shadow-md shadow-red-950/40' : 'hover:bg-slate-800 text-slate-300' }}">

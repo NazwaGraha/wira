@@ -6,6 +6,7 @@ use App\Models\Achievement;
 use App\Models\Activity;
 use App\Models\Article;
 use App\Models\Category;
+use App\Models\ContentSectionImage;
 use App\Models\HeroSlide;
 use App\Models\PopupBanner;
 use App\Models\User;
@@ -490,5 +491,96 @@ class ExampleTest extends TestCase
         $this->assertNotNull($created);
         $this->assertStringStartsWith('hero-slides/', $created->image_path);
         Storage::disk('public')->assertExists($created->image_path);
+    }
+
+    public function test_admin_can_access_unified_media_manager(): void
+    {
+        $user = User::factory()->create();
+
+        $response = $this->actingAs($user)->get('/admin/media-manager');
+        $response->assertStatus(200);
+        $response->assertSee('Pusat Pengaturan Gambar & Banner Website', false);
+        $response->assertSee('Mode Multi-Gambar', false);
+        $response->assertSee('Mode Gambar Tunggal', false);
+        $response->assertSee('Profil Ekstrakurikuler', false);
+        $response->assertSee('Mengenal PMR', false);
+    }
+
+    public function test_admin_can_upload_and_update_home_profile_single_image(): void
+    {
+        Storage::fake('public');
+        $user = User::factory()->create();
+
+        $fakeImage = UploadedFile::fake()->image('profil-relawan.jpg', 1200, 900);
+
+        $response = $this->actingAs($user)->post('/admin/media-manager/section', [
+            'section_key' => 'home_profile',
+            'image' => $fakeImage,
+            'badge_text' => 'Terakreditasi A Unggul',
+            'badge_subtext' => 'Unit Teladan Tingkat Provinsi',
+        ]);
+
+        $response->assertRedirect('/admin/media-manager?tab=home_profile');
+        $response->assertSessionHas('success');
+
+        $section = ContentSectionImage::where('section_key', 'home_profile')->first();
+        $this->assertNotNull($section);
+        $this->assertEquals('Terakreditasi A Unggul', $section->badge_text);
+        $this->assertStringStartsWith('content-images/', $section->image_path);
+        Storage::disk('public')->assertExists($section->image_path);
+
+        // Verify public home page reflects the updated image and badge
+        $homeResponse = $this->get('/');
+        $homeResponse->assertStatus(200);
+        $homeResponse->assertSee($section->image_url);
+        $homeResponse->assertSee('Terakreditasi A Unggul');
+    }
+
+    public function test_admin_can_upload_and_update_about_intro_single_image(): void
+    {
+        Storage::fake('public');
+        $user = User::factory()->create();
+
+        $fakeImage = UploadedFile::fake()->image('mengenal-pmr.jpg', 1200, 900);
+
+        $response = $this->actingAs($user)->post('/admin/media-manager/section', [
+            'section_key' => 'about_intro',
+            'image' => $fakeImage,
+            'badge_text' => 'PMR Wira SMAN 1 Ciawi',
+            'badge_subtext' => 'Garda Terdepan Kemanusiaan',
+        ]);
+
+        $response->assertRedirect('/admin/media-manager?tab=about_intro');
+        $response->assertSessionHas('success');
+
+        $section = ContentSectionImage::where('section_key', 'about_intro')->first();
+        $this->assertNotNull($section);
+        $this->assertEquals('PMR Wira SMAN 1 Ciawi', $section->badge_text);
+        $this->assertStringStartsWith('content-images/', $section->image_path);
+        Storage::disk('public')->assertExists($section->image_path);
+
+        // Verify public tentang kami page reflects the updated image and badge
+        $aboutResponse = $this->get('/tentang-kami');
+        $aboutResponse->assertStatus(200);
+        $aboutResponse->assertSee($section->image_url);
+        $aboutResponse->assertSee('PMR Wira SMAN 1 Ciawi');
+    }
+
+    public function test_admin_can_reset_single_image_section_to_default(): void
+    {
+        $user = User::factory()->create();
+
+        $section = ContentSectionImage::getSection('home_profile');
+        $section->update(['image_path' => 'content-images/custom.jpg']);
+
+        $response = $this->actingAs($user)->post('/admin/media-manager/section/reset', [
+            'section_key' => 'home_profile',
+        ]);
+
+        $response->assertRedirect('/admin/media-manager?tab=home_profile');
+        $response->assertSessionHas('success');
+
+        $section->refresh();
+        $this->assertEquals('/mockups/02_tentang_kami.jpg', $section->image_path);
     }
 }
