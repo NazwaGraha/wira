@@ -39,14 +39,14 @@
         </h1>
         
         <!-- Sub-headline Organisasi (Tepat di Atas Kontrol Navigasi Slider) -->
-        <p class="text-sm sm:text-lg lg:text-xl text-stone-100 max-w-2xl mb-4 sm:mb-6 font-semibold leading-relaxed px-2 drop-shadow-[0_2px_8px_rgba(0,0,0,0.85)]">
+        <p class="text-sm sm:text-lg lg:text-xl text-stone-100 max-w-2xl mb-0 font-semibold leading-relaxed px-2 drop-shadow-[0_2px_8px_rgba(0,0,0,0.85)]">
             PMR Wira SMAN 1 Ciawi &mdash; Menyatu untuk Kemanusiaan, Sigap Menolong, Mengabdi Sepenuh Hati bagi Sesama.
         </p>
 
-        <!-- Slider Controls & Indicators (Diturunkan 2 cm / ~75px ke Bawah Tepat di Bawah Sub-headline) -->
+        <!-- Slider Controls & Indicators (Diturunkan 2 cm / 80px ke Bawah Tepat di Bawah Sub-headline) -->
         @if ($heroSlides->count() > 1)
-            <div class="mt-6 sm:mt-10 lg:mt-12 translate-y-6 sm:translate-y-10 lg:translate-y-12 flex items-center gap-3 z-30">
-                <button type="button" onclick="prevHeroSlide()" class="w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-black/40 hover:bg-black/70 text-white flex items-center justify-center border border-white/20 transition backdrop-blur-sm" title="Slide Sebelumnya">
+            <div style="margin-top: 80px;" class="flex items-center gap-3 z-30">
+                <button type="button" onclick="prevHeroSlide()" class="w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-black/40 hover:bg-black/70 text-white flex items-center justify-center border border-white/20 transition backdrop-blur-sm shadow-md" title="Slide Sebelumnya">
                     <i class="fa-solid fa-chevron-left text-xs"></i>
                 </button>
 
@@ -59,7 +59,7 @@
                     @endforeach
                 </div>
 
-                <button type="button" onclick="nextHeroSlide()" class="w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-black/40 hover:bg-black/70 text-white flex items-center justify-center border border-white/20 transition backdrop-blur-sm" title="Slide Selanjutnya">
+                <button type="button" onclick="nextHeroSlide()" class="w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-black/40 hover:bg-black/70 text-white flex items-center justify-center border border-white/20 transition backdrop-blur-sm shadow-md" title="Slide Selanjutnya">
                     <i class="fa-solid fa-chevron-right text-xs"></i>
                 </button>
             </div>
