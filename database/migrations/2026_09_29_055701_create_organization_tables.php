@@ -21,7 +21,7 @@ return new class extends Migration
 
         Schema::create('organization_members', function (Blueprint $table) {
             $table->id();
-            $table->string('name');
+            $table->string('name')->nullable();
             $table->string('position');
             $table->string('subtitle')->nullable();
             $table->unsignedTinyInteger('level')->default(4); // 1: Pembina, 2: Ketua, 3: Sekretaris/Bendahara, 4: Seksi/Divisi, 5: Lainnya

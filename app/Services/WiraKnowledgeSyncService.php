@@ -8,6 +8,7 @@ use App\Models\Article;
 use App\Models\CompetitionCategory;
 use App\Models\CompetitionEvent;
 use App\Models\Member;
+use App\Models\OrganizationMember;
 use App\Models\PopupBanner;
 use App\Models\UksHotline;
 use Illuminate\Support\Facades\File;
@@ -178,17 +179,98 @@ class WiraKnowledgeSyncService
      */
     protected function buildOrganizationStructureTopic(): array
     {
+        $bidangDefs = [
+            ['name' => 'Bidang Markas', 'keywords' => ['markas', 'logistik'], 'order' => 1, 'desc' => 'Pengelolaan inventaris obat UKS, perawatan tandu darurat & spalk bidai, piket markas.'],
+            ['name' => 'Bidang Pelayanan', 'keywords' => ['pelayanan', 'kesehatan'], 'order' => 2, 'desc' => 'Siaga posko medis upacara bendera, donor darah sukarela bersama UTD PMI Kab. Bogor, posyandu remaja & pembagian TTD.'],
+            ['name' => 'Bidang Diklat', 'keywords' => ['diklat', 'pelatihan', 'pendidikan'], 'order' => 3, 'desc' => 'Silabus kurikulum P3K, Diklatsar ruang dan lapangan, latihan mingguan, pembinaan lomba.'],
+            ['name' => 'Bidang Humas', 'keywords' => ['humas', 'hubungan masyarakat'], 'order' => 4, 'desc' => 'Publikasi media, kemitraan PMI Kab. Bogor, rekrutmen anggota.'],
+            ['name' => 'Bidang Kreasi', 'keywords' => ['kreasi', 'kreatif'], 'order' => 5, 'desc' => 'Desain poster edukasi, video materi P3K, merchandise dan ID card relawan.'],
+        ];
+
+        $orgMembers = collect();
+        if (Schema::hasTable('organization_members')) {
+            try {
+                $orgMembers = OrganizationMember::with('member')->where('is_active', true)->get();
+            } catch (\Throwable $e) {
+            }
+        }
+
+        $bidangLines = [];
+        foreach ($bidangDefs as $b) {
+            $matchedOrg = null;
+            foreach ($orgMembers->where('level', 5) as $om) {
+                $posText = strtolower(($om->position ?? '').' '.($om->subtitle ?? '').' '.($om->name ?? ''));
+                foreach ($b['keywords'] as $kw) {
+                    if (str_contains($posText, $kw)) {
+                        $matchedOrg = $om;
+                        break 2;
+                    }
+                }
+            }
+
+            $ketuaName = null;
+            $ketuaDetail = '';
+            $stafNames = [];
+
+            if ($matchedOrg) {
+                if ($matchedOrg->member) {
+                    $ketuaName = $matchedOrg->member->name;
+                    $kKelas = $matchedOrg->member->class_grade ? 'Kelas '.$matchedOrg->member->class_grade : 'Kelas XI';
+                    $kNri = $matchedOrg->member->nri ? 'NRI: '.$matchedOrg->member->nri : '-';
+                    $ketuaDetail = " ({$kKelas} • {$kNri})";
+                } elseif (! empty($matchedOrg->name)) {
+                    $ketuaName = $matchedOrg->name;
+                }
+
+                if (! empty($matchedOrg->staff_members) && is_array($matchedOrg->staff_members)) {
+                    foreach ($matchedOrg->staff_members as $st) {
+                        if (is_array($st) && ! empty($st['name'])) {
+                            $stafNames[] = $st['name'];
+                        }
+                    }
+                }
+            }
+
+            if (! $ketuaName && Schema::hasTable('members')) {
+                try {
+                    foreach ($b['keywords'] as $kw) {
+                        $m = Member::where(function ($q) use ($kw) {
+                            $q->where('position', 'like', '%ketua%'.$kw.'%')
+                                ->orWhere('position', 'like', '%kabid%'.$kw.'%');
+                        })->where('is_active', true)->first();
+
+                        if ($m) {
+                            $ketuaName = $m->name;
+                            $kKelas = $m->class_grade ? 'Kelas '.$m->class_grade : 'Kelas XI';
+                            $kNri = $m->nri ? 'NRI: '.$m->nri : '-';
+                            $ketuaDetail = " ({$kKelas} • {$kNri})";
+                            break;
+                        }
+                    }
+                } catch (\Throwable $e) {
+                }
+            }
+
+            $line = "  {$b['order']}. {$b['name']}: ";
+            if ($ketuaName) {
+                $line .= "Ketua {$ketuaName}{$ketuaDetail}";
+                if (! empty($stafNames)) {
+                    $line .= ', Staf: '.implode(', ', $stafNames);
+                }
+                $line .= ". Tugas: {$b['desc']}";
+            } else {
+                $line .= "(Ketua belum ditetapkan di sistem). Tugas: {$b['desc']}";
+            }
+            $bidangLines[] = $line;
+        }
+
         $content = "Struktur Organisasi PMR Wira SMAN 1 Ciawi Masa Bakti Ragana Dwi Pantara 2026/2027 terdiri dari:\n"
             ."• Level 1 (Dewan Pembina): Pembina Utama Abdul Hamid Saputra, S.Hum., M.Pd. (NIP: 19820415 200801 1 008) & Drs. H. Mulyadi, M.Pd.\n"
             ."• Level 2 (Ketua Umum): Sulthan Arkana Putra R. (Kelas XI • NRI: 24.49.004 PRT)\n"
             ."• Level 3 (Wakil Ketua Umum): Imam Abdul Jabbar (Kelas XI • NRI: 24.49.012 PRT)\n"
             ."• Level 4 (BPH): Sekretaris Umum Putri Raisya Anjani (Kelas XI • NRI: 24.49.018 PRT) & Bendahara Umum Nisa Nurul Aulia (Kelas XI • NRI: 24.49.023 PRT)\n"
             ."• Level 5 (5 Bidang Utama & Staf):\n"
-            ."  1. Bidang Markas: Ketua Indra Gunawan, Staf: Rian Ardiansyah, Siti Fatimah, Deni Prasetyo. Tugas: Pengelolaan inventaris obat UKS, perawatan tandu darurat & spalk bidai, piket markas.\n"
-            ."  2. Bidang Pelayanan: Ketua Sarah Azhari, Staf: Anisa Rahma, Budi Santoso, Dewi Sartika. Tugas: Siaga posko medis upacara bendera, donor darah sukarela bersama UTD PMI Kab. Bogor, posyandu remaja & pembagian TTD.\n"
-            ."  3. Bidang Diklat: Ketua Reza Rahadian, Staf: Fajar Pratama, Maya Anggraini. Tugas: Silabus kurikulum P3K, Diklatsar ruang dan lapangan, latihan mingguan, pembinaan lomba.\n"
-            ."  4. Bidang Humas: Ketua Dian Sastrowardoyo, Staf: Gilang Ramadhan, Tiara Andini, Kevin Julio. Tugas: Publikasi media, kemitraan PMI Kab. Bogor, rekrutmen anggota.\n"
-            .'  5. Bidang Kreasi: Ketua Nicholas Saputra, Staf: Putri Marino, Aldi Taher. Tugas: Desain poster edukasi, video materi P3K, merchandise dan ID card relawan.';
+            .implode("\n", $bidangLines);
 
         return [
             'id' => 'struktur_organisasi_lengkap',

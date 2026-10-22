@@ -2,6 +2,8 @@
 
 namespace Tests\Feature;
 
+use App\Models\Member;
+use App\Models\OrganizationMember;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Http;
@@ -475,56 +477,150 @@ class WiraAgentTest extends TestCase
     {
         Config::set('services.gemini.key', null);
 
-        // Ketua Markas
+        // State 1: When unassigned in DB, agent truthfully reports unassigned and does NOT return dummy names
+        $resUnassigned = $this->postJson('/api/wira-agent/chat', [
+            'message' => 'Siapa ketua bidang markas?',
+        ]);
+        $resUnassigned->assertStatus(200);
+        $this->assertStringContainsString('belum diisi atau belum ada pengurus yang terdaftar pada sistem', $resUnassigned->json('reply'));
+        $this->assertStringNotContainsString('Indra Gunawan', $resUnassigned->json('reply'));
+
+        // State 2: When assigned in DB, agent displays real member biodata
+        $member = Member::create([
+            'name' => 'Fauzi Rohman',
+            'position' => 'Ketua Bidang Markas',
+            'nri' => '24.49.055 PRT',
+            'class_grade' => 'XI-1',
+            'motto' => 'Siaga, Tanggap, dan Peduli',
+            'is_active' => true,
+        ]);
+        OrganizationMember::create([
+            'level' => 5,
+            'name' => $member->name,
+            'position' => 'Ketua Bidang Markas',
+            'member_id' => $member->id,
+            'work_program' => 'Bertanggung jawab atas inventaris logistik dan Pos UKS.',
+            'staff_members' => [
+                ['name' => 'Bintang Pratama', 'nri' => '24.49.056 PRT', 'class_grade' => 'X-2', 'motto' => 'Selalu siap melayani.'],
+            ],
+            'order_position' => 1,
+        ]);
+
         $resKetua = $this->postJson('/api/wira-agent/chat', [
             'message' => 'Siapa ketua bidang markas?',
         ]);
         $resKetua->assertStatus(200);
-        $this->assertStringContainsString('Indra Gunawan', $resKetua->json('reply'));
+        $this->assertStringContainsString('Fauzi Rohman', $resKetua->json('reply'));
         $this->assertStringContainsString('BIODATA KETUA BIDANG MARKAS', $resKetua->json('reply'));
+        $this->assertStringContainsString('24.49.055 PRT', $resKetua->json('reply'));
 
         // Staf Markas — query name specifically
         $resStaf = $this->postJson('/api/wira-agent/chat', [
-            'message' => 'Biodata Rian Ardiansyah staf markas',
+            'message' => 'siapa anggota bidang markas',
         ]);
         $resStaf->assertStatus(200);
-        $this->assertStringContainsString('Rian Ardiansyah', $resStaf->json('reply'));
+        $this->assertStringContainsString('Fauzi Rohman', $resStaf->json('reply'));
+        $this->assertStringContainsString('Bintang Pratama', $resStaf->json('reply'));
     }
 
     public function test_wira_agent_displays_bidang_pelayanan_diklat_humas_kreasi_biodatas(): void
     {
         Config::set('services.gemini.key', null);
 
-        // Pelayanan (Sarah Azhari & Anisa Rahma)
+        // Pelayanan
+        $mPelayanan = Member::create([
+            'name' => 'Aisyah Putri',
+            'position' => 'Ketua Bidang Pelayanan',
+            'nri' => '24.49.060 PRT',
+            'class_grade' => 'XI-2',
+            'motto' => 'Melayani dengan hati',
+            'is_active' => true,
+        ]);
+        OrganizationMember::create([
+            'level' => 5,
+            'name' => $mPelayanan->name,
+            'position' => 'Ketua Bidang Pelayanan',
+            'member_id' => $mPelayanan->id,
+            'order_position' => 2,
+        ]);
+
         $resPelayanan = $this->postJson('/api/wira-agent/chat', [
-            'message' => 'Biodata Sarah Azhari ketua pelayanan',
+            'message' => 'Biodata Aisyah Putri ketua pelayanan',
         ]);
         $resPelayanan->assertStatus(200);
-        $this->assertStringContainsString('Sarah Azhari', $resPelayanan->json('reply'));
+        $this->assertStringContainsString('Aisyah Putri', $resPelayanan->json('reply'));
         $this->assertStringContainsString('BIODATA KETUA BIDANG PELAYANAN', $resPelayanan->json('reply'));
 
-        // Diklat (Reza Rahadian)
+        // Diklat
+        $mDiklat = Member::create([
+            'name' => 'Fadhil Arkan',
+            'position' => 'Ketua Bidang Diklat',
+            'nri' => '24.49.070 PRT',
+            'class_grade' => 'XI-3',
+            'motto' => 'Ilmu untuk Kemanusiaan',
+            'is_active' => true,
+        ]);
+        OrganizationMember::create([
+            'level' => 5,
+            'name' => $mDiklat->name,
+            'position' => 'Ketua Bidang Diklat',
+            'member_id' => $mDiklat->id,
+            'order_position' => 3,
+        ]);
+
         $resDiklat = $this->postJson('/api/wira-agent/chat', [
             'message' => 'Siapa ketua bidang diklat?',
         ]);
         $resDiklat->assertStatus(200);
-        $this->assertStringContainsString('Reza Rahadian', $resDiklat->json('reply'));
+        $this->assertStringContainsString('Fadhil Arkan', $resDiklat->json('reply'));
         $this->assertStringContainsString('BIODATA KETUA BIDANG DIKLAT', $resDiklat->json('reply'));
 
-        // Humas (Dian Sastrowardoyo)
+        // Humas
+        $mHumas = Member::create([
+            'name' => 'Rania Zahra',
+            'position' => 'Ketua Bidang Humas',
+            'nri' => '24.49.080 PRT',
+            'class_grade' => 'XI-4',
+            'motto' => 'Menghubungkan kebaikan',
+            'is_active' => true,
+        ]);
+        OrganizationMember::create([
+            'level' => 5,
+            'name' => $mHumas->name,
+            'position' => 'Ketua Bidang Humas',
+            'member_id' => $mHumas->id,
+            'order_position' => 4,
+        ]);
+
         $resHumas = $this->postJson('/api/wira-agent/chat', [
             'message' => 'Siapa ketua humas PMR?',
         ]);
         $resHumas->assertStatus(200);
-        $this->assertStringContainsString('Dian Sastrowardoyo', $resHumas->json('reply'));
+        $this->assertStringContainsString('Rania Zahra', $resHumas->json('reply'));
         $this->assertStringContainsString('BIODATA KETUA BIDANG HUMAS', $resHumas->json('reply'));
 
-        // Kreasi (Nicholas Saputra)
+        // Kreasi
+        $mKreasi = Member::create([
+            'name' => 'Gibran Mahesa',
+            'position' => 'Ketua Bidang Kreasi',
+            'nri' => '24.49.090 PRT',
+            'class_grade' => 'XI-5',
+            'motto' => 'Kreativitas untuk Kemanusiaan',
+            'is_active' => true,
+        ]);
+        OrganizationMember::create([
+            'level' => 5,
+            'name' => $mKreasi->name,
+            'position' => 'Ketua Bidang Kreasi',
+            'member_id' => $mKreasi->id,
+            'order_position' => 5,
+        ]);
+
         $resKreasi = $this->postJson('/api/wira-agent/chat', [
             'message' => 'Siapa ketua kreasi PMR?',
         ]);
         $resKreasi->assertStatus(200);
-        $this->assertStringContainsString('Nicholas Saputra', $resKreasi->json('reply'));
+        $this->assertStringContainsString('Gibran Mahesa', $resKreasi->json('reply'));
         $this->assertStringContainsString('BIODATA KETUA BIDANG KREASI', $resKreasi->json('reply'));
     }
 
@@ -605,13 +701,37 @@ class WiraAgentTest extends TestCase
     {
         Config::set('services.gemini.key', null);
 
+        // When unassigned:
+        $resUnassigned = $this->postJson('/api/wira-agent/chat', [
+            'message' => 'siapa ketua bidang diklat',
+        ]);
+        $resUnassigned->assertStatus(200);
+        $this->assertStringContainsString('belum diisi atau belum ada pengurus yang terdaftar pada sistem', $resUnassigned->json('reply'));
+
+        // When assigned:
+        $member = Member::create([
+            'name' => 'Fadhil Arkan',
+            'position' => 'Ketua Bidang Diklat',
+            'nri' => '24.49.070 PRT',
+            'class_grade' => 'XI-3',
+            'motto' => 'Ilmu untuk Kemanusiaan',
+            'is_active' => true,
+        ]);
+        OrganizationMember::create([
+            'level' => 5,
+            'name' => $member->name,
+            'position' => 'Ketua Bidang Diklat',
+            'member_id' => $member->id,
+            'order_position' => 3,
+        ]);
+
         $response = $this->postJson('/api/wira-agent/chat', [
             'message' => 'siapa ketua bidang diklat',
         ]);
 
         $response->assertStatus(200);
         $reply = $response->json('reply');
-        $this->assertStringContainsString('Reza Rahadian', $reply);
+        $this->assertStringContainsString('Fadhil Arkan', $reply);
         $this->assertStringContainsString('BIODATA KETUA BIDANG DIKLAT', $reply);
     }
 
@@ -619,16 +739,36 @@ class WiraAgentTest extends TestCase
     {
         Config::set('services.gemini.key', null);
 
+        $member = Member::create([
+            'name' => 'Fauzi Rohman',
+            'position' => 'Ketua Bidang Markas',
+            'nri' => '24.49.055 PRT',
+            'class_grade' => 'XI-1',
+            'motto' => 'Siaga Selalu',
+            'is_active' => true,
+        ]);
+        OrganizationMember::create([
+            'level' => 5,
+            'name' => $member->name,
+            'position' => 'Ketua Bidang Markas',
+            'member_id' => $member->id,
+            'work_program' => 'Bertanggung jawab atas inventaris logistik.',
+            'staff_members' => [
+                ['name' => 'Bintang Pratama', 'nri' => '24.49.056 PRT', 'class_grade' => 'X-2', 'motto' => 'Selalu siap.'],
+                ['name' => 'Dimas Wicaksono', 'nri' => '24.49.057 PRT', 'class_grade' => 'X-3', 'motto' => 'Berdampak positif.'],
+            ],
+            'order_position' => 1,
+        ]);
+
         $response = $this->postJson('/api/wira-agent/chat', [
             'message' => 'siapa anggota bidang markas',
         ]);
 
         $response->assertStatus(200);
         $reply = $response->json('reply');
-        $this->assertStringContainsString('Indra Gunawan', $reply);
-        $this->assertStringContainsString('Rian Ardiansyah', $reply);
-        $this->assertStringContainsString('Siti Fatimah', $reply);
-        $this->assertStringContainsString('Deni Prasetyo', $reply);
+        $this->assertStringContainsString('Fauzi Rohman', $reply);
+        $this->assertStringContainsString('Bintang Pratama', $reply);
+        $this->assertStringContainsString('Dimas Wicaksono', $reply);
     }
 
     public function test_wira_agent_answers_anggota_bidang_pelayanan_and_diklat(): void
@@ -636,25 +776,58 @@ class WiraAgentTest extends TestCase
         Config::set('services.gemini.key', null);
 
         // Anggota Bidang Pelayanan
+        $mPelayanan = Member::create([
+            'name' => 'Aisyah Putri',
+            'position' => 'Ketua Bidang Pelayanan',
+            'nri' => '24.49.060 PRT',
+            'class_grade' => 'XI-2',
+            'is_active' => true,
+        ]);
+        OrganizationMember::create([
+            'level' => 5,
+            'name' => $mPelayanan->name,
+            'position' => 'Ketua Bidang Pelayanan',
+            'member_id' => $mPelayanan->id,
+            'staff_members' => [
+                ['name' => 'Zahra Amalia', 'nri' => '24.49.061 PRT', 'class_grade' => 'X-1', 'motto' => 'Peduli sesama.'],
+            ],
+            'order_position' => 2,
+        ]);
+
         $resPelayanan = $this->postJson('/api/wira-agent/chat', [
             'message' => 'siapa saja anggota bidang pelayanan',
         ]);
         $resPelayanan->assertStatus(200);
         $replyPelayanan = $resPelayanan->json('reply');
-        $this->assertStringContainsString('Sarah Azhari', $replyPelayanan);
-        $this->assertStringContainsString('Anisa Rahma', $replyPelayanan);
-        $this->assertStringContainsString('Budi Santoso', $replyPelayanan);
-        $this->assertStringContainsString('Dewi Sartika', $replyPelayanan);
+        $this->assertStringContainsString('Aisyah Putri', $replyPelayanan);
+        $this->assertStringContainsString('Zahra Amalia', $replyPelayanan);
 
         // Anggota Bidang Diklat
+        $mDiklat = Member::create([
+            'name' => 'Fadhil Arkan',
+            'position' => 'Ketua Bidang Diklat',
+            'nri' => '24.49.070 PRT',
+            'class_grade' => 'XI-3',
+            'is_active' => true,
+        ]);
+        OrganizationMember::create([
+            'level' => 5,
+            'name' => $mDiklat->name,
+            'position' => 'Ketua Bidang Diklat',
+            'member_id' => $mDiklat->id,
+            'staff_members' => [
+                ['name' => 'Ilham Ramadhan', 'nri' => '24.49.071 PRT', 'class_grade' => 'X-4', 'motto' => 'Pantang menyerah.'],
+            ],
+            'order_position' => 3,
+        ]);
+
         $resDiklat = $this->postJson('/api/wira-agent/chat', [
             'message' => 'siapa saja anggota bidang diklat',
         ]);
         $resDiklat->assertStatus(200);
         $replyDiklat = $resDiklat->json('reply');
-        $this->assertStringContainsString('Reza Rahadian', $replyDiklat);
-        $this->assertStringContainsString('Fajar Pratama', $replyDiklat);
-        $this->assertStringContainsString('Maya Anggraini', $replyDiklat);
+        $this->assertStringContainsString('Fadhil Arkan', $replyDiklat);
+        $this->assertStringContainsString('Ilham Ramadhan', $replyDiklat);
     }
 
     public function test_wira_agent_answers_other_p3k_emergencies(): void
@@ -754,32 +927,80 @@ class WiraAgentTest extends TestCase
 
     public function test_wira_agent_answers_who_is_ketua_bidang_diklat_with_name_and_biodata(): void
     {
+        $member = Member::create([
+            'name' => 'Fadhil Arkan',
+            'position' => 'Ketua Bidang Diklat',
+            'nri' => '24.49.070 PRT',
+            'class_grade' => 'XI-3',
+            'motto' => 'Ilmu untuk Kemanusiaan',
+            'is_active' => true,
+        ]);
+        OrganizationMember::create([
+            'level' => 5,
+            'name' => $member->name,
+            'position' => 'Ketua Bidang Diklat',
+            'member_id' => $member->id,
+            'order_position' => 3,
+        ]);
+
         $response = $this->postJson('/api/wira-agent/chat', [
             'message' => 'siapa ketua bidang diklat',
         ]);
 
         $response->assertStatus(200);
         $reply = $response->json('reply');
-        $this->assertStringContainsString('Reza Rahadian', $reply);
+        $this->assertStringContainsString('Fadhil Arkan', $reply);
         $this->assertStringContainsString('BIODATA KETUA BIDANG DIKLAT', $reply);
-        $this->assertStringContainsString('24.49.040 PRT', $reply);
+        $this->assertStringContainsString('24.49.070 PRT', $reply);
     }
 
     public function test_wira_agent_answers_who_is_ketua_bidang_markas_with_name_and_biodata(): void
     {
+        $member = Member::create([
+            'name' => 'Fauzi Rohman',
+            'position' => 'Ketua Bidang Markas',
+            'nri' => '24.49.055 PRT',
+            'class_grade' => 'XI-1',
+            'motto' => 'Siaga Selalu',
+            'is_active' => true,
+        ]);
+        OrganizationMember::create([
+            'level' => 5,
+            'name' => $member->name,
+            'position' => 'Ketua Bidang Markas',
+            'member_id' => $member->id,
+            'order_position' => 1,
+        ]);
+
         $response = $this->postJson('/api/wira-agent/chat', [
             'message' => 'siapa ketua bidang markas',
         ]);
 
         $response->assertStatus(200);
         $reply = $response->json('reply');
-        $this->assertStringContainsString('Indra Gunawan', $reply);
+        $this->assertStringContainsString('Fauzi Rohman', $reply);
         $this->assertStringContainsString('BIODATA KETUA BIDANG MARKAS', $reply);
-        $this->assertStringContainsString('24.49.029 PRT', $reply);
+        $this->assertStringContainsString('24.49.055 PRT', $reply);
     }
 
     public function test_wira_agent_auto_corrects_lazy_llm_response_with_leader_biodata(): void
     {
+        $member = Member::create([
+            'name' => 'Fadhil Arkan',
+            'position' => 'Ketua Bidang Diklat',
+            'nri' => '24.49.070 PRT',
+            'class_grade' => 'XI-3',
+            'motto' => 'Ilmu untuk Kemanusiaan',
+            'is_active' => true,
+        ]);
+        OrganizationMember::create([
+            'level' => 5,
+            'name' => $member->name,
+            'position' => 'Ketua Bidang Diklat',
+            'member_id' => $member->id,
+            'order_position' => 3,
+        ]);
+
         Config::set('services.gemini.key', 'fake-key');
 
         Http::fake([
@@ -802,7 +1023,7 @@ class WiraAgentTest extends TestCase
 
         $response->assertStatus(200);
         $reply = $response->json('reply');
-        $this->assertStringContainsString('Reza Rahadian', $reply);
+        $this->assertStringContainsString('Fadhil Arkan', $reply);
         $this->assertStringContainsString('BIODATA KETUA BIDANG DIKLAT', $reply);
     }
 }

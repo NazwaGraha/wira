@@ -19,37 +19,10 @@
 - **Bendahara Umum:** Nisa Nurul Aulia (Kelas XI • NRI: 24.49.023 PRT)
   - *Motto:* "Amanah, transparan, dan akuntabel dalam mengelola dana kemanusiaan."
 
-## Level 5: 5 Bidang Utama & Seluruh Staf Anggota
-
-### 1. Bidang Markas (Logistik & UKS)
-- **Ketua Bidang:** Indra Gunawan (Kelas XI • NRI: 24.49.029 PRT)
-- **Staf:**
-  - Rian Ardiansyah (Kelas X-1 • NRI: 25.50.007 PRT)
-  - Siti Fatimah (Kelas X-3 • NRI: 25.50.014 PRT)
-  - Deni Prasetyo (Kelas XI-2 • NRI: 24.49.031 PRT)
-
-### 2. Bidang Pelayanan (Pos Medis & Donor Darah)
-- **Ketua Bidang:** Sarah Azhari (Kelas XI • NRI: 24.49.034 PRT)
-- **Staf:**
-  - Anisa Rahma (Kelas X-2 • NRI: 25.50.019 PRT)
-  - Budi Santoso (Kelas XI-1 • NRI: 24.49.035 PRT)
-  - Dewi Sartika (Kelas X-5 • NRI: 25.50.028 PRT)
-
-### 3. Bidang Diklat (Pendidikan & Pelatihan)
-- **Ketua Bidang:** Reza Rahadian (Kelas XI • NRI: 24.49.040 PRT)
-- **Staf:**
-  - Fajar Pratama (Kelas X-4 • NRI: 25.50.033 PRT)
-  - Maya Anggraini (Kelas XI-3 • NRI: 24.49.042 PRT)
-
-### 4. Bidang Humas (Hubungan Masyarakat & Kemitraan)
-- **Ketua Bidang:** Dian Sastrowardoyo (Kelas XI • NRI: 24.49.044 PRT)
-- **Staf:**
-  - Gilang Ramadhan (Kelas X-1 • NRI: 25.50.045 PRT)
-  - Tiara Andini (Kelas XI-4 • NRI: 24.49.049 PRT)
-  - Kevin Julio (Kelas X-3 • NRI: 25.50.052 PRT)
-
-### 5. Bidang Kreasi (Media Kreatif & Publikasi)
-- **Ketua Bidang:** Nicholas Saputra (Kelas XI • NRI: 24.49.055 PRT)
-- **Staf:**
-  - Putri Marino (Kelas X-2 • NRI: 25.50.058 PRT)
-  - Aldi Taher (Kelas XI-5 • NRI: 24.49.061 PRT)
+## Level 5: 5 Bidang Utama
+- **1. Bidang Markas:** Pengelolaan inventaris obat UKS, perawatan tandu darurat & spalk bidai, piket markas relawan.
+- **2. Bidang Pelayanan:** Siaga posko medis upacara bendera, donor darah bersama UTD PMI Kab. Bogor, posyandu remaja & pembagian TTD.
+- **3. Bidang Diklat:** Silabus kurikulum P3K, Diklatsar ruang dan lapangan, latihan mingguan, pembinaan lomba.
+- **4. Bidang Humas:** Publikasi media, kemitraan PMI Kab. Bogor, rekrutmen relawan baru.
+- **5. Bidang Kreasi:** Desain poster edukasi, video materi P3K, merchandise dan ID card relawan.
+*(Data Ketua dan Staf masing-masing bidang dibaca secara dinamis dari database Bagan Kepengurusan dan Data Anggota di sistem).*
