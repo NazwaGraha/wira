@@ -28,7 +28,7 @@
     </div>
 
     <!-- Hero Content (Always Front & Legible) -->
-    <div class="relative z-20 w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-12 sm:pt-16 lg:pt-20 pb-24 sm:pb-32 lg:pb-40 flex flex-col items-center text-center">
+    <div class="relative z-20 w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-12 sm:pt-16 lg:pt-20 pb-12 sm:pb-16 lg:pb-20 flex flex-col items-center text-center">
         <div class="inline-flex items-center gap-2 bg-black/40 backdrop-blur-md px-3.5 sm:px-4 py-1.5 rounded-full text-[10px] sm:text-xs font-bold tracking-widest text-red-200 uppercase mb-4 sm:mb-6 border border-white/20 shadow-lg">
             <span class="w-2 h-2 rounded-full bg-red-400 animate-ping"></span>
             Masa Bakti Resmi 2026/2027
@@ -43,9 +43,9 @@
             PMR Wira SMAN 1 Ciawi &mdash; Menyatu untuk Kemanusiaan, Sigap Menolong, Mengabdi Sepenuh Hati bagi Sesama.
         </p>
 
-        <!-- Slider Controls & Indicators (Diturunkan 2 cm / 80px ke Bawah Tepat di Bawah Sub-headline) -->
+        <!-- Slider Controls & Indicators (Diturunkan Signifikan 2 cm Tambahan / Total 160px di Bawah Sub-headline) -->
         @if ($heroSlides->count() > 1)
-            <div style="margin-top: 80px;" class="flex items-center gap-3 z-30">
+            <div style="margin-top: 160px;" class="flex items-center gap-3 z-30">
                 <button type="button" onclick="prevHeroSlide()" class="w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-black/40 hover:bg-black/70 text-white flex items-center justify-center border border-white/20 transition backdrop-blur-sm shadow-md" title="Slide Sebelumnya">
                     <i class="fa-solid fa-chevron-left text-xs"></i>
                 </button>
