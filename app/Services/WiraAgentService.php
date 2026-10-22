@@ -252,7 +252,7 @@ class WiraAgentService
      */
     public function matchDeterministicInquiry(string $lower): ?string
     {
-        // A. Pertanyaan struktur organisasi lengkap / semua pengurus
+        // A. Pertanyaan struktur organisasi lengkap / semua pengurus / penjelasan semua jabatan & siapa yang menjabat
         if (
             str_contains($lower, 'struktur organisasi') ||
             str_contains($lower, 'bagan organisasi') ||
@@ -261,30 +261,87 @@ class WiraAgentService
             str_contains($lower, 'daftar pengurus') ||
             str_contains($lower, 'siapa saja pengurus') ||
             str_contains($lower, 'seluruh anggota') ||
+            str_contains($lower, 'semua jabatan') ||
+            str_contains($lower, 'siapa yang menjabat') ||
+            str_contains($lower, 'siapa yang menjawab') ||
+            (str_contains($lower, 'jabatan') && (str_contains($lower, 'struktur') || str_contains($lower, 'organisasi') || str_contains($lower, 'semua'))) ||
             (str_contains($lower, 'pembina') && (str_contains($lower, 'sampai') || str_contains($lower, 'seluruh') || str_contains($lower, 'semua') || str_contains($lower, 'anggota')))
         ) {
             return $this->renderFullOrganizationStructure();
         }
 
-        // B. Pencarian biodata anggota spesifik berdasarkan nama yang disebut (prioritas sebelum bidang)
+        // B. Profil Ekstrakurikuler PMR Wira (Halaman Beranda)
+        if (
+            str_contains($lower, 'profil ekstrakurikuler') ||
+            str_contains($lower, 'profil ekskul') ||
+            str_contains($lower, 'membangun karakter kemanusiaan') ||
+            str_contains($lower, 'akreditasi pmr') ||
+            (str_contains($lower, 'profil') && str_contains($lower, 'beranda'))
+        ) {
+            return $this->renderExtracurricularProfile();
+        }
+
+        // C. Program Unggulan PMR Wira (Halaman Beranda)
+        if (
+            str_contains($lower, 'program unggulan') ||
+            str_contains($lower, 'proker unggulan') ||
+            str_contains($lower, 'pilar layanan') ||
+            str_contains($lower, 'pilar aksi kemanusiaan') ||
+            str_contains($lower, 'tiga pilar')
+        ) {
+            return $this->renderFeaturedPrograms();
+        }
+
+        // D. Lomba: Cabang yang dipertandingkan & Tingkatannya (Halaman Lomba)
+        if (
+            (str_contains($lower, 'lomba') && (str_contains($lower, 'cabang') || str_contains($lower, 'tingkat') || str_contains($lower, 'pertandingkan') || str_contains($lower, 'dipertandingkan') || str_contains($lower, 'kategori') || str_contains($lower, 'apa saja'))) ||
+            str_contains($lower, 'cabang lomba') ||
+            str_contains($lower, 'tingkatan lomba')
+        ) {
+            return $this->renderCompetitionDetails();
+        }
+
+        // E. Pedoman Resmi Kepengurusan 2026 (GBHO & PPUO)
+        if (
+            str_contains($lower, 'pedoman resmi kepengurusan') ||
+            str_contains($lower, 'pedoman kepengurusan 2026') ||
+            str_contains($lower, 'pedoman resmi 2026') ||
+            (str_contains($lower, 'pedoman') && str_contains($lower, '2026')) ||
+            (str_contains($lower, 'gbho') && str_contains($lower, 'ppuo'))
+        ) {
+            return $this->renderOrganizationGuidelines();
+        }
+
+        // F. Tujuh Prinsip Dasar Palang Merah
+        if (
+            str_contains($lower, '7 prinsip') ||
+            str_contains($lower, 'tujuh prinsip') ||
+            str_contains($lower, 'prinsip dasar palang merah') ||
+            (str_contains($lower, 'poin') && str_contains($lower, 'prinsip')) ||
+            (str_contains($lower, 'dasar prinsip') && str_contains($lower, 'palang merah'))
+        ) {
+            return $this->renderSevenPrinciples();
+        }
+
+        // G. Pencarian biodata anggota spesifik berdasarkan nama yang disebut (prioritas sebelum bidang)
         $memberBiodata = $this->findMemberBiodataByName($lower);
         if ($memberBiodata !== null) {
             return $memberBiodata;
         }
 
-        // C. Pertanyaan spesifik mengenai program kerja bidang (seluruh bidang maupun per bidang)
+        // H. Pertanyaan spesifik mengenai program kerja bidang (seluruh bidang maupun per bidang)
         $prokerInquiry = $this->handleBidangWorkProgramInquiry($lower);
         if ($prokerInquiry !== null) {
             return $prokerInquiry;
         }
 
-        // D. Pertanyaan spesifik mengenai bidang tertentu (Ketua Bidang / Anggota Bidang)
+        // I. Pertanyaan spesifik mengenai bidang tertentu (Ketua Bidang / Anggota Bidang)
         $bidangInquiry = $this->handleSpecificBidangInquiry($lower);
         if ($bidangInquiry !== null) {
             return $bidangInquiry;
         }
 
-        // D. Pertanyaan jabatan pimpinan atas (Pembina, Ketua Umum, Wakil, BPH)
+        // J. Pertanyaan jabatan pimpinan atas (Pembina, Ketua Umum, Wakil, BPH)
         $leaderBiodata = $this->findLeaderBiodataByRole($lower);
         if ($leaderBiodata !== null) {
             return $leaderBiodata;
@@ -356,18 +413,24 @@ Jadikan seluruh data dan modul pada website https://pmrwirasmanic.or.id sebagai 
 {$ragSection}SUMBER DATA KONTEN TERKINI WEBSITE PMR WIRA SMAN 1 CIAWI (ACUAN JAWABAN ANDA):
 {$liveContext}
 
-### PRIORITAS 2: Kurikulum Materi Kepalangmerahan (Domain Knowledge PMI)
-Kuasai secara mendalam seluruh materi standar kepalangmerahan:
-1. Materi Tingkat PMR Mula, Madya, dan Wira:
+### PRIORITAS 2: Kurikulum Materi Kepalangmerahan & Layanan Medis (Domain Knowledge PMI)
+Kuasai secara mendalam seluruh materi standar medis kepalangmerahan dan pertolongan pertama:
+1. ATURAN MUTLAK PERTANYAAN KESEHATAN & KEPALANGMERAHAN:
+   - Bila pengguna mengajukan pertanyaan seputar kesehatan, pertolongan pertama (P3K), penanganan kegawatdaruratan medis, penyakit, kesehatan remaja, donor darah, mitigasi bencana, atau seputar materi kepalangmerahan PMI internasional:
+     a. Jawaban WAJIB AKURAT, RUNUT, DAN BERSTANDAR MEDIS RESMI Palang Merah Indonesia (PMI) / International Red Cross.
+     b. DILARANG KERAS memberikan jawaban ngawur, ngaco, mengarang bebas, atau menyebarkan mitos medis berbahaya (misal: dilarang mengoles odol/mentega pada luka bakar, dilarang menahan kejang atau memasukkan sendok/benda ke mulut korban kejang, dilarang menyayat luka atau menghisap bisa ular).
+     c. Berikan instruksi pertolongan pertama langkah demi langkah secara terstruktur (gunakan penomoran atau poin tebal), tenang, dan edukatif.
+     d. Selalu sertakan nomor kontak darurat UKS: 0857-7024-6918 dan himbauan penanganan medis/rujukan bila gawat darurat.
+2. Materi Tingkat PMR Mula, Madya, dan Wira:
    - Gerakan Kepalangmerahan: Sejarah Palang Merah (Jean Henry Dunant, Perang Solferino 1859), Konvensi Jenewa, Lambang Palang Merah & Bulan Sabit Merah, 7 Prinsip Dasar, Tri Bakti PMR, Mars PMI (ciptaan Mochtar M.).
    - Pertolongan Pertama (PP/P3K): Penilaian korban, anatomi dan faal dasar, penanganan cedera jaringan lunak (luka), cedera sistem otot rangka (patah tulang/fraktur, pembidaian, pembalutan mitela), luka bakar, keracunan, BHD & RJP/CPR (30:2), penanganan kejang-kejang, tersedak (Heimlich Maneuver), asma/sesak napas, gigitan ular berbisa, serta evakuasi korban (tandu darurat bambu 225 cm).
    - Donor Darah Sukarela (DDS): Syarat donor, fungsi dan komponen darah, golongan darah sistem ABO dan Rhesus.
    - Remaja Sehat Peduli Sesama (RSPS): Kebersihan diri, sanitasi, 6 langkah cuci tangan WHO, gizi seimbang "Isi Piringku", pencegahan anemia remaja putri (TTD), mitigasi NAPZA, dan kesehatan reproduksi remaja.
    - Kesiapsiagaan Bencana: Siklus bencana, mitigasi gempa bumi (Drop, Cover, Hold On), kebakaran (Stop, Drop, Roll), Tas Siaga Bencana (TSB), pemetaan risiko sekolah siaga bencana.
    - Kepemimpinan PMR: Kerja sama tim, komunikasi efektif, dinamika kelompok, dan etika relawan.
-2. Materi Korps Sukarela (KSR) & Lanjutan:
+3. Materi Korps Sukarela (KSR) & Lanjutan:
    - Penanganan kegawatdaruratan medis dasar lapangan, triage bencana (Metode START: Tag Merah, Kuning, Hijau, Hitam), manajemen posko bencana PMI, dan Hukum Perikemanusiaan Internasional (HPI).
-3. Penyesuaian Penjelasan:
+4. Penyesuaian Penjelasan:
    - Sesuaikan kedalaman materi sesuai konteks pertanyaan (edukatif dan sederhana untuk tingkatan pemula, runut dan teknis untuk tingkatan Wira/KSR).
 
 ### PRIORITAS 3: Pengetahuan Umum & Mesin Cerdas (Fallback via Gemini AI)
@@ -405,6 +468,19 @@ PROMPT;
         } catch (\Throwable $e) {
             $context[] = '• Markas: Ruang UKS SMAN 1 Ciawi, Jl. Veteran No. 46, Bogor. Hotline: 0857-7024-6918.';
         }
+
+        // 1b. Profil Ekstrakurikuler PMR Wira (Halaman Beranda)
+        $context[] = "\n=== PROFIL EKSTRAKURIKULER PMR WIRA (HALAMAN BERANDA) ===";
+        $context[] = '• Judul & Narasi: "Membangun Karakter Kemanusiaan Generasi Muda SMAN 1 Ciawi".';
+        $context[] = '• Status: Terakreditasi A • Unit PMR Wira Teladan Kabupaten Bogor.';
+        $context[] = '• Pembina Utama: Abdul Hamid Saputra, S.Hum., M.Pd. (Dewan Pembina Kehormatan: Drs. H. Mulyadi, M.Pd.).';
+        $context[] = '• Peran: Wadah pembinaan karakter, keterampilan pertolongan pertama (P3K), kesiapsiagaan medis, dan pembentukan jiwa kepemimpinan siswa berlandaskan 7 Prinsip Palang Merah dan Tri Bakti PMR.';
+
+        // 1c. Tiga Program Unggulan PMR Wira (Pilar Aksi Kemanusiaan - Halaman Beranda)
+        $context[] = "\n=== 3 PROGRAM UNGGULAN PMR WIRA (PILAR LAYANAN UTAMA - HALAMAN BERANDA) ===";
+        $context[] = '1. Donor Darah Sukarela: Edukasi pentingnya donor darah bagi remaja usia 17 tahun ke atas serta aksi donor darah berkala bekerja sama dengan UTD PMI Kabupaten Bogor.';
+        $context[] = '2. Pertolongan Pertama (PP): Pelatihan intensif pembalutan, pembidaian, RJP/CPR 30:2, dan evakuasi korban untuk memastikan keselamatan di setiap kegiatan sekolah dan penugasan medis upacara.';
+        $context[] = '3. Siaga Bencana & Sosial: Simulasi evakuasi gempa (Drop, Cover, Hold On), sekolah aman bencana, serta penggalangan donasi dan bakti sosial untuk warga terdampak musibah.';
 
         // 2. Visi, Misi & Semboyan Organisasi
         $context[] = "\n=== VISI, MISI & SEMBOYAN ORGANISASI ===";
@@ -586,8 +662,18 @@ PROMPT;
                     }
                 }
             } else {
-                $context[] = '• Nama Event Lomba: Lomba Ketangkasan PMR Wira Tingkat Jawa Barat (Sua Bhakti Berkarya)';
-                $context[] = '• Cabang Lomba: Pertolongan Pertama (PP), Pasang Tandu Darurat, Traveling Kepalangmerahan, Video & Poster Kemanusiaan.';
+                $context[] = '• Nama Event Lomba: Lomba Ketangkasan PMR Wira & Madya Tingkat Jawa Barat (Sua Bhakti Berkarya)';
+                $context[] = '• Tingkatan yang Dipertandingkan:';
+                $context[] = '  1. Tingkat Madya: SMP / MTs sederajat se-Jawa Barat / Jabodetabek';
+                $context[] = '  2. Tingkat Wira: SMA / SMK / MA sederajat se-Jawa Barat / Jabodetabek';
+                $context[] = '• 7 Cabang Lomba yang Dipertandingkan:';
+                $context[] = '  1. Pertolongan Pertama (LPP) Putra & Putri (Tes tertulis, penilaian 3A, pembidaian, pembalutan, RJP, dan kasus medis)';
+                $context[] = '  2. Ketangkasan Tandu Reguler (LKTR) Putra & Putri (Merakit tandu darurat bambu 225 cm, simpul jangkar, ikatan palang, kecepatan)';
+                $context[] = '  3. Ketangkasan Tandu Tutup Mata (Uji kekompakan merakit tandu darurat dengan mata tertutup)';
+                $context[] = '  4. Lomba Cepat Tepat (LCT) / Cerdas Cermat (Sistem gugur/bracket quiz, materi 7 Prinsip PMI, HPI, Sejarah, P3K, Bencana)';
+                $context[] = '  5. Olimpiade Kepalangmerahan (Ujian komprehensif tertulis wawasan kepalangmerahan dan kesehatan remaja)';
+                $context[] = '  6. Mading Kreasi & Poster Digital Kemanusiaan (Karya visual edukasi donor darah, PHBS, dan kepedulian sosial)';
+                $context[] = '  7. PMR Favorite & Kontingen Terfavorit (Interaksi media sosial dan sportivitas lapangan)';
             }
 
             // Syarat Umum Lomba
@@ -887,7 +973,7 @@ PROMPT;
 
         // 3. Tujuh Prinsip Dasar Palang Merah (7 Prinsip)
         if (str_contains($lower, '7 prinsip') || str_contains($lower, 'tujuh prinsip') || str_contains($lower, 'prinsip dasar') || (str_contains($lower, 'prinsip') && (str_contains($lower, 'pmi') || str_contains($lower, 'palang merah')))) {
-            return "Halo Teman Relawan! 🌟\n\nGerakan Palang Merah dan Bulan Sabit Merah Internasional berlandaskan pada **7 Prinsip Dasar (Seven Fundamental Principles)** yang diproklamasikan di Wina tahun 1965:\n\n1. ❤️ **Kemanusiaan (Humanity):** Mencegah dan meringankan penderitaan sesama manusia di mana pun berada, memelihara saling pengertian, persahabatan, dan perdamaian abadi.\n2. ⚖️ **Kesamaan (Impartiality):** Tidak membeda-bedakan atas dasar kebangsaan, ras, agama, suku, jenis kelamin, atau pandangan politik. Bantuan diberikan semata-mata atas dasar kebutuhan korban yang paling mendesak.\n3. 🕊️ **Kenetralan (Neutrality):** Tidak memihak dalam pertikaian bersenjata dan tidak terlibat dalam kontroversi politik, ras, agama, atau ideologi.\n4. 🛡️ **Kemandirian (Independence):** Bersifat mandiri. Walaupun menjadi pembantu pemerintah di bidang kemanusiaan, perhimpunan harus selalu mempertahankan otonominya.\n5. 🤝 **Kesukarelaan (Voluntary Service):** Memberikan pertolongan atas dasar sukarela tanpa motif mencari keuntungan apa pun.\n6. 🌐 **Kesatuan (Unity):** Di dalam satu negara hanya boleh ada satu Perhimpunan Palang Merah atau Bulan Sabit Merah yang terbuka untuk semua orang dan menjangkau seluruh wilayah.\n7. 🌍 **Kesemestaan (Universality):** Gerakan Palang Merah hadir di seluruh dunia, di mana semua perhimpunan memiliki hak setara dan kewajiban saling tolong-menolong secara internasional.\n\nPrinsip ini senantiasa kami junjung tinggi dalam setiap detak langkah PMR Wira SMAN 1 Ciawi! ✊";
+            return $this->renderSevenPrinciples();
         }
 
         // 4. Tri Bakti PMR
@@ -945,9 +1031,19 @@ PROMPT;
             return "Halo Teman Relawan! 🧼\n\nDalam materi **Remaja Sehat Peduli Sesama (RSPS)** & PHBS di lingkungan sekolah:\n\n💧 **6 LANGKAH CUCI TANGAN STANDAR WHO (Sabun & Air Mengalir):**\n1. Ratakan sabun pada kedua telapak tangan.\n2. Gosok punggung tangan kiri dengan telapak tangan kanan dan sebaliknya.\n3. Gosok sela-sela jari tangan secara bergantian.\n4. Kunci jari-jari sisi dalam dari kedua tangan.\n5. Gosok ibu jari kiri berputar dalam genggaman tangan kanan dan sebaliknya.\n6. Gosok berputar ujung jari/kuku pada telapak tangan kanan dan kiri.\n\n🩸 **PENCEGAHAN ANEMIA PADA REMAJA PUTRI:**\n• Anemia 5L (Lesu, Lemah, Letih, Lelah, Lalai) dapat dicegah dengan mengonsumsi makanan kaya zat besi (bayam, hati ayam, telur, daging merah).\n• Rutin minum **Tablet Tambah Darah (TTD)** 1 tablet setiap minggu saat program UKS sekolah.\n\n🍱 **GIZI SEIMBANG \"ISI PIRINGKU\":**\n1/3 piring makanan pokok, 1/3 sayuran, 1/6 lauk pauk, dan 1/6 buah-buahan, disertai cukup minum air putih 8 gelas (2 liter) per hari!";
         }
 
+        // 14b. Profil Ekstrakurikuler PMR Wira (Halaman Beranda)
+        if (str_contains($lower, 'profil ekstrakurikuler') || str_contains($lower, 'profil ekskul') || str_contains($lower, 'membangun karakter kemanusiaan') || str_contains($lower, 'akreditasi pmr')) {
+            return $this->renderExtracurricularProfile();
+        }
+
+        // 14c. Tiga Program Unggulan PMR Wira (Halaman Beranda)
+        if (str_contains($lower, 'program unggulan') || str_contains($lower, 'proker unggulan') || str_contains($lower, 'pilar layanan') || str_contains($lower, 'pilar aksi kemanusiaan') || str_contains($lower, 'tiga pilar')) {
+            return $this->renderFeaturedPrograms();
+        }
+
         // 15. Landasan Organisasi: GBHO, PPUO, & Syal Kuning
-        if (str_contains($lower, 'gbho') || str_contains($lower, 'ppuo') || str_contains($lower, 'syal kuning') || str_contains($lower, 'ukuran syal') || str_contains($lower, 'pedoman organisasi') || str_contains($lower, 'anggaran rumah tangga')) {
-            return "Halo Sahabat Kemanusiaan! 📜\n\nTata kelola PMR Wira SMAN 1 Ciawi berlandaskan pada dua dokumen konstitusi resmi Periode 2026:\n\n📘 **1. GARIS BESAR HALUAN ORGANISASI (GBHO) 2026:**\nArah kebijakan strategis kepengurusan yang memuat **6 Strategi Pokok**:\n1. Kedisiplinan & Jiwa Korsa Anggota\n2. Pelatihan Medis & Pertolongan Pertama Terstandar\n3. Pembinaan Fisik & Mental Relawan\n4. Soliditas & Kekompakan Antar-Anggota\n5. Manajemen Kepemimpinan Mandiri\n6. Sinergi Bersama Pembina, Pihak Sekolah, PMI Kab. Bogor, dan Ikatan Alumni\n\n📕 **2. PEDOMAN PELAKSANAAN UMUM ORGANISASI (PPUO) 2026:**\nMemuat **11 Bab Regulasi Teknis Organisasi** (Keanggotaan, Seragam & Atribut, Tata Kelola Markas UKS, Kode Etik, Mekanisme Rapat RAT/Raker, Tata Tertib & Sanksi Disiplin, Diklatsar, dsb).\n\n🎗️ **SPESIFIKASI SYAL KUNING PMR WIRA:**\nSesuai Bab Seragam PPUO, anggota PMR Wira mengenakan **Syal Kuning Segitiga PMI** berukuran standar **120 cm x 90 cm x 90 cm** dengan bordir logo PMI di sudut lancip belakang, dilipat rapi dengan cincin syal (ring).\n\nDokumen lengkap e-book dan PDF GBHO & PPUO dapat diunduh di menu **Tentang Kami** pada website!";
+        if (str_contains($lower, 'gbho') || str_contains($lower, 'ppuo') || str_contains($lower, 'syal kuning') || str_contains($lower, 'ukuran syal') || str_contains($lower, 'pedoman organisasi') || str_contains($lower, 'pedoman resmi kepengurusan') || str_contains($lower, 'pedoman kepengurusan') || str_contains($lower, 'anggaran rumah tangga')) {
+            return $this->renderOrganizationGuidelines();
         }
 
         // 16. Visi, Misi & Semboyan Organisasi
@@ -1022,7 +1118,7 @@ PROMPT;
 
         // 25. Pertanyaan seputar Lomba umum
         if (str_contains($lower, 'lomba') || str_contains($lower, 'sua bhakti') || str_contains($lower, 'kompetisi') || str_contains($lower, 'kejuaraan')) {
-            return "Halo Sahabat Kemanusiaan! 🏆\n\nPMR Wira SMAN 1 Ciawi secara berkala menyelenggarakan dan mengikuti ajang kompetisi bergengsi seperti **Sua Bhakti Berkarya**.\n\n**Cabang Lomba yang Dibuka:**\n1. **Pertolongan Pertama (PP):** Penanganan kasus medis, luka terbuka, patah tulang, dan RJP.\n2. **Pasang Tandu Darurat:** Kecepatan, kekuatan ikatan, dan kerapihan evakuasi tandu cepat.\n3. **Traveling / Cerdas Cermat:** Pengujian 7 materi pokok kepalangmerahan dan kepemimpinan.\n4. **Video & Poster Kemanusiaan:** Kampanye sosial kesehatan, donor darah, dan pencegahan bencana.\n\nUntuk petunjuk teknis juklak/juknis, tanggal pelaksanaan, dan registrasi online kontingen, silakan kunjungi menu **Lomba PMR** di navbar website ini ya!";
+            return $this->renderCompetitionDetails();
         }
 
         // 26. Pertanyaan seputar Donor Darah
@@ -1996,16 +2092,13 @@ PROMPT;
     }
 
     /**
-     * Tampilkan Bagan Struktur Kepengurusan Lengkap dari Pembina sampai seluruh staf anggota.
-     */
-    /**
-     * Tampilkan Bagan Struktur Kepengurusan Lengkap — data LIVE dari DB.
+     * Tampilkan Bagan Struktur Kepengurusan Lengkap — menjelaskan secara detail semua jabatan dan siapa yang menjabat (Data LIVE dari DB).
      */
     public function renderFullOrganizationStructure(): string
     {
-        $intro = "Halo Sahabat Kemanusiaan! 🏛️\n\n"
-            .'Berikut adalah **Struktur Organisasi Resmi PMR Wira SMA Negeri 1 Ciawi** '
-            ."(Masa Bakti Ragana Dwi Pantara 2026/2027) dari Pembina sampai seluruh staf anggota:\n\n";
+        $intro = "Halo Sahabat Kemanusiaan! 🏛️✨\n\n"
+            .'Berikut penjelasan rinci mengenai **Seluruh Jabatan pada Struktur Organisasi Resmi PMR Wira SMA Negeri 1 Ciawi** '
+            ."(Masa Bakti Ragana Dwi Pantara 2026/2027) beserta tugas pokok dan siapa yang menjabat dari Pembina sampai seluruh staf anggota:\n\n";
 
         // Jika DB belum ada / testing, fallback ke data statis
         if (! Schema::hasTable('members')) {
@@ -2023,55 +2116,91 @@ PROMPT;
         $ketua = $members->filter(fn ($m) => strtolower($m->position ?? '') === 'ketua umum' || str_contains(strtolower($m->position ?? ''), 'ketua umum'));
         $wakil = $members->filter(fn ($m) => str_contains(strtolower($m->position ?? ''), 'wakil'));
         $bph = $members->filter(fn ($m) => in_array(strtolower($m->position ?? ''), ['sekretaris', 'bendahara']) || str_contains(strtolower($m->position ?? ''), 'sekretaris') || str_contains(strtolower($m->position ?? ''), 'bendahara'));
-        $bidangList = ['Markas', 'Pelayanan', 'Diklat', 'Humas', 'Kreasi'];
-        $bidangIcons = ['Markas' => '📦', 'Pelayanan' => '🩹', 'Diklat' => '📚', 'Humas' => '📢', 'Kreasi' => '🎨'];
 
         $out = $intro;
 
         // Level 1: Pembina
-        $out .= "👔 **LEVEL 1: DEWAN PEMBINA PMR**\n";
+        $out .= "👔 **LEVEL 1: DEWAN PEMBINA PMR**\n"
+            ."• **Tugas & Peran:** Membimbing arah kebijakan organisasi, membina kedisiplinan dan jiwa korsa relawan, memberikan pertimbangan strategis, serta menjembatani koordinasi dengan pihak pimpinan sekolah dan PMI Cabang.\n";
         if ($pembina->isNotEmpty()) {
             foreach ($pembina as $p) {
                 $id = $p->nip ? 'NIP: '.$p->nip : ($p->nri ? 'NRI: '.$p->nri : '-');
-                $out .= "• **{$p->name}** ({$id})\n";
+                $out .= "• **Pejabat Pembina:** {$p->name} ({$id})\n";
             }
+        } else {
+            $out .= "• **Pejabat Pembina:** Abdul Hamid Saputra, S.Hum., M.Pd. (Pembina Utama) & Drs. H. Mulyadi, M.Pd. (Dewan Pembina Kehormatan)\n";
         }
         $out .= "\n";
 
         // Level 2: Ketua Umum
-        $out .= "👑 **LEVEL 2: PIMPINAN UTAMA**\n";
-        foreach ($ketua as $k) {
-            $nri = $k->nri ? 'NRI: '.$k->nri : '-';
-            $kelas = $k->class_grade ? 'Kelas '.$k->class_grade : '-';
-            $out .= "• **Ketua Umum:** {$k->name} ({$kelas} • {$nri})\n";
+        $out .= "👑 **LEVEL 2: PIMPINAN UTAMA (KETUA UMUM)**\n"
+            ."• **Tugas & Peran:** Memegang komando tertinggi kepengurusan, bertanggung jawab penuh atas seluruh jalannya roda organisasi kabinet Ragana Dwi Pantara, serta memimpin pelaksanaan Tri Bakti PMR dan 7 Prinsip Palang Merah.\n";
+        if ($ketua->isNotEmpty()) {
+            foreach ($ketua as $k) {
+                $nri = $k->nri ? 'NRI: '.$k->nri : '-';
+                $kelas = $k->class_grade ? 'Kelas '.$k->class_grade : '-';
+                $out .= "• **Pejabat Ketua Umum:** {$k->name} ({$kelas} • {$nri})\n";
+            }
+        } else {
+            $out .= "• **Pejabat Ketua Umum:** Sulthan Arkana Putra R. (Kelas XI • NRI: 24.49.004 PRT)\n";
         }
         $out .= "\n";
 
-        // Level 3: Wakil
-        $out .= "🛡️ **LEVEL 3: WAKIL PIMPINAN**\n";
-        foreach ($wakil as $w) {
-            $nri = $w->nri ? 'NRI: '.$w->nri : '-';
-            $kelas = $w->class_grade ? 'Kelas '.$w->class_grade : '-';
-            $out .= "• **Wakil Ketua Umum:** {$w->name} ({$kelas} • {$nri})\n";
+        // Level 3: Wakil Ketua Umum
+        $out .= "🛡️ **LEVEL 3: WAKIL PIMPINAN (WAKIL KETUA UMUM)**\n"
+            ."• **Tugas & Peran:** Mendampingi ketua umum dalam memimpin organisasi, bertindak mewakili ketua apabila berhalangan, serta mengkoordinasikan kinerja internal dan operasional 5 bidang teknis.\n";
+        if ($wakil->isNotEmpty()) {
+            foreach ($wakil as $w) {
+                $nri = $w->nri ? 'NRI: '.$w->nri : '-';
+                $kelas = $w->class_grade ? 'Kelas '.$w->class_grade : '-';
+                $out .= "• **Pejabat Wakil Ketua Umum:** {$w->name} ({$kelas} • {$nri})\n";
+            }
+        } else {
+            $out .= "• **Pejabat Wakil Ketua Umum:** Imam Abdul Jabbar (Kelas XI • NRI: 24.49.012 PRT)\n";
         }
         $out .= "\n";
 
-        // Level 4: BPH
+        // Level 4: BPH (Sekretaris & Bendahara)
         $out .= "📋 **LEVEL 4: BADAN PENGURUS HARIAN (BPH)**\n";
-        foreach ($bph as $b) {
-            $nri = $b->nri ? 'NRI: '.$b->nri : '-';
-            $kelas = $b->class_grade ? 'Kelas '.$b->class_grade : '-';
-            $out .= "• **{$b->position}:** {$b->name} ({$kelas} • {$nri})\n";
+        if ($bph->isNotEmpty()) {
+            foreach ($bph as $b) {
+                $nri = $b->nri ? 'NRI: '.$b->nri : '-';
+                $kelas = $b->class_grade ? 'Kelas '.$b->class_grade : '-';
+                $posName = strtolower($b->position);
+                $peran = str_contains($posName, 'sekretaris')
+                    ? 'Mengelola tata persuratan resmi, arsip administrasi organisasi, buku induk keanggotaan relawan, dan notulensi rapat rapat resmi.'
+                    : 'Mengelola pembukuan kas keuangan organisasi, iuran kas, anggaran logistik medis UKS, dan laporan pertanggungjawaban dana.';
+                $out .= "• **{$b->position}:** {$b->name} ({$kelas} • {$nri})\n"
+                    ."  *Tugas:* {$peran}\n";
+            }
+        } else {
+            $out .= "• **Sekretaris Umum:** Putri Raisya Anjani (Kelas XI • NRI: 24.49.018 PRT)\n"
+                ."  *Tugas:* Mengelola tata persuratan resmi, arsip administrasi organisasi, buku induk keanggotaan relawan, dan notulensi rapat.\n"
+                ."• **Bendahara Umum:** Nisa Nurul Aulia (Kelas XI • NRI: 24.49.023 PRT)\n"
+                ."  *Tugas:* Mengelola pembukuan kas keuangan organisasi, iuran kas, anggaran logistik medis UKS, dan laporan pertanggungjawaban dana.\n";
         }
         $out .= "\n";
 
-        // Level 5: 5 Bidang
+        // Level 5: 5 Bidang Utama
         $out .= "🏢 **LEVEL 5: 5 BIDANG & SELURUH STAF ANGGOTA**\n\n";
+        $bidangDescriptions = [
+            'Markas' => 'Pengelolaan dan inventarisasi obat-obatan serta tandu darurat UKS, pemeliharaan kebersihan dan kesiapan ruang markas relawan.',
+            'Pelayanan' => 'Penyiagaan tim medis upacara bendera, aksi donor darah berkala bersama UTD PMI Kab. Bogor, posyandu remaja, dan pembagian TTD.',
+            'Diklat' => 'Latihan rutin mingguan pertolongan pertama (PP), pembekalan 7 Prinsip PMI & HPI, simulasi mitigasi bencana, serta pemusatan latihan lomba JUMBARA.',
+            'Humas' => 'Pengelolaan akun media sosial resmi, buletin mading, kemitraan strategis dengan PMI Cabang, Puskesmas, sekolah mitra, dan rekrutmen anggota baru.',
+            'Kreasi' => 'Produksi media kreatif visual, video edukasi medis, pameran seni kemanusiaan, pembuatan alat peraga simulasi daur ulang, dan desain visual organisasi.',
+        ];
+
         $num = 1;
         foreach (self::BIDANG_DEFINITIONS as $bid) {
             $info = $this->getRealBidangInfo($bid);
             $icon = $bid['icon'];
-            $out .= "{$num}. {$icon} **Bidang {$bid['label']}:**\n";
+            $label = $bid['label'];
+            $desc = $bidangDescriptions[$label] ?? $bid['defaultProgram'];
+
+            $out .= "{$num}. {$icon} **Bidang {$bid['fullLabel']}:**\n"
+                ."   • **Tugas & Peran:** {$desc}\n";
+
             if ($info['ketua_name']) {
                 $nri = $info['ketua_member']?->nri ? 'NRI: '.$info['ketua_member']->nri : '-';
                 $kelas = $info['ketua_member']?->class_grade ? 'Kelas '.$info['ketua_member']->class_grade : '-';
@@ -2079,6 +2208,7 @@ PROMPT;
             } else {
                 $out .= "   • **Ketua Bidang:** *Belum diisi pada sistem*\n";
             }
+
             if (! empty($info['staff_list'])) {
                 $out .= "   • **Staf Anggota:**\n";
                 foreach ($info['staff_list'] as $s) {
@@ -2091,9 +2221,154 @@ PROMPT;
             $num++;
         }
 
-        $out .= '✨ *Kakak dapat menyebutkan nama pengurus (misal: "Biodata [nama]") untuk melihat kartu biodata digital resminya!*';
+        $out .= '✨ *Kakak dapat menyebutkan nama pengurus mana pun (misal: "Biodata Sulthan Arkana" atau "Biodata Muhammad Ikhsan Fadhil") untuk melihat kartu profil dan KTA digital resminya!*';
 
         return $out;
+    }
+
+    /**
+     * Render Profil Ekstrakurikuler PMR Wira (Halaman Beranda).
+     */
+    public function renderExtracurricularProfile(): string
+    {
+        return "Halo Sahabat Kemanusiaan! 🛡️✨\n\n"
+            ."Berikut profil resmi **Ekstrakurikuler Palang Merah Remaja (PMR) Wira SMA Negeri 1 Ciawi** yang tampil pada halaman Beranda website:\n\n"
+            ."🏛️ **PROFIL EKSTRAKURIKULER PMR WIRA:**\n"
+            ."• **Tema Utama:** \"Membangun Karakter Kemanusiaan Generasi Muda SMAN 1 Ciawi\"\n"
+            ."• **Status Akreditasi:** Terakreditasi A • Unit PMR Wira Teladan Kabupaten Bogor\n"
+            ."• **Pembina Utama:** Abdul Hamid Saputra, S.Hum., M.Pd. (Dewan Pembina Kehormatan: Drs. H. Mulyadi, M.Pd.)\n"
+            ."• **Sekretariat & Markas:** Ruang UKS/PMR SMAN 1 Ciawi, Jl. Veteran No. 46, Pandansari, Ciawi, Bogor\n\n"
+            ."🎯 **Tujuan & Peran Pembinaan:**\n"
+            ."1. Membentuk karakter siswa yang memiliki kepekaan sosial tinggi, tangguh, dan berdisiplin.\n"
+            ."2. Mengasah keahlian medis praktis Pertolongan Pertama (P3K) dan evakuasi korban bencana.\n"
+            ."3. Membina jiwa kepemimpinan, kerelawanan, dan persahabatan antar-siswa berlandaskan 7 Prinsip Palang Merah dan Tri Bakti PMR.\n\n"
+            .'💡 *Profil lengkap dan struktur organisasi dapat diakses di menu **Tentang Kami** pada website resmi kami!*';
+    }
+
+    /**
+     * Render 3 Program Unggulan PMR Wira (Pilar Aksi Kemanusiaan - Halaman Beranda).
+     */
+    public function renderFeaturedPrograms(): string
+    {
+        return "Halo Sahabat Kemanusiaan! 🌟✨\n\n"
+            ."Berikut adalah **3 Program Unggulan (Pilar Aksi Kemanusiaan)** PMR Wira SMAN 1 Ciawi yang menjadi denyut nadi pengabdian kami di lingkungan sekolah:\n\n"
+            ."1. 🩸 **Donor Darah Sukarela (DDS):**\n"
+            ."   Edukasi pentingnya donor darah bagi remaja usia 17 tahun ke atas serta penyelenggaraan aksi donor darah berkala bekerja sama dengan UTD PMI Kabupaten Bogor untuk memenuhi ketersediaan stok darah kemanusiaan.\n\n"
+            ."2. 🩹 **Pertolongan Pertama (PP):**\n"
+            ."   Pelatihan intensif pembalutan mitela, pembidaian fraktur, RJP/CPR 30:2, dan teknik evakuasi tandu cepat untuk menjamin keselamatan dan kesiapsiagaan medis pada setiap upacara bendera serta kegiatan sekolah.\n\n"
+            ."3. 🚨 **Siaga Bencana & Kepedulian Sosial:**\n"
+            ."   Simulasi evakuasi gempa bumi (Drop, Cover, Hold On), program Sekolah Aman Bencana, serta penggalangan donasi dan bakti sosial bagi masyarakat terdampak musibah.\n\n"
+            .'📌 *Informasi jadwal donor darah, modul P3K, dan mitigasi bencana dapat dipantau langsung pada menu **Donor Darah**, **Kegiatan**, dan **Artikel** di website!*';
+    }
+
+    /**
+     * Render rincian lomba: Cabang Lomba yang dipertandingkan dan Tingkatannya (Halaman Lomba).
+     */
+    public function renderCompetitionDetails(): string
+    {
+        $eventTitle = 'Lomba Ketangkasan PMR Wira & Madya (Sua Bhakti Berkarya)';
+        $feeInfo = 'Rp 150.000 / Regu';
+        $location = 'Kampus SMA Negeri 1 Ciawi, Bogor';
+
+        try {
+            if (Schema::hasTable('competition_events')) {
+                $ev = CompetitionEvent::where('is_active', true)->first() ?: CompetitionEvent::first();
+                if ($ev) {
+                    $eventTitle = $ev->title;
+                    $location = $ev->location ?: $location;
+                    if ($ev->registration_fee > 0) {
+                        $feeInfo = 'Rp '.number_format($ev->registration_fee, 0, ',', '.').' / Regu';
+                    }
+                }
+            }
+        } catch (\Throwable $e) {
+        }
+
+        return "Halo Sahabat Kemanusiaan! 🏆✨\n\n"
+            ."Berikut adalah rincian lengkap mengenai ajang kejuaraan **{$eventTitle}** pada website resmi PMR Wira SMAN 1 Ciawi (https://pmrwirasmanic.or.id/lomba):\n\n"
+            ."🎯 **TINGKATAN LOMBA YANG DIPERTANDINGKAN:**\n"
+            ."1. 🥈 **Tingkat Madya:** Terbuka untuk seluruh siswa-siswi Palang Merah Remaja jenjang **SMP / MTs sederajat** se-Jawa Barat / Jabodetabek.\n"
+            ."2. 🥇 **Tingkat Wira:** Terbuka untuk seluruh siswa-siswi Palang Merah Remaja jenjang **SMA / SMK / MA sederajat** se-Jawa Barat / Jabodetabek.\n\n"
+            ."📋 **7 CABANG LOMBA YANG DIPERTANDINGKAN:**\n"
+            ."1. 🩹 **Pertolongan Pertama (LPP) - Putra & Putri:**\n"
+            ."   Ujian teori tertulis medis, penilaian korban 3A, ASNT, CAB, pembidaian, pembalutan luka, dan penanganan gawat darurat di bawah batasan waktu.\n"
+            ."2. 🪵 **Ketangkasan Tandu Reguler (LKTR) - Putra & Putri:**\n"
+            ."   Merakit tandu darurat bambu utama 225 cm, kerapian anyaman simpul jangkar, ikatan palang, dan kecepatan waktu evakuasi.\n"
+            ."3. 🙈 **Ketangkasan Tandu Tutup Mata:**\n"
+            ."   Uji kekompakan, feeling, dan ketelitian merakit tandu darurat dengan mata tertutup kain secara sempurna.\n"
+            ."4. ⚡ **Lomba Cepat Tepat (LCT) / Cerdas Cermat Kepalangmerahan:**\n"
+            ."   Kompetisi adu ketangkasan wawasan kepalangmerahan sistem gugur (bracket quiz) mencakup 7 Prinsip Palang Merah, Sejarah PMI, HPI, P3K, dan Bencana.\n"
+            ."5. 📖 **Olimpiade Kepalangmerahan:**\n"
+            ."   Ujian tertulis komprehensif wawasan kepalangmerahan, anatomi faal dasar, dan kesehatan remaja.\n"
+            ."6. 🎨 **Mading Kreasi & Poster Digital Kemanusiaan:**\n"
+            ."   Lomba kreativitas visual bertema donor darah sukarela, PHBS, dan aksi kemanusiaan relawan muda.\n"
+            ."7. 🌟 **PMR Favorite & Kontingen Terfavorit:**\n"
+            ."   Penilaian interaksi media sosial dan kekompakan sportivitas kontingen di arena perlombaan.\n\n"
+            ."📌 **SYARAT UMUM PENDAFTARAN KONTINGEN:**\n"
+            ."• Membawa Surat Mandat resmi dari Kepala Sekolah / Pembina PMR pangkalan.\n"
+            ."• Melampirkan Kartu Pelajar atau Surat Keterangan Siswa aktif.\n"
+            ."• Pas foto 3x4 berseragam PMR lengkap syal (kuning untuk Wira, biru untuk Madya).\n"
+            ."• Pendaftaran Online: Melakukan pendaftaran online di menu **Lomba PMR** pada website ini.\n"
+            ."• Biaya pendaftaran: {$feeInfo}.\n"
+            ."• Lokasi Pelaksanaan: {$location}.\n\n"
+            .'💡 *Buku Panduan Juklak & Juknis lengkap serta formulir registrasi dapat diakses langsung pada menu **Lomba PMR** di website!*';
+    }
+
+    /**
+     * Render Pedoman Resmi Kepengurusan 2026 (GBHO, PPUO & Syal Kuning).
+     */
+    public function renderOrganizationGuidelines(): string
+    {
+        return "Halo Sahabat Kemanusiaan! 📜✨\n\n"
+            ."Tata kelola kepengurusan **PMR Wira SMAN 1 Ciawi (Masa Bakti Ragana Dwi Pantara 2026/2027)** berlandaskan pada dua dokumen konstitusi resmi organisasi:\n\n"
+            ."📘 **1. GARIS BESAR HALUAN ORGANISASI (GBHO) 2026:**\n"
+            ."Memuat arah kebijakan umum organisasi yang aktif, solid, cerdas berorganisasi, tangguh secara fisik, dan cepat dalam aksi kemanusiaan. Dilengkapi dengan **6 Strategi Pokok**:\n"
+            ."1. Penguatan Kedisiplinan & Jiwa Korsa Relawan\n"
+            ."2. Pelatihan Medis & Pertolongan Pertama Berkelanjutan\n"
+            ."3. Pembinaan Fisik & Ketahanan Mental\n"
+            ."4. Kekompakan & Soliditas Antar-Anggota\n"
+            ."5. Manajemen Kepemimpinan Mandiri\n"
+            ."6. Sinergi Kerjasama dengan Pembina, Pihak Sekolah, PMI Kab. Bogor, dan Ikatan Alumni\n\n"
+            ."📕 **2. PEDOMAN PELAKSANAAN UMUM ORGANISASI (PPUO) 2026:**\n"
+            ."Buku pedoman regulasi operasional yang memuat **11 Bab Regulasi Organisasi**:\n"
+            ."• Bab 1: Ketentuan Umum & Identitas Organisasi\n"
+            ."• Bab 2: Keanggotaan & Hak-Kewajiban Relawan\n"
+            ."• Bab 3: Seragam, Atribut & Tanda Pengenal Relawan\n"
+            ."• Bab 4: Tata Kelola Markas & Ruang UKS Sekolah\n"
+            ."• Bab 5: Kode Etik & Nilai Integritas Relawan\n"
+            ."• Bab 6: Mekanisme Rapat, Musyawarah & Raker\n"
+            ."• Bab 7: Tata Tertib Harian, Sanksi Disiplin & Penghargaan\n"
+            ."• Bab 8: Pendidikan & Latihan Dasar (Diklatsar)\n"
+            ."• Bab 9: Penugasan Tim Medis Upacara & Lapangan\n"
+            ."• Bab 10: Pengelolaan Kas & Transparansi Keuangan\n"
+            ."• Bab 11: Aturan Tambahan & Ketentuan Peralihan\n\n"
+            ."🎗️ **SPESIFIKASI SYAL KUNING PMR WIRA:**\n"
+            ."Sesuai Bab 3 PPUO, anggota PMR Wira mengenakan **Syal Kuning Segitiga PMI** berukuran standar **120 cm x 90 cm x 90 cm** dengan bordir logo PMI di sudut lancip belakang, dilipat rapi dengan cincin syal (ring).\n\n"
+            .'💡 *Dokumen e-book interaktif dan berkas PDF resmi GBHO & PPUO 2026 dapat diunduh di menu **Tentang Kami** pada website!*';
+    }
+
+    /**
+     * Render 7 Prinsip Dasar Palang Merah & Bulan Sabit Merah Internasional.
+     */
+    public function renderSevenPrinciples(): string
+    {
+        return "Halo Teman Relawan! 🌟✨\n\n"
+            ."Gerakan Palang Merah dan Bulan Sabit Merah Internasional berlandaskan pada **7 Prinsip Dasar (Seven Fundamental Principles)** yang diproklamasikan di Wina tahun 1965 dan senantiasa menjadi pedoman PMR Wira SMAN 1 Ciawi:\n\n"
+            ."1. ❤️ **Kemanusiaan (Humanity):**\n"
+            ."   Mencegah dan meringankan penderitaan sesama manusia di mana pun berada, melindungi hidup dan kesehatan, serta menjamin penghargaan terhadap martabat manusia.\n\n"
+            ."2. ⚖️ **Kesamaan (Impartiality):**\n"
+            ."   Tidak membeda-bedakan korban berdasarkan kebangsaan, ras, agama, suku, jenis kelamin, atau pandangan politik. Bantuan diberikan semata-mata atas dasar kebutuhan yang paling mendesak.\n\n"
+            ."3. 🕊️ **Kenetralan (Neutrality):**\n"
+            ."   Agar senantiasa dipercaya oleh semua pihak, Gerakan tidak memihak dalam pertikaian bersenjata dan tidak terlibat dalam kontroversi politik, ras, agama, atau ideologi.\n\n"
+            ."4. 🛡️ **Kemandirian (Independence):**\n"
+            ."   Gerakan bersifat mandiri. Meskipun perhimpunan nasional membantu pemerintah di bidang kemanusiaan, perhimpunan harus selalu menjaga otonominya agar dapat bertindak sesuai prinsip-prinsip Palang Merah.\n\n"
+            ."5. 🤝 **Kesukarelaan (Voluntary Service):**\n"
+            ."   Memberikan pertolongan atas dasar sukarela tanpa motif mencari keuntungan material atau finansial apa pun.\n\n"
+            ."6. 🌐 **Kesatuan (Unity):**\n"
+            ."   Di dalam satu negara hanya boleh ada satu Perhimpunan Palang Merah atau Bulan Sabit Merah yang terbuka untuk semua orang dan menjangkau tugas kemanusiaan di seluruh wilayah.\n\n"
+            ."7. 🌍 **Kesemestaan (Universality):**\n"
+            ."   Gerakan Palang Merah hadir di seluruh dunia, di mana semua perhimpunan nasional mempunyai hak setara dan kewajiban saling tolong-menolong secara internasional.\n\n"
+            .'✊ *Tujuh Prinsip Dasar ini menjadi nafas pengabdian kami dalam setiap tugas kemanusiaan!*';
     }
 
     /**

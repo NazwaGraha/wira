@@ -1244,4 +1244,115 @@ class WiraAgentTest extends TestCase
         $this->assertStringContainsString('Uji kelayakan 10 unit tandu darurat bambu', $reply);
         $this->assertStringContainsString('Digitalisasi pencatatan stok obat-obatan UKS', $reply);
     }
+
+    public function test_wira_agent_answers_extracurricular_profile_and_featured_programs(): void
+    {
+        Config::set('services.gemini.key', null);
+
+        // Profil Ekstrakurikuler
+        $resProfil = $this->postJson('/api/wira-agent/chat', [
+            'message' => 'jelaskan profil ekstrakurikuler PMR Wira SMAN 1 Ciawi',
+        ]);
+        $resProfil->assertStatus(200);
+        $replyProfil = $resProfil->json('reply');
+        $this->assertStringContainsString('PROFIL EKSTRAKURIKULER PMR WIRA', $replyProfil);
+        $this->assertStringContainsString('Membangun Karakter Kemanusiaan Generasi Muda SMAN 1 Ciawi', $replyProfil);
+        $this->assertStringContainsString('Terakreditasi A', $replyProfil);
+
+        // Program Unggulan
+        $resProgram = $this->postJson('/api/wira-agent/chat', [
+            'message' => 'sebutkan apa saja program unggulan PMR Wira',
+        ]);
+        $resProgram->assertStatus(200);
+        $replyProgram = $resProgram->json('reply');
+        $this->assertStringContainsString('3 Program Unggulan (Pilar Aksi Kemanusiaan)', $replyProgram);
+        $this->assertStringContainsString('Donor Darah Sukarela (DDS)', $replyProgram);
+        $this->assertStringContainsString('Pertolongan Pertama (PP)', $replyProgram);
+        $this->assertStringContainsString('Siaga Bencana & Kepedulian Sosial', $replyProgram);
+    }
+
+    public function test_wira_agent_answers_competition_branches_and_levels(): void
+    {
+        Config::set('services.gemini.key', null);
+
+        $response = $this->postJson('/api/wira-agent/chat', [
+            'message' => 'lomba apa saja yang dipertandingkan dan untuk tingkatan apa saja',
+        ]);
+        $response->assertStatus(200);
+        $reply = $response->json('reply');
+
+        $this->assertStringContainsString('TINGKATAN LOMBA YANG DIPERTANDINGKAN', $reply);
+        $this->assertStringContainsString('Tingkat Madya', $reply);
+        $this->assertStringContainsString('Tingkat Wira', $reply);
+        $this->assertStringContainsString('7 CABANG LOMBA YANG DIPERTANDINGKAN', $reply);
+        $this->assertStringContainsString('Pertolongan Pertama (LPP)', $reply);
+        $this->assertStringContainsString('Ketangkasan Tandu Reguler (LKTR)', $reply);
+        $this->assertStringContainsString('Ketangkasan Tandu Tutup Mata', $reply);
+        $this->assertStringContainsString('Lomba Cepat Tepat (LCT)', $reply);
+    }
+
+    public function test_wira_agent_explains_all_organization_positions_and_who_holds_them(): void
+    {
+        Config::set('services.gemini.key', null);
+
+        $response = $this->postJson('/api/wira-agent/chat', [
+            'message' => 'bisa jelaskan secara detail semua jabatan pada struktur organisasi tersebut dan siapa yang menjabat',
+        ]);
+        $response->assertStatus(200);
+        $reply = $response->json('reply');
+
+        $this->assertStringContainsString('Seluruh Jabatan pada Struktur Organisasi Resmi PMR Wira SMA Negeri 1 Ciawi', $reply);
+        $this->assertStringContainsString('LEVEL 1: DEWAN PEMBINA PMR', $reply);
+        $this->assertStringContainsString('Abdul Hamid Saputra, S.Hum., M.Pd.', $reply);
+        $this->assertStringContainsString('LEVEL 2: PIMPINAN UTAMA', $reply);
+        $this->assertStringContainsString('Sulthan Arkana Putra R.', $reply);
+        $this->assertStringContainsString('LEVEL 3: WAKIL PIMPINAN', $reply);
+        $this->assertStringContainsString('Imam Abdul Jabbar', $reply);
+        $this->assertStringContainsString('Sekretaris Umum', $reply);
+        $this->assertStringContainsString('Putri Raisya Anjani', $reply);
+        $this->assertStringContainsString('Bendahara Umum', $reply);
+        $this->assertStringContainsString('Nisa Nurul Aulia', $reply);
+        $this->assertStringContainsString('Bidang Markas', $reply);
+        $this->assertStringContainsString('Bidang Pelayanan', $reply);
+        $this->assertStringContainsString('Bidang Diklat', $reply);
+        $this->assertStringContainsString('Bidang Humas', $reply);
+        $this->assertStringContainsString('Bidang Kreasi', $reply);
+    }
+
+    public function test_wira_agent_answers_organization_guidelines_2026(): void
+    {
+        Config::set('services.gemini.key', null);
+
+        $response = $this->postJson('/api/wira-agent/chat', [
+            'message' => 'sebutkan dan jelaskan pedoman resmi kepengurusan 2026',
+        ]);
+        $response->assertStatus(200);
+        $reply = $response->json('reply');
+
+        $this->assertStringContainsString('GARIS BESAR HALUAN ORGANISASI (GBHO) 2026', $reply);
+        $this->assertStringContainsString('PEDOMAN PELAKSANAAN UMUM ORGANISASI (PPUO) 2026', $reply);
+        $this->assertStringContainsString('11 Bab Regulasi Organisasi', $reply);
+        $this->assertStringContainsString('SPESIFIKASI SYAL KUNING PMR WIRA', $reply);
+        $this->assertStringContainsString('120 cm x 90 cm x 90 cm', $reply);
+    }
+
+    public function test_wira_agent_answers_seven_fundamental_principles_points(): void
+    {
+        Config::set('services.gemini.key', null);
+
+        $response = $this->postJson('/api/wira-agent/chat', [
+            'message' => 'sebutkan dan jelaskan poin poin 7 dasar prinsip palang merah',
+        ]);
+        $response->assertStatus(200);
+        $reply = $response->json('reply');
+
+        $this->assertStringContainsString('7 Prinsip Dasar (Seven Fundamental Principles)', $reply);
+        $this->assertStringContainsString('Kemanusiaan (Humanity)', $reply);
+        $this->assertStringContainsString('Kesamaan (Impartiality)', $reply);
+        $this->assertStringContainsString('Kenetralan (Neutrality)', $reply);
+        $this->assertStringContainsString('Kemandirian (Independence)', $reply);
+        $this->assertStringContainsString('Kesukarelaan (Voluntary Service)', $reply);
+        $this->assertStringContainsString('Kesatuan (Unity)', $reply);
+        $this->assertStringContainsString('Kesemestaan (Universality)', $reply);
+    }
 }

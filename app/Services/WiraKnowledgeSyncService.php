@@ -30,6 +30,12 @@ class WiraKnowledgeSyncService
         // 1. Profil Organisasi & Identitas Markas
         $topics[] = $this->buildProfileTopic();
 
+        // 1b. Profil Ekstrakurikuler PMR Wira (Halaman Beranda)
+        $topics[] = $this->buildExtracurricularProfileTopic();
+
+        // 1c. Tiga Program Unggulan PMR Wira (Halaman Beranda)
+        $topics[] = $this->buildFeaturedProgramsTopic();
+
         // 2. Visi, Misi & Semboyan Organisasi
         $topics[] = $this->buildVisiMisiTopic();
 
@@ -133,6 +139,45 @@ class WiraKnowledgeSyncService
             'title' => 'Profil & Identitas PMR Wira SMAN 1 Ciawi',
             'keywords' => ['profil', 'alamat', 'lokasi', 'kontak', 'email', 'markas', 'sekretariat', 'uks', 'sekolah', 'pandansari', 'veteran', 'terakreditasi a', 'sman 1 ciawi'],
             'content' => 'PMR Wira Unit SMA Negeri 1 Ciawi adalah organisasi relawan sekolah terakreditasi A berkedudukan di Ruang UKS/PMR SMAN 1 Ciawi, Jl. Veteran No. 46, Pandansari, Ciawi, Kabupaten Bogor (Kode Pos 16720). Email resmi: pmrwirasman1c@gmail.com. Hotline Siaga Medis UKS: 0857-7024-6918. Masa bakti kepengurusan aktif adalah Ragana Dwi Pantara 2026/2027.',
+        ];
+    }
+
+    /**
+     * Topik 1b: Profil Ekstrakurikuler PMR Wira (Halaman Beranda)
+     */
+    protected function buildExtracurricularProfileTopic(): array
+    {
+        return [
+            'id' => 'profil_ekstrakurikuler_beranda',
+            'category' => 'organisasi',
+            'title' => 'Profil Ekstrakurikuler PMR Wira SMAN 1 Ciawi (Membangun Karakter Kemanusiaan)',
+            'keywords' => ['profil ekstrakurikuler', 'profil ekskul', 'membangun karakter kemanusiaan', 'akreditasi pmr', 'terakreditasi a', 'unit pmr wira teladan', 'profil beranda'],
+            'content' => "Profil Ekstrakurikuler PMR Wira SMA Negeri 1 Ciawi (Halaman Beranda):\n"
+                ."• Tema Utama: \"Membangun Karakter Kemanusiaan Generasi Muda SMAN 1 Ciawi\"\n"
+                ."• Status Akreditasi: Terakreditasi A • Unit PMR Wira Teladan Kabupaten Bogor\n"
+                ."• Pembina Utama: Abdul Hamid Saputra, S.Hum., M.Pd. (Dewan Pembina Kehormatan: Drs. H. Mulyadi, M.Pd.)\n"
+                ."• Markas / Sekretariat: Ruang UKS/PMR SMAN 1 Ciawi, Jl. Veteran No. 46, Pandansari, Ciawi, Bogor\n"
+                .'• Peran & Tujuan Pembinaan: Wadah pembentukan karakter relawan muda yang memiliki empati sosial tinggi, tangguh secara fisik dan mental, menguasai pertolongan pertama (P3K) medis, dan menjalin persahabatan antar-siswa berlandaskan 7 Prinsip Palang Merah dan Tri Bakti PMR.',
+        ];
+    }
+
+    /**
+     * Topik 1c: Tiga Program Unggulan PMR Wira (Pilar Layanan Utama - Halaman Beranda)
+     */
+    protected function buildFeaturedProgramsTopic(): array
+    {
+        return [
+            'id' => 'program_unggulan_pmr_wira',
+            'category' => 'program_kerja',
+            'title' => 'Program Unggulan PMR Wira SMAN 1 Ciawi (3 Pilar Aksi Kemanusiaan)',
+            'keywords' => ['program unggulan', 'proker unggulan', 'pilar layanan', 'pilar aksi kemanusiaan', 'tiga pilar', 'donor darah sukarela', 'pertolongan pertama pp', 'siaga bencana dan sosial'],
+            'content' => "Tiga Program Unggulan (Pilar Aksi Kemanusiaan) PMR Wira SMAN 1 Ciawi pada Halaman Beranda:\n\n"
+                ."1. Donor Darah Sukarela (DDS):\n"
+                ."   Edukasi pentingnya donor darah bagi remaja usia 17 tahun ke atas serta penyelenggaraan aksi donor darah berkala bekerja sama dengan UTD PMI Kabupaten Bogor untuk memenuhi ketersediaan stok darah kemanusiaan.\n\n"
+                ."2. Pertolongan Pertama (PP):\n"
+                ."   Pelatihan intensif pembalutan mitela, pembidaian fraktur, RJP/CPR 30:2, dan teknik evakuasi tandu cepat untuk menjamin keselamatan dan kesiapsiagaan medis pada setiap upacara bendera serta kegiatan sekolah.\n\n"
+                ."3. Siaga Bencana & Kepedulian Sosial:\n"
+                .'   Simulasi evakuasi gempa bumi (Drop, Cover, Hold On), program Sekolah Aman Bencana, serta penggalangan donasi dan bakti sosial bagi masyarakat terdampak musibah.',
         ];
     }
 
@@ -573,20 +618,30 @@ class WiraKnowledgeSyncService
         $content = "INFORMASI LOMBA PMR: {$title}\n"
             ."• Lokasi: {$location}\n"
             ."• Biaya Registrasi: {$feeInfo}\n"
-            ."• Cabang Lomba: {$categoriesList}\n"
-            ."• Syarat Peserta:\n"
+            ."• Tingkatan Peserta yang Dipertandingkan:\n"
+            ."  1. Tingkat PMR Madya: Jenjang SMP / MTs sederajat.\n"
+            ."  2. Tingkat PMR Wira: Jenjang SMA / SMK / MA sederajat (wilayah Jawa Barat & Jabodetabek).\n"
+            ."• Cabang Lomba yang Dipertandingkan (7 Cabang Lomba Utama):\n"
+            ."  1. Lomba Pertolongan Pertama (LPP) Putra & Putri (Simulasi kasus medis gawat darurat, penanganan fraktur, pendarahan, evakuasi, dan kompresi).\n"
+            ."  2. Lomba Ketangkasan Tandu Reguler (LKTR) Putra & Putri (Kecepatan, kerapian simpul jangkar, kekuatan, dan presisi perakitan tandu darurat).\n"
+            ."  3. Lomba Ketangkasan Tandu Tutup Mata (LKTTM) (Uji kekompakan dan ketelitian membuat tandu darurat dalam kondisi mata tertutup blindfold).\n"
+            ."  4. Lomba Cepat Tepat Kepalangmerahan (LCT) (Adu wawasan seputar 7 Prinsip Palang Merah, Hukum Humaniter Internasional, dan sejarah kepalangmerahan).\n"
+            ."  5. Olimpiade Teori Medis & Kepalangmerahan (Ujian komprehensif tertulis materi medis P3K dasar, anatomi tubuh, dan penanganan bencana).\n"
+            ."  6. Mading Kreasi 3D & Desain Poster Digital Kemanusiaan (Kreativitas kampanye donor darah sukarela dan edukasi mitigasi kebencanaan).\n"
+            ."  7. Kontingen & Regu Terfavorit / Relawan Teladan (Penilaian sportivitas regu, yel-yel, dan kedisiplinan korsa selama ajang kompetisi).\n"
+            ."• Syarat & Ketentuan Peserta:\n"
             ."  1. Anggota aktif PMR Madya (SMP/MTs) atau PMR Wira (SMA/SMK/MA).\n"
             ."  2. Membawa Surat Tugas/Mandat resmi dari Kepala Sekolah / Pembina.\n"
             ."  3. Melampirkan Kartu Pelajar atau Surat Keterangan Siswa.\n"
-            ."  4. Pas foto 3x4 berseragam PMR lengkap syal.\n"
+            ."  4. Pas foto 3x4 berseragam PMR lengkap syal (Madya syal biru, Wira syal kuning).\n"
             ."  5. Mendaftar online di menu Lomba PMR website https://pmrwirasmanic.or.id/lomba.\n"
             .'  6. Melunasi administrasi dan membawa perlengkapan teknis mandiri.';
 
         return [
             'id' => 'lomba_pmr_info',
             'category' => 'lomba',
-            'title' => 'Informasi Lomba PMR & Syarat Pendaftaran Kontingen',
-            'keywords' => ['lomba', 'sua bhakti', 'syarat lomba', 'daftar lomba', 'kategori lomba', 'biaya lomba', 'juklak', 'juknis', 'kompetisi'],
+            'title' => 'Informasi Lomba PMR, Cabang Lomba & Tingkatan Peserta',
+            'keywords' => ['lomba', 'sua bhakti', 'syarat lomba', 'daftar lomba', 'kategori lomba', 'cabang lomba', 'tingkatan', 'madya', 'wira', 'biaya lomba', 'juklak', 'juknis', 'kompetisi'],
             'content' => $content,
         ];
     }
