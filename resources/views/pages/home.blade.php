@@ -4,7 +4,7 @@
 
 @section('content')
 <!-- Hero Section (Ragana Dwi Pantara 2026/2027) with Dynamic Image Slider -->
-<section class="relative bg-stone-900 text-white overflow-hidden min-h-[580px] lg:min-h-[660px] flex items-center" id="hero-slider-section">
+<section class="relative bg-stone-900 text-white overflow-hidden min-h-[640px] lg:min-h-[740px] flex items-center" id="hero-slider-section">
     <!-- Slider Background Images with Crossfade -->
     <div class="absolute inset-0 z-0 overflow-hidden">
         @if ($heroSlides->count() > 0)
@@ -28,7 +28,7 @@
     </div>
 
     <!-- Hero Content (Always Front & Legible) -->
-    <div class="relative z-20 w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-20 lg:py-28 flex flex-col items-center text-center">
+    <div class="relative z-20 w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-12 sm:pt-16 lg:pt-20 pb-20 sm:pb-28 lg:pb-36 flex flex-col items-center text-center">
         <div class="inline-flex items-center gap-2 bg-black/40 backdrop-blur-md px-3.5 sm:px-4 py-1.5 rounded-full text-[10px] sm:text-xs font-bold tracking-widest text-red-200 uppercase mb-4 sm:mb-6 border border-white/20 shadow-lg">
             <span class="w-2 h-2 rounded-full bg-red-400 animate-ping"></span>
             Masa Bakti Resmi 2026/2027
@@ -38,7 +38,7 @@
             RAGANA DWI PANTARA
         </h1>
         
-        <p class="text-sm sm:text-lg lg:text-xl text-stone-100 max-w-2xl mb-8 sm:mb-10 font-semibold leading-relaxed px-2 drop-shadow-[0_2px_8px_rgba(0,0,0,0.85)]">
+        <p class="text-sm sm:text-lg lg:text-xl text-stone-100 max-w-2xl mb-14 sm:mb-20 lg:mb-24 font-semibold leading-relaxed px-2 drop-shadow-[0_2px_8px_rgba(0,0,0,0.85)]">
             PMR Wira SMAN 1 Ciawi &mdash; Menyatu untuk Kemanusiaan, Sigap Menolong, Mengabdi Sepenuh Hati bagi Sesama.
         </p>
 
@@ -53,7 +53,7 @@
 
         <!-- Slider Controls & Indicators (Hanya Tampil Jika Gambar > 1) -->
         @if ($heroSlides->count() > 1)
-            <div class="mt-8 sm:mt-12 flex items-center gap-3 z-30">
+            <div class="mt-12 sm:mt-16 lg:mt-20 flex items-center gap-3 z-30">
                 <button type="button" onclick="prevHeroSlide()" class="w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-black/40 hover:bg-black/70 text-white flex items-center justify-center border border-white/20 transition backdrop-blur-sm" title="Slide Sebelumnya">
                     <i class="fa-solid fa-chevron-left text-xs"></i>
                 </button>
