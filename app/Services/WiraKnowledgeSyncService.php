@@ -11,6 +11,7 @@ use App\Models\Member;
 use App\Models\OrganizationMember;
 use App\Models\PopupBanner;
 use App\Models\UksHotline;
+use Carbon\Carbon;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Str;
@@ -343,23 +344,61 @@ class WiraKnowledgeSyncService
                     $name = $m->name;
                     $position = $m->position ?: 'Anggota Relawan';
                     $nri = $m->nri ?: '-';
-                    $class = $m->class ?: 'Wira';
+                    $class = $m->class_grade ? 'Kelas '.$m->class_grade : 'Kelas X/XI';
                     $motto = $m->motto ?: 'Bakti Kemanusiaan untuk Sesama';
+                    $phone = $m->phone ?: '-';
+                    $email = $m->email ?: '-';
+                    $address = $m->address ?: '-';
+                    $gender = $m->gender ?: '-';
+                    $ttl = ($m->birth_place && $m->birth_date) ? "{$m->birth_place}, ".Carbon::parse($m->birth_date)->translatedFormat('d F Y') : '-';
+                    $status = $m->effective_status ?: 'Aktif';
+                    $photoUrl = $m->photo_url;
 
                     $slug = Str::slug($name);
+                    $nameLower = strtolower($name);
+
+                    $keywords = [
+                        $nameLower,
+                        'biodata '.$nameLower,
+                        'siapakah '.$nameLower,
+                        'siapa '.$nameLower,
+                        $nameLower.' jabatannya apa',
+                        'jabatan '.$nameLower,
+                        'kontak '.$nameLower,
+                        'no hp '.$nameLower,
+                        'alamat '.$nameLower,
+                        'kelas '.$nameLower,
+                        strtolower($position),
+                        'nri '.$nri,
+                        'anggota pmr',
+                        $nri,
+                    ];
+
+                    // Tambahkan potongan nama untuk pencarian kata parsial
+                    $nameParts = preg_split('/\s+/', $nameLower);
+                    foreach ($nameParts as $part) {
+                        if (strlen($part) >= 3) {
+                            $keywords[] = $part;
+                        }
+                    }
+
                     $memberTopics[] = [
                         'id' => 'member_'.$slug,
                         'category' => 'biodata_anggota',
                         'title' => "Biodata Anggota PMR: {$name} ({$position})",
-                        'keywords' => array_values(array_filter([
-                            strtolower($name),
-                            'biodata '.strtolower($name),
-                            strtolower($position),
-                            'nri '.$nri,
-                            'anggota pmr',
-                            $nri,
-                        ])),
-                        'content' => "KARTU TANDA ANGGOTA & BIODATA RELAWAN PMR WIRA\n• Nama Lengkap: {$name}\n• Jabatan / Posisi: {$position}\n• Tingkat: {$class} • SMAN 1 Ciawi\n• NRI (Nomor Registrasi Induk): {$nri}\n• Motto Relawan: '{$motto}'",
+                        'keywords' => array_values(array_unique(array_filter($keywords))),
+                        'content' => "KARTU TANDA ANGGOTA & BIODATA RELAWAN PMR WIRA\n"
+                            ."• Nama Lengkap: {$name}\n"
+                            ."• Jabatan Resmi: {$position}\n"
+                            ."• Tingkat / Kelas: {$class} • PMR Wira SMAN 1 Ciawi\n"
+                            ."• NRI (Nomor Registrasi Induk): {$nri} (Status: {$status})\n"
+                            ."• Tempat / Tanggal Lahir: {$ttl}\n"
+                            ."• Jenis Kelamin: {$gender}\n"
+                            ."• Alamat / Domisili: {$address}\n"
+                            ."• Kontak Telepon / WA: {$phone}\n"
+                            ."• Email: {$email}\n"
+                            ."• Foto Profil: {$photoUrl}\n"
+                            ."• Motto Relawan: '{$motto}'",
                     ];
                 }
             }

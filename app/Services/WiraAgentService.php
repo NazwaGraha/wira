@@ -449,6 +449,24 @@ PROMPT;
             $context[] = '• Struktur: Pembina Abdul Hamid Saputra, Ketua Sulthan Arkana Putra R., Wakil Imam Abdul Jabbar, Sekretaris Putri Raisya Anjani, Bendahara Nisa Nurul Aulia, beserta 5 Bidang (Markas, Pelayanan, Diklat, Humas, Kreasi).';
         }
 
+        // 3b. Seluruh Anggota Terdaftar di Database (Model Member)
+        try {
+            if (Schema::hasTable('members')) {
+                $allRegMembers = Member::where('is_active', true)->orderBy('name')->get();
+                if ($allRegMembers->isNotEmpty()) {
+                    $context[] = "\n=== DAFTAR ANGGOTA PMR WIRA TERDAFTAR DI DATABASE ===";
+                    foreach ($allRegMembers as $rm) {
+                        $rmPos = $rm->position ?: 'Anggota';
+                        $rmKelas = $rm->class_grade ? 'Kelas '.$rm->class_grade : 'Kelas X/XI';
+                        $rmNri = $rm->nri ? 'NRI: '.$rm->nri : '-';
+                        $rmPhone = $rm->phone ? 'Kontak: '.$rm->phone : '';
+                        $context[] = "• {$rm->name} — {$rmPos} ({$rmKelas} • {$rmNri} {$rmPhone})";
+                    }
+                }
+            }
+        } catch (\Throwable $e) {
+        }
+
         // 4. Landasan Pedoman Organisasi (GBHO & PPUO 2026)
         $context[] = "\n=== LANDASAN & PEDOMAN ORGANISASI (GBHO & PPUO 2026) ===";
         $context[] = '• Garis Besar Haluan Organisasi (GBHO) 2026: Landasan arah kebijakan relawan yang aktif, solid, cerdas, berkarakter dengan 6 Strategi Pokok:';
@@ -1288,21 +1306,35 @@ PROMPT;
 
     /**
      * Cari biodata pimpinan atau anggota tertentu dari Pembina sampai seluruh staf 5 bidang.
-     * Data diambil LIVE dari database berdasarkan nama yang disebutkan.
-     * Jika DB kosong (testing), gunakan fallback data resmi kepengurusan.
+     * Menggunakan pencarian berbasis bobot/skor kecocokan tertinggi agar setiap nama unik
+     * dan tidak tertukar satu sama lain (misal: "Ade Putri Berlian", "Delia Putri", "Dhiora Hayfa Kalyca").
      */
     public function findMemberBiodataByName(string $lower): ?string
     {
-        // 1. Cek database tabel members terlebih dahulu
+        // 1. Cek database tabel members terlebih dahulu (Prioritas Utama: Data Anggota Riil)
         if (Schema::hasTable('members')) {
             try {
                 $allMembers = Member::where('is_active', true)->get();
                 if ($allMembers->isNotEmpty()) {
+                    $bestMember = null;
+                    $bestScore = 0;
+
                     foreach ($allMembers as $member) {
-                        $nameLower = strtolower($member->name ?? '');
-                        if ($this->isNameMatch($lower, $nameLower)) {
-                            return $this->buildBiodataCardFromMember($member);
+                        $nameLower = strtolower(trim($member->name ?? ''));
+                        if (! $nameLower) {
+                            continue;
                         }
+
+                        $score = $this->calculateNameMatchScore($lower, $nameLower);
+                        if ($score > $bestScore) {
+                            $bestScore = $score;
+                            $bestMember = $member;
+                        }
+                    }
+
+                    // Ambang batas kecocokan: minimal skor 50
+                    if ($bestMember && $bestScore >= 50) {
+                        return $this->formatMemberInquiryResponse($lower, $bestMember);
                     }
                 }
             } catch (\Throwable $e) {
@@ -1313,52 +1345,209 @@ PROMPT;
         if (Schema::hasTable('organization_members')) {
             try {
                 $orgMembers = OrganizationMember::with('member')->get();
-                foreach ($orgMembers as $om) {
-                    $omName = strtolower($om->name ?? ($om->member?->name ?? ''));
-                    if ($omName && $this->isNameMatch($lower, $omName)) {
-                        if ($om->member) {
-                            return $this->buildBiodataCardFromMember($om->member);
-                        }
+                $bestOrg = null;
+                $bestOrgScore = 0;
+                $bestStaff = null;
+                $bestStaffParent = null;
 
-                        return $this->getBiodataCard(
-                            name: $om->name,
-                            position: $om->position ?: 'Pengurus PMR Wira SMAN 1 Ciawi',
-                            levelOrClass: $om->subtitle ?: 'Kelas XI',
-                            idNumber: '-',
-                            roleDescription: $om->work_program ?: ('Menjalankan amanah sebagai '.$om->position.' PMR Wira SMAN 1 Ciawi.'),
-                            motto: 'Siap sedia mengabdi untuk kemanusiaan.',
-                            title: 'BIODATA PENGURUS PMR WIRA'
-                        );
+                foreach ($orgMembers as $om) {
+                    $omName = strtolower(trim($om->name ?? ($om->member?->name ?? '')));
+                    if ($omName) {
+                        $score = $this->calculateNameMatchScore($lower, $omName);
+                        if ($score > $bestOrgScore) {
+                            $bestOrgScore = $score;
+                            $bestOrg = $om;
+                            $bestStaff = null;
+                        }
                     }
 
                     // Cek staf di staff_members
                     if (! empty($om->staff_members) && is_array($om->staff_members)) {
                         foreach ($om->staff_members as $st) {
-                            $stName = strtolower(is_array($st) ? ($st['name'] ?? '') : '');
-                            if ($stName && $this->isNameMatch($lower, $stName)) {
-                                $sNri = ! empty($st['nri']) ? 'NRI: '.$st['nri'] : '-';
-                                $sKelas = ! empty($st['class_grade']) ? 'Kelas '.$st['class_grade'] : 'Kelas X/XI';
-                                $sMotto = $st['motto'] ?? 'Siap sedia mengabdi untuk kemanusiaan.';
-
-                                return $this->getBiodataCard(
-                                    name: ucwords($stName),
-                                    position: 'Staf '.$om->position,
-                                    levelOrClass: $sKelas,
-                                    idNumber: $sNri,
-                                    roleDescription: 'Staf operasional bidang '.$om->position.' PMR Wira SMAN 1 Ciawi.',
-                                    motto: $sMotto,
-                                    title: 'BIODATA STAF BIDANG '.strtoupper($om->position)
-                                );
+                            $stName = strtolower(trim(is_array($st) ? ($st['name'] ?? '') : ''));
+                            if ($stName) {
+                                $score = $this->calculateNameMatchScore($lower, $stName);
+                                if ($score > $bestOrgScore) {
+                                    $bestOrgScore = $score;
+                                    $bestStaff = $st;
+                                    $bestStaffParent = $om;
+                                    $bestOrg = null;
+                                }
                             }
                         }
                     }
+                }
+
+                if ($bestOrg && $bestOrgScore >= 50) {
+                    if ($bestOrg->member) {
+                        return $this->formatMemberInquiryResponse($lower, $bestOrg->member);
+                    }
+
+                    return $this->getBiodataCard(
+                        name: $bestOrg->name,
+                        position: $bestOrg->position ?: 'Pengurus PMR Wira SMAN 1 Ciawi',
+                        levelOrClass: $bestOrg->subtitle ?: 'Kelas XI',
+                        idNumber: '-',
+                        roleDescription: $bestOrg->work_program ?: ('Menjalankan amanah sebagai '.$bestOrg->position.' PMR Wira SMAN 1 Ciawi.'),
+                        motto: 'Siap sedia mengabdi untuk kemanusiaan.',
+                        title: 'BIODATA PENGURUS PMR WIRA'
+                    );
+                }
+
+                if ($bestStaff && $bestOrgScore >= 50 && $bestStaffParent) {
+                    $stName = is_array($bestStaff) ? ($bestStaff['name'] ?? '') : '';
+                    $sNri = ! empty($bestStaff['nri']) ? 'NRI: '.$bestStaff['nri'] : '-';
+                    $sKelas = ! empty($bestStaff['class_grade']) ? 'Kelas '.$bestStaff['class_grade'] : 'Kelas X/XI';
+                    $sMotto = $bestStaff['motto'] ?? 'Siap sedia mengabdi untuk kemanusiaan.';
+
+                    return $this->getBiodataCard(
+                        name: ucwords($stName),
+                        position: 'Staf '.$bestStaffParent->position,
+                        levelOrClass: $sKelas,
+                        idNumber: $sNri,
+                        roleDescription: 'Staf operasional bidang '.$bestStaffParent->position.' PMR Wira SMAN 1 Ciawi.',
+                        motto: $sMotto,
+                        title: 'BIODATA STAF BIDANG '.strtoupper($bestStaffParent->position)
+                    );
                 }
             } catch (\Throwable $e) {
             }
         }
 
-        // 3. Fallback ke data anggota resmi (jika DB kosong / unit test)
+        // 3. Fallback ke data anggota resmi jika DB kosong / testing
         return $this->findStaticMemberBiodata($lower);
+    }
+
+    /**
+     * Format respon cerdas berdasarkan jenis pertanyaan (jabatan, kelas, kontak, atau biodata umum).
+     */
+    protected function formatMemberInquiryResponse(string $lower, Member $member): string
+    {
+        $card = $this->buildBiodataCardFromMember($member);
+        $position = $member->position ?: 'Anggota PMR Wira';
+        $kelas = $member->class_grade ? 'Kelas '.$member->class_grade : 'Kelas X/XI';
+
+        // A. Jika ditanya jabatan secara spesifik ("Delia Putri jabatannya apa", "Dhiora jabatannya apa")
+        if (
+            str_contains($lower, 'jabatan') ||
+            str_contains($lower, 'posisi') ||
+            str_contains($lower, 'tugas') ||
+            str_contains($lower, 'sebagai apa') ||
+            str_contains($lower, 'menjabat')
+        ) {
+            return "Halo Sahabat Kemanusiaan! 🏛️\n\n"
+                ."Berdasarkan data resmi PMR Wira SMAN 1 Ciawi, **{$member->name}** memegang jabatan resmi sebagai **{$position}**.\n\n"
+                ."Berikut kartu profil dan biodata lengkapnya:\n\n"
+                .$card;
+        }
+
+        // B. Jika ditanya kelas / angkatan
+        if (str_contains($lower, 'kelas') || str_contains($lower, 'tingkat') || str_contains($lower, 'angkatan')) {
+            return "Halo Sahabat Kemanusiaan! 🏛️\n\n"
+                ."Berdasarkan data anggota PMR Wira SMAN 1 Ciawi, **{$member->name}** saat ini duduk di **{$kelas}** ({$position}).\n\n"
+                ."Berikut kartu profil dan biodata lengkapnya:\n\n"
+                .$card;
+        }
+
+        // C. Jika ditanya kontak / nomor telepon / wa
+        if (
+            str_contains($lower, 'kontak') ||
+            str_contains($lower, 'telepon') ||
+            str_contains($lower, 'hp') ||
+            str_contains($lower, 'wa') ||
+            str_contains($lower, 'whatsapp') ||
+            str_contains($lower, 'nomor') ||
+            str_contains($lower, 'email')
+        ) {
+            $kontak = $member->phone ?: ($member->email ?: 'Belum terdaftar di kontak publik');
+
+            return "Halo Sahabat Kemanusiaan! 🏛️\n\n"
+                ."Kontak resmi untuk **{$member->name}** ({$position}) adalah **{$kontak}**.\n\n"
+                ."Berikut kartu profil dan biodata lengkapnya:\n\n"
+                .$card;
+        }
+
+        // D. Jika ditanya domisili / alamat
+        if (str_contains($lower, 'alamat') || str_contains($lower, 'domisili') || str_contains($lower, 'tinggal') || str_contains($lower, 'rumah')) {
+            $alamat = $member->address ?: 'Bogor';
+
+            return "Halo Sahabat Kemanusiaan! 🏛️\n\n"
+                ."Alamat/domisili resmi **{$member->name}** berada di **{$alamat}**.\n\n"
+                ."Berikut kartu profil dan biodata lengkapnya:\n\n"
+                .$card;
+        }
+
+        // E. Pertanyaan umum ("siapakah ...", "biodata ...", dll.)
+        return "Halo Sahabat Kemanusiaan! 🏛️\n\n"
+            ."Berikut data profil dan kartu biodata resmi relawan atas nama **{$member->name}** yang terdaftar di database PMR Wira SMAN 1 Ciawi:\n\n"
+            .$card;
+    }
+
+    /**
+     * Hitung skor kecocokan antara teks pertanyaan pengguna dan nama anggota.
+     * Menghasilkan skor tinggi untuk kecocokan nama lengkap (persis) dan membedakan nama yang mirip
+     * seperti "Ade Putri Berlian", "Delia Putri", dan "Putri Raisya Anjani".
+     */
+    public function calculateNameMatchScore(string $query, string $nameLower): int
+    {
+        // 1. Kecocokan nama lengkap secara persis di dalam query (misal: "ade putri berlian", "delia putri", "dhiora hayfa kalyca")
+        if (str_contains($query, $nameLower)) {
+            return 1000 + (strlen($nameLower) * 10);
+        }
+
+        $parts = preg_split('/\s+/', $nameLower);
+        $totalParts = count($parts);
+        if ($totalParts === 0) {
+            return 0;
+        }
+
+        // 2. Cek kecocokan frasa 2 kata berurutan (misal: "ade putri", "putri berlian", "delia putri", "dhiora hayfa")
+        $matchedConsecutive = 0;
+        if ($totalParts >= 2) {
+            for ($i = 0; $i < $totalParts - 1; $i++) {
+                $pair = $parts[$i].' '.$parts[$i + 1];
+                if (strlen($pair) >= 5 && str_contains($query, $pair)) {
+                    $matchedConsecutive++;
+                }
+            }
+        }
+
+        if ($matchedConsecutive > 0) {
+            return 500 + ($matchedConsecutive * 150) + (strlen($nameLower) * 5);
+        }
+
+        // 3. Hitung berapa banyak kata dari nama yang muncul di query sebagai kata utuh (\bword\b)
+        $matchedWords = 0;
+        $commonWords = ['muhammad', 'moch', 'mohamad', 'nur', 'siti', 'putri', 'putra', 'dewi', 'ahmad', 'fajar'];
+
+        foreach ($parts as $p) {
+            if (strlen($p) < 3) {
+                continue;
+            }
+            if (preg_match('/\b'.preg_quote($p, '/').'\b/i', $query)) {
+                $weight = in_array($p, $commonWords, true) ? 1 : 3;
+                $matchedWords += $weight;
+            }
+        }
+
+        // Jika sebagian besar kata cocok
+        if ($matchedWords >= ($totalParts * 2)) {
+            return 400 + ($matchedWords * 50);
+        }
+
+        if ($matchedWords >= 3) {
+            return 200 + ($matchedWords * 30);
+        }
+
+        // Jika hanya 1 kata cocok dan kata tersebut bukan kata pasaran, serta panjang >= 4
+        if ($matchedWords >= 1 && $totalParts >= 1) {
+            $first = $parts[0];
+            if (strlen($first) >= 4 && ! in_array($first, $commonWords, true) && preg_match('/\b'.preg_quote($first, '/').'\b/i', $query)) {
+                return 80 + strlen($first);
+            }
+        }
+
+        return 0;
     }
 
     /**
@@ -1366,23 +1555,7 @@ PROMPT;
      */
     protected function isNameMatch(string $query, string $name): bool
     {
-        if (str_contains($query, $name)) {
-            return true;
-        }
-
-        $parts = explode(' ', $name);
-        if (count($parts) >= 2) {
-            for ($i = 0; $i < count($parts) - 1; $i++) {
-                if (strlen($parts[$i]) >= 3 && str_contains($query, $parts[$i].' '.$parts[$i + 1])) {
-                    return true;
-                }
-            }
-            if (strlen($parts[0]) >= 4 && str_contains($query, $parts[0])) {
-                return true;
-            }
-        }
-
-        return false;
+        return $this->calculateNameMatchScore($query, strtolower(trim($name))) >= 50;
     }
 
     /**
@@ -1570,6 +1743,9 @@ PROMPT;
             $roleDesc = $position.' PMR Wira SMAN 1 Ciawi.';
         }
 
+        $status = $member->effective_status ?: 'Aktif';
+        $angkatan = $member->entry_year ? 'Tahun Masuk '.$member->entry_year : null;
+
         $extra = '';
         if ($member->birth_place && $member->birth_date) {
             $tgl = Carbon::parse($member->birth_date)->translatedFormat('d F Y');
@@ -1578,18 +1754,34 @@ PROMPT;
         if ($member->gender) {
             $extra .= "• **Jenis Kelamin:** {$member->gender}\n";
         }
-        if ($member->phone) {
-            $extra .= "• **Kontak:** {$member->phone}\n";
+        if ($member->address) {
+            $extra .= "• **Alamat / Domisili:** {$member->address}\n";
         }
+        if ($member->phone) {
+            $extra .= "• **Kontak / WhatsApp:** {$member->phone}\n";
+        }
+        if ($member->email) {
+            $extra .= "• **Email Resmi:** {$member->email}\n";
+        }
+
+        // Tampilkan info foto profil
+        $photoLine = '';
+        if (! empty($member->photo)) {
+            $photoUrl = $member->photo_url;
+            $photoLine = "• **Foto Profil:** [Lihat Foto Profil Resmi]({$photoUrl})\n";
+        }
+
+        $unitInfo = $kelas.' • PMR Wira SMAN 1 Ciawi'.($angkatan ? ' ('.$angkatan.')' : '');
 
         return "🪪 **{$badge}**\n"
             ."━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n"
             ."• **Nama Lengkap:** {$member->name}\n"
             ."• **Jabatan Resmi:** {$position}\n"
-            ."• **Tingkat / Unit:** {$kelas} • PMR Wira SMAN 1 Ciawi\n"
-            ."• **Status / Identitas:** {$nri}\n"
+            ."• **Tingkat / Unit:** {$unitInfo}\n"
+            ."• **Status / Identitas:** {$nri} (Status: {$status})\n"
             ."• **Masa Bakti:** 2026/2027 (Ragana Dwi Pantara)\n"
             .$extra
+            .$photoLine
             ."• **Fungsi & Tugas Pokok:** {$roleDesc}\n"
             ."• **Motto Relawan:** *\"{$motto}\"*\n"
             ."━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n"

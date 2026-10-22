@@ -1038,4 +1038,95 @@ class WiraAgentTest extends TestCase
         $this->assertStringContainsString('Fadhil Arkan', $reply);
         $this->assertStringContainsString('BIODATA KETUA BIDANG DIKLAT', $reply);
     }
+
+    public function test_wira_agent_displays_unique_dynamic_biodata_and_position_for_each_member(): void
+    {
+        Config::set('services.gemini.key', null);
+
+        // 1. Seed 3 distinct members with similar name tokens
+        $ade = Member::create([
+            'name' => 'Ade Putri Berlian',
+            'position' => 'Anggota Relawan',
+            'nri' => '24.49.101 PRT',
+            'class_grade' => 'X-1',
+            'phone' => '08123456701',
+            'email' => 'ade.berlian@pmrwirasman1c.sch.id',
+            'address' => 'Jl. Raya Ciawi No. 10, Bogor',
+            'birth_place' => 'Bogor',
+            'birth_date' => '2009-03-15',
+            'gender' => 'Perempuan',
+            'motto' => 'Belajar dan berbakti untuk kemanusiaan.',
+            'photo' => 'members/ade_berlian.jpg',
+            'is_active' => true,
+        ]);
+
+        $delia = Member::create([
+            'name' => 'Delia Putri',
+            'position' => 'Staf Pelayanan Medis',
+            'nri' => '24.49.102 PRT',
+            'class_grade' => 'XI-2',
+            'phone' => '08123456702',
+            'email' => 'delia.putri@pmrwirasman1c.sch.id',
+            'address' => 'Jl. Cisarua Puncak Km. 75, Bogor',
+            'birth_place' => 'Bogor',
+            'birth_date' => '2008-08-20',
+            'gender' => 'Perempuan',
+            'motto' => 'Melayani dengan sepenuh hati.',
+            'photo' => 'members/delia_putri.jpg',
+            'is_active' => true,
+        ]);
+
+        $dhiora = Member::create([
+            'name' => 'Dhiora Hayfa Kalyca',
+            'position' => 'Staf Bidang Humas',
+            'nri' => '24.49.103 PRT',
+            'class_grade' => 'X-3',
+            'phone' => '08123456703',
+            'email' => 'dhiora.kalyca@pmrwirasman1c.sch.id',
+            'address' => 'Komplek Megamendung Asri No. 5, Bogor',
+            'birth_place' => 'Jakarta',
+            'birth_date' => '2009-11-05',
+            'gender' => 'Perempuan',
+            'motto' => 'Bersuara untuk kemanusiaan.',
+            'photo' => 'members/dhiora.jpg',
+            'is_active' => true,
+        ]);
+
+        // A. Tanya: "siapakah Ade Putri Berlian"
+        $resAde = $this->postJson('/api/wira-agent/chat', [
+            'message' => 'siapakah Ade Putri Berlian',
+        ]);
+        $resAde->assertStatus(200);
+        $replyAde = $resAde->json('reply');
+        $this->assertStringContainsString('Ade Putri Berlian', $replyAde);
+        $this->assertStringContainsString('24.49.101 PRT', $replyAde);
+        $this->assertStringContainsString('08123456701', $replyAde);
+        $this->assertStringContainsString('Jl. Raya Ciawi No. 10', $replyAde);
+        $this->assertStringNotContainsString('Delia Putri', $replyAde);
+        $this->assertStringNotContainsString('Dhiora Hayfa', $replyAde);
+
+        // B. Tanya: "Delia Putri jabatannya apa"
+        $resDelia = $this->postJson('/api/wira-agent/chat', [
+            'message' => 'Delia Putri jabatannya apa',
+        ]);
+        $resDelia->assertStatus(200);
+        $replyDelia = $resDelia->json('reply');
+        $this->assertStringContainsString('Delia Putri', $replyDelia);
+        $this->assertStringContainsString('Staf Pelayanan Medis', $replyDelia);
+        $this->assertStringContainsString('24.49.102 PRT', $replyDelia);
+        $this->assertStringContainsString('08123456702', $replyDelia);
+        $this->assertStringNotContainsString('Ade Putri Berlian', $replyDelia);
+
+        // C. Tanya: "Dhiora Hayfa Kalyca jabatannya apa"
+        $resDhiora = $this->postJson('/api/wira-agent/chat', [
+            'message' => 'Dhiora Hayfa Kalyca jabatannya apa',
+        ]);
+        $resDhiora->assertStatus(200);
+        $replyDhiora = $resDhiora->json('reply');
+        $this->assertStringContainsString('Dhiora Hayfa Kalyca', $replyDhiora);
+        $this->assertStringContainsString('Staf Bidang Humas', $replyDhiora);
+        $this->assertStringContainsString('24.49.103 PRT', $replyDhiora);
+        $this->assertStringContainsString('08123456703', $replyDhiora);
+        $this->assertStringNotContainsString('Delia Putri', $replyDhiora);
+    }
 }
