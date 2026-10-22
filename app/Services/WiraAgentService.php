@@ -811,12 +811,18 @@ PROMPT;
             return null;
         }
 
-        $configuredModel = (string) config('services.gemini.model', 'gemini-1.5-flash');
+        $configuredModel = (string) config('services.gemini.model', 'gemini-3.5-flash-lite');
+
+        // Normalisasi model lawas (gemini-1.5-flash/pro, gemini-2.0, gemini-2.5) ke model resmi aktif Google
+        if (in_array($configuredModel, ['gemini-1.5-flash', 'gemini-1.5-pro', 'gemini-2.0-flash', 'gemini-2.5-flash', 'gemini-2.5-flash-lite'])) {
+            $configuredModel = 'gemini-3.5-flash-lite';
+        }
+
         $modelsToTry = array_unique([
             $configuredModel,
-            'gemini-1.5-flash',
-            'gemini-2.0-flash',
-            'gemini-2.5-flash',
+            'gemini-3.5-flash-lite',
+            'gemini-flash-latest',
+            'gemini-3.8-flash',
         ]);
 
         $contents = [];
@@ -857,7 +863,7 @@ PROMPT;
 
                 $url = "https://generativelanguage.googleapis.com/v1beta/models/{$cleanModel}:generateContent?key={$apiKey}";
 
-                $response = Http::timeout(15)
+                $response = Http::timeout(35)
                     ->withHeaders(['Content-Type' => 'application/json'])
                     ->post($url, $payload);
 
