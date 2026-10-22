@@ -144,7 +144,7 @@ class WiraAgentService
             }
         }
 
-        // 5. PRIORITAS UTAMA: Cek pertanyaan kepengurusan & biodata langsung dari DB
+        // 5. PRIORITAS UTAMA: Cek pertanyaan kepengurusan, pimpinan, ketua bidang & biodata langsung dari DB
         $deterministicReply = $this->matchDeterministicInquiry($lower);
         if ($deterministicReply !== null) {
             return [
@@ -173,7 +173,9 @@ class WiraAgentService
     {
         $bidangKeywords = ['diklat', 'markas', 'pelayanan', 'humas', 'kreasi'];
         $isAskingKetua = str_contains($lower, 'ketua') || str_contains($lower, 'pimpinan') ||
-            str_contains($lower, 'kabid') || str_contains($lower, 'kepala') || str_contains($lower, 'koordinator');
+            str_contains($lower, 'kabid') || str_contains($lower, 'kepala') || str_contains($lower, 'koordinator') ||
+            str_contains($lower, 'ktua') || str_contains($lower, 'memimpin') || str_contains($lower, 'penanggung jawab') ||
+            str_contains($lower, 'pj') || str_contains($lower, 'sispa') || str_contains($lower, 'siapa') || str_contains($lower, 'siapakah');
         $isAskingAnggota = str_contains($lower, 'anggota') || str_contains($lower, 'staf') ||
             str_contains($lower, 'staff') || str_contains($lower, 'tim') ||
             str_contains($lower, 'siapa saja') || str_contains($lower, 'daftar');
@@ -182,6 +184,22 @@ class WiraAgentService
         if ($isAskingKetua || $isAskingAnggota) {
             foreach ($bidangKeywords as $kw) {
                 if (str_contains($lower, $kw)) {
+                    $bidangDef = self::BIDANG_DEFINITIONS[$kw] ?? null;
+                    if ($bidangDef) {
+                        $info = $this->getRealBidangInfo($bidangDef);
+                        $realKetua = $info['ketua_name'] ? strtolower($info['ketua_name']) : null;
+
+                        // Jika ada ketua di DB, dan respon AI TIDAK memuat nama ketua asli tersebut, langsung override dengan data DB asli!
+                        if ($realKetua && ! str_contains(strtolower($response), $realKetua)) {
+                            return $this->handleSpecificBidangInquiry($lower) ?: $response;
+                        }
+
+                        // Jika ketua belum diisi di DB, dan AI malah mengarang nama atau menyebut ringkasan malas 5 bidang
+                        if (! $realKetua && (str_contains($response, 'ditopang oleh') || str_contains($response, '5 Bidang') || str_contains($response, '5 bidang'))) {
+                            return $this->handleSpecificBidangInquiry($lower) ?: $response;
+                        }
+                    }
+
                     // Deteksi jika AI hanya merangkum 5 bidang umum atau menyuruh lihat bagan
                     $isLazySummary = str_contains($response, 'ditopang oleh') ||
                         str_contains($response, '5 Bidang Utama') ||
@@ -1031,11 +1049,32 @@ PROMPT;
         if (Schema::hasTable('organization_members')) {
             try {
                 $candidates = OrganizationMember::with('member')
-                    ->where('level', 5)
-                    ->where('is_active', true)
+                    ->where(function ($q) {
+                        $q->where('level', 5)
+                            ->orWhere('position', 'like', '%markas%')
+                            ->orWhere('position', 'like', '%pelayanan%')
+                            ->orWhere('position', 'like', '%diklat%')
+                            ->orWhere('position', 'like', '%humas%')
+                            ->orWhere('position', 'like', '%kreasi%');
+                    })
+                    ->where(function ($q) {
+                        $q->where('is_active', true)->orWhereNull('is_active');
+                    })
                     ->get();
 
-                foreach ($candidates as $cand) {
+                // Prioritaskan baris yang memiliki pejabat terisi (member_id atau nama yang valid)
+                $sorted = $candidates->sortByDesc(function ($c) {
+                    if (! empty($c->member_id)) {
+                        return 3;
+                    }
+                    if (! empty($c->name) && $c->name !== '-') {
+                        return 2;
+                    }
+
+                    return 0;
+                });
+
+                foreach ($sorted as $cand) {
                     $pos = strtolower(($cand->position ?? '').' '.($cand->subtitle ?? '').' '.($cand->name ?? ''));
                     foreach ($bidang['keywords'] as $kw) {
                         if (str_contains($pos, $kw)) {
@@ -1057,10 +1096,15 @@ PROMPT;
             if ($orgMember->member) {
                 $ketuaMember = $orgMember->member;
                 $ketuaName = $ketuaMember->name;
-            } elseif (! empty($orgMember->name)) {
+            } elseif (! empty($orgMember->name) && $orgMember->name !== '-') {
                 if (Schema::hasTable('members')) {
                     try {
                         $ketuaMember = Member::where('name', $orgMember->name)->first();
+                        if (! $ketuaMember) {
+                            $ketuaMember = Member::where('name', 'like', '%'.$orgMember->name.'%')
+                                ->orWhere('name', 'like', '%'.explode(' ', trim($orgMember->name))[0].'%')
+                                ->first();
+                        }
                     } catch (\Throwable $e) {
                     }
                 }
@@ -1155,7 +1199,9 @@ PROMPT;
     public function handleSpecificBidangInquiry(string $lower): ?string
     {
         $isAskingKetua = str_contains($lower, 'ketua') || str_contains($lower, 'pimpinan') ||
-            str_contains($lower, 'kabid') || str_contains($lower, 'kepala') || str_contains($lower, 'koordinator');
+            str_contains($lower, 'kabid') || str_contains($lower, 'kepala') || str_contains($lower, 'koordinator') ||
+            str_contains($lower, 'ktua') || str_contains($lower, 'memimpin') || str_contains($lower, 'penanggung jawab') ||
+            str_contains($lower, 'pj') || str_contains($lower, 'sispa') || str_contains($lower, 'siapa') || str_contains($lower, 'siapakah');
         $isAskingAnggota = str_contains($lower, 'anggota') || str_contains($lower, 'staf') ||
             str_contains($lower, 'staff') || str_contains($lower, 'tim') ||
             str_contains($lower, 'siapa saja') || str_contains($lower, 'daftar');
@@ -1247,20 +1293,71 @@ PROMPT;
      */
     public function findMemberBiodataByName(string $lower): ?string
     {
-        // 1. Cek database terlebih dahulu jika ada tabel dan data
+        // 1. Cek database tabel members terlebih dahulu
         if (Schema::hasTable('members')) {
-            $allMembers = Member::where('is_active', true)->get();
-            if ($allMembers->isNotEmpty()) {
-                foreach ($allMembers as $member) {
-                    $nameLower = strtolower($member->name ?? '');
-                    if ($this->isNameMatch($lower, $nameLower)) {
-                        return $this->buildBiodataCardFromMember($member);
+            try {
+                $allMembers = Member::where('is_active', true)->get();
+                if ($allMembers->isNotEmpty()) {
+                    foreach ($allMembers as $member) {
+                        $nameLower = strtolower($member->name ?? '');
+                        if ($this->isNameMatch($lower, $nameLower)) {
+                            return $this->buildBiodataCardFromMember($member);
+                        }
                     }
                 }
+            } catch (\Throwable $e) {
             }
         }
 
-        // 2. Fallback ke data anggota resmi (jika DB kosong / unit test)
+        // 2. Cek database tabel organization_members (Pejabat & Staf Anggota)
+        if (Schema::hasTable('organization_members')) {
+            try {
+                $orgMembers = OrganizationMember::with('member')->get();
+                foreach ($orgMembers as $om) {
+                    $omName = strtolower($om->name ?? ($om->member?->name ?? ''));
+                    if ($omName && $this->isNameMatch($lower, $omName)) {
+                        if ($om->member) {
+                            return $this->buildBiodataCardFromMember($om->member);
+                        }
+
+                        return $this->getBiodataCard(
+                            name: $om->name,
+                            position: $om->position ?: 'Pengurus PMR Wira SMAN 1 Ciawi',
+                            levelOrClass: $om->subtitle ?: 'Kelas XI',
+                            idNumber: '-',
+                            roleDescription: $om->work_program ?: ('Menjalankan amanah sebagai '.$om->position.' PMR Wira SMAN 1 Ciawi.'),
+                            motto: 'Siap sedia mengabdi untuk kemanusiaan.',
+                            title: 'BIODATA PENGURUS PMR WIRA'
+                        );
+                    }
+
+                    // Cek staf di staff_members
+                    if (! empty($om->staff_members) && is_array($om->staff_members)) {
+                        foreach ($om->staff_members as $st) {
+                            $stName = strtolower(is_array($st) ? ($st['name'] ?? '') : '');
+                            if ($stName && $this->isNameMatch($lower, $stName)) {
+                                $sNri = ! empty($st['nri']) ? 'NRI: '.$st['nri'] : '-';
+                                $sKelas = ! empty($st['class_grade']) ? 'Kelas '.$st['class_grade'] : 'Kelas X/XI';
+                                $sMotto = $st['motto'] ?? 'Siap sedia mengabdi untuk kemanusiaan.';
+
+                                return $this->getBiodataCard(
+                                    name: ucwords($stName),
+                                    position: 'Staf '.$om->position,
+                                    levelOrClass: $sKelas,
+                                    idNumber: $sNri,
+                                    roleDescription: 'Staf operasional bidang '.$om->position.' PMR Wira SMAN 1 Ciawi.',
+                                    motto: $sMotto,
+                                    title: 'BIODATA STAF BIDANG '.strtoupper($om->position)
+                                );
+                            }
+                        }
+                    }
+                }
+            } catch (\Throwable $e) {
+            }
+        }
+
+        // 3. Fallback ke data anggota resmi (jika DB kosong / unit test)
         return $this->findStaticMemberBiodata($lower);
     }
 

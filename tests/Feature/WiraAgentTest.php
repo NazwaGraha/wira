@@ -957,30 +957,42 @@ class WiraAgentTest extends TestCase
     public function test_wira_agent_answers_who_is_ketua_bidang_markas_with_name_and_biodata(): void
     {
         $member = Member::create([
-            'name' => 'Fauzi Rohman',
+            'name' => 'Muhammad Ikhsan Fadhil',
             'position' => 'Ketua Bidang Markas',
             'nri' => '24.49.055 PRT',
             'class_grade' => 'XI-1',
-            'motto' => 'Siaga Selalu',
+            'motto' => 'Siaga Selalu untuk Kemanusiaan',
             'is_active' => true,
         ]);
         OrganizationMember::create([
             'level' => 5,
             'name' => $member->name,
-            'position' => 'Ketua Bidang Markas',
+            'position' => 'Bidang Markas',
             'member_id' => $member->id,
             'order_position' => 1,
         ]);
 
+        // Standard query
         $response = $this->postJson('/api/wira-agent/chat', [
             'message' => 'siapa ketua bidang markas',
         ]);
 
         $response->assertStatus(200);
         $reply = $response->json('reply');
-        $this->assertStringContainsString('Fauzi Rohman', $reply);
+        $this->assertStringContainsString('Muhammad Ikhsan Fadhil', $reply);
         $this->assertStringContainsString('BIODATA KETUA BIDANG MARKAS', $reply);
         $this->assertStringContainsString('24.49.055 PRT', $reply);
+        $this->assertStringNotContainsString('Indra Gunawan', $reply);
+
+        // Query with typo (e.g. 'Ketua Bidang markas sispa')
+        $resTypo = $this->postJson('/api/wira-agent/chat', [
+            'message' => 'Ketua Bidang markas sispa',
+        ]);
+        $resTypo->assertStatus(200);
+        $replyTypo = $resTypo->json('reply');
+        $this->assertStringContainsString('Muhammad Ikhsan Fadhil', $replyTypo);
+        $this->assertStringContainsString('BIODATA KETUA BIDANG MARKAS', $replyTypo);
+        $this->assertStringNotContainsString('Indra Gunawan', $replyTypo);
     }
 
     public function test_wira_agent_auto_corrects_lazy_llm_response_with_leader_biodata(): void
