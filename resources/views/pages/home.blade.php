@@ -28,7 +28,7 @@
     </div>
 
     <!-- Hero Content (Always Front & Legible) -->
-    <div class="relative z-20 w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-12 sm:pt-16 lg:pt-20 pb-12 sm:pb-16 lg:pb-20 flex flex-col items-center text-center">
+    <div class="relative z-20 w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-12 sm:pt-16 lg:pt-20 pb-28 sm:pb-36 lg:pb-40 flex flex-col items-center text-center">
         <div class="inline-flex items-center gap-2 bg-black/40 backdrop-blur-md px-3.5 sm:px-4 py-1.5 rounded-full text-[10px] sm:text-xs font-bold tracking-widest text-red-200 uppercase mb-4 sm:mb-6 border border-white/20 shadow-lg">
             <span class="w-2 h-2 rounded-full bg-red-400 animate-ping"></span>
             Masa Bakti Resmi 2026/2027
@@ -38,33 +38,43 @@
             RAGANA DWI PANTARA
         </h1>
         
-        <!-- Sub-headline Organisasi (Tepat di Atas Kontrol Navigasi Slider) -->
-        <p class="text-sm sm:text-lg lg:text-xl text-stone-100 max-w-2xl mb-0 font-semibold leading-relaxed px-2 drop-shadow-[0_2px_8px_rgba(0,0,0,0.85)]">
+        <!-- Sub-headline Organisasi -->
+        <p class="text-sm sm:text-lg lg:text-xl text-stone-100 max-w-2xl font-semibold leading-relaxed px-2 drop-shadow-[0_2px_8px_rgba(0,0,0,0.85)]">
             PMR Wira SMAN 1 Ciawi &mdash; Menyatu untuk Kemanusiaan, Sigap Menolong, Mengabdi Sepenuh Hati bagi Sesama.
         </p>
-
-        <!-- Slider Controls & Indicators (Diturunkan Signifikan 2 cm Tambahan / Total 160px di Bawah Sub-headline) -->
-        @if ($heroSlides->count() > 1)
-            <div style="margin-top: 160px;" class="flex items-center gap-3 z-30">
-                <button type="button" onclick="prevHeroSlide()" class="w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-black/40 hover:bg-black/70 text-white flex items-center justify-center border border-white/20 transition backdrop-blur-sm shadow-md" title="Slide Sebelumnya">
-                    <i class="fa-solid fa-chevron-left text-xs"></i>
-                </button>
-
-                <div class="flex items-center gap-1.5 sm:gap-2">
-                    @foreach ($heroSlides as $i => $s)
-                        <button type="button" onclick="goHeroSlide({{ $i }})" 
-                                class="hero-dot h-2.5 sm:h-3 rounded-full transition-all duration-300 {{ $i === 0 ? 'bg-white w-6 sm:w-8' : 'bg-white/40 hover:bg-white/70 w-2.5 sm:w-3' }}" 
-                                data-dot="{{ $i }}" 
-                                title="Slide {{ $i + 1 }}"></button>
-                    @endforeach
-                </div>
-
-                <button type="button" onclick="nextHeroSlide()" class="w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-black/40 hover:bg-black/70 text-white flex items-center justify-center border border-white/20 transition backdrop-blur-sm shadow-md" title="Slide Selanjutnya">
-                    <i class="fa-solid fa-chevron-right text-xs"></i>
-                </button>
-            </div>
-        @endif
     </div>
+
+    <!-- Slider Controls & Indicators (Diposisikan Presisi 0.5 cm di Atas Kartu KPI) -->
+    @if ($heroSlides->count() > 1)
+        <div class="hero-slider-controls absolute left-1/2 -translate-x-1/2 flex items-center gap-3 z-30">
+            <button type="button" onclick="prevHeroSlide()" class="w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-black/40 hover:bg-black/70 text-white flex items-center justify-center border border-white/20 transition backdrop-blur-sm shadow-md" title="Slide Sebelumnya">
+                <i class="fa-solid fa-chevron-left text-xs"></i>
+            </button>
+
+            <div class="flex items-center gap-1.5 sm:gap-2">
+                @foreach ($heroSlides as $i => $s)
+                    <button type="button" onclick="goHeroSlide({{ $i }})" 
+                            class="hero-dot h-2.5 sm:h-3 rounded-full transition-all duration-300 {{ $i === 0 ? 'bg-white w-6 sm:w-8' : 'bg-white/40 hover:bg-white/70 w-2.5 sm:w-3' }}" 
+                            data-dot="{{ $i }}" 
+                            title="Slide {{ $i + 1 }}"></button>
+                @endforeach
+            </div>
+
+            <button type="button" onclick="nextHeroSlide()" class="w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-black/40 hover:bg-black/70 text-white flex items-center justify-center border border-white/20 transition backdrop-blur-sm shadow-md" title="Slide Selanjutnya">
+                <i class="fa-solid fa-chevron-right text-xs"></i>
+            </button>
+        </div>
+        <style>
+            .hero-slider-controls {
+                bottom: 46px; /* Posisi tepat 0.5 cm di atas kartu KPI mobile (overlap 24px + 22px) */
+            }
+            @media (min-width: 640px) {
+                .hero-slider-controls {
+                    bottom: 60px; /* Posisi tepat 0.5 cm di atas kartu KPI desktop (overlap 40px + 20px) */
+                }
+            }
+        </style>
+    @endif
 </section>
 
 <!-- KPI / Statistics Banner (4 Cards) -->
