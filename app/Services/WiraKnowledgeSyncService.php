@@ -723,9 +723,9 @@ class WiraKnowledgeSyncService
             [
                 'id' => 'sejarah_kepalangmerahan',
                 'category' => 'kurikulum_pmi',
-                'title' => 'Sejarah Gerakan Palang Merah Internasional & PMI',
-                'keywords' => ['sejarah', 'henry dunant', 'solferino', 'komite lima', 'icrc', 'konvensi jenewa', 'mohammad hatta', 'sejarah pmi', '17 september 1945', 'bapak palang merah'],
-                'content' => 'Sejarah Palang Merah Internasional diprakarsai oleh Jean Henry Dunant (lahir 8 Mei 1828) pasca Pertempuran Solferino (1859). Ia menulis buku "Un Souvenir de Solferino" (1862) yang melahirkan Komite Lima / ICRC (1863) dan Konvensi Jenewa I (1864). Di Indonesia, PMI dibentuk pada 17 September 1945 atas instruksi Presiden Soekarno dan dipimpin pertama kali oleh Drs. Mohammad Hatta. Semboyan: "Siamo Tutti Fratelli" (Kita Semua Bersaudara).',
+                'title' => 'Sejarah Gerakan Palang Merah Internasional & Jean Henry Dunant',
+                'keywords' => ['sejarah', 'dunant', 'henry dunant', 'hendry dunant', 'henri dunant', 'jean henry', 'jean hendry', 'jean henry dunant', 'jean hendry dunant', 'solferino', 'komite lima', 'icrc', 'konvensi jenewa', 'mohammad hatta', 'sejarah pmi', '17 september 1945', 'bapak palang merah', 'pendiri palang merah', 'tokoh palang merah'],
+                'content' => 'Jean Henry Dunant (lahir di Jenewa, Swiss, 8 Mei 1828) adalah Bapak Palang Merah Sedunia dan penerima Nobel Perdamaian Pertama (1901). Terinspirasi dari penderitaan 40.000 korban Pertempuran Solferino (1859), Dunant memobilisasi warga desa menolong korban dengan semboyan "Siamo Tutti Fratelli" (Kita Semua Bersaudara). Dunant menulis buku "Un Souvenir de Solferino" (1862) yang melahirkan Komite Lima / ICRC (1863) dan Konvensi Jenewa I (1864). Di Indonesia, PMI dibentuk pada 17 September 1945 atas instruksi Presiden Soekarno dengan Ketua Umum pertama Drs. Mohammad Hatta.',
             ],
             [
                 'id' => 'tujuh_prinsip_pmi',

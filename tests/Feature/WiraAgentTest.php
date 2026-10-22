@@ -1355,4 +1355,44 @@ class WiraAgentTest extends TestCase
         $this->assertStringContainsString('Kesatuan (Unity)', $reply);
         $this->assertStringContainsString('Kesemestaan (Universality)', $reply);
     }
+
+    public function test_wira_agent_answers_who_is_jean_henry_dunant_with_various_spellings(): void
+    {
+        Config::set('services.gemini.key', null);
+
+        // 1. Ejaan dengan typo "Hendry" seperti yang ditanyakan user
+        $resTypo = $this->postJson('/api/wira-agent/chat', [
+            'message' => 'siapakah jean Hendry dunant',
+        ]);
+        $resTypo->assertStatus(200);
+        $replyTypo = $resTypo->json('reply');
+        $this->assertStringContainsString('Jean Henry Dunant', $replyTypo);
+        $this->assertStringContainsString('Bapak Palang Merah Sedunia', $replyTypo);
+        $this->assertStringContainsString('Solferino', $replyTypo);
+        $this->assertStringContainsString('Siamo Tutti Fratelli', $replyTypo);
+        $this->assertStringContainsString('Komite Lima', $replyTypo);
+
+        // 2. Ejaan standar "jean henry dunant"
+        $resStandar = $this->postJson('/api/wira-agent/chat', [
+            'message' => 'siapa jean henry dunant',
+        ]);
+        $resStandar->assertStatus(200);
+        $replyStandar = $resStandar->json('reply');
+        $this->assertStringContainsString('Bapak Palang Merah Sedunia', $replyStandar);
+        $this->assertStringContainsString('8 Mei 1828', $replyStandar);
+
+        // 3. Ditanya "bapak palang merah"
+        $resBapak = $this->postJson('/api/wira-agent/chat', [
+            'message' => 'siapakah bapak palang merah sedunia',
+        ]);
+        $resBapak->assertStatus(200);
+        $this->assertStringContainsString('Jean Henry Dunant', $resBapak->json('reply'));
+
+        // 4. Ditanya "pendiri palang merah"
+        $resPendiri = $this->postJson('/api/wira-agent/chat', [
+            'message' => 'siapa pendiri palang merah internasional',
+        ]);
+        $resPendiri->assertStatus(200);
+        $this->assertStringContainsString('Jean Henry Dunant', $resPendiri->json('reply'));
+    }
 }

@@ -323,25 +323,42 @@ class WiraAgentService
             return $this->renderSevenPrinciples();
         }
 
-        // G. Pencarian biodata anggota spesifik berdasarkan nama yang disebut (prioritas sebelum bidang)
+        // G. Jean Henry Dunant (Bapak Palang Merah Sedunia) & Sejarah Kepalangmerahan
+        if (
+            str_contains($lower, 'dunant') ||
+            str_contains($lower, 'henry dunant') ||
+            str_contains($lower, 'hendry dunant') ||
+            str_contains($lower, 'henri dunant') ||
+            str_contains($lower, 'jean henry') ||
+            str_contains($lower, 'jean hendry') ||
+            str_contains($lower, 'bapak palang merah') ||
+            str_contains($lower, 'pendiri palang merah') ||
+            str_contains($lower, 'pendiri pmi') ||
+            str_contains($lower, 'solferino') ||
+            str_contains($lower, 'komite lima')
+        ) {
+            return $this->renderHenryDunant();
+        }
+
+        // H. Pencarian biodata anggota spesifik berdasarkan nama yang disebut (prioritas sebelum bidang)
         $memberBiodata = $this->findMemberBiodataByName($lower);
         if ($memberBiodata !== null) {
             return $memberBiodata;
         }
 
-        // H. Pertanyaan spesifik mengenai program kerja bidang (seluruh bidang maupun per bidang)
+        // I. Pertanyaan spesifik mengenai program kerja bidang (seluruh bidang maupun per bidang)
         $prokerInquiry = $this->handleBidangWorkProgramInquiry($lower);
         if ($prokerInquiry !== null) {
             return $prokerInquiry;
         }
 
-        // I. Pertanyaan spesifik mengenai bidang tertentu (Ketua Bidang / Anggota Bidang)
+        // J. Pertanyaan spesifik mengenai bidang tertentu (Ketua Bidang / Anggota Bidang)
         $bidangInquiry = $this->handleSpecificBidangInquiry($lower);
         if ($bidangInquiry !== null) {
             return $bidangInquiry;
         }
 
-        // J. Pertanyaan jabatan pimpinan atas (Pembina, Ketua Umum, Wakil, BPH)
+        // K. Pertanyaan jabatan pimpinan atas (Pembina, Ketua Umum, Wakil, BPH)
         $leaderBiodata = $this->findLeaderBiodataByRole($lower);
         if ($leaderBiodata !== null) {
             return $leaderBiodata;
@@ -789,57 +806,81 @@ PROMPT;
      */
     protected function callGemini(string $apiKey, string $systemPrompt, string $message, array $history): ?string
     {
-        try {
-            $model = config('services.gemini.model', 'gemini-1.5-flash');
-            $url = "https://generativelanguage.googleapis.com/v1beta/models/{$model}:generateContent?key={$apiKey}";
+        $apiKey = trim($apiKey);
+        if ($apiKey === '') {
+            return null;
+        }
 
-            $contents = [];
-            foreach ($history as $turn) {
-                if (! empty($turn['content'])) {
-                    $role = ($turn['role'] === 'assistant' || $turn['role'] === 'model') ? 'model' : 'user';
-                    $contents[] = [
-                        'role' => $role,
-                        'parts' => [['text' => (string) $turn['content']]],
-                    ];
-                }
+        $configuredModel = (string) config('services.gemini.model', 'gemini-1.5-flash');
+        $modelsToTry = array_unique([
+            $configuredModel,
+            'gemini-1.5-flash',
+            'gemini-2.0-flash',
+            'gemini-2.5-flash',
+        ]);
+
+        $contents = [];
+        foreach ($history as $turn) {
+            if (! empty($turn['content'])) {
+                $role = ($turn['role'] === 'assistant' || $turn['role'] === 'model') ? 'model' : 'user';
+                $contents[] = [
+                    'role' => $role,
+                    'parts' => [['text' => (string) $turn['content']]],
+                ];
             }
+        }
 
-            $contents[] = [
-                'role' => 'user',
-                'parts' => [['text' => $message]],
-            ];
+        $contents[] = [
+            'role' => 'user',
+            'parts' => [['text' => $message]],
+        ];
 
-            $payload = [
-                'systemInstruction' => [
-                    'parts' => [
-                        ['text' => $systemPrompt],
-                    ],
+        $payload = [
+            'systemInstruction' => [
+                'parts' => [
+                    ['text' => $systemPrompt],
                 ],
-                'contents' => $contents,
-                'generationConfig' => [
-                    'temperature' => 0.7,
-                    'maxOutputTokens' => 900,
-                ],
-            ];
+            ],
+            'contents' => $contents,
+            'generationConfig' => [
+                'temperature' => 0.7,
+                'maxOutputTokens' => 1200,
+            ],
+        ];
 
-            $response = Http::timeout(15)
-                ->withHeaders(['Content-Type' => 'application/json'])
-                ->post($url, $payload);
-
-            if ($response->successful()) {
-                $data = $response->json();
-                $text = $data['candidates'][0]['content']['parts'][0]['text'] ?? null;
-                if ($text) {
-                    return trim($text);
+        foreach ($modelsToTry as $candidateModel) {
+            try {
+                $cleanModel = ltrim($candidateModel, '/');
+                if (str_starts_with($cleanModel, 'models/')) {
+                    $cleanModel = substr($cleanModel, 7);
                 }
-            } else {
-                Log::warning('Gemini API call failed', [
-                    'status' => $response->status(),
-                    'body' => $response->body(),
-                ]);
+
+                $url = "https://generativelanguage.googleapis.com/v1beta/models/{$cleanModel}:generateContent?key={$apiKey}";
+
+                $response = Http::timeout(15)
+                    ->withHeaders(['Content-Type' => 'application/json'])
+                    ->post($url, $payload);
+
+                if ($response->successful()) {
+                    $data = $response->json();
+                    $text = $data['candidates'][0]['content']['parts'][0]['text'] ?? null;
+                    if ($text) {
+                        return trim($text);
+                    }
+                } else {
+                    Log::warning("Gemini API call failed for model {$cleanModel}", [
+                        'status' => $response->status(),
+                        'body' => $response->body(),
+                    ]);
+
+                    // Jika otorisasi gagal (API key salah/revoked), jangan teruskan loop
+                    if (in_array($response->status(), [400, 401, 403])) {
+                        break;
+                    }
+                }
+            } catch (\Throwable $e) {
+                Log::warning("Gemini API Exception for model {$candidateModel}: ".$e->getMessage());
             }
-        } catch (\Throwable $e) {
-            Log::warning('Gemini API Exception: '.$e->getMessage());
         }
 
         return null;
@@ -966,9 +1007,25 @@ PROMPT;
             return "Halo Sahabat Kemanusiaan! 🎶\n\n**Mars Palang Merah Indonesia** adalah lagu resmi organisasi yang diciptakan oleh komponis **Mochtar M.**\n\n📜 **LIRIK RESMI MARS PALANG MERAH INDONESIA:**\n\n*Palang Merah Indonesia*\n*Wujud kepedulian nyata*\n*Berbakti tanpa pamrih*\n*Untuk sesama manusia*\n\n*Tujuh Prinsip Dasar Palang Merah*\n*Menjadi pedoman langkah kita*\n*Kemanusiaan, Kesamaan,*\n*Kenetralan, Kemandirian,*\n*Kesukarelaan, Kesatuan,*\n*Dan Kesemestaan*\n\n*Maju terus Palang Merah*\n*Mengabdi tuk nusa dan bangsa*\n*Menjunjung tinggi kemanusiaan*\n*Demi kejayaan Indonesia*\n\n✨ **Makna Lagu:** Menggambarkan dedikasi suci relawan untuk menolong sesama tanpa pamrih dan tanpa membeda-bedakan latar belakang, dengan senantiasa memegang teguh 7 Prinsip Dasar Palang Merah!";
         }
 
-        // 2. Sejarah Gerakan Kepalangmerahan & PMI
-        if (str_contains($lower, 'henry dunant') || str_contains($lower, 'solferino') || str_contains($lower, 'konvensi jenewa') || str_contains($lower, 'bapak palang merah') || str_contains($lower, 'komite lima') || str_contains($lower, 'icrc') || str_contains($lower, 'lambang') || (str_contains($lower, 'sejarah') && (str_contains($lower, 'pmi') || str_contains($lower, 'palang merah') || str_contains($lower, 'gerakan')))) {
-            return "Halo Sahabat Kemanusiaan! 🕊️\n\nBerikut adalah rangkuman **Sejarah Gerakan Kepalangmerahan Internasional & Palang Merah Indonesia (PMI)**:\n\n🌍 **GERAKAN PALANG MERAH INTERNASIONAL:**\n• 👤 **Bapak Palang Merah Sedunia:** Jean Henry Dunant (lahir di Jenewa, Swiss, 8 Mei 1828 - diperingati sebagai Hari Palang Merah Sedunia).\n• ⚔️ **Pertempuran Solferino (24 Juni 1859):** Pertempuran dahsyat di Italia Utara antara pasukan Prancis-Sardinia melawan tentara Austria yang meninggalkan 40.000 korban terlantar tanpa pertolongan medis.\n• 📖 **Buku \"Un Souvenir de Solferino\" (1862):** Catatan Henry Dunant yang melahirkan 2 gagasan revolusioner:\n  1. Membentuk perhimpunan bantuan sukarela di setiap negara untuk merawat korban perang.\n  2. Membuat perjanjian internasional untuk melindungi tenaga medis dan korban luka di medan perang.\n• 🏛️ **Komite Lima (1863):** Didirikan oleh Henry Dunant, Gustave Moynier, Jenderal Dufour, dr. Louis Appia, dan dr. Theodore Maunoir — menjadi cikal bakal **ICRC (International Committee of the Red Cross)**.\n• 📜 **Konvensi Jenewa I (1864):** Ditandatanganinya perjanjian internasional pertama perlindungan korban perang.\n• 🛡️ **3 Lambang Resmi yang Diakui:** Palang Merah di atas dasar putih (1863), Bulan Sabit Merah (1876), dan Kristal Merah (2005).\n\n🇮🇩 **SEJARAH PALANG MERAH INDONESIA (PMI):**\n• Berdiri pada **17 September 1945** (tepat satu bulan setelah Proklamasi Kemerdekaan RI) atas instruksi Presiden Soekarno.\n• Dipimpin oleh **Drs. Mohammad Hatta** (Wakil Presiden RI pertama) sebagai Ketua Umum PMI yang pertama.\n• Semboyan Palang Merah: *\"Siamo Tutti Fratelli\"* (Kita Semua Bersaudara)!\n\n✨ Nilai-nilai kemanusiaan ini menjadi pondasi bagi seluruh kader PMR Wira SMAN 1 Ciawi!";
+        // 2. Sejarah Gerakan Kepalangmerahan & Jean Henry Dunant
+        if (
+            str_contains($lower, 'dunant') ||
+            str_contains($lower, 'henry dunant') ||
+            str_contains($lower, 'hendry dunant') ||
+            str_contains($lower, 'henri dunant') ||
+            str_contains($lower, 'jean henry') ||
+            str_contains($lower, 'jean hendry') ||
+            str_contains($lower, 'bapak palang merah') ||
+            str_contains($lower, 'pendiri palang merah') ||
+            str_contains($lower, 'pendiri pmi') ||
+            str_contains($lower, 'solferino') ||
+            str_contains($lower, 'konvensi jenewa') ||
+            str_contains($lower, 'komite lima') ||
+            str_contains($lower, 'icrc') ||
+            str_contains($lower, 'lambang') ||
+            (str_contains($lower, 'sejarah') && (str_contains($lower, 'pmi') || str_contains($lower, 'palang merah') || str_contains($lower, 'gerakan')))
+        ) {
+            return $this->renderHenryDunant();
         }
 
         // 3. Tujuh Prinsip Dasar Palang Merah (7 Prinsip)
@@ -1152,8 +1209,19 @@ PROMPT;
             }
         }
 
-        // 31. Pertanyaan Terbuka / Luar Materi (Open-Domain Fallback)
-        return "Halo Sahabat Kemanusiaan! Salam hangat dari Wira Agent. 🌟\n\nSaya asisten virtual resmi PMR Wira SMAN 1 Ciawi (Masa Bakti Ragana Dwi Pantara 2026/2027).\n\nUntuk pertanyaan umum di luar kurikulum kepalangmerahan dan konten website, Wira Agent dapat memanfaatkan kecerdasan Google Gemini AI apabila variabel `GEMINI_API_KEY` telah disetel pada berkas `.env` server.\n\nSaat ini, Kakak dapat menanyakan informasi resmi kami, antara lain:\n• 👑 **Pimpinan & Struktur Organisasi** (Ketua Umum, Pembina, Wakil, BPH, 5 Bidang, dan seluruh staf anggota)\n• 🩹 **Pertolongan Pertama (P3K)** (Kejang-kejang, Tersedak, Asma, Gigitan Ular, RJP 30:2, Patah Tulang, Keseleo, Luka Bakar, Pingsan)\n• 🪵 **Tandu Darurat** (Ukuran bambu 225 cm, tali 13-14 m, simpul jangkar & palang)\n• 📜 **Materi Kepalangmerahan & PMI** (Henry Dunant, 7 Prinsip PMI, Tri Bakti, Mars PMI)\n• 🏆 **Syarat & Cabang Lomba PMR** (Sua Bhakti Berkarya)\n• 🩸 **Donor Darah Sukarela & Syarat Pendonor**\n• 🚨 **Ayo Siaga Bencana (ASB)** & Mitigasi Gempa/Kebakaran\n• 🏥 **Layanan Kontak & Hotline UKS** (0857-7024-6918)\n\nSilakan tanyakan materi di atas atau sebutkan nama pimpinan/anggota yang ingin Kakak ketahui!";
+        // 31. Pertanyaan Terbuka / Panduan Interaksi Wira Agent
+        return "Halo Sahabat Kemanusiaan! Salam hangat dari Wira Agent. 🌟\n\n"
+            ."Saya asisten virtual resmi PMR Wira SMAN 1 Ciawi (Masa Bakti Ragana Dwi Pantara 2026/2027).\n\n"
+            ."Wira Agent siap membantu menjawab seluruh informasi resmi seputar kegiatan, kepengurusan, kurikulum kepalangmerahan, dan layanan kami, antara lain:\n"
+            ."• 👑 **Pimpinan & Struktur Organisasi** (Ketua Umum, Pembina, Wakil, BPH, 5 Bidang, dan seluruh staf anggota)\n"
+            ."• 🩹 **Pertolongan Pertama (P3K)** (Kejang-kejang, Tersedak, Asma, Gigitan Ular, RJP 30:2, Patah Tulang, Keseleo, Luka Bakar, Pingsan)\n"
+            ."• 🪵 **Tandu Darurat** (Ukuran bambu 225 cm, tali 13-14 m, simpul jangkar & palang)\n"
+            ."• 📜 **Materi Kepalangmerahan & PMI** (Jean Henry Dunant, 7 Prinsip PMI, Tri Bakti, Mars PMI)\n"
+            ."• 🏆 **Syarat & Cabang Lomba PMR** (Sua Bhakti Berkarya)\n"
+            ."• 🩸 **Donor Darah Sukarela & Syarat Pendonor**\n"
+            ."• 🚨 **Ayo Siaga Bencana (ASB)** & Mitigasi Gempa/Kebakaran\n"
+            ."• 🏥 **Layanan Kontak & Hotline UKS** (0857-7024-6918)\n\n"
+            .'Silakan ajukan pertanyaan seputar materi di atas, tanyakan nama pengurus/anggota, atau sampaikan keluhan medis untuk panduan pertolongan pertama!';
     }
 
     /**
@@ -2345,6 +2413,38 @@ PROMPT;
             ."🎗️ **SPESIFIKASI SYAL KUNING PMR WIRA:**\n"
             ."Sesuai Bab 3 PPUO, anggota PMR Wira mengenakan **Syal Kuning Segitiga PMI** berukuran standar **120 cm x 90 cm x 90 cm** dengan bordir logo PMI di sudut lancip belakang, dilipat rapi dengan cincin syal (ring).\n\n"
             .'💡 *Dokumen e-book interaktif dan berkas PDF resmi GBHO & PPUO 2026 dapat diunduh di menu **Tentang Kami** pada website!*';
+    }
+
+    /**
+     * Render Biografi Lengkap Jean Henry Dunant & Sejarah Kepalangmerahan.
+     */
+    public function renderHenryDunant(): string
+    {
+        return "Halo Sahabat Kemanusiaan! 🕊️✨\n\n"
+            ."**Jean Henry Dunant** (sering juga ditulis *Jean Henri Dunant* atau *Jean Hendry Dunant*) adalah tokoh kemanusiaan terkemuka berkebangsaan Swiss yang dikenal di seluruh dunia sebagai **Bapak Palang Merah Sedunia (Father of the Red Cross)**.\n\n"
+            ."Berikut profil dan jejak sejarah perjuangan beliau yang menjadi fondasi utama berdirinya Gerakan Palang Merah Internasional dan PMR Wira SMAN 1 Ciawi:\n\n"
+            ."👤 **1. PROFIL SINGKAT TOKOH:**\n"
+            ."• **Nama Lengkap:** Jean Henry Dunant (Jean Henri Dunant)\n"
+            ."• **Tempat & Tanggal Lahir:** Jenewa, Swiss, 8 Mei 1828\n"
+            ."• **Gelar Kehormatan:** Bapak Palang Merah Sedunia & Penerima Hadiah Nobel Perdamaian Pertama di Dunia (1901 bersama Frédéric Passy)\n"
+            ."• **Peringatan Internasional:** Hari lahir beliau, **8 Mei**, diabadikan dan diperingati setiap tahun oleh seluruh penjuru dunia sebagai **Hari Palang Merah dan Bulan Sabit Merah Sedunia**.\n\n"
+            ."⚔️ **2. PERISTIWA BERSEJARAH SOLFERINO (24 JUNI 1859):**\n"
+            ."Saat dalam perjalanan bisnis di Italia Utara, Dunant tiba di desa Solferino bertepatan dengan pecahnya pertempuran dahsyat antara pasukan gabungan Prancis-Sardinia melawan tentara Kekaisaran Austria. Lebih dari **40.000 prajurit terluka parah dan gugur** bergelimpangan di medan perang tanpa bantuan medis yang memadai.\n\n"
+            ."Melihat penderitaan kemanusiaan yang begitu tragis, Dunant mengesampingkan urusan bisnisnya. Ia mengorganisasi penduduk desa setempat (terutama kaum ibu dan wanita di Castiglione delle Stiviere) untuk merawat dan memberikan pertolongan pertama kepada seluruh prajurit yang terluka tanpa memedulikan kebangsaan atau bendera mereka, sambil menyerukan semboyan abadi:\n"
+            ."👉 *\"Siamo Tutti Fratelli!\"* (Kita Semua Bersaudara!).\n\n"
+            ."📖 **3. BUKU MONUMENTAL \"Un Souvenir de Solferino\" (1862):**\n"
+            ."Sekembalinya ke Jenewa, Dunant menulis buku berjudul *\"Kenangan dari Solferino\" (A Memory of Solferino)* yang menggugah nurani para pemimpin Eropa. Buku ini memuat 2 gagasan revolusioner:\n"
+            ."1. **Membentuk perhimpunan bantuan sukarela di setiap negara pada masa damai** yang terlatih untuk merawat korban saat terjadi perang atau bencana (cikal bakal Palang Merah & Bulan Sabit Merah Nasional di seluruh dunia, termasuk PMI di Indonesia).\n"
+            ."2. **Menyusun perjanjian internasional yang disepakati bersama** untuk menjamin perlindungan hukum bagi relawan medis, rumah sakit lapangan, dan prajurit yang terluka di medan tempur (cikal bakal Konvensi Jenewa 1864).\n\n"
+            ."🏛️ **4. PEMBENTUKAN KOMITE LIMA & LAHIRNYA ICRC (1863):**\n"
+            ."Gagasan Dunant disambut hangat oleh 4 tokoh berpengaruh di Jenewa: Gustave Moynier (ahli hukum), Jenderal Guillaume-Henri Dufour (panglima militer), dr. Louis Appia (dokter bedah), dan dr. Théodore Maunoir (dokter bedah). Kelimanya membentuk *Komite Lima* yang kelak bertransformasi menjadi **ICRC (International Committee of the Red Cross)**.\n\n"
+            ."🛡️ **5. LAMBANG PALANG MERAH:**\n"
+            ."Sebagai penghormatan kepada Swiss (negara netral tempat lahirnya gerakan ini), diadopsi lambang resmi **Palang Merah di atas dasar putih** yang merupakan kebalikan dari bendera nasional Swiss.\n\n"
+            ."🇮🇩 **6. SEJARAH PALANG MERAH INDONESIA (PMI):**\n"
+            ."• Berdiri pada **17 September 1945** (tepat satu bulan setelah Proklamasi Kemerdekaan RI) atas instruksi Presiden Soekarno.\n"
+            ."• Dipimpin oleh **Drs. Mohammad Hatta** (Wakil Presiden RI pertama) sebagai Ketua Umum PMI yang pertama.\n\n"
+            ."✨ **PENGARUH BAGI PMR WIRA SMAN 1 CIAWI:**\n"
+            .'Semangat kerelawanan tanpa pamrih dan semboyan *"Siamo Tutti Fratelli"* warisan Jean Henry Dunant senantiasa menjadi pedoman, nafas perjuangan, dan kurikulum utama bagi setiap relawan muda PMR Wira SMAN 1 Ciawi dalam mengabdi bagi kemanusiaan!';
     }
 
     /**
