@@ -2,8 +2,8 @@
     "version": "2.0.0",
     "organization": "PMR Wira SMAN 1 Ciawi",
     "cabinet": "Ragana Dwi Pantara 2026/2027",
-    "updated_at": "2026-10-22T17:12:17+07:00",
-    "total_topics": 38,
+    "updated_at": "2026-10-22T20:13:45+07:00",
+    "total_topics": 40,
     "topics": [
         {
             "id": "profil_organisasi",
@@ -25,6 +25,37 @@
                 "sman 1 ciawi"
             ],
             "content": "PMR Wira Unit SMA Negeri 1 Ciawi adalah organisasi relawan sekolah terakreditasi A berkedudukan di Ruang UKS/PMR SMAN 1 Ciawi, Jl. Veteran No. 46, Pandansari, Ciawi, Kabupaten Bogor (Kode Pos 16720). Email resmi: pmrwirasman1c@gmail.com. Hotline Siaga Medis UKS: 0857-7024-6918. Masa bakti kepengurusan aktif adalah Ragana Dwi Pantara 2026/2027."
+        },
+        {
+            "id": "profil_ekstrakurikuler_beranda",
+            "category": "organisasi",
+            "title": "Profil Ekstrakurikuler PMR Wira SMAN 1 Ciawi (Membangun Karakter Kemanusiaan)",
+            "keywords": [
+                "profil ekstrakurikuler",
+                "profil ekskul",
+                "membangun karakter kemanusiaan",
+                "akreditasi pmr",
+                "terakreditasi a",
+                "unit pmr wira teladan",
+                "profil beranda"
+            ],
+            "content": "Profil Ekstrakurikuler PMR Wira SMA Negeri 1 Ciawi (Halaman Beranda):\n• Tema Utama: \"Membangun Karakter Kemanusiaan Generasi Muda SMAN 1 Ciawi\"\n• Status Akreditasi: Terakreditasi A • Unit PMR Wira Teladan Kabupaten Bogor\n• Pembina Utama: Abdul Hamid Saputra, S.Hum., M.Pd. (Dewan Pembina Kehormatan: Drs. H. Mulyadi, M.Pd.)\n• Markas / Sekretariat: Ruang UKS/PMR SMAN 1 Ciawi, Jl. Veteran No. 46, Pandansari, Ciawi, Bogor\n• Peran & Tujuan Pembinaan: Wadah pembentukan karakter relawan muda yang memiliki empati sosial tinggi, tangguh secara fisik dan mental, menguasai pertolongan pertama (P3K) medis, dan menjalin persahabatan antar-siswa berlandaskan 7 Prinsip Palang Merah dan Tri Bakti PMR."
+        },
+        {
+            "id": "program_unggulan_pmr_wira",
+            "category": "program_kerja",
+            "title": "Program Unggulan PMR Wira SMAN 1 Ciawi (3 Pilar Aksi Kemanusiaan)",
+            "keywords": [
+                "program unggulan",
+                "proker unggulan",
+                "pilar layanan",
+                "pilar aksi kemanusiaan",
+                "tiga pilar",
+                "donor darah sukarela",
+                "pertolongan pertama pp",
+                "siaga bencana dan sosial"
+            ],
+            "content": "Tiga Program Unggulan (Pilar Aksi Kemanusiaan) PMR Wira SMAN 1 Ciawi pada Halaman Beranda:\n\n1. Donor Darah Sukarela (DDS):\n   Edukasi pentingnya donor darah bagi remaja usia 17 tahun ke atas serta penyelenggaraan aksi donor darah berkala bekerja sama dengan UTD PMI Kabupaten Bogor untuk memenuhi ketersediaan stok darah kemanusiaan.\n\n2. Pertolongan Pertama (PP):\n   Pelatihan intensif pembalutan mitela, pembidaian fraktur, RJP/CPR 30:2, dan teknik evakuasi tandu cepat untuk menjamin keselamatan dan kesiapsiagaan medis pada setiap upacara bendera serta kegiatan sekolah.\n\n3. Siaga Bencana & Kepedulian Sosial:\n   Simulasi evakuasi gempa bumi (Drop, Cover, Hold On), program Sekolah Aman Bencana, serta penggalangan donasi dan bakti sosial bagi masyarakat terdampak musibah."
         },
         {
             "id": "semboyan_visi_misi",
@@ -308,19 +339,23 @@
         {
             "id": "lomba_pmr_info",
             "category": "lomba",
-            "title": "Informasi Lomba PMR & Syarat Pendaftaran Kontingen",
+            "title": "Informasi Lomba PMR, Cabang Lomba & Tingkatan Peserta",
             "keywords": [
                 "lomba",
                 "sua bhakti",
                 "syarat lomba",
                 "daftar lomba",
                 "kategori lomba",
+                "cabang lomba",
+                "tingkatan",
+                "madya",
+                "wira",
                 "biaya lomba",
                 "juklak",
                 "juknis",
                 "kompetisi"
             ],
-            "content": "INFORMASI LOMBA PMR: Lomba Ketangkasan PMR Wira Tingkat Jawa Barat (Sua Bhakti Berkarya)\n• Lokasi: Kampus SMA Negeri 1 Ciawi, Bogor\n• Biaya Registrasi: Rp 150.000 / Regu\n• Cabang Lomba: Pertolongan Pertama (PP), Pasang Tandu Darurat Cepat, Traveling Kepalangmerahan, Video & Poster Kemanusiaan.\n• Syarat Peserta:\n  1. Anggota aktif PMR Madya (SMP/MTs) atau PMR Wira (SMA/SMK/MA).\n  2. Membawa Surat Tugas/Mandat resmi dari Kepala Sekolah / Pembina.\n  3. Melampirkan Kartu Pelajar atau Surat Keterangan Siswa.\n  4. Pas foto 3x4 berseragam PMR lengkap syal.\n  5. Mendaftar online di menu Lomba PMR website https://pmrwirasmanic.or.id/lomba.\n  6. Melunasi administrasi dan membawa perlengkapan teknis mandiri."
+            "content": "INFORMASI LOMBA PMR: Lomba Ketangkasan PMR Wira Tingkat Jawa Barat (Sua Bhakti Berkarya)\n• Lokasi: Kampus SMA Negeri 1 Ciawi, Bogor\n• Biaya Registrasi: Rp 150.000 / Regu\n• Tingkatan Peserta yang Dipertandingkan:\n  1. Tingkat PMR Madya: Jenjang SMP / MTs sederajat.\n  2. Tingkat PMR Wira: Jenjang SMA / SMK / MA sederajat (wilayah Jawa Barat & Jabodetabek).\n• Cabang Lomba yang Dipertandingkan (7 Cabang Lomba Utama):\n  1. Lomba Pertolongan Pertama (LPP) Putra & Putri (Simulasi kasus medis gawat darurat, penanganan fraktur, pendarahan, evakuasi, dan kompresi).\n  2. Lomba Ketangkasan Tandu Reguler (LKTR) Putra & Putri (Kecepatan, kerapian simpul jangkar, kekuatan, dan presisi perakitan tandu darurat).\n  3. Lomba Ketangkasan Tandu Tutup Mata (LKTTM) (Uji kekompakan dan ketelitian membuat tandu darurat dalam kondisi mata tertutup blindfold).\n  4. Lomba Cepat Tepat Kepalangmerahan (LCT) (Adu wawasan seputar 7 Prinsip Palang Merah, Hukum Humaniter Internasional, dan sejarah kepalangmerahan).\n  5. Olimpiade Teori Medis & Kepalangmerahan (Ujian komprehensif tertulis materi medis P3K dasar, anatomi tubuh, dan penanganan bencana).\n  6. Mading Kreasi 3D & Desain Poster Digital Kemanusiaan (Kreativitas kampanye donor darah sukarela dan edukasi mitigasi kebencanaan).\n  7. Kontingen & Regu Terfavorit / Relawan Teladan (Penilaian sportivitas regu, yel-yel, dan kedisiplinan korsa selama ajang kompetisi).\n• Syarat & Ketentuan Peserta:\n  1. Anggota aktif PMR Madya (SMP/MTs) atau PMR Wira (SMA/SMK/MA).\n  2. Membawa Surat Tugas/Mandat resmi dari Kepala Sekolah / Pembina.\n  3. Melampirkan Kartu Pelajar atau Surat Keterangan Siswa.\n  4. Pas foto 3x4 berseragam PMR lengkap syal (Madya syal biru, Wira syal kuning).\n  5. Mendaftar online di menu Lomba PMR website https://pmrwirasmanic.or.id/lomba.\n  6. Melunasi administrasi dan membawa perlengkapan teknis mandiri."
         },
         {
             "id": "donor_darah_sukarela",
@@ -372,10 +407,17 @@
         {
             "id": "sejarah_kepalangmerahan",
             "category": "kurikulum_pmi",
-            "title": "Sejarah Gerakan Palang Merah Internasional & PMI",
+            "title": "Sejarah Gerakan Palang Merah Internasional & Jean Henry Dunant",
             "keywords": [
                 "sejarah",
+                "dunant",
                 "henry dunant",
+                "hendry dunant",
+                "henri dunant",
+                "jean henry",
+                "jean hendry",
+                "jean henry dunant",
+                "jean hendry dunant",
                 "solferino",
                 "komite lima",
                 "icrc",
@@ -383,9 +425,11 @@
                 "mohammad hatta",
                 "sejarah pmi",
                 "17 september 1945",
-                "bapak palang merah"
+                "bapak palang merah",
+                "pendiri palang merah",
+                "tokoh palang merah"
             ],
-            "content": "Sejarah Palang Merah Internasional diprakarsai oleh Jean Henry Dunant (lahir 8 Mei 1828) pasca Pertempuran Solferino (1859). Ia menulis buku \"Un Souvenir de Solferino\" (1862) yang melahirkan Komite Lima / ICRC (1863) dan Konvensi Jenewa I (1864). Di Indonesia, PMI dibentuk pada 17 September 1945 atas instruksi Presiden Soekarno dan dipimpin pertama kali oleh Drs. Mohammad Hatta. Semboyan: \"Siamo Tutti Fratelli\" (Kita Semua Bersaudara)."
+            "content": "Jean Henry Dunant (lahir di Jenewa, Swiss, 8 Mei 1828) adalah Bapak Palang Merah Sedunia dan penerima Nobel Perdamaian Pertama (1901). Terinspirasi dari penderitaan 40.000 korban Pertempuran Solferino (1859), Dunant memobilisasi warga desa menolong korban dengan semboyan \"Siamo Tutti Fratelli\" (Kita Semua Bersaudara). Dunant menulis buku \"Un Souvenir de Solferino\" (1862) yang melahirkan Komite Lima / ICRC (1863) dan Konvensi Jenewa I (1864). Di Indonesia, PMI dibentuk pada 17 September 1945 atas instruksi Presiden Soekarno dengan Ketua Umum pertama Drs. Mohammad Hatta."
         },
         {
             "id": "tujuh_prinsip_pmi",

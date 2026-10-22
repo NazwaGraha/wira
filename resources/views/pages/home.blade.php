@@ -23,22 +23,22 @@
             </div>
         @endif
 
-        <!-- Tetap Menjaga Gradien Merah Khas PMR Yang Aktif Sesuai Desain -->
-        <div class="absolute inset-0 bg-gradient-to-r from-red-950/90 via-pmr-primary/80 to-stone-950/85 z-10 pointer-events-none"></div>
+        <!-- Gradien Merah Khas PMR Yang Disesuaikan Lebih Terang & Transparan (~40%) -->
+        <div class="absolute inset-0 bg-gradient-to-r from-red-950/50 via-pmr-primary/40 to-stone-950/50 z-10 pointer-events-none"></div>
     </div>
 
     <!-- Hero Content (Always Front & Legible) -->
     <div class="relative z-20 w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-20 lg:py-28 flex flex-col items-center text-center">
-        <div class="inline-flex items-center gap-2 bg-white/15 backdrop-blur-md px-3.5 sm:px-4 py-1.5 rounded-full text-[10px] sm:text-xs font-bold tracking-widest text-red-200 uppercase mb-4 sm:mb-6 border border-white/20 shadow-inner">
+        <div class="inline-flex items-center gap-2 bg-black/40 backdrop-blur-md px-3.5 sm:px-4 py-1.5 rounded-full text-[10px] sm:text-xs font-bold tracking-widest text-red-200 uppercase mb-4 sm:mb-6 border border-white/20 shadow-lg">
             <span class="w-2 h-2 rounded-full bg-red-400 animate-ping"></span>
             Masa Bakti Resmi 2026/2027
         </div>
         
-        <h1 class="text-3xl sm:text-5xl lg:text-6xl font-extrabold text-white tracking-tight leading-tight max-w-4xl mb-4 sm:mb-6 text-shadow-sm">
+        <h1 class="text-3xl sm:text-5xl lg:text-6xl font-extrabold text-white tracking-tight leading-tight max-w-4xl mb-4 sm:mb-6 drop-shadow-[0_4px_16px_rgba(0,0,0,0.85)]">
             RAGANA DWI PANTARA
         </h1>
         
-        <p class="text-sm sm:text-lg lg:text-xl text-stone-200 max-w-2xl mb-8 sm:mb-10 font-medium leading-relaxed px-2">
+        <p class="text-sm sm:text-lg lg:text-xl text-stone-100 max-w-2xl mb-8 sm:mb-10 font-semibold leading-relaxed px-2 drop-shadow-[0_2px_8px_rgba(0,0,0,0.85)]">
             PMR Wira SMAN 1 Ciawi &mdash; Menyatu untuk Kemanusiaan, Sigap Menolong, Mengabdi Sepenuh Hati bagi Sesama.
         </p>
 
