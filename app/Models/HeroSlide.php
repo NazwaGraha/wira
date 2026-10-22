@@ -21,4 +21,28 @@ class HeroSlide extends Model
         'is_active' => 'boolean',
         'order_position' => 'integer',
     ];
+
+    /**
+     * URL resolusi gambar slide yang aman dan fleksibel.
+     */
+    public function getImageUrlAttribute(): string
+    {
+        if (empty($this->image_path)) {
+            return asset('mockups/01_home.jpg');
+        }
+
+        if (str_starts_with($this->image_path, 'http://') || str_starts_with($this->image_path, 'https://')) {
+            return $this->image_path;
+        }
+
+        if (str_starts_with($this->image_path, '/')) {
+            return asset(ltrim($this->image_path, '/'));
+        }
+
+        if (str_starts_with($this->image_path, 'storage/')) {
+            return asset($this->image_path);
+        }
+
+        return asset('storage/'.ltrim($this->image_path, '/'));
+    }
 }

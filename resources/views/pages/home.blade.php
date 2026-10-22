@@ -13,7 +13,7 @@
                      data-index="{{ $index }}"
                      data-caption="{{ $slide->caption ?? '' }}"
                      data-title="{{ $slide->title ?? 'RAGANA DWI PANTARA' }}">
-                    <img src="{{ $slide->image_path }}" alt="{{ $slide->title ?? 'Hero PMR' }}" 
+                    <img src="{{ $slide->image_url }}" alt="{{ $slide->title ?? 'Hero PMR' }}" 
                          class="w-full h-full object-cover object-center transform scale-100 transition-transform duration-[8000ms] ease-out">
                 </div>
             @endforeach

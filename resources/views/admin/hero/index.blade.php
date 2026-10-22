@@ -32,7 +32,7 @@
             <div class="bg-white rounded-3xl overflow-hidden border border-slate-200 shadow-sm flex flex-col group">
                 <!-- Thumbnail with Gradient Preview -->
                 <div class="relative h-48 sm:h-56 bg-slate-900 overflow-hidden">
-                    <img src="{{ $slide->image_path }}" alt="{{ $slide->title }}" class="w-full h-full object-cover group-hover:scale-105 transition duration-500">
+                    <img src="{{ $slide->image_url }}" alt="{{ $slide->title }}" class="w-full h-full object-cover group-hover:scale-105 transition duration-500">
                     
                     <!-- Overlay simulasi gradien -->
                     <div class="absolute inset-0 bg-gradient-to-r from-red-950/80 via-pmr-primary/70 to-stone-950/70"></div>

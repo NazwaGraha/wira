@@ -6,9 +6,12 @@ use App\Models\Achievement;
 use App\Models\Activity;
 use App\Models\Article;
 use App\Models\Category;
+use App\Models\HeroSlide;
 use App\Models\PopupBanner;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Storage;
 use Tests\TestCase;
 
 class ExampleTest extends TestCase
@@ -409,5 +412,83 @@ class ExampleTest extends TestCase
         $response = $this->get('/mars-pmi-audio');
         $response->assertStatus(200);
         $response->assertHeader('Content-Type', 'audio/mpeg');
+    }
+
+    public function test_admin_can_view_edit_hero_slide_with_upload_guidelines(): void
+    {
+        $user = User::factory()->create();
+
+        $slide = HeroSlide::create([
+            'title' => 'Apel Akbar PMR Wira 2026',
+            'image_path' => '/mockups/01_home.jpg',
+            'caption' => 'Dokumentasi apel akbar',
+            'order_position' => 1,
+            'is_active' => true,
+        ]);
+
+        $response = $this->actingAs($user)->get("/admin/hero-slides/{$slide->id}/edit");
+        $response->assertStatus(200);
+        $response->assertSee('Panduan Format & Ukuran Gambar Banner Hero', false);
+        $response->assertSee('1920 × 800 px', false);
+        $response->assertSee('JPG, JPEG, PNG, WEBP', false);
+        $response->assertSee('Maks. 5 MB', false);
+        $response->assertSee('name="image"', false);
+        $response->assertSee('enctype="multipart/form-data"', false);
+    }
+
+    public function test_admin_can_upload_and_update_hero_slide_image(): void
+    {
+        Storage::fake('public');
+        $user = User::factory()->create();
+
+        $slide = HeroSlide::create([
+            'title' => 'Slide Lama',
+            'image_path' => '/mockups/01_home.jpg',
+            'caption' => 'Caption Lama',
+            'order_position' => 1,
+            'is_active' => true,
+        ]);
+
+        $fakeImage = UploadedFile::fake()->image('new-banner.jpg', 1920, 800);
+
+        $response = $this->actingAs($user)->put("/admin/hero-slides/{$slide->id}", [
+            'title' => 'Slide Baru Apel Siaga',
+            'image' => $fakeImage,
+            'caption' => 'Caption Baru Berhasil Diupload',
+            'order_position' => 1,
+            'is_active' => '1',
+        ]);
+
+        $response->assertRedirect('/admin/hero-slides');
+        $response->assertSessionHas('success');
+
+        $slide->refresh();
+        $this->assertEquals('Slide Baru Apel Siaga', $slide->title);
+        $this->assertStringStartsWith('hero-slides/', $slide->image_path);
+        Storage::disk('public')->assertExists($slide->image_path);
+    }
+
+    public function test_admin_can_upload_and_create_hero_slide_image(): void
+    {
+        Storage::fake('public');
+        $user = User::factory()->create();
+
+        $fakeImage = UploadedFile::fake()->image('create-banner.png', 1920, 800);
+
+        $response = $this->actingAs($user)->post('/admin/hero-slides', [
+            'title' => 'Slide Baru Dari Form Create',
+            'image' => $fakeImage,
+            'caption' => 'Caption create slide',
+            'order_position' => 2,
+            'is_active' => '1',
+        ]);
+
+        $response->assertRedirect('/admin/hero-slides');
+        $response->assertSessionHas('success');
+
+        $created = HeroSlide::where('title', 'Slide Baru Dari Form Create')->first();
+        $this->assertNotNull($created);
+        $this->assertStringStartsWith('hero-slides/', $created->image_path);
+        Storage::disk('public')->assertExists($created->image_path);
     }
 }
