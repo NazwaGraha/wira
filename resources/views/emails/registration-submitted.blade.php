@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pendaftaran Lomba Diterima - {{ $registration->registration_code }}</title>
+    <title>Tanda Terima Pendaftaran Lomba - {{ $registration->registration_code }}</title>
     <style>
         body {
             margin: 0;
@@ -14,38 +14,36 @@
             -webkit-text-size-adjust: 100%;
         }
         .container {
-            max-width: 620px;
+            max-width: 640px;
             margin: 0 auto;
             background-color: #ffffff;
-            border-radius: 20px;
+            border-radius: 18px;
             overflow: hidden;
-            box-shadow: 0 4px 14px rgba(0, 0, 0, 0.06);
+            box-shadow: 0 4px 18px rgba(0, 0, 0, 0.07);
             border: 1px solid #e2e8f0;
         }
         .header {
-            background: linear-gradient(135deg, #b91c1c 0%, #880808 100%);
+            background: linear-gradient(135deg, #991b1b 0%, #7f1d1d 100%);
             background-color: #991b1b;
-            padding: 28px 24px 22px 24px;
-            text-align: left;
+            padding: 26px 22px 20px 22px;
+            text-align: center;
             color: #ffffff;
-        }
-        .header-table {
-            width: 100%;
-            border-collapse: collapse;
         }
         .logo-box {
             background-color: #ffffff;
-            padding: 6px 14px;
+            padding: 8px 18px;
             border-radius: 12px;
             display: inline-block;
-            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.12);
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+            margin-bottom: 14px;
         }
         .logo-img {
-            height: 38px;
-            max-height: 42px;
+            height: 48px;
+            max-height: 52px;
             width: auto;
             display: block;
             border: 0;
+            margin: 0 auto;
         }
         .header-title {
             font-size: 20px;
@@ -53,98 +51,92 @@
             color: #ffffff;
             text-transform: uppercase;
             letter-spacing: 0.5px;
-            line-height: 1.15;
-            text-align: right;
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-        }
-        .badge-status {
-            display: inline-block;
-            background-color: #ffffff;
-            color: #991b1b;
-            font-weight: 800;
-            font-size: 11px;
-            padding: 5px 18px;
-            border-radius: 9999px;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+            line-height: 1.2;
+            margin: 0 0 4px 0;
         }
         .header-subtitle {
-            color: #ffffff;
+            color: #fecaca;
             font-size: 13px;
-            font-weight: 700;
-            margin-top: 8px;
+            font-weight: 600;
+            margin: 0;
             letter-spacing: 0.3px;
-            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
         }
         .content {
-            padding: 32px 28px;
-            line-height: 1.7;
+            padding: 26px 24px;
+            line-height: 1.6;
             font-size: 14px;
             color: #1e293b;
         }
-        .pending-banner {
-            background: linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%);
-            border: 1px solid #fde68a;
-            border-radius: 16px;
-            padding: 20px;
+        /* REFINED STATUS CARD */
+        .status-card {
+            background-color: #f0fdf4;
+            border: 1.5px solid #bbf7d0;
+            border-radius: 14px;
+            padding: 16px 18px;
             text-align: center;
-            margin-bottom: 26px;
+            margin-bottom: 22px;
+            box-shadow: 0 2px 6px rgba(22, 163, 74, 0.05);
         }
-        .pending-stamp {
+        .status-pill {
             display: inline-block;
-            background-color: #d97706;
+            background-color: #16a34a;
             color: #ffffff;
-            font-weight: 900;
+            font-weight: 800;
             font-size: 11px;
-            letter-spacing: 1px;
+            letter-spacing: 0.5px;
             padding: 4px 14px;
             border-radius: 9999px;
-            margin-bottom: 10px;
+            text-transform: uppercase;
+            margin-bottom: 8px;
+            box-shadow: 0 2px 4px rgba(22, 163, 74, 0.2);
         }
-        .pending-title {
-            color: #92400e;
-            font-size: 18px;
+        .status-title {
+            color: #14532d;
+            font-size: 15px;
             font-weight: 800;
-            margin: 0 0 6px 0;
+            margin: 0 0 5px 0;
+            line-height: 1.3;
         }
-        .pending-desc {
-            color: #78350f;
-            font-size: 13px;
+        .status-sub {
+            color: #166534;
+            font-size: 12px;
             margin: 0;
-            line-height: 1.6;
+            font-weight: 500;
         }
-        .btn-action-container {
+        /* ACTION BUTTONS */
+        .btn-container {
             text-align: center;
-            margin: 24px 0 30px 0;
+            margin: 20px 0 24px 0;
         }
-        .btn-action {
+        .btn {
             display: inline-block;
-            padding: 12px 20px;
-            border-radius: 12px;
+            padding: 11px 18px;
+            border-radius: 10px;
             font-weight: 800;
-            font-size: 13px;
+            font-size: 12px;
             text-decoration: none;
             margin: 4px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08);
         }
-        .btn-status {
-            background-color: #dc2626;
+        .btn-red {
+            background-color: #991b1b;
             color: #ffffff !important;
         }
-        .btn-receipt {
+        .btn-dark {
             background-color: #0f172a;
             color: #ffffff !important;
         }
-        .btn-cards {
-            background-color: #2563eb;
+        .btn-blue {
+            background-color: #0284c7;
             color: #ffffff !important;
         }
+        /* INFO TABLE */
         .info-card {
             background-color: #f8fafc;
             border: 1px solid #e2e8f0;
             border-radius: 14px;
-            padding: 18px 20px;
-            margin-bottom: 22px;
+            padding: 16px 18px;
+            margin-bottom: 20px;
         }
         .info-card-title {
             font-size: 12px;
@@ -152,7 +144,7 @@
             text-transform: uppercase;
             letter-spacing: 0.5px;
             color: #64748b;
-            margin-bottom: 12px;
+            margin-bottom: 10px;
             border-bottom: 1px solid #e2e8f0;
             padding-bottom: 6px;
         }
@@ -162,11 +154,15 @@
             font-size: 13px;
         }
         .meta-table td {
-            padding: 6px 0;
+            padding: 7px 0;
             vertical-align: top;
+            border-bottom: 1px dashed #e2e8f0;
+        }
+        .meta-table tr:last-child td {
+            border-bottom: none;
         }
         .meta-label {
-            width: 36%;
+            width: 38%;
             color: #64748b;
             font-weight: 600;
         }
@@ -174,96 +170,217 @@
             color: #0f172a;
             font-weight: 700;
         }
-        .attachment-note {
-            background-color: #f0fdf4;
-            border: 1px solid #bbf7d0;
+        /* HELP DESK NOTE BOX */
+        .help-box {
+            background-color: #eff6ff;
+            border: 1.5px solid #bfdbfe;
             border-radius: 12px;
             padding: 14px 18px;
-            margin-bottom: 22px;
+            margin-bottom: 20px;
+        }
+        .help-box-title {
+            color: #1d4ed8;
             font-size: 13px;
-            color: #166534;
+            font-weight: 800;
+            margin: 0 0 5px 0;
+        }
+        .help-box-text {
+            color: #1e40af;
+            font-size: 12px;
+            line-height: 1.5;
+            margin: 0;
+            font-weight: 500;
+        }
+        /* ATTACHMENTS TRAY */
+        .attachment-tray {
+            background-color: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 14px;
+            padding: 16px 18px;
+            margin-bottom: 22px;
+        }
+        .attachment-tray-header {
+            font-size: 12px;
+            font-weight: 800;
+            color: #475569;
+            margin-bottom: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .pdf-chip-table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0 8px;
+        }
+        .pdf-chip-row td {
+            background-color: #ffffff;
+            border: 1.5px solid #e2e8f0;
+            border-radius: 10px;
+            padding: 10px 14px;
+            vertical-align: middle;
         }
         .footer {
             background-color: #f8fafc;
-            padding: 24px;
+            padding: 24px 20px;
             text-align: center;
             border-top: 1px solid #e2e8f0;
             font-size: 12px;
             color: #64748b;
         }
+        @media screen and (max-width: 600px) {
+            .container {
+                border-radius: 0 !important;
+                border: none !important;
+            }
+            .content {
+                padding: 18px 14px !important;
+            }
+            .btn {
+                display: block !important;
+                margin: 8px 0 !important;
+                width: auto !important;
+                padding: 13px !important;
+                font-size: 13px !important;
+            }
+            .logo-img {
+                height: 40px !important;
+            }
+            .header-title {
+                font-size: 17px !important;
+            }
+            .meta-table td {
+                display: block !important;
+                width: 100% !important;
+                padding: 3px 0 !important;
+            }
+            .meta-label {
+                font-size: 11px !important;
+                color: #64748b !important;
+            }
+            .meta-val {
+                margin-bottom: 8px !important;
+            }
+        }
     </style>
 </head>
-<body style="margin: 0; padding: 24px 12px; background-color: #f1f5f9;">
+<body style="margin: 0; padding: 20px 10px; background-color: #f1f5f9;">
 
     <div class="container">
         <!-- Header -->
         <div class="header">
-            <table class="header-table" width="100%" cellpadding="0" cellspacing="0" border="0">
-                <tr>
-                    <td style="vertical-align: middle; text-align: left;">
-                        <div class="logo-box">
-                            <img src="{{ isset($message) ? $message->embed(public_path('images/logo_pmi_sman1ciawi.png')) : asset('images/logo_pmi_sman1ciawi.png') }}" 
-                                 alt="PMI | SMAN 1 Ciawi" 
-                                 class="logo-img" />
-                        </div>
-                    </td>
-                    <td style="vertical-align: middle; text-align: right;">
-                        <div class="header-title">
-                            {{ !empty($registration->event->title) ? strtoupper($registration->event->title) : 'SUA BHAKTI BERKARYA' }}
-                        </div>
-                    </td>
-                </tr>
-                <tr>
-                    <td colspan="2" style="text-align: center; padding-top: 16px;">
-                        <div class="badge-status">
-                            &#9432; TANDA TERIMA PENDAFTARAN LOMBA RESMI
-                        </div>
-                        <div class="header-subtitle">
-                            PMR Wira SMA Negeri 1 Ciawi &bull; Kab. Bogor
-                        </div>
-                    </td>
-                </tr>
-            </table>
+            <div class="logo-box">
+                <img src="{{ isset($message) ? $message->embed(public_path('images/logo_pmi_sman1ciawi.png')) : asset('images/logo_pmi_sman1ciawi.png') }}" 
+                     alt="Logo PMI | SMA Negeri 1 Ciawi" 
+                     class="logo-img" />
+            </div>
+            <h1 class="header-title">
+                {{ !empty($registration->event->title) ? strtoupper($registration->event->title) : 'SUA BHAKTI BERKARYA TAHUN 2026' }}
+            </h1>
+            <p class="header-subtitle">
+                Tanda Terima Pendaftaran Lomba Resmi &bull; PMR Wira SMAN 1 Ciawi Kab. Bogor
+            </p>
         </div>
 
         <!-- Body -->
         <div class="content">
 
-            <!-- Pending Notification Banner -->
-            <div class="pending-banner">
-                <span class="pending-stamp">STATUS: PENDAFTARAN DITERIMA</span>
-                <h2 class="pending-title">&#10004; Formulir & Bukti Transfer Berhasil Dikirim</h2>
-                <p class="pending-desc">
-                    Terima kasih! Formulir pendaftaran dan bukti transfer kontingen <strong>{{ $registration->school_name }}</strong> telah masuk ke sistem panitia dan saat ini dalam antrean verifikasi bendahara.
+            <!-- Clean Status Card -->
+            <div class="status-card">
+                <div class="status-pill">&#9679; STATUS: PENDAFTARAN DITERIMA</div>
+                <h2 class="status-title">Formulir &amp; Bukti Transfer Berhasil Masuk ke Sistem Panitia</h2>
+                <p class="status-sub">
+                    Kode Registrasi: <strong style="color: #991b1b; font-family: monospace; font-size: 13px;">{{ $registration->registration_code }}</strong> &bull; Estimasi Verifikasi Bendahara: <strong>2 x 24 Jam Kerja</strong>
                 </p>
             </div>
 
-            <div style="margin-bottom: 16px; font-size: 14px; color: #475569;">
-                Kepada Yth. Bapak/Ibu Pembina PMR & Kontingen<br>
+            <div style="margin-bottom: 18px; font-size: 14px; color: #475569;">
+                Kepada Yth. Bapak/Ibu Pembina PMR &amp; Kontingen<br>
                 <strong style="color: #0f172a; font-size: 16px;">{{ $registration->school_name }}</strong>
             </div>
 
-            <!-- Attachment Highlight Box -->
-            <div class="attachment-note">
-                <strong>&#128206; Berkas Lampiran PDF Terlampir:</strong><br>
-                Kami telah melampirkan berkas dokumen resmi pada email ini:
-                <ul style="margin: 6px 0 0 0; padding-left: 20px;">
-                    <li><strong>e-Kwitansi Tanda Terima Pendaftaran (PDF)</strong></li>
-                    <li><strong>Kartu Peserta Lomba (PDF)</strong></li>
-                </ul>
+            <!-- Action Buttons -->
+            <div class="btn-container">
+                <a href="{{ url('/lomba/kwitansi/' . ($registration->registration_code ?: $registration->id)) }}" target="_blank" class="btn btn-red">
+                    &#11015;&#65039; Unduh e-Kwitansi (PDF)
+                </a>
+                <a href="{{ url('/lomba/kartu-peserta/' . ($registration->registration_code ?: $registration->id)) }}" target="_blank" class="btn btn-dark">
+                    &#11015;&#65039; Unduh Kartu Peserta (PDF)
+                </a>
+                <a href="{{ url('/lomba/status?code=' . ($registration->registration_code ?: $registration->id)) }}" target="_blank" class="btn btn-blue">
+                    &#128269; Cek Status Web
+                </a>
             </div>
 
-            <!-- Action Buttons -->
-            <div class="btn-action-container">
-                <a href="{{ url('/lomba/status?code=' . ($registration->registration_code ?: $registration->id)) }}" target="_blank" class="btn-action btn-status">
-                    &#128269; Cek Status Pendaftaran Online
-                </a>
-                <a href="{{ url('/lomba/kwitansi/' . ($registration->registration_code ?: $registration->id)) }}" target="_blank" class="btn-action btn-receipt">
-                    &#128196; Buka e-Kwitansi Web
-                </a>
-                <a href="{{ url('/lomba/kartu-peserta/' . ($registration->registration_code ?: $registration->id)) }}" target="_blank" class="btn-action btn-cards">
-                    &#129525; Buka Kartu Peserta
-                </a>
+            <!-- Help Desk Note Box -->
+            <div class="help-box">
+                <h4 class="help-box-title">&#128233; Ada Pertanyaan Seputar Pendaftaran atau Kendala Teknis?</h4>
+                <p class="help-box-text">
+                    Bila ada pertanyaan seputar pendaftaran lomba, silakan kirim email ke: <a href="mailto:pmrsman1ciawibogor@gmail.com" style="color: #1e40af; font-weight: 800; text-decoration: underline;">pmrsman1ciawibogor@gmail.com</a> atau hubungi WhatsApp Humas Panitia: <strong style="color: #1e3a8a;">0812-9214-3079</strong>.
+                </p>
+            </div>
+
+            <!-- Attachments Tray -->
+            <div class="attachment-tray">
+                <div class="attachment-tray-header">
+                    &#128206; Berkas Lampiran PDF Terlampir (Siap Unduh Langsung):
+                </div>
+                <table class="pdf-chip-table" width="100%" cellpadding="0" cellspacing="0" border="0">
+                    <tr class="pdf-chip-row">
+                        <td>
+                            <table width="100%" cellpadding="0" cellspacing="0" border="0">
+                                <tr>
+                                    <td style="width: 38px; vertical-align: middle;">
+                                        <div style="background-color: #fee2e2; color: #dc2626; width: 34px; height: 34px; border-radius: 6px; text-align: center; line-height: 34px; font-size: 11px; font-weight: 900;">
+                                            PDF
+                                        </div>
+                                    </td>
+                                    <td style="padding-left: 10px; vertical-align: middle;">
+                                        <div style="font-size: 13px; font-weight: 700; color: #0f172a;">
+                                            e-Kwitansi-{{ $registration->registration_code }}.pdf
+                                        </div>
+                                        <div style="font-size: 11px; color: #64748b;">
+                                            Tanda Terima Resmi Berstempel Panitia
+                                        </div>
+                                    </td>
+                                    <td style="text-align: right; vertical-align: middle;">
+                                        <a href="{{ url('/lomba/kwitansi/' . ($registration->registration_code ?: $registration->id)) }}" target="_blank" style="background-color: #f1f5f9; color: #0f172a; border: 1px solid #cbd5e1; padding: 6px 12px; border-radius: 6px; font-size: 11px; font-weight: 700; text-decoration: none; display: inline-block;">
+                                            &#11015; Unduh
+                                        </a>
+                                    </td>
+                                </tr>
+                            </table>
+                        </td>
+                    </tr>
+                    <tr class="pdf-chip-row">
+                        <td>
+                            <table width="100%" cellpadding="0" cellspacing="0" border="0">
+                                <tr>
+                                    <td style="width: 38px; vertical-align: middle;">
+                                        <div style="background-color: #fee2e2; color: #dc2626; width: 34px; height: 34px; border-radius: 6px; text-align: center; line-height: 34px; font-size: 11px; font-weight: 900;">
+                                            PDF
+                                        </div>
+                                    </td>
+                                    <td style="padding-left: 10px; vertical-align: middle;">
+                                        <div style="font-size: 13px; font-weight: 700; color: #0f172a;">
+                                            Kartu-Peserta-{{ $registration->registration_code }}.pdf
+                                        </div>
+                                        <div style="font-size: 11px; color: #64748b;">
+                                            Kartu Tanda Peserta Lomba Siap Cetak
+                                        </div>
+                                    </td>
+                                    <td style="text-align: right; vertical-align: middle;">
+                                        <a href="{{ url('/lomba/kartu-peserta/' . ($registration->registration_code ?: $registration->id)) }}" target="_blank" style="background-color: #f1f5f9; color: #0f172a; border: 1px solid #cbd5e1; padding: 6px 12px; border-radius: 6px; font-size: 11px; font-weight: 700; text-decoration: none; display: inline-block;">
+                                            &#11015; Unduh
+                                        </a>
+                                    </td>
+                                </tr>
+                            </table>
+                        </td>
+                    </tr>
+                </table>
+                <p style="margin: 8px 0 0 0; font-size: 11px; color: #166534;">
+                    &#10004; File PDF di atas juga otomatis tersemat sebagai attachment berkas fisik di bagian bawah email ini.
+                </p>
             </div>
 
             <!-- Ringkasan Data Kontingen -->
@@ -272,7 +389,7 @@
                 <table class="meta-table">
                     <tr>
                         <td class="meta-label">Kode Pendaftaran</td>
-                        <td class="meta-val" style="font-family: monospace; color: #b91c1c; font-size: 15px;">{{ $registration->registration_code }}</td>
+                        <td class="meta-val" style="font-family: monospace; color: #991b1b; font-size: 14px;">{{ $registration->registration_code }}</td>
                     </tr>
                     <tr>
                         <td class="meta-label">Nama Sekolah / Unit</td>
@@ -291,23 +408,35 @@
                         <td class="meta-val">{{ $registration->advisor_email }}</td>
                     </tr>
                     <tr>
+                        <td class="meta-label">Cabang Lomba Diikuti</td>
+                        <td class="meta-val">
+                            @if($registration->teams && $registration->teams->isNotEmpty())
+                                @foreach($registration->teams as $team)
+                                    <div>&bull; {{ $team->category->name ?? 'Lomba' }} @if($team->team_label)(Regu {{ $team->team_label }})@endif</div>
+                                @endforeach
+                            @else
+                                <em>Belum ada regu</em>
+                            @endif
+                        </td>
+                    </tr>
+                    <tr>
                         <td class="meta-label">Waktu Pendaftaran</td>
                         <td class="meta-val">{{ $registration->created_at ? $registration->created_at->translatedFormat('d F Y, H:i') : date('d F Y, H:i') }} WIB</td>
                     </tr>
                     <tr>
-                        <td class="meta-label">Total Pembayaran</td>
-                        <td class="meta-val" style="color: #b91c1c; font-size: 14px;">Rp {{ number_format($registration->total_payment, 0, ',', '.') }}</td>
+                        <td class="meta-label">Total Biaya Pendaftaran</td>
+                        <td class="meta-val" style="color: #15803d; font-size: 14px;">Rp {{ number_format($registration->total_payment, 0, ',', '.') }} (Bukti Transfer Terlampir)</td>
                     </tr>
                 </table>
             </div>
 
-            <!-- Petunjuk Panitia -->
+            <!-- Petunjuk Langkah Selanjutnya -->
             <div class="info-card" style="background-color: #fffbeb; border-color: #fde68a;">
                 <div class="info-card-title" style="color: #92400e; border-color: #fef3c7;">Informasi Langkah Selanjutnya</div>
                 <ol style="margin: 0; padding-left: 18px; font-size: 13px; color: #78350f; line-height: 1.7;">
-                    <li>Panitia akan memverifikasi bukti transfer pembayaran Anda dalam kurun waktu <strong>1x24 jam kerja</strong>.</li>
-                    <li>Setelah pembayaran dinyatakan valid, status kontingen Anda akan otomatis berganti menjadi <strong>LUNAS / SAH</strong> dan email verifikasi final akan dikirimkan.</li>
-                    <li>Anda dapat memantau status pendaftaran secara mandiri kapan saja melalui menu <strong>Cek Status</strong> di website dengan memasukkan Kode Pendaftaran: <strong style="font-family: monospace;">{{ $registration->registration_code }}</strong>.</li>
+                    <li>Panitia akan memverifikasi bukti transfer pembayaran Anda dalam kurun waktu <strong>2 x 24 jam kerja</strong>.</li>
+                    <li>Setelah pembayaran diverifikasi sah, status kontingen Anda akan otomatis berganti menjadi <strong>LUNAS / SAH</strong> dan email konfirmasi final akan dikirimkan.</li>
+                    <li>Anda dapat memantau status pendaftaran secara mandiri kapan saja melalui menu <strong>Cek Status</strong> di website dengan memasukkan Kode Registrasi: <strong style="font-family: monospace;">{{ $registration->registration_code }}</strong>.</li>
                 </ol>
             </div>
 
@@ -315,10 +444,12 @@
 
         <!-- Footer -->
         <div class="footer">
-            <p style="margin: 0 0 6px 0; font-weight: bold; color: #1e293b;">PANITIA PELAKSANA {{ strtoupper($registration->event->title ?? 'SUA BHAKTI BERKARYA TAHUN 2026') }}</p>
+            <p style="margin: 0 0 6px 0; font-weight: bold; color: #1e293b;">
+                PANITIA PELAKSANA {{ strtoupper($registration->event->title ?? 'SUA BHAKTI BERKARYA TAHUN 2026') }}
+            </p>
             <p style="margin: 0 0 10px 0;">Palang Merah Remaja (PMR) Wira SMA Negeri 1 Ciawi Kabupaten Bogor</p>
             <p style="margin: 0; font-size: 11px;">
-                WhatsApp Panitia: <strong>0812-9214-3079 / 0857-1049-7412</strong> &bull; Portal: <a href="{{ config('app.url', 'https://pmrwirasmanic.or.id') }}" style="color: #b91c1c; text-decoration: none; font-weight: bold;">pmrwirasmanic.or.id</a>
+                WhatsApp Panitia: <strong>0812-9214-3079 / 0857-1049-7412</strong> &bull; Portal: <a href="{{ config('app.url', 'https://pmrwirasmanic.or.id') }}" style="color: #991b1b; text-decoration: none; font-weight: bold;">pmrwirasmanic.or.id</a>
             </p>
         </div>
     </div>

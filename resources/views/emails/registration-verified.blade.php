@@ -421,6 +421,14 @@
                 </ol>
             </div>
 
+            <!-- Help Desk Note Box -->
+            <div style="background-color: #eff6ff; border: 1.5px solid #bfdbfe; border-radius: 12px; padding: 14px 18px; margin: 20px 0;">
+                <h4 style="color: #1d4ed8; font-size: 13px; font-weight: 800; margin: 0 0 5px 0;">&#128233; Ada Pertanyaan Seputar Pendaftaran atau Kendala Teknis?</h4>
+                <p style="color: #1e40af; font-size: 12px; line-height: 1.5; margin: 0; font-weight: 500;">
+                    Bila ada pertanyaan seputar pendaftaran lomba, silakan kirim email ke: <a href="mailto:pmrsman1ciawibogor@gmail.com" style="color: #1e40af; font-weight: 800; text-decoration: underline;">pmrsman1ciawibogor@gmail.com</a> atau hubungi WhatsApp Humas Panitia: <strong style="color: #1e3a8a;">0812-9214-3079</strong>.
+                </p>
+            </div>
+
             <div style="margin-top: 28px; font-size: 13px; color: #475569; line-height: 1.6;">
                 Salam Kemanusiaan,<br>
                 <strong style="color: #0f172a; font-size: 14px;">Panitia Pelaksana SUA BHAKTI BERKARYA</strong><br>
