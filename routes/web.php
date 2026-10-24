@@ -268,6 +268,8 @@ Route::prefix('admin')->name('admin.')->group(function () {
         // Setup Tujuan Transfer Rekening Lomba Per Tingkat (Mula, Madya, Wira)
         Route::get('/competition-bank-accounts', [CompetitionBankAccountController::class, 'index'])->name('competition-bank-accounts.index');
         Route::post('/competition-bank-accounts', [CompetitionBankAccountController::class, 'update'])->name('competition-bank-accounts.update');
+        Route::get('/competition-bank-account', fn () => redirect()->route('admin.competition-bank-accounts.index'));
+        Route::get('/rekening-lomba', fn () => redirect()->route('admin.competition-bank-accounts.index'));
 
         // Rekap Juara Umum & Klasemen
         Route::get('/competition-leaderboard', [CompetitionLeaderboardController::class, 'index'])->name('competition-leaderboard.index');
