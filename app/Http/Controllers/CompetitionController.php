@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Mail\RegistrationSubmittedMail;
 use App\Models\CompetitionCategory;
 use App\Models\CompetitionEvent;
 use App\Models\CompetitionInfoMenu;
@@ -11,6 +12,8 @@ use App\Models\CompetitionScore;
 use App\Models\Gallery;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\File;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Str;
 
@@ -294,6 +297,15 @@ class CompetitionController extends Controller
                 'team_label' => $label,
                 'members_list' => [],
             ]);
+        }
+
+        // Kirim email notifikasi tanda terima registrasi beserta lampiran PDF e-Kwitansi & Kartu Peserta
+        if (! empty($registration->advisor_email)) {
+            try {
+                Mail::to($registration->advisor_email)->send(new RegistrationSubmittedMail($registration));
+            } catch (\Throwable $e) {
+                Log::warning("Gagal mengirim email konfirmasi pendaftaran [{$code}] ke {$registration->advisor_email}: ".$e->getMessage());
+            }
         }
 
         return redirect()->route('lomba.status', ['code' => $code])->with('success', "Pendaftaran berhasil dikirim untuk {$totalTeams} regu! Kode Pendaftaran Anda: {$code}. Silakan simpan kode ini untuk mengecek status verifikasi panitia.");
