@@ -10,6 +10,7 @@ use App\Models\CompetitionRegistration;
 use App\Models\CompetitionScore;
 use App\Models\Gallery;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Str;
 
@@ -217,6 +218,16 @@ class CompetitionController extends Controller
             $file = $request->file('payment_proof');
             $filename = 'proof_'.time().'_'.Str::random(6).'.'.$file->getClientOriginalExtension();
             $proofPath = $file->storeAs('competition_payments', $filename, 'public');
+
+            // Salin fallback jika public/storage adalah folder fisik biasa (bukan symlink) di shared hosting
+            try {
+                if (file_exists(public_path('storage')) && ! is_link(public_path('storage'))) {
+                    File::ensureDirectoryExists(public_path('storage/competition_payments'), 0755, true);
+                    File::copy(storage_path('app/public/'.$proofPath), public_path('storage/'.$proofPath));
+                }
+            } catch (\Throwable $e) {
+                // Ignore fallback copy exception
+            }
         }
 
         $teamsToCreate = [];

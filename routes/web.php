@@ -233,6 +233,7 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::resource('competition-registrations', CompetitionRegistrationController::class)->parameters([
             'competition-registrations' => 'registration',
         ]);
+        Route::get('/competition-registrations/{registration}/proof', [CompetitionRegistrationController::class, 'proof'])->name('competition-registrations.proof');
         Route::post('/competition-registrations/{registration}/verify', [CompetitionRegistrationController::class, 'verify'])->name('competition-registrations.verify');
         Route::post('/competition-registrations/{registration}/reject', [CompetitionRegistrationController::class, 'reject'])->name('competition-registrations.reject');
         Route::post('/competition-registrations/{registration}/resend-email', [CompetitionRegistrationController::class, 'resendEmail'])->name('competition-registrations.resend-email');
@@ -403,6 +404,12 @@ Route::get('/server-sync-update-pmr', function () {
             File::copyDirectory(storage_path('app/public/members'), public_path('storage/members'));
             File::ensureDirectoryExists(public_path('storage/achievements'), 0755, true);
             File::copyDirectory(storage_path('app/public/achievements'), public_path('storage/achievements'));
+            File::ensureDirectoryExists(public_path('storage/competition_payments'), 0755, true);
+            File::copyDirectory(storage_path('app/public/competition_payments'), public_path('storage/competition_payments'));
+            File::ensureDirectoryExists(public_path('storage/hero-slides'), 0755, true);
+            File::copyDirectory(storage_path('app/public/hero-slides'), public_path('storage/hero-slides'));
+            File::ensureDirectoryExists(public_path('storage/popup-banners'), 0755, true);
+            File::copyDirectory(storage_path('app/public/popup-banners'), public_path('storage/popup-banners'));
         }
 
         // Sinkronisasi otomatis struktur bagan kepengurusan dari Data Anggota & Pembina
@@ -431,26 +438,39 @@ Route::get('/server-sync-update-pmr', function () {
 
 // Route Penyajian Langsung Berkas Storage (Anti 404 jika shared hosting / cPanel memblokir symlink)
 Route::get('/storage/{path}', function ($path) {
-    $firstFolder = explode('/', $path)[0];
-    $allowedFolders = ['advisors', 'members', 'competition_payments', 'galleries', 'donor-banners', 'broadcast_images', 'guidelines', 'achievements'];
+    $cleanPath = ltrim(str_replace(['../', '..\\'], '', $path), '/');
+    $firstFolder = explode('/', $cleanPath)[0];
+    $allowedFolders = [
+        'advisors', 'members', 'competition_payments', 'galleries',
+        'donor-banners', 'broadcast_images', 'guidelines', 'achievements',
+        'hero-slides', 'popup-banners', 'media',
+    ];
     if (! in_array($firstFolder, $allowedFolders, true)) {
         abort(404);
     }
 
-    $fullPath = storage_path("app/public/{$path}");
+    $candidatePaths = [
+        storage_path("app/public/{$cleanPath}"),
+        public_path("storage/{$cleanPath}"),
+        public_path($cleanPath),
+        storage_path("app/{$cleanPath}"),
+    ];
 
-    if (! file_exists($fullPath)) {
-        $publicFallback = public_path("storage/{$path}");
-        if (file_exists($publicFallback)) {
-            $fullPath = $publicFallback;
-        } else {
-            abort(404);
+    $resolvedPath = null;
+    foreach ($candidatePaths as $candidate) {
+        if (file_exists($candidate) && is_file($candidate)) {
+            $resolvedPath = $candidate;
+            break;
         }
     }
 
-    $mime = mime_content_type($fullPath) ?: 'application/octet-stream';
+    if (! $resolvedPath) {
+        abort(404);
+    }
 
-    return response()->file($fullPath, [
+    $mime = mime_content_type($resolvedPath) ?: 'application/octet-stream';
+
+    return response()->file($resolvedPath, [
         'Content-Type' => $mime,
         'Cache-Control' => 'public, max-age=86400',
     ]);

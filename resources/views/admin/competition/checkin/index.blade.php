@@ -130,7 +130,7 @@
                     <div class="bg-white/80 p-3 rounded-lg border border-rose-200 text-rose-900 mb-3 space-y-1.5">
                         <div class="font-bold text-rose-950">Cara Mengatasi:</div>
                         <div>&bull; Jika Anda membuka aplikasi <strong>FaceTime, Zoom, Photo Booth, atau Google Meet</strong> di Mac, <strong>tutup aplikasi tersebut</strong> agar sensor kamera tidak terkunci.</div>
-                        <div>&bull; Pastikan izin Camera diizinkan di Google Chrome (ikon di samping URL <code>wira.nazwagraha.com</code>).</div>
+                        <div>&bull; Pastikan izin Camera diizinkan di Google Chrome (ikon di samping URL <code>pmrwirasmanic.or.id</code>).</div>
                         <div>&bull; Di Mac: Buka <strong>System Settings &gt; Privacy &amp; Security &gt; Camera</strong>, pastikan Google Chrome dicentang.</div>
                         <div>&bull; Anda juga bisa langsung menggunakan tombol <strong>"Unggah Foto QR Code"</strong> di bawah ini atau mengetik nomor registrasi di kolom pencarian.</div>
                     </div>
@@ -622,7 +622,7 @@ function checkinApp() {
 
                     if (err.name === 'NotAllowedError' || err.name === 'PermissionDeniedError') {
                         this.cameraStatusText = 'Izin kamera diblokir browser';
-                        this.errorDetailMessage = 'Browser belum mengizinkan akses kamera. Klik ikon setelan di samping URL wira.nazwagraha.com, ubah Camera ke Allow lalu reload halaman.';
+                        this.errorDetailMessage = 'Browser belum mengizinkan akses kamera. Klik ikon setelan di samping URL pmrwirasmanic.or.id, ubah Camera ke Allow lalu reload halaman.';
                     } else if (err.name === 'NotReadableError' || err.name === 'TrackStartError') {
                         this.cameraStatusText = 'Kamera sedang dipakai aplikasi lain';
                         this.errorDetailMessage = 'Sensor kamera Mac Anda sedang digunakan oleh aplikasi lain (seperti FaceTime, Zoom, Photobooth, atau Google Meet). Silakan tutup aplikasi tersebut.';

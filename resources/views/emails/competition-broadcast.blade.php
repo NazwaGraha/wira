@@ -280,7 +280,7 @@
                 Email ini dikirimkan resmi kepada seluruh kontak sekolah dan pembina unit PMR yang terdaftar pada sistem kegiatan kami.
             </p>
             <p style="margin: 0 0 12px 0; font-size: 11px; color: #94a3b8;">
-                WhatsApp Panitia: <strong>0812-9214-3079 / 0857-1049-7412</strong> &bull; Portal: <a href="https://wira.nazwagraha.com" style="color: #b91c1c; text-decoration: none; font-weight: bold;">wira.nazwagraha.com</a>
+                WhatsApp Panitia: <strong>0812-9214-3079 / 0857-1049-7412</strong> &bull; Portal: <a href="{{ config('app.url', 'https://pmrwirasmanic.or.id') }}" style="color: #b91c1c; text-decoration: none; font-weight: bold;">pmrwirasmanic.or.id</a>
             </p>
             <p style="margin: 0; font-size: 11px; color: #94a3b8;">
                 &copy; {{ date('Y') }} PMR Wira SMA Negeri 1 Ciawi. Hak Cipta Dilindungi.

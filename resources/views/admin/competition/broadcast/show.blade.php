@@ -153,7 +153,7 @@
                             Email ini dikirimkan resmi kepada seluruh kontak sekolah dan pembina unit PMR yang terdaftar pada sistem kegiatan kami.
                         </div>
                         <div class="text-[10px] text-slate-400">
-                            WhatsApp Panitia: 0812-9214-3079 / 0857-1049-7412 &bull; wira.nazwagraha.com
+                            WhatsApp Panitia: 0812-9214-3079 / 0857-1049-7412 &bull; pmrwirasmanic.or.id
                         </div>
                         <div class="text-[10px] text-slate-400 pt-1">
                             &copy; {{ date('Y') }} PMR Wira SMA Negeri 1 Ciawi. Hak Cipta Dilindungi.

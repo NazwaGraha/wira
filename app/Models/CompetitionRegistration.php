@@ -52,6 +52,29 @@ class CompetitionRegistration extends Model
     }
 
     /**
+     * URL Resolusi Bukti Pembayaran yang aman (menggunakan named route backoffice atau asset lokal).
+     */
+    public function getPaymentProofUrlAttribute(): ?string
+    {
+        if (empty($this->payment_proof)) {
+            return null;
+        }
+
+        if (str_starts_with($this->payment_proof, 'http://') || str_starts_with($this->payment_proof, 'https://')) {
+            return $this->payment_proof;
+        }
+
+        $cleanPath = ltrim(str_replace('storage/', '', $this->payment_proof), '/');
+
+        // Jika rute admin tersedia dan ID ada, utamakan rute aman controller
+        if ($this->id) {
+            return route('admin.competition-registrations.proof', $this->id);
+        }
+
+        return asset('storage/'.$cleanPath);
+    }
+
+    /**
      * Generate format nomor registrasi unik resmi lomba (Contoh: SBB-W54342H)
      */
     public static function generateRegistrationCode(?string $level = null): string

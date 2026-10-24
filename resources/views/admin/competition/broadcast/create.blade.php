@@ -318,7 +318,7 @@
                         <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">
                             Link / Tautan Tombol Aksi
                         </label>
-                        <input type="url" name="button_url" value="{{ old('button_url') }}" placeholder="Contoh: https://wira.nazwagraha.com/lomba" class="w-full bg-slate-50 border border-slate-200 px-4 py-2.5 rounded-xl text-sm focus:bg-white focus:outline-none focus:border-red-500 font-medium">
+                        <input type="url" name="button_url" value="{{ old('button_url') }}" placeholder="Contoh: https://pmrwirasmanic.or.id/lomba" class="w-full bg-slate-50 border border-slate-200 px-4 py-2.5 rounded-xl text-sm focus:bg-white focus:outline-none focus:border-red-500 font-medium">
                     </div>
                 </div>
 
@@ -474,7 +474,7 @@
                             Email ini dikirimkan resmi kepada seluruh kontak sekolah dan pembina unit PMR yang terdaftar pada sistem kegiatan kami.
                         </div>
                         <div class="text-[10px] text-slate-400">
-                            WhatsApp Panitia: 0812-9214-3079 / 0857-1049-7412 &bull; wira.nazwagraha.com
+                            WhatsApp Panitia: 0812-9214-3079 / 0857-1049-7412 &bull; pmrwirasmanic.or.id
                         </div>
                         <div class="text-[10px] text-slate-400 pt-1">
                             &copy; {{ date('Y') }} PMR Wira SMA Negeri 1 Ciawi. Hak Cipta Dilindungi.

@@ -251,7 +251,7 @@
                             <td class="px-6 py-4">
                                 <div class="font-mono font-bold text-slate-900 text-xs">Rp {{ number_format($reg->total_payment, 0, ',', '.') }}</div>
                                 @if($reg->payment_proof)
-                                    <a href="{{ Storage::url($reg->payment_proof) }}" target="_blank" class="text-[11px] text-blue-600 hover:underline inline-flex items-center gap-1 mt-0.5 font-semibold">
+                                    <a href="{{ route('admin.competition-registrations.proof', $reg->id) }}" target="_blank" class="text-[11px] text-blue-600 hover:underline inline-flex items-center gap-1 mt-0.5 font-semibold">
                                         <i class="fa-solid fa-receipt"></i> Bukti Bayar
                                     </a>
                                 @else

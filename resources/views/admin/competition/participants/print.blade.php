@@ -194,7 +194,7 @@
         <div class="header-text">
             <h1>PALANG MERAH REMAJA (PMR) WIRA</h1>
             <h2>SMA NEGERI 1 CIAWI - KABUPATEN BOGOR</h2>
-            <p>Jalan Veteran III No. 45 Ciawi Bogor &bull; Email: pmr@sman1ciawi.sch.id &bull; Website: wira.nazwagraha.com</p>
+            <p>Jalan Veteran III No. 45 Ciawi Bogor &bull; Email: pmr@sman1ciawi.sch.id &bull; Website: pmrwirasmanic.or.id</p>
         </div>
         <img src="/images/logo.png" alt="Logo PMI" class="header-logo" onerror="this.style.display='none'">
     </div>

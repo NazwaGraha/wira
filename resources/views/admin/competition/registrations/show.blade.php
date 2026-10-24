@@ -140,8 +140,8 @@
             <h3 class="font-extrabold text-sm text-slate-800 uppercase tracking-wider mb-4">Bukti Pembayaran</h3>
             @if($registration->payment_proof)
                 <div class="rounded-xl overflow-hidden border border-slate-200">
-                    <a href="{{ Storage::url($registration->payment_proof) }}" target="_blank">
-                        <img src="{{ Storage::url($registration->payment_proof) }}" class="w-full h-auto object-cover hover:scale-105 transition duration-300" alt="Bukti Transfer">
+                    <a href="{{ route('admin.competition-registrations.proof', $registration->id) }}" target="_blank">
+                        <img src="{{ route('admin.competition-registrations.proof', $registration->id) }}" class="w-full h-auto object-cover hover:scale-105 transition duration-300" alt="Bukti Transfer">
                     </a>
                 </div>
                 <div class="text-[11px] text-slate-400 mt-2 text-center">Klik gambar untuk melihat resolusi penuh</div>

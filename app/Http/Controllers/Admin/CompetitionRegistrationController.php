@@ -191,6 +191,37 @@ class CompetitionRegistrationController extends Controller
         return redirect()->back()->with('success', "Pendaftaran {$registration->school_name} telah ditolak.");
     }
 
+    public function proof(CompetitionRegistration $registration)
+    {
+        if (! $registration->payment_proof) {
+            abort(404, 'Bukti pembayaran belum diunggah untuk pendaftaran ini.');
+        }
+
+        $cleanPath = ltrim(str_replace('storage/', '', $registration->payment_proof), '/');
+
+        $candidatePaths = [
+            Storage::disk('public')->path($cleanPath),
+            storage_path('app/public/'.$cleanPath),
+            public_path('storage/'.$cleanPath),
+            public_path($cleanPath),
+            storage_path('app/'.$cleanPath),
+        ];
+
+        foreach ($candidatePaths as $candidate) {
+            if (file_exists($candidate) && is_file($candidate)) {
+                $mime = mime_content_type($candidate) ?: 'application/octet-stream';
+
+                return response()->file($candidate, [
+                    'Content-Type' => $mime,
+                    'Content-Disposition' => 'inline; filename="'.basename($candidate).'"',
+                    'Cache-Control' => 'no-cache, private',
+                ]);
+            }
+        }
+
+        abort(404, 'Berkas fisik bukti transfer tidak ditemukan di server.');
+    }
+
     public function destroy($id)
     {
         $registration = CompetitionRegistration::find($id);
