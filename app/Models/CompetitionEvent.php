@@ -228,60 +228,47 @@ class CompetitionEvent extends Model
     {
         $levelNormalized = ucfirst(strtolower(trim($level ?? '')));
 
-        if ($levelNormalized === 'Mula' && ($this->bank_mula_number || $this->bank_mula_name)) {
+        if ($levelNormalized === 'Mula') {
             return [
                 'level' => 'Mula',
                 'level_label' => 'PMR Mula (SD / MI)',
                 'badge_color' => 'emerald',
-                'bank_name' => $this->bank_mula_name ?: ($this->bank_name ?: 'BANK BCA'),
-                'account_number' => $this->bank_mula_number ?: ($this->bank_account_number ?: '1234567890'),
-                'account_holder' => $this->bank_mula_holder ?: ($this->bank_account_holder ?: 'PMR WIRA SMAN 1 CIAWI'),
+                'bank_name' => $this->bank_mula_name ?: 'BANK BRI',
+                'account_number' => $this->bank_mula_number ?: '0123-01-001234-53-8',
+                'account_holder' => $this->bank_mula_holder ?: 'PMR WIRA SMANIC - MULA',
                 'is_custom' => ! empty($this->bank_mula_number),
             ];
         }
 
-        if ($levelNormalized === 'Madya' && ($this->bank_madya_number || $this->bank_madya_name)) {
+        if ($levelNormalized === 'Madya') {
             return [
                 'level' => 'Madya',
                 'level_label' => 'PMR Madya (SMP / MTs)',
                 'badge_color' => 'blue',
                 'bank_name' => $this->bank_madya_name ?: ($this->bank_name ?: 'BANK BCA'),
-                'account_number' => $this->bank_madya_number ?: ($this->bank_account_number ?: '1234567890'),
-                'account_holder' => $this->bank_madya_holder ?: ($this->bank_account_holder ?: 'PMR WIRA SMAN 1 CIAWI'),
+                'account_number' => $this->bank_madya_number ?: ($this->bank_account_number ?: '521-098-4321'),
+                'account_holder' => $this->bank_madya_holder ?: ($this->bank_account_holder ?: 'PMR WIRA SMANIC - MADYA'),
                 'is_custom' => ! empty($this->bank_madya_number),
             ];
         }
 
-        if ($levelNormalized === 'Wira' && ($this->bank_wira_number || $this->bank_wira_name)) {
+        if ($levelNormalized === 'Wira') {
             return [
                 'level' => 'Wira',
                 'level_label' => 'PMR Wira (SMA / SMK / MA)',
                 'badge_color' => 'amber',
-                'bank_name' => $this->bank_wira_name ?: ($this->bank_name ?: 'BANK BCA'),
-                'account_number' => $this->bank_wira_number ?: ($this->bank_account_number ?: '1234567890'),
-                'account_holder' => $this->bank_wira_holder ?: ($this->bank_account_holder ?: 'PMR WIRA SMAN 1 CIAWI'),
+                'bank_name' => $this->bank_wira_name ?: 'BANK MANDIRI',
+                'account_number' => $this->bank_wira_number ?: '133-00-9876543-2',
+                'account_holder' => $this->bank_wira_holder ?: 'PMR WIRA SMANIC - WIRA',
                 'is_custom' => ! empty($this->bank_wira_number),
             ];
         }
 
         // Default Fallback ke Rekening Umum
-        $badge = 'slate';
-        $label = 'Semua Tingkat';
-        if ($levelNormalized === 'Mula') {
-            $badge = 'emerald';
-            $label = 'PMR Mula (SD / MI)';
-        } elseif ($levelNormalized === 'Madya') {
-            $badge = 'blue';
-            $label = 'PMR Madya (SMP / MTs)';
-        } elseif ($levelNormalized === 'Wira') {
-            $badge = 'amber';
-            $label = 'PMR Wira (SMA / SMK / MA)';
-        }
-
         return [
             'level' => $levelNormalized ?: 'Umum',
-            'level_label' => $label,
-            'badge_color' => $badge,
+            'level_label' => 'Semua Tingkat',
+            'badge_color' => 'slate',
             'bank_name' => $this->bank_name ?: 'BANK BCA',
             'account_number' => $this->bank_account_number ?: '1234567890',
             'account_holder' => $this->bank_account_holder ?: 'PMR WIRA SMAN 1 CIAWI',

@@ -95,21 +95,21 @@
                                 <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">
                                     Nama Bank <span class="text-emerald-600">*</span>
                                 </label>
-                                <input type="text" name="bank_mula_name" value="{{ old('bank_mula_name', $event->bank_mula_name) }}" placeholder="Contoh: BANK BRI / BSI" class="w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-500 text-sm font-bold text-slate-800">
+                                <input type="text" name="bank_mula_name" value="{{ old('bank_mula_name', $event->bank_mula_name ?: 'BANK BRI') }}" placeholder="Contoh: BANK BRI / BSI" class="w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-500 text-sm font-bold text-slate-800">
                             </div>
 
                             <div>
                                 <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">
                                     Nomor Rekening Tujuan <span class="text-emerald-600">*</span>
                                 </label>
-                                <input type="text" name="bank_mula_number" value="{{ old('bank_mula_number', $event->bank_mula_number) }}" placeholder="Contoh: 0123-01-001234-53-8" class="w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-500 text-sm font-mono font-bold text-slate-900">
+                                <input type="text" name="bank_mula_number" value="{{ old('bank_mula_number', $event->bank_mula_number ?: '0123-01-001234-53-8') }}" placeholder="Contoh: 0123-01-001234-53-8" class="w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-500 text-sm font-mono font-bold text-slate-900">
                             </div>
 
                             <div>
                                 <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">
                                     Atas Nama Rekening <span class="text-emerald-600">*</span>
                                 </label>
-                                <input type="text" name="bank_mula_holder" value="{{ old('bank_mula_holder', $event->bank_mula_holder) }}" placeholder="Contoh: PMR WIRA SMANIC - MULA" class="w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-500 text-sm font-bold text-slate-800">
+                                <input type="text" name="bank_mula_holder" value="{{ old('bank_mula_holder', $event->bank_mula_holder ?: 'PMR WIRA SMANIC - MULA') }}" placeholder="Contoh: PMR WIRA SMANIC - MULA" class="w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-500 text-sm font-bold text-slate-800">
                             </div>
                         </div>
                     </div>
@@ -144,21 +144,21 @@
                                 <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">
                                     Nama Bank <span class="text-blue-600">*</span>
                                 </label>
-                                <input type="text" name="bank_madya_name" value="{{ old('bank_madya_name', $event->bank_madya_name) }}" placeholder="Contoh: BANK BCA" class="w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm font-bold text-slate-800">
+                                <input type="text" name="bank_madya_name" value="{{ old('bank_madya_name', $event->bank_madya_name ?: ($event->bank_name ?: 'BANK BCA')) }}" placeholder="Contoh: BANK BCA" class="w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm font-bold text-slate-800">
                             </div>
 
                             <div>
                                 <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">
                                     Nomor Rekening Tujuan <span class="text-blue-600">*</span>
                                 </label>
-                                <input type="text" name="bank_madya_number" value="{{ old('bank_madya_number', $event->bank_madya_number) }}" placeholder="Contoh: 521-098-4321" class="w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm font-mono font-bold text-slate-900">
+                                <input type="text" name="bank_madya_number" value="{{ old('bank_madya_number', $event->bank_madya_number ?: ($event->bank_account_number ?: '521-098-4321')) }}" placeholder="Contoh: 521-098-4321" class="w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm font-mono font-bold text-slate-900">
                             </div>
 
                             <div>
                                 <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">
                                     Atas Nama Rekening <span class="text-blue-600">*</span>
                                 </label>
-                                <input type="text" name="bank_madya_holder" value="{{ old('bank_madya_holder', $event->bank_madya_holder) }}" placeholder="Contoh: PMR WIRA SMANIC - MADYA" class="w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm font-bold text-slate-800">
+                                <input type="text" name="bank_madya_holder" value="{{ old('bank_madya_holder', $event->bank_madya_holder ?: ($event->bank_account_holder ?: 'PMR WIRA SMANIC - MADYA')) }}" placeholder="Contoh: PMR WIRA SMANIC - MADYA" class="w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm font-bold text-slate-800">
                             </div>
                         </div>
                     </div>
@@ -193,21 +193,21 @@
                                 <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">
                                     Nama Bank <span class="text-amber-600">*</span>
                                 </label>
-                                <input type="text" name="bank_wira_name" value="{{ old('bank_wira_name', $event->bank_wira_name) }}" placeholder="Contoh: BANK MANDIRI" class="w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-amber-500 text-sm font-bold text-slate-800">
+                                <input type="text" name="bank_wira_name" value="{{ old('bank_wira_name', $event->bank_wira_name ?: 'BANK MANDIRI') }}" placeholder="Contoh: BANK MANDIRI" class="w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-amber-500 text-sm font-bold text-slate-800">
                             </div>
 
                             <div>
                                 <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">
                                     Nomor Rekening Tujuan <span class="text-amber-600">*</span>
                                 </label>
-                                <input type="text" name="bank_wira_number" value="{{ old('bank_wira_number', $event->bank_wira_number) }}" placeholder="Contoh: 133-00-9876543-2" class="w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-amber-500 text-sm font-mono font-bold text-slate-900">
+                                <input type="text" name="bank_wira_number" value="{{ old('bank_wira_number', $event->bank_wira_number ?: '133-00-9876543-2') }}" placeholder="Contoh: 133-00-9876543-2" class="w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-amber-500 text-sm font-mono font-bold text-slate-900">
                             </div>
 
                             <div>
                                 <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">
                                     Atas Nama Rekening <span class="text-amber-600">*</span>
                                 </label>
-                                <input type="text" name="bank_wira_holder" value="{{ old('bank_wira_holder', $event->bank_wira_holder) }}" placeholder="Contoh: PMR WIRA SMANIC - WIRA" class="w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-amber-500 text-sm font-bold text-slate-800">
+                                <input type="text" name="bank_wira_holder" value="{{ old('bank_wira_holder', $event->bank_wira_holder ?: 'PMR WIRA SMANIC - WIRA') }}" placeholder="Contoh: PMR WIRA SMANIC - WIRA" class="w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-amber-500 text-sm font-bold text-slate-800">
                             </div>
                         </div>
                     </div>

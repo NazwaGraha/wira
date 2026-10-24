@@ -110,8 +110,9 @@ class CompetitionController extends Controller
         $categoriesByLevel = $event->categories->groupBy('level');
         $waveLabel = $event->getActiveWaveLabel();
         $countdownTarget = $event->getCountdownTarget();
+        $bankAccounts = $event->getAllBankAccounts();
 
-        return view('pages.lomba.register', compact('event', 'categoriesByLevel', 'activeWave', 'waveLabel', 'countdownTarget'));
+        return view('pages.lomba.register', compact('event', 'categoriesByLevel', 'activeWave', 'waveLabel', 'countdownTarget', 'bankAccounts'));
     }
 
     public function store(Request $request)

@@ -412,6 +412,8 @@
         const bankNumberEl = document.getElementById('bank-number-display');
         const bankHolderEl = document.getElementById('bank-holder-display');
         const bankBadgeEl = document.getElementById('bank-badge-display');
+        const bankCardEl = document.getElementById('bank-card-container');
+        const copyBtnEl = document.getElementById('btn-copy-account');
 
         if (bankNameEl && acc.bank_name) bankNameEl.textContent = acc.bank_name;
         if (bankNumberEl && acc.account_number) bankNumberEl.textContent = acc.account_number;
@@ -421,12 +423,30 @@
             if (lvl === 'Mula') {
                 bankBadgeEl.className = 'inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 text-[10px] font-black uppercase tracking-wider';
                 bankBadgeEl.innerHTML = '<i class="fa-solid fa-circle-dot text-[8px] animate-pulse"></i><span>Tujuan Transfer PMR Mula (SD/MI)</span>';
+                if (bankCardEl) {
+                    bankCardEl.className = 'bg-gradient-to-br from-slate-950 via-slate-900 to-emerald-950/80 text-white p-5 rounded-2xl shadow-md border-2 border-emerald-500/60 relative overflow-hidden transition-all duration-300';
+                }
+                if (copyBtnEl) {
+                    copyBtnEl.className = 'bg-emerald-600 hover:bg-emerald-500 active:scale-95 text-white text-[11px] font-bold px-3 py-1.5 rounded-lg flex items-center gap-1.5 shadow-sm transition shrink-0 cursor-pointer';
+                }
             } else if (lvl === 'Madya') {
                 bankBadgeEl.className = 'inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-blue-500/20 text-blue-300 border border-blue-500/30 text-[10px] font-black uppercase tracking-wider';
                 bankBadgeEl.innerHTML = '<i class="fa-solid fa-circle-dot text-[8px] animate-pulse"></i><span>Tujuan Transfer PMR Madya (SMP/MTs)</span>';
+                if (bankCardEl) {
+                    bankCardEl.className = 'bg-gradient-to-br from-slate-950 via-slate-900 to-blue-950/80 text-white p-5 rounded-2xl shadow-md border-2 border-blue-500/60 relative overflow-hidden transition-all duration-300';
+                }
+                if (copyBtnEl) {
+                    copyBtnEl.className = 'bg-blue-600 hover:bg-blue-500 active:scale-95 text-white text-[11px] font-bold px-3 py-1.5 rounded-lg flex items-center gap-1.5 shadow-sm transition shrink-0 cursor-pointer';
+                }
             } else if (lvl === 'Wira') {
                 bankBadgeEl.className = 'inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/30 text-[10px] font-black uppercase tracking-wider';
                 bankBadgeEl.innerHTML = '<i class="fa-solid fa-circle-dot text-[8px] animate-pulse"></i><span>Tujuan Transfer PMR Wira (SMA/SMK)</span>';
+                if (bankCardEl) {
+                    bankCardEl.className = 'bg-gradient-to-br from-slate-950 via-slate-900 to-amber-950/80 text-white p-5 rounded-2xl shadow-md border-2 border-amber-500/60 relative overflow-hidden transition-all duration-300';
+                }
+                if (copyBtnEl) {
+                    copyBtnEl.className = 'bg-amber-600 hover:bg-amber-500 active:scale-95 text-white text-[11px] font-bold px-3 py-1.5 rounded-lg flex items-center gap-1.5 shadow-sm transition shrink-0 cursor-pointer';
+                }
             }
         }
     }
@@ -654,6 +674,20 @@
     }
 
     document.addEventListener('DOMContentLoaded', function() {
+        // Inisialisasi tampilan nomor rekening sesuai tingkatan yang aktif
+        const activeLevelRadio = document.querySelector('input[name="level"]:checked');
+        const initialLevel = activeLevelRadio ? activeLevelRadio.value : '{{ $currentLevel ?? "Madya" }}';
+        updateBankAccountDisplay(initialLevel);
+
+        // Bind radio change listeners agar selalu sinkron jika berpindah tingkatan
+        document.querySelectorAll('input[name="level"]').forEach(radio => {
+            radio.addEventListener('change', function() {
+                if (this.checked) {
+                    switchLevel(this.value);
+                }
+            });
+        });
+
         document.querySelectorAll('.cat-checkbox:checked').forEach(cb => {
             updateRemoveButtons(cb.value);
         });
