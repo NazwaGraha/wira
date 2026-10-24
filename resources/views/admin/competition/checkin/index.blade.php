@@ -100,24 +100,34 @@
             <div x-show="scannerActive" x-transition class="mb-6 bg-white p-5 rounded-2xl border-2 border-dashed border-red-300 max-w-lg mx-auto shadow-sm">
                 
                 <!-- Status Bar & Pemilih Kamera -->
-                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-3">
-                    <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold"
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 mb-3">
+                    <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold"
                           :class="isCameraLoading ? 'bg-amber-100 text-amber-800 animate-pulse' : (cameraPermissionError ? 'bg-rose-100 text-rose-700' : 'bg-emerald-100 text-emerald-800')">
                         <i class="fa-solid" :class="isCameraLoading ? 'fa-circle-notch fa-spin' : (cameraPermissionError ? 'fa-triangle-exclamation' : 'fa-video')"></i>
                         <span x-text="cameraStatusText"></span>
                     </span>
 
-                    <!-- Dropdown Pilih Kamera jika ada lebih dari 1 kamera -->
-                    <template x-if="availableCameras.length > 1">
-                        <div class="flex items-center gap-1.5 text-xs">
-                            <span class="text-slate-500 font-bold"><i class="fa-solid fa-camera-rotate"></i></span>
-                            <select x-model="selectedCameraId" @change="switchCamera()" class="text-xs py-1 px-2.5 bg-slate-100 border border-slate-300 rounded-lg font-semibold text-slate-700 focus:ring-2 focus:ring-red-500">
-                                <template x-for="cam in availableCameras" :key="cam.id">
-                                    <option :value="cam.id" x-text="cam.label || ('Kamera ' + cam.id.substr(0,8))"></option>
-                                </template>
-                            </select>
-                        </div>
-                    </template>
+                    <div class="flex items-center flex-wrap gap-2">
+                        <!-- Tombol Beralih Kamera (Depan / Belakang) Khusus Smartphone & Webcam -->
+                        <button type="button" 
+                                @click="toggleFacingMode()" 
+                                class="px-3 py-1.5 bg-slate-800 hover:bg-slate-900 active:scale-95 text-white rounded-xl font-bold text-xs transition flex items-center gap-1.5 shadow-sm"
+                                title="Beralih Kamera Depan / Belakang">
+                            <i class="fa-solid fa-camera-rotate text-amber-400"></i>
+                            <span x-text="currentFacingMode === 'environment' ? 'Ganti Kamera Depan' : 'Ganti Kamera Belakang'"></span>
+                        </button>
+
+                        <!-- Dropdown Pilih Lensa/Perangkat Kamera jika ada lebih dari 1 kamera -->
+                        <template x-if="availableCameras.length > 1">
+                            <div class="flex items-center gap-1 text-xs">
+                                <select x-model="selectedCameraId" @change="switchCamera()" class="text-xs py-1.5 px-2.5 bg-slate-100 border border-slate-300 rounded-xl font-semibold text-slate-700 focus:ring-2 focus:ring-red-500 max-w-[170px] truncate shadow-2xs">
+                                    <template x-for="(cam, idx) in availableCameras" :key="cam.deviceId || idx">
+                                        <option :value="cam.deviceId" x-text="formatCameraLabel(cam, idx)"></option>
+                                    </template>
+                                </select>
+                            </div>
+                        </template>
+                    </div>
                 </div>
 
                 <!-- Petunjuk jika sensor kamera gagal / izin bermasalah -->
@@ -143,10 +153,20 @@
                 <!-- Video Viewfinder Native Container -->
                 <div class="relative rounded-2xl overflow-hidden shadow-inner bg-slate-950 w-full min-h-[260px] aspect-video flex items-center justify-center border-2 border-slate-800">
                     <!-- Native HTML5 Video -->
-                    <video id="webcam-video" class="w-full h-full object-cover" autoplay playsinline muted></video>
+                    <video id="webcam-video" class="w-full h-full object-cover" autoplay playsinline webkit-playsinline muted></video>
                     
                     <!-- Canvas Tersembunyi untuk Scanning Frame -->
                     <canvas id="qr-canvas" class="hidden"></canvas>
+
+                    <!-- Floating Quick Switch Camera Button on Video Viewfinder -->
+                    <button type="button" 
+                            @click="toggleFacingMode()" 
+                            x-show="isCameraStreaming"
+                            class="absolute top-3 right-3 z-20 px-3 py-1.5 rounded-full bg-slate-900/80 hover:bg-slate-900 text-white backdrop-blur text-xs font-bold border border-white/20 transition flex items-center gap-1.5 shadow-md active:scale-95"
+                            title="Balik ke Kamera Depan / Belakang">
+                        <i class="fa-solid fa-camera-rotate text-amber-400"></i>
+                        <span x-text="currentFacingMode === 'environment' ? 'Ganti Depan' : 'Ganti Belakang'"></span>
+                    </button>
 
                     <!-- Scanning Target Guide Overlay -->
                     <div x-show="isCameraStreaming" class="absolute inset-0 pointer-events-none flex items-center justify-center">
@@ -519,11 +539,26 @@ function checkinApp() {
         errorDetailMessage: '',
         availableCameras: [],
         selectedCameraId: '',
+        currentFacingMode: 'environment', // Default kamera belakang untuk scan barcode di HP
         mediaStream: null,
         scanIntervalId: null,
 
         init() {
             // Auto focus input
+        },
+
+        formatCameraLabel(cam, idx) {
+            if (cam && cam.label) {
+                const label = cam.label.toLowerCase();
+                if (label.includes('back') || label.includes('belakang') || label.includes('rear') || label.includes('environment')) {
+                    return '📷 Kamera Belakang' + (cam.label.length > 20 ? ' (' + cam.label.substr(0, 15) + '...)' : '');
+                }
+                if (label.includes('front') || label.includes('depan') || label.includes('user') || label.includes('facetime')) {
+                    return '🤳 Kamera Depan' + (cam.label.length > 20 ? ' (' + cam.label.substr(0, 15) + '...)' : '');
+                }
+                return cam.label.length > 22 ? cam.label.substr(0, 20) + '...' : cam.label;
+            }
+            return 'Kamera ' + (idx + 1);
         },
 
         async toggleScanner() {
@@ -534,13 +569,24 @@ function checkinApp() {
             }
         },
 
+        async toggleFacingMode() {
+            // Beralih antara kamera belakang (environment) dan kamera depan (user)
+            this.currentFacingMode = (this.currentFacingMode === 'environment') ? 'user' : 'environment';
+            this.selectedCameraId = ''; // Reset ID agar constraint facingMode mengambil sensor kamera yang tepat
+            if (this.scannerActive) {
+                await this.startScanner();
+            }
+        },
+
         async startScanner() {
             this.scannerActive = true;
             this.isCameraLoading = true;
             this.isCameraStreaming = false;
             this.cameraPermissionError = false;
             this.errorDetailMessage = '';
-            this.cameraStatusText = 'Mendeteksi sensor kamera...';
+            
+            const camLabel = (this.currentFacingMode === 'environment') ? 'Kamera Belakang' : 'Kamera Depan';
+            this.cameraStatusText = `Mengaktifkan ${camLabel}...`;
 
             this.$nextTick(async () => {
                 const video = document.getElementById('webcam-video');
@@ -550,44 +596,64 @@ function checkinApp() {
                 this.stopMediaStreamOnly();
 
                 try {
-                    // Deteksi kamera yang tersedia
-                    try {
-                        const devices = await navigator.mediaDevices.enumerateDevices();
-                        const videoDevices = devices.filter(d => d.kind === 'videoinput');
-                        this.availableCameras = videoDevices;
-                        if (!this.selectedCameraId && videoDevices.length > 0) {
-                            // Di laptop FaceTime/webcam adalah yang pertama
-                            this.selectedCameraId = videoDevices[0].deviceId;
-                        }
-                    } catch (e) {
-                        console.warn("enumerateDevices error:", e);
-                    }
-
-                    // Susun constraints yang ramah MacBook & smartphone
+                    // Susun constraints video yang dioptimalkan untuk HP dan Desktop
                     let videoConstraints = {
-                        width: { ideal: 640 },
-                        height: { ideal: 480 }
+                        width: { ideal: 1280 },
+                        height: { ideal: 720 }
                     };
 
                     if (this.selectedCameraId) {
                         videoConstraints.deviceId = { exact: this.selectedCameraId };
                     } else {
-                        videoConstraints.facingMode = "user";
+                        // Gunakan ideal facingMode (environment = belakang, user = depan)
+                        videoConstraints.facingMode = { ideal: this.currentFacingMode };
                     }
 
                     // Panggil kamera native
-                    this.mediaStream = await navigator.mediaDevices.getUserMedia({
-                        video: videoConstraints,
-                        audio: false
-                    });
+                    try {
+                        this.mediaStream = await navigator.mediaDevices.getUserMedia({
+                            video: videoConstraints,
+                            audio: false
+                        });
+                    } catch (firstErr) {
+                        console.warn("getUserMedia dengan constraints detail gagal, mencoba fallback facingMode sederhana:", firstErr);
+                        // Fallback ke format sederhana
+                        this.mediaStream = await navigator.mediaDevices.getUserMedia({
+                            video: { facingMode: this.currentFacingMode },
+                            audio: false
+                        });
+                    }
 
                     video.srcObject = this.mediaStream;
-                    video.setAttribute("playsinline", true);
+                    video.setAttribute("playsinline", "true");
+                    video.setAttribute("webkit-playsinline", "true");
                     await video.play();
 
                     this.isCameraLoading = false;
                     this.isCameraStreaming = true;
-                    this.cameraStatusText = 'Kamera Aktif - Arahkan ke QR Code Kwitansi';
+
+                    // Deteksi facingMode & deviceId aktif
+                    const activeTrack = this.mediaStream.getVideoTracks()[0];
+                    if (activeTrack) {
+                        const settings = (typeof activeTrack.getSettings === 'function') ? activeTrack.getSettings() : {};
+                        if (settings.facingMode) {
+                            this.currentFacingMode = settings.facingMode;
+                        }
+                        if (settings.deviceId) {
+                            this.selectedCameraId = settings.deviceId;
+                        }
+                    }
+
+                    // Dapatkan daftar lengkap perangkat kamera setelah izin diberikan
+                    try {
+                        const devices = await navigator.mediaDevices.enumerateDevices();
+                        this.availableCameras = devices.filter(d => d.kind === 'videoinput');
+                    } catch (e) {
+                        console.warn("enumerateDevices error:", e);
+                    }
+
+                    const activeText = (this.currentFacingMode === 'environment') ? 'Kamera Belakang' : 'Kamera Depan';
+                    this.cameraStatusText = `${activeText} Aktif - Arahkan ke Barcode / QR`;
 
                     // Mulai loop pembacaan frame QR code
                     this.startQrLoop();
@@ -595,25 +661,24 @@ function checkinApp() {
                 } catch (err) {
                     console.error("Gagal startScanner native:", err);
                     
-                    // Fallback sederhana jika exact deviceId gagal
-                    if (this.selectedCameraId) {
-                        try {
-                            this.mediaStream = await navigator.mediaDevices.getUserMedia({
-                                video: true,
-                                audio: false
-                            });
-                            video.srcObject = this.mediaStream;
-                            video.setAttribute("playsinline", true);
-                            await video.play();
+                    // Fallback universal: video: true jika exact constraints ditolak
+                    try {
+                        this.mediaStream = await navigator.mediaDevices.getUserMedia({
+                            video: true,
+                            audio: false
+                        });
+                        video.srcObject = this.mediaStream;
+                        video.setAttribute("playsinline", "true");
+                        video.setAttribute("webkit-playsinline", "true");
+                        await video.play();
 
-                            this.isCameraLoading = false;
-                            this.isCameraStreaming = true;
-                            this.cameraStatusText = 'Kamera Aktif - Arahkan ke QR Code Kwitansi';
-                            this.startQrLoop();
-                            return;
-                        } catch (err2) {
-                            console.error("Fallback getUserMedia video true juga gagal:", err2);
-                        }
+                        this.isCameraLoading = false;
+                        this.isCameraStreaming = true;
+                        this.cameraStatusText = 'Kamera Aktif - Arahkan ke Barcode / QR';
+                        this.startQrLoop();
+                        return;
+                    } catch (err2) {
+                        console.error("Fallback video true juga gagal:", err2);
                     }
 
                     this.isCameraLoading = false;
@@ -621,11 +686,14 @@ function checkinApp() {
                     this.cameraPermissionError = true;
 
                     if (err.name === 'NotAllowedError' || err.name === 'PermissionDeniedError') {
-                        this.cameraStatusText = 'Izin kamera diblokir browser';
-                        this.errorDetailMessage = 'Browser belum mengizinkan akses kamera. Klik ikon setelan di samping URL pmrwirasmanic.or.id, ubah Camera ke Allow lalu reload halaman.';
+                        this.cameraStatusText = 'Izin kamera belum diizinkan';
+                        this.errorDetailMessage = 'Browser belum mengizinkan akses kamera. Pada browser smartphone Anda, klik ikon gembok/setelan di samping alamat web lalu pilih "Izinkan Kamera".';
                     } else if (err.name === 'NotReadableError' || err.name === 'TrackStartError') {
                         this.cameraStatusText = 'Kamera sedang dipakai aplikasi lain';
-                        this.errorDetailMessage = 'Sensor kamera Mac Anda sedang digunakan oleh aplikasi lain (seperti FaceTime, Zoom, Photobooth, atau Google Meet). Silakan tutup aplikasi tersebut.';
+                        this.errorDetailMessage = 'Sensor kamera sedang digunakan oleh aplikasi lain. Silakan tutup aplikasi kamera atau aplikasi lain yang menggunakan video.';
+                    } else if (err.name === 'OverconstrainedError') {
+                        this.cameraStatusText = 'Sensor kamera yang diminta tidak tersedia';
+                        this.errorDetailMessage = 'Sensor kamera yang diminta tidak dapat diakses. Coba beralih ke kamera lainnya.';
                     } else {
                         this.cameraStatusText = 'Gagal mengakses kamera: ' + (err.name || 'Error');
                         this.errorDetailMessage = err.message || err.toString();
