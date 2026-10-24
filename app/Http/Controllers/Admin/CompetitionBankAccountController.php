@@ -60,20 +60,35 @@ class CompetitionBankAccountController extends Controller
             'bank_account_number' => 'nullable|string|max:100',
             'bank_account_holder' => 'nullable|string|max:150',
 
-            // Rekening Khusus Tingkat Mula (SD / MI)
+            // Rekening Khusus Tingkat Mula (SD / MI) - Rekening 1
             'bank_mula_name' => 'nullable|string|max:100',
             'bank_mula_number' => 'nullable|string|max:100',
             'bank_mula_holder' => 'nullable|string|max:150',
 
-            // Rekening Khusus Tingkat Madya (SMP / MTs)
+            // Rekening Khusus Tingkat Mula (SD / MI) - Rekening 2
+            'bank_mula_name_2' => 'nullable|string|max:100',
+            'bank_mula_number_2' => 'nullable|string|max:100',
+            'bank_mula_holder_2' => 'nullable|string|max:150',
+
+            // Rekening Khusus Tingkat Madya (SMP / MTs) - Rekening 1
             'bank_madya_name' => 'nullable|string|max:100',
             'bank_madya_number' => 'nullable|string|max:100',
             'bank_madya_holder' => 'nullable|string|max:150',
 
-            // Rekening Khusus Tingkat Wira (SMA / SMK / MA)
+            // Rekening Khusus Tingkat Madya (SMP / MTs) - Rekening 2
+            'bank_madya_name_2' => 'nullable|string|max:100',
+            'bank_madya_number_2' => 'nullable|string|max:100',
+            'bank_madya_holder_2' => 'nullable|string|max:150',
+
+            // Rekening Khusus Tingkat Wira (SMA / SMK / MA) - Rekening 1
             'bank_wira_name' => 'nullable|string|max:100',
             'bank_wira_number' => 'nullable|string|max:100',
             'bank_wira_holder' => 'nullable|string|max:150',
+
+            // Rekening Khusus Tingkat Wira (SMA / SMK / MA) - Rekening 2
+            'bank_wira_name_2' => 'nullable|string|max:100',
+            'bank_wira_number_2' => 'nullable|string|max:100',
+            'bank_wira_holder_2' => 'nullable|string|max:150',
         ]);
 
         $event = CompetitionEvent::findOrFail($validated['event_id']);
@@ -85,14 +100,23 @@ class CompetitionBankAccountController extends Controller
             'bank_mula_name' => $validated['bank_mula_name'] ? trim($validated['bank_mula_name']) : null,
             'bank_mula_number' => $validated['bank_mula_number'] ? trim($validated['bank_mula_number']) : null,
             'bank_mula_holder' => $validated['bank_mula_holder'] ? trim($validated['bank_mula_holder']) : null,
+            'bank_mula_name_2' => $validated['bank_mula_name_2'] ? trim($validated['bank_mula_name_2']) : null,
+            'bank_mula_number_2' => $validated['bank_mula_number_2'] ? trim($validated['bank_mula_number_2']) : null,
+            'bank_mula_holder_2' => $validated['bank_mula_holder_2'] ? trim($validated['bank_mula_holder_2']) : null,
 
             'bank_madya_name' => $validated['bank_madya_name'] ? trim($validated['bank_madya_name']) : null,
             'bank_madya_number' => $validated['bank_madya_number'] ? trim($validated['bank_madya_number']) : null,
             'bank_madya_holder' => $validated['bank_madya_holder'] ? trim($validated['bank_madya_holder']) : null,
+            'bank_madya_name_2' => $validated['bank_madya_name_2'] ? trim($validated['bank_madya_name_2']) : null,
+            'bank_madya_number_2' => $validated['bank_madya_number_2'] ? trim($validated['bank_madya_number_2']) : null,
+            'bank_madya_holder_2' => $validated['bank_madya_holder_2'] ? trim($validated['bank_madya_holder_2']) : null,
 
             'bank_wira_name' => $validated['bank_wira_name'] ? trim($validated['bank_wira_name']) : null,
             'bank_wira_number' => $validated['bank_wira_number'] ? trim($validated['bank_wira_number']) : null,
             'bank_wira_holder' => $validated['bank_wira_holder'] ? trim($validated['bank_wira_holder']) : null,
+            'bank_wira_name_2' => $validated['bank_wira_name_2'] ? trim($validated['bank_wira_name_2']) : null,
+            'bank_wira_number_2' => $validated['bank_wira_number_2'] ? trim($validated['bank_wira_number_2']) : null,
+            'bank_wira_holder_2' => $validated['bank_wira_holder_2'] ? trim($validated['bank_wira_holder_2']) : null,
         ]);
 
         return redirect()->route('admin.competition-bank-accounts.index', ['event_id' => $event->id])
@@ -107,8 +131,11 @@ class CompetitionBankAccountController extends Controller
         if (Schema::hasTable('competition_events')) {
             $columns = [
                 'bank_mula_name', 'bank_mula_number', 'bank_mula_holder',
+                'bank_mula_name_2', 'bank_mula_number_2', 'bank_mula_holder_2',
                 'bank_madya_name', 'bank_madya_number', 'bank_madya_holder',
+                'bank_madya_name_2', 'bank_madya_number_2', 'bank_madya_holder_2',
                 'bank_wira_name', 'bank_wira_number', 'bank_wira_holder',
+                'bank_wira_name_2', 'bank_wira_number_2', 'bank_wira_holder_2',
             ];
 
             $missing = [];
@@ -129,8 +156,18 @@ class CompetitionBankAccountController extends Controller
                     if (in_array('bank_mula_holder', $missing, true)) {
                         $table->string('bank_mula_holder', 150)->nullable()->after('bank_mula_number');
                     }
+                    if (in_array('bank_mula_name_2', $missing, true)) {
+                        $table->string('bank_mula_name_2', 100)->nullable()->after('bank_mula_holder');
+                    }
+                    if (in_array('bank_mula_number_2', $missing, true)) {
+                        $table->string('bank_mula_number_2', 100)->nullable()->after('bank_mula_name_2');
+                    }
+                    if (in_array('bank_mula_holder_2', $missing, true)) {
+                        $table->string('bank_mula_holder_2', 150)->nullable()->after('bank_mula_number_2');
+                    }
+
                     if (in_array('bank_madya_name', $missing, true)) {
-                        $table->string('bank_madya_name', 100)->nullable()->after('bank_mula_holder');
+                        $table->string('bank_madya_name', 100)->nullable()->after('bank_mula_holder_2');
                     }
                     if (in_array('bank_madya_number', $missing, true)) {
                         $table->string('bank_madya_number', 100)->nullable()->after('bank_madya_name');
@@ -138,14 +175,33 @@ class CompetitionBankAccountController extends Controller
                     if (in_array('bank_madya_holder', $missing, true)) {
                         $table->string('bank_madya_holder', 150)->nullable()->after('bank_madya_number');
                     }
+                    if (in_array('bank_madya_name_2', $missing, true)) {
+                        $table->string('bank_madya_name_2', 100)->nullable()->after('bank_madya_holder');
+                    }
+                    if (in_array('bank_madya_number_2', $missing, true)) {
+                        $table->string('bank_madya_number_2', 100)->nullable()->after('bank_madya_name_2');
+                    }
+                    if (in_array('bank_madya_holder_2', $missing, true)) {
+                        $table->string('bank_madya_holder_2', 150)->nullable()->after('bank_madya_number_2');
+                    }
+
                     if (in_array('bank_wira_name', $missing, true)) {
-                        $table->string('bank_wira_name', 100)->nullable()->after('bank_madya_holder');
+                        $table->string('bank_wira_name', 100)->nullable()->after('bank_madya_holder_2');
                     }
                     if (in_array('bank_wira_number', $missing, true)) {
                         $table->string('bank_wira_number', 100)->nullable()->after('bank_wira_name');
                     }
                     if (in_array('bank_wira_holder', $missing, true)) {
                         $table->string('bank_wira_holder', 150)->nullable()->after('bank_wira_number');
+                    }
+                    if (in_array('bank_wira_name_2', $missing, true)) {
+                        $table->string('bank_wira_name_2', 100)->nullable()->after('bank_wira_holder');
+                    }
+                    if (in_array('bank_wira_number_2', $missing, true)) {
+                        $table->string('bank_wira_number_2', 100)->nullable()->after('bank_wira_name_2');
+                    }
+                    if (in_array('bank_wira_holder_2', $missing, true)) {
+                        $table->string('bank_wira_holder_2', 150)->nullable()->after('bank_wira_number_2');
                     }
                 });
             }

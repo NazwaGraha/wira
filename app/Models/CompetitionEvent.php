@@ -28,12 +28,21 @@ class CompetitionEvent extends Model
         'bank_mula_name',
         'bank_mula_number',
         'bank_mula_holder',
+        'bank_mula_name_2',
+        'bank_mula_number_2',
+        'bank_mula_holder_2',
         'bank_madya_name',
         'bank_madya_number',
         'bank_madya_holder',
+        'bank_madya_name_2',
+        'bank_madya_number_2',
+        'bank_madya_holder_2',
         'bank_wira_name',
         'bank_wira_number',
         'bank_wira_holder',
+        'bank_wira_name_2',
+        'bank_wira_number_2',
+        'bank_wira_holder_2',
         'is_active',
         'is_registration_open',
         'wave1_name',
@@ -229,49 +238,99 @@ class CompetitionEvent extends Model
         $levelNormalized = ucfirst(strtolower(trim($level ?? '')));
 
         if ($levelNormalized === 'Mula') {
+            $acc1 = [
+                'bank_name' => $this->bank_mula_name ?: 'BANK BRI',
+                'account_number' => $this->bank_mula_number ?: '0123-01-001234-53-8',
+                'account_holder' => $this->bank_mula_holder ?: 'PMR WIRA SMANIC - MULA',
+            ];
+            $acc2 = [
+                'bank_name' => $this->bank_mula_name_2 ?: 'BANK BSI',
+                'account_number' => $this->bank_mula_number_2 ?: '718-293-8475',
+                'account_holder' => $this->bank_mula_holder_2 ?: 'BENDAHARA PMR MULA',
+                'is_active' => ! empty($this->bank_mula_number_2) || empty($this->bank_mula_number),
+            ];
+
             return [
                 'level' => 'Mula',
                 'level_label' => 'PMR Mula (SD / MI)',
                 'badge_color' => 'emerald',
-                'bank_name' => $this->bank_mula_name ?: 'BANK BRI',
-                'account_number' => $this->bank_mula_number ?: '0123-01-001234-53-8',
-                'account_holder' => $this->bank_mula_holder ?: 'PMR WIRA SMANIC - MULA',
+                'bank_name' => $acc1['bank_name'],
+                'account_number' => $acc1['account_number'],
+                'account_holder' => $acc1['account_holder'],
+                'account_1' => $acc1,
+                'account_2' => $acc2,
                 'is_custom' => ! empty($this->bank_mula_number),
             ];
         }
 
         if ($levelNormalized === 'Madya') {
+            $acc1 = [
+                'bank_name' => $this->bank_madya_name ?: ($this->bank_name ?: 'BANK BCA'),
+                'account_number' => $this->bank_madya_number ?: ($this->bank_account_number ?: '521-098-4321'),
+                'account_holder' => $this->bank_madya_holder ?: ($this->bank_account_holder ?: 'PMR WIRA SMANIC - MADYA'),
+            ];
+            $acc2 = [
+                'bank_name' => $this->bank_madya_name_2 ?: 'BANK BNI',
+                'account_number' => $this->bank_madya_number_2 ?: '098-765-4321',
+                'account_holder' => $this->bank_madya_holder_2 ?: 'BENDAHARA PMR MADYA',
+                'is_active' => ! empty($this->bank_madya_number_2) || empty($this->bank_madya_number),
+            ];
+
             return [
                 'level' => 'Madya',
                 'level_label' => 'PMR Madya (SMP / MTs)',
                 'badge_color' => 'blue',
-                'bank_name' => $this->bank_madya_name ?: ($this->bank_name ?: 'BANK BCA'),
-                'account_number' => $this->bank_madya_number ?: ($this->bank_account_number ?: '521-098-4321'),
-                'account_holder' => $this->bank_madya_holder ?: ($this->bank_account_holder ?: 'PMR WIRA SMANIC - MADYA'),
+                'bank_name' => $acc1['bank_name'],
+                'account_number' => $acc1['account_number'],
+                'account_holder' => $acc1['account_holder'],
+                'account_1' => $acc1,
+                'account_2' => $acc2,
                 'is_custom' => ! empty($this->bank_madya_number),
             ];
         }
 
         if ($levelNormalized === 'Wira') {
+            $acc1 = [
+                'bank_name' => $this->bank_wira_name ?: 'BANK MANDIRI',
+                'account_number' => $this->bank_wira_number ?: '133-00-9876543-2',
+                'account_holder' => $this->bank_wira_holder ?: 'PMR WIRA SMANIC - WIRA',
+            ];
+            $acc2 = [
+                'bank_name' => $this->bank_wira_name_2 ?: 'BANK BJB',
+                'account_number' => $this->bank_wira_number_2 ?: '003-847-2910-100',
+                'account_holder' => $this->bank_wira_holder_2 ?: 'BENDAHARA PMR WIRA',
+                'is_active' => ! empty($this->bank_wira_number_2) || empty($this->bank_wira_number),
+            ];
+
             return [
                 'level' => 'Wira',
                 'level_label' => 'PMR Wira (SMA / SMK / MA)',
                 'badge_color' => 'amber',
-                'bank_name' => $this->bank_wira_name ?: 'BANK MANDIRI',
-                'account_number' => $this->bank_wira_number ?: '133-00-9876543-2',
-                'account_holder' => $this->bank_wira_holder ?: 'PMR WIRA SMANIC - WIRA',
+                'bank_name' => $acc1['bank_name'],
+                'account_number' => $acc1['account_number'],
+                'account_holder' => $acc1['account_holder'],
+                'account_1' => $acc1,
+                'account_2' => $acc2,
                 'is_custom' => ! empty($this->bank_wira_number),
             ];
         }
 
         // Default Fallback ke Rekening Umum
+        $accDefault = [
+            'bank_name' => $this->bank_name ?: 'BANK BCA',
+            'account_number' => $this->bank_account_number ?: '1234567890',
+            'account_holder' => $this->bank_account_holder ?: 'PMR WIRA SMAN 1 CIAWI',
+        ];
+
         return [
             'level' => $levelNormalized ?: 'Umum',
             'level_label' => 'Semua Tingkat',
             'badge_color' => 'slate',
-            'bank_name' => $this->bank_name ?: 'BANK BCA',
-            'account_number' => $this->bank_account_number ?: '1234567890',
-            'account_holder' => $this->bank_account_holder ?: 'PMR WIRA SMAN 1 CIAWI',
+            'bank_name' => $accDefault['bank_name'],
+            'account_number' => $accDefault['account_number'],
+            'account_holder' => $accDefault['account_holder'],
+            'account_1' => $accDefault,
+            'account_2' => null,
             'is_custom' => false,
         ];
     }

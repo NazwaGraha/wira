@@ -320,41 +320,78 @@
                         @php
                             $bankAccounts = $event->getAllBankAccounts();
                             $activeAccount = $event->getBankAccountForLevel($currentLevel);
+                            $acc1 = $activeAccount['account_1'] ?? $activeAccount;
+                            $acc2 = $activeAccount['account_2'] ?? null;
                         @endphp
 
-                        <!-- Rekening Box Dinamis Per Tingkat -->
-                        <div id="bank-card-container" class="bg-gradient-to-br from-slate-950 via-slate-900 to-slate-900 text-white p-5 rounded-2xl shadow-sm border border-slate-700/80 relative overflow-hidden transition-all duration-300">
-                            <div class="flex items-center justify-between gap-2 mb-3">
+                        <!-- Rekening Box Dinamis Per Tingkat (Mendukung 2 Rekening) -->
+                        <div id="bank-card-container" class="bg-gradient-to-br from-slate-950 via-slate-900 to-slate-900 text-white p-5 rounded-2xl shadow-sm border border-slate-700/80 relative overflow-hidden transition-all duration-300 space-y-4">
+                            <div class="flex items-center justify-between gap-2">
                                 <div id="bank-badge-display" class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full {{ $currentLevel === 'Mula' ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30' : ($currentLevel === 'Wira' ? 'bg-amber-500/20 text-amber-300 border border-amber-500/30' : 'bg-blue-500/20 text-blue-300 border border-blue-500/30') }} text-[10px] font-black uppercase tracking-wider">
                                     <i class="fa-solid fa-circle-dot text-[8px] animate-pulse"></i>
                                     <span>Tujuan Transfer PMR {{ $currentLevel }} ({{ $currentLevel === 'Mula' ? 'SD/MI' : ($currentLevel === 'Wira' ? 'SMA/SMK' : 'SMP/MTs') }})</span>
                                 </div>
-                                <span class="text-[10px] font-bold text-slate-400 bg-white/5 px-2 py-0.5 rounded-md">Resmi</span>
+                                <span class="text-[10px] font-bold text-slate-400 bg-white/5 px-2 py-0.5 rounded-md">2 Opsi Rekening</span>
                             </div>
 
-                            <div class="text-[11px] text-slate-400 font-semibold mb-0.5">Tujuan Transfer Panitia:</div>
-                            <div class="text-lg font-black tracking-wide text-white flex items-center gap-2">
-                                <i class="fa-solid fa-building-columns text-amber-400 text-sm"></i>
-                                <span id="bank-name-display">{{ $activeAccount['bank_name'] }}</span>
-                            </div>
-
-                            <div class="my-2.5 p-3 bg-white/10 rounded-xl border border-white/10 flex items-center justify-between gap-3">
-                                <div class="overflow-hidden">
-                                    <div class="text-[9px] text-slate-400 uppercase tracking-wider font-bold">Nomor Rekening Tujuan</div>
-                                    <div class="text-xl sm:text-2xl font-mono font-black text-amber-300 tracking-wider truncate" id="bank-number-display">{{ $activeAccount['account_number'] }}</div>
+                            <!-- Pilihan Rekening 1 (Utama) -->
+                            <div class="bg-white/10 rounded-xl p-3.5 border border-white/10 space-y-2">
+                                <div class="flex items-center justify-between text-[11px]">
+                                    <span class="font-bold text-slate-300 flex items-center gap-1.5">
+                                        <i class="fa-solid fa-building-columns text-amber-400"></i>
+                                        <span id="bank-name-display">{{ $acc1['bank_name'] }}</span>
+                                    </span>
+                                    <span class="text-[9px] bg-amber-400/20 text-amber-300 px-2 py-0.5 rounded font-black uppercase">Rekening 1</span>
                                 </div>
-                                <button type="button" onclick="copyBankAccountNumber()" class="bg-white/15 hover:bg-white/25 active:scale-95 text-white text-[11px] font-bold px-3 py-1.5 rounded-lg flex items-center gap-1.5 shadow-sm transition shrink-0 cursor-pointer" id="btn-copy-account" title="Salin nomor rekening">
-                                    <i class="fa-regular fa-copy"></i>
-                                    <span id="copy-btn-text">Salin</span>
-                                </button>
+
+                                <div class="flex items-center justify-between gap-2">
+                                    <div class="overflow-hidden">
+                                        <div class="text-lg sm:text-xl font-mono font-black text-amber-300 tracking-wider truncate" id="bank-number-display">{{ $acc1['account_number'] }}</div>
+                                    </div>
+                                    <button type="button" onclick="copyAccountNumber('bank-number-display', 'copy-btn-text-1')" class="bg-white/15 hover:bg-white/25 active:scale-95 text-white text-[11px] font-bold px-3 py-1.5 rounded-lg flex items-center gap-1.5 shadow-sm transition shrink-0 cursor-pointer" id="btn-copy-account-1" title="Salin nomor rekening 1">
+                                        <i class="fa-regular fa-copy"></i>
+                                        <span id="copy-btn-text-1">Salin</span>
+                                    </button>
+                                </div>
+
+                                <div class="text-[11px] text-slate-300">
+                                    <span class="text-slate-400">a.n</span>
+                                    <strong class="text-white uppercase tracking-wide ml-1" id="bank-holder-display">{{ $acc1['account_holder'] }}</strong>
+                                </div>
                             </div>
 
-                            <div class="text-xs text-slate-300 font-medium">
-                                <span class="text-slate-400">Atas Nama:</span>
-                                <strong class="text-white uppercase tracking-wide ml-1" id="bank-holder-display">{{ $activeAccount['account_holder'] }}</strong>
+                            <!-- Pilihan Rekening 2 (Alternatif) -->
+                            <div id="bank-account-2-container" class="bg-white/10 rounded-xl p-3.5 border border-white/10 space-y-2 {{ !empty($acc2['account_number']) ? '' : 'hidden' }}">
+                                <div class="flex items-center justify-between text-[11px]">
+                                    <span class="font-bold text-slate-300 flex items-center gap-1.5">
+                                        <i class="fa-solid fa-building-columns text-emerald-400"></i>
+                                        <span id="bank-name-2-display">{{ $acc2['bank_name'] ?? 'BANK BSI' }}</span>
+                                    </span>
+                                    <span class="text-[9px] bg-emerald-400/20 text-emerald-300 px-2 py-0.5 rounded font-black uppercase">Rekening 2</span>
+                                </div>
+
+                                <div class="flex items-center justify-between gap-2">
+                                    <div class="overflow-hidden">
+                                        <div class="text-lg sm:text-xl font-mono font-black text-emerald-300 tracking-wider truncate" id="bank-number-2-display">{{ $acc2['account_number'] ?? '-' }}</div>
+                                    </div>
+                                    <button type="button" onclick="copyAccountNumber('bank-number-2-display', 'copy-btn-text-2')" class="bg-white/15 hover:bg-white/25 active:scale-95 text-white text-[11px] font-bold px-3 py-1.5 rounded-lg flex items-center gap-1.5 shadow-sm transition shrink-0 cursor-pointer" id="btn-copy-account-2" title="Salin nomor rekening 2">
+                                        <i class="fa-regular fa-copy"></i>
+                                        <span id="copy-btn-text-2">Salin</span>
+                                    </button>
+                                </div>
+
+                                <div class="text-[11px] text-slate-300">
+                                    <span class="text-slate-400">a.n</span>
+                                    <strong class="text-white uppercase tracking-wide ml-1" id="bank-holder-2-display">{{ $acc2['account_holder'] ?? '-' }}</strong>
+                                </div>
+                            </div>
+
+                            <div class="text-[11px] text-slate-400 flex items-center gap-1.5">
+                                <i class="fa-solid fa-circle-check text-emerald-400 text-xs"></i>
+                                <span>Silakan transfer ke salah satu nomor rekening (Rekening 1 atau 2) di atas.</span>
                             </div>
                             
-                            <div class="mt-4 pt-3 border-t border-slate-700/80 flex justify-between items-center text-xs">
+                            <div class="pt-3 border-t border-slate-700/80 flex justify-between items-center text-xs">
                                 <span class="text-slate-400">Periode Pendaftaran:</span>
                                 <span class="font-bold text-amber-300">{{ $waveLabelText }}</span>
                             </div>
@@ -406,58 +443,75 @@
 
     function updateBankAccountDisplay(lvl) {
         if (!bankAccountsMap || !bankAccountsMap[lvl]) return;
-        const acc = bankAccountsMap[lvl];
+        const accData = bankAccountsMap[lvl];
+        const acc1 = accData.account_1 || accData;
+        const acc2 = accData.account_2 || null;
 
+        // Rekening 1
         const bankNameEl = document.getElementById('bank-name-display');
         const bankNumberEl = document.getElementById('bank-number-display');
         const bankHolderEl = document.getElementById('bank-holder-display');
+
+        if (bankNameEl && acc1.bank_name) bankNameEl.textContent = acc1.bank_name;
+        if (bankNumberEl && acc1.account_number) bankNumberEl.textContent = acc1.account_number;
+        if (bankHolderEl && acc1.account_holder) bankHolderEl.textContent = acc1.account_holder;
+
+        // Rekening 2
+        const bankName2El = document.getElementById('bank-name-2-display');
+        const bankNumber2El = document.getElementById('bank-number-2-display');
+        const bankHolder2El = document.getElementById('bank-holder-2-display');
+        const container2El = document.getElementById('bank-account-2-container');
+
+        if (acc2 && acc2.account_number) {
+            if (bankName2El) bankName2El.textContent = acc2.bank_name;
+            if (bankNumber2El) bankNumber2El.textContent = acc2.account_number;
+            if (bankHolder2El) bankHolder2El.textContent = acc2.account_holder;
+            if (container2El) container2El.classList.remove('hidden');
+        } else {
+            if (container2El) container2El.classList.add('hidden');
+        }
+
         const bankBadgeEl = document.getElementById('bank-badge-display');
         const bankCardEl = document.getElementById('bank-card-container');
-        const copyBtnEl = document.getElementById('btn-copy-account');
-
-        if (bankNameEl && acc.bank_name) bankNameEl.textContent = acc.bank_name;
-        if (bankNumberEl && acc.account_number) bankNumberEl.textContent = acc.account_number;
-        if (bankHolderEl && acc.account_holder) bankHolderEl.textContent = acc.account_holder;
+        const copyBtn1El = document.getElementById('btn-copy-account-1');
+        const copyBtn2El = document.getElementById('btn-copy-account-2');
 
         if (bankBadgeEl) {
             if (lvl === 'Mula') {
                 bankBadgeEl.className = 'inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 text-[10px] font-black uppercase tracking-wider';
                 bankBadgeEl.innerHTML = '<i class="fa-solid fa-circle-dot text-[8px] animate-pulse"></i><span>Tujuan Transfer PMR Mula (SD/MI)</span>';
                 if (bankCardEl) {
-                    bankCardEl.className = 'bg-gradient-to-br from-slate-950 via-slate-900 to-emerald-950/80 text-white p-5 rounded-2xl shadow-md border-2 border-emerald-500/60 relative overflow-hidden transition-all duration-300';
+                    bankCardEl.className = 'bg-gradient-to-br from-slate-950 via-slate-900 to-emerald-950/80 text-white p-5 rounded-2xl shadow-md border-2 border-emerald-500/60 relative overflow-hidden transition-all duration-300 space-y-4';
                 }
-                if (copyBtnEl) {
-                    copyBtnEl.className = 'bg-emerald-600 hover:bg-emerald-500 active:scale-95 text-white text-[11px] font-bold px-3 py-1.5 rounded-lg flex items-center gap-1.5 shadow-sm transition shrink-0 cursor-pointer';
-                }
+                if (copyBtn1El) copyBtn1El.className = 'bg-emerald-600 hover:bg-emerald-500 active:scale-95 text-white text-[11px] font-bold px-3 py-1.5 rounded-lg flex items-center gap-1.5 shadow-sm transition shrink-0 cursor-pointer';
+                if (copyBtn2El) copyBtn2El.className = 'bg-emerald-700 hover:bg-emerald-600 active:scale-95 text-white text-[11px] font-bold px-3 py-1.5 rounded-lg flex items-center gap-1.5 shadow-sm transition shrink-0 cursor-pointer';
             } else if (lvl === 'Madya') {
                 bankBadgeEl.className = 'inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-blue-500/20 text-blue-300 border border-blue-500/30 text-[10px] font-black uppercase tracking-wider';
                 bankBadgeEl.innerHTML = '<i class="fa-solid fa-circle-dot text-[8px] animate-pulse"></i><span>Tujuan Transfer PMR Madya (SMP/MTs)</span>';
                 if (bankCardEl) {
-                    bankCardEl.className = 'bg-gradient-to-br from-slate-950 via-slate-900 to-blue-950/80 text-white p-5 rounded-2xl shadow-md border-2 border-blue-500/60 relative overflow-hidden transition-all duration-300';
+                    bankCardEl.className = 'bg-gradient-to-br from-slate-950 via-slate-900 to-blue-950/80 text-white p-5 rounded-2xl shadow-md border-2 border-blue-500/60 relative overflow-hidden transition-all duration-300 space-y-4';
                 }
-                if (copyBtnEl) {
-                    copyBtnEl.className = 'bg-blue-600 hover:bg-blue-500 active:scale-95 text-white text-[11px] font-bold px-3 py-1.5 rounded-lg flex items-center gap-1.5 shadow-sm transition shrink-0 cursor-pointer';
-                }
+                if (copyBtn1El) copyBtn1El.className = 'bg-blue-600 hover:bg-blue-500 active:scale-95 text-white text-[11px] font-bold px-3 py-1.5 rounded-lg flex items-center gap-1.5 shadow-sm transition shrink-0 cursor-pointer';
+                if (copyBtn2El) copyBtn2El.className = 'bg-blue-700 hover:bg-blue-600 active:scale-95 text-white text-[11px] font-bold px-3 py-1.5 rounded-lg flex items-center gap-1.5 shadow-sm transition shrink-0 cursor-pointer';
             } else if (lvl === 'Wira') {
                 bankBadgeEl.className = 'inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/30 text-[10px] font-black uppercase tracking-wider';
                 bankBadgeEl.innerHTML = '<i class="fa-solid fa-circle-dot text-[8px] animate-pulse"></i><span>Tujuan Transfer PMR Wira (SMA/SMK)</span>';
                 if (bankCardEl) {
-                    bankCardEl.className = 'bg-gradient-to-br from-slate-950 via-slate-900 to-amber-950/80 text-white p-5 rounded-2xl shadow-md border-2 border-amber-500/60 relative overflow-hidden transition-all duration-300';
+                    bankCardEl.className = 'bg-gradient-to-br from-slate-950 via-slate-900 to-amber-950/80 text-white p-5 rounded-2xl shadow-md border-2 border-amber-500/60 relative overflow-hidden transition-all duration-300 space-y-4';
                 }
-                if (copyBtnEl) {
-                    copyBtnEl.className = 'bg-amber-600 hover:bg-amber-500 active:scale-95 text-white text-[11px] font-bold px-3 py-1.5 rounded-lg flex items-center gap-1.5 shadow-sm transition shrink-0 cursor-pointer';
-                }
+                if (copyBtn1El) copyBtn1El.className = 'bg-amber-600 hover:bg-amber-500 active:scale-95 text-white text-[11px] font-bold px-3 py-1.5 rounded-lg flex items-center gap-1.5 shadow-sm transition shrink-0 cursor-pointer';
+                if (copyBtn2El) copyBtn2El.className = 'bg-amber-700 hover:bg-amber-600 active:scale-95 text-white text-[11px] font-bold px-3 py-1.5 rounded-lg flex items-center gap-1.5 shadow-sm transition shrink-0 cursor-pointer';
             }
         }
     }
 
-    function copyBankAccountNumber() {
-        const numEl = document.getElementById('bank-number-display');
+    function copyAccountNumber(numId, btnTextId) {
+        const numEl = document.getElementById(numId);
         if (!numEl) return;
         const rawText = numEl.textContent.trim().replace(/[^0-9]/g, '') || numEl.textContent.trim();
         
         const setSuccess = () => {
-            const btnText = document.getElementById('copy-btn-text');
+            const btnText = document.getElementById(btnTextId);
             if (btnText) {
                 btnText.textContent = 'Tersalin!';
                 setTimeout(() => {
