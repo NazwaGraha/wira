@@ -306,14 +306,21 @@
 
                 <!-- 3. Rekening Pembayaran -->
                 <div class="bg-white rounded-2xl p-6 shadow-xs border border-slate-200">
-                    <div class="flex items-center gap-3 pb-4 mb-5 border-b border-slate-100">
-                        <div class="w-10 h-10 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center font-bold">
-                            <i class="fa-solid fa-credit-card"></i>
+                    <div class="flex items-center justify-between pb-4 mb-5 border-b border-slate-100 flex-wrap gap-3">
+                        <div class="flex items-center gap-3">
+                            <div class="w-10 h-10 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center font-bold">
+                                <i class="fa-solid fa-credit-card"></i>
+                            </div>
+                            <div>
+                                <h3 class="font-extrabold text-slate-900 text-base">Rekening Pembayaran Registrasi (Utama)</h3>
+                                <p class="text-xs text-slate-500">Tampil sebagai rekening default jika rekening per tingkat belum ditentukan</p>
+                            </div>
                         </div>
-                        <div>
-                            <h3 class="font-extrabold text-slate-900 text-base">Rekening Pembayaran Registrasi</h3>
-                            <p class="text-xs text-slate-500">Tampil di formulir pendaftaran sebagai instruksi transfer biaya lomba</p>
-                        </div>
+
+                        <a href="{{ route('admin.competition-bank-accounts.index', ['event_id' => $event->id]) }}" class="bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-200 px-3.5 py-2 rounded-xl font-bold text-xs transition flex items-center gap-2 shadow-2xs">
+                            <i class="fa-solid fa-layer-group text-emerald-600"></i>
+                            <span>Setup Rekening Khusus 3 Tingkat (Mula, Madya, Wira) &rarr;</span>
+                        </a>
                     </div>
 
                     <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">

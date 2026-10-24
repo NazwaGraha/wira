@@ -10,6 +10,7 @@ use App\Http\Controllers\Admin\BloodDonationEventController;
 use App\Http\Controllers\Admin\BloodDonorRegistrationController;
 use App\Http\Controllers\Admin\BloodStockController;
 use App\Http\Controllers\Admin\CategoryController;
+use App\Http\Controllers\Admin\CompetitionBankAccountController;
 use App\Http\Controllers\Admin\CompetitionBroadcastController;
 use App\Http\Controllers\Admin\CompetitionCheckinController;
 use App\Http\Controllers\Admin\CompetitionEventController;
@@ -263,6 +264,10 @@ Route::prefix('admin')->name('admin.')->group(function () {
         // Setup Biaya Pendaftaran Lomba
         Route::get('/competition-fees', [CompetitionFeeController::class, 'index'])->name('competition-fees.index');
         Route::post('/competition-fees', [CompetitionFeeController::class, 'update'])->name('competition-fees.update');
+
+        // Setup Tujuan Transfer Rekening Lomba Per Tingkat (Mula, Madya, Wira)
+        Route::get('/competition-bank-accounts', [CompetitionBankAccountController::class, 'index'])->name('competition-bank-accounts.index');
+        Route::post('/competition-bank-accounts', [CompetitionBankAccountController::class, 'update'])->name('competition-bank-accounts.update');
 
         // Rekap Juara Umum & Klasemen
         Route::get('/competition-leaderboard', [CompetitionLeaderboardController::class, 'index'])->name('competition-leaderboard.index');

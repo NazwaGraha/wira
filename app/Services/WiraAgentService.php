@@ -664,8 +664,17 @@ PROMPT;
                 if ($event->registration_fee > 0) {
                     $context[] = '• Biaya Registrasi: Rp '.number_format($event->registration_fee, 0, ',', '.');
                 }
+                if ($event->bank_mula_number) {
+                    $context[] = "• Rekening Tujuan PMR Mula (SD/MI): Bank {$event->bank_mula_name} - No. Rekening {$event->bank_mula_number} a.n {$event->bank_mula_holder}";
+                }
+                if ($event->bank_madya_number) {
+                    $context[] = "• Rekening Tujuan PMR Madya (SMP/MTs): Bank {$event->bank_madya_name} - No. Rekening {$event->bank_madya_number} a.n {$event->bank_madya_holder}";
+                }
+                if ($event->bank_wira_number) {
+                    $context[] = "• Rekening Tujuan PMR Wira (SMA/SMK/MA): Bank {$event->bank_wira_name} - No. Rekening {$event->bank_wira_number} a.n {$event->bank_wira_holder}";
+                }
                 if ($event->bank_name && $event->bank_account_number) {
-                    $context[] = "• Pembayaran Resmi: Bank {$event->bank_name} - No. Rekening {$event->bank_account_number} a.n {$event->bank_account_holder}";
+                    $context[] = "• Pembayaran Resmi / Rekening Utama: Bank {$event->bank_name} - No. Rekening {$event->bank_account_number} a.n {$event->bank_account_holder}";
                 }
 
                 // Kategori Lomba

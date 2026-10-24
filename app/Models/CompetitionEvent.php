@@ -25,6 +25,15 @@ class CompetitionEvent extends Model
         'bank_name',
         'bank_account_number',
         'bank_account_holder',
+        'bank_mula_name',
+        'bank_mula_number',
+        'bank_mula_holder',
+        'bank_madya_name',
+        'bank_madya_number',
+        'bank_madya_holder',
+        'bank_wira_name',
+        'bank_wira_number',
+        'bank_wira_holder',
         'is_active',
         'is_registration_open',
         'wave1_name',
@@ -209,5 +218,86 @@ class CompetitionEvent extends Model
     public function infoMenus(): HasMany
     {
         return $this->hasMany(CompetitionInfoMenu::class)->orderBy('order_position');
+    }
+
+    /**
+     * Dapatkan detail rekening tujuan transfer sesuai tingkatan peserta (Mula, Madya, Wira).
+     * Jika rekening khusus tingkat belum diisi, otomatis fallback ke rekening utama event.
+     */
+    public function getBankAccountForLevel(?string $level = null): array
+    {
+        $levelNormalized = ucfirst(strtolower(trim($level ?? '')));
+
+        if ($levelNormalized === 'Mula' && ($this->bank_mula_number || $this->bank_mula_name)) {
+            return [
+                'level' => 'Mula',
+                'level_label' => 'PMR Mula (SD / MI)',
+                'badge_color' => 'emerald',
+                'bank_name' => $this->bank_mula_name ?: ($this->bank_name ?: 'BANK BCA'),
+                'account_number' => $this->bank_mula_number ?: ($this->bank_account_number ?: '1234567890'),
+                'account_holder' => $this->bank_mula_holder ?: ($this->bank_account_holder ?: 'PMR WIRA SMAN 1 CIAWI'),
+                'is_custom' => ! empty($this->bank_mula_number),
+            ];
+        }
+
+        if ($levelNormalized === 'Madya' && ($this->bank_madya_number || $this->bank_madya_name)) {
+            return [
+                'level' => 'Madya',
+                'level_label' => 'PMR Madya (SMP / MTs)',
+                'badge_color' => 'blue',
+                'bank_name' => $this->bank_madya_name ?: ($this->bank_name ?: 'BANK BCA'),
+                'account_number' => $this->bank_madya_number ?: ($this->bank_account_number ?: '1234567890'),
+                'account_holder' => $this->bank_madya_holder ?: ($this->bank_account_holder ?: 'PMR WIRA SMAN 1 CIAWI'),
+                'is_custom' => ! empty($this->bank_madya_number),
+            ];
+        }
+
+        if ($levelNormalized === 'Wira' && ($this->bank_wira_number || $this->bank_wira_name)) {
+            return [
+                'level' => 'Wira',
+                'level_label' => 'PMR Wira (SMA / SMK / MA)',
+                'badge_color' => 'amber',
+                'bank_name' => $this->bank_wira_name ?: ($this->bank_name ?: 'BANK BCA'),
+                'account_number' => $this->bank_wira_number ?: ($this->bank_account_number ?: '1234567890'),
+                'account_holder' => $this->bank_wira_holder ?: ($this->bank_account_holder ?: 'PMR WIRA SMAN 1 CIAWI'),
+                'is_custom' => ! empty($this->bank_wira_number),
+            ];
+        }
+
+        // Default Fallback ke Rekening Umum
+        $badge = 'slate';
+        $label = 'Semua Tingkat';
+        if ($levelNormalized === 'Mula') {
+            $badge = 'emerald';
+            $label = 'PMR Mula (SD / MI)';
+        } elseif ($levelNormalized === 'Madya') {
+            $badge = 'blue';
+            $label = 'PMR Madya (SMP / MTs)';
+        } elseif ($levelNormalized === 'Wira') {
+            $badge = 'amber';
+            $label = 'PMR Wira (SMA / SMK / MA)';
+        }
+
+        return [
+            'level' => $levelNormalized ?: 'Umum',
+            'level_label' => $label,
+            'badge_color' => $badge,
+            'bank_name' => $this->bank_name ?: 'BANK BCA',
+            'account_number' => $this->bank_account_number ?: '1234567890',
+            'account_holder' => $this->bank_account_holder ?: 'PMR WIRA SMAN 1 CIAWI',
+            'is_custom' => false,
+        ];
+    }
+
+    /**
+     * Dapatkan peta seluruh rekening untuk Mula, Madya, dan Wira.
+     */
+    public function getAllBankAccounts(): array
+    {
+        return [
+            'Mula' => $this->getBankAccountForLevel('Mula'),
+            'Madya' => $this->getBankAccountForLevel('Madya'),
+            'Wira' => $this->getBankAccountForLevel('Wira'),
+        ];
     }
 }

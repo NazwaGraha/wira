@@ -177,6 +177,13 @@
                 <i class="fa-solid fa-sliders w-5 text-center text-rose-400"></i>
                 <span>Pengaturan Event Lomba</span>
             </a>
+            <a href="{{ route('admin.competition-bank-accounts.index') }}" class="flex items-center gap-3 px-3 py-2.5 rounded-xl font-medium text-sm transition {{ request()->routeIs('admin.competition-bank-accounts.*') ? 'bg-pmr-primary text-white shadow-md shadow-red-950/40' : 'hover:bg-slate-800 text-slate-300' }}">
+                <i class="fa-solid fa-credit-card w-5 text-center text-emerald-400"></i>
+                <div class="flex items-center justify-between flex-grow">
+                    <span>Rekening Transfer Lomba</span>
+                    <span class="text-[9px] bg-emerald-400/20 text-emerald-300 border border-emerald-400/30 px-1.5 py-0.2 rounded font-black uppercase">3 Tingkat</span>
+                </div>
+            </a>
             <a href="{{ route('admin.competition-fees.index') }}" class="flex items-center gap-3 px-3 py-2.5 rounded-xl font-medium text-sm transition {{ request()->routeIs('admin.competition-fees.*') ? 'bg-pmr-primary text-white shadow-md shadow-red-950/40' : 'hover:bg-slate-800 text-slate-300' }}">
                 <i class="fa-solid fa-calendar-check w-5 text-center text-amber-400"></i>
                 <div class="flex items-center justify-between flex-grow">

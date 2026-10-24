@@ -317,14 +317,44 @@
                     </h3>
 
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
-                        <!-- Rekening Box -->
-                        <div class="bg-gradient-to-br from-slate-900 to-slate-800 text-white p-5 rounded-2xl shadow-sm">
-                            <div class="text-[11px] text-red-400 font-bold uppercase tracking-wider mb-2">Tujuan Transfer Panitia</div>
-                            <div class="text-lg font-black tracking-wide">{{ $event->bank_name ?? 'BANK BCA' }}</div>
-                            <div class="text-2xl font-mono font-bold tracking-widest text-amber-300 my-1">{{ $event->bank_account_number ?? '1234567890' }}</div>
-                            <div class="text-xs text-slate-300 font-medium">a.n {{ $event->bank_account_holder ?? 'PMR WIRA SMAN 1 CIAWI' }}</div>
+                        @php
+                            $bankAccounts = $event->getAllBankAccounts();
+                            $activeAccount = $event->getBankAccountForLevel($currentLevel);
+                        @endphp
+
+                        <!-- Rekening Box Dinamis Per Tingkat -->
+                        <div id="bank-card-container" class="bg-gradient-to-br from-slate-950 via-slate-900 to-slate-900 text-white p-5 rounded-2xl shadow-sm border border-slate-700/80 relative overflow-hidden transition-all duration-300">
+                            <div class="flex items-center justify-between gap-2 mb-3">
+                                <div id="bank-badge-display" class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full {{ $currentLevel === 'Mula' ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30' : ($currentLevel === 'Wira' ? 'bg-amber-500/20 text-amber-300 border border-amber-500/30' : 'bg-blue-500/20 text-blue-300 border border-blue-500/30') }} text-[10px] font-black uppercase tracking-wider">
+                                    <i class="fa-solid fa-circle-dot text-[8px] animate-pulse"></i>
+                                    <span>Tujuan Transfer PMR {{ $currentLevel }} ({{ $currentLevel === 'Mula' ? 'SD/MI' : ($currentLevel === 'Wira' ? 'SMA/SMK' : 'SMP/MTs') }})</span>
+                                </div>
+                                <span class="text-[10px] font-bold text-slate-400 bg-white/5 px-2 py-0.5 rounded-md">Resmi</span>
+                            </div>
+
+                            <div class="text-[11px] text-slate-400 font-semibold mb-0.5">Tujuan Transfer Panitia:</div>
+                            <div class="text-lg font-black tracking-wide text-white flex items-center gap-2">
+                                <i class="fa-solid fa-building-columns text-amber-400 text-sm"></i>
+                                <span id="bank-name-display">{{ $activeAccount['bank_name'] }}</span>
+                            </div>
+
+                            <div class="my-2.5 p-3 bg-white/10 rounded-xl border border-white/10 flex items-center justify-between gap-3">
+                                <div class="overflow-hidden">
+                                    <div class="text-[9px] text-slate-400 uppercase tracking-wider font-bold">Nomor Rekening Tujuan</div>
+                                    <div class="text-xl sm:text-2xl font-mono font-black text-amber-300 tracking-wider truncate" id="bank-number-display">{{ $activeAccount['account_number'] }}</div>
+                                </div>
+                                <button type="button" onclick="copyBankAccountNumber()" class="bg-white/15 hover:bg-white/25 active:scale-95 text-white text-[11px] font-bold px-3 py-1.5 rounded-lg flex items-center gap-1.5 shadow-sm transition shrink-0 cursor-pointer" id="btn-copy-account" title="Salin nomor rekening">
+                                    <i class="fa-regular fa-copy"></i>
+                                    <span id="copy-btn-text">Salin</span>
+                                </button>
+                            </div>
+
+                            <div class="text-xs text-slate-300 font-medium">
+                                <span class="text-slate-400">Atas Nama:</span>
+                                <strong class="text-white uppercase tracking-wide ml-1" id="bank-holder-display">{{ $activeAccount['account_holder'] }}</strong>
+                            </div>
                             
-                            <div class="mt-4 pt-4 border-t border-slate-700 flex justify-between items-center text-xs">
+                            <div class="mt-4 pt-3 border-t border-slate-700/80 flex justify-between items-center text-xs">
                                 <span class="text-slate-400">Periode Pendaftaran:</span>
                                 <span class="font-bold text-amber-300">{{ $waveLabelText }}</span>
                             </div>
@@ -372,6 +402,74 @@
 @push('scripts')
 <script>
     const feePerCat = {{ $event->registration_fee }};
+    const bankAccountsMap = @json($bankAccounts ?? []);
+
+    function updateBankAccountDisplay(lvl) {
+        if (!bankAccountsMap || !bankAccountsMap[lvl]) return;
+        const acc = bankAccountsMap[lvl];
+
+        const bankNameEl = document.getElementById('bank-name-display');
+        const bankNumberEl = document.getElementById('bank-number-display');
+        const bankHolderEl = document.getElementById('bank-holder-display');
+        const bankBadgeEl = document.getElementById('bank-badge-display');
+
+        if (bankNameEl && acc.bank_name) bankNameEl.textContent = acc.bank_name;
+        if (bankNumberEl && acc.account_number) bankNumberEl.textContent = acc.account_number;
+        if (bankHolderEl && acc.account_holder) bankHolderEl.textContent = acc.account_holder;
+
+        if (bankBadgeEl) {
+            if (lvl === 'Mula') {
+                bankBadgeEl.className = 'inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 text-[10px] font-black uppercase tracking-wider';
+                bankBadgeEl.innerHTML = '<i class="fa-solid fa-circle-dot text-[8px] animate-pulse"></i><span>Tujuan Transfer PMR Mula (SD/MI)</span>';
+            } else if (lvl === 'Madya') {
+                bankBadgeEl.className = 'inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-blue-500/20 text-blue-300 border border-blue-500/30 text-[10px] font-black uppercase tracking-wider';
+                bankBadgeEl.innerHTML = '<i class="fa-solid fa-circle-dot text-[8px] animate-pulse"></i><span>Tujuan Transfer PMR Madya (SMP/MTs)</span>';
+            } else if (lvl === 'Wira') {
+                bankBadgeEl.className = 'inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/30 text-[10px] font-black uppercase tracking-wider';
+                bankBadgeEl.innerHTML = '<i class="fa-solid fa-circle-dot text-[8px] animate-pulse"></i><span>Tujuan Transfer PMR Wira (SMA/SMK)</span>';
+            }
+        }
+    }
+
+    function copyBankAccountNumber() {
+        const numEl = document.getElementById('bank-number-display');
+        if (!numEl) return;
+        const rawText = numEl.textContent.trim().replace(/[^0-9]/g, '') || numEl.textContent.trim();
+        
+        const setSuccess = () => {
+            const btnText = document.getElementById('copy-btn-text');
+            if (btnText) {
+                btnText.textContent = 'Tersalin!';
+                setTimeout(() => {
+                    btnText.textContent = 'Salin';
+                }, 2000);
+            }
+        };
+
+        if (navigator.clipboard && window.isSecureContext) {
+            navigator.clipboard.writeText(rawText).then(setSuccess).catch(() => {
+                fallbackCopy(rawText, setSuccess);
+            });
+        } else {
+            fallbackCopy(rawText, setSuccess);
+        }
+    }
+
+    function fallbackCopy(text, callback) {
+        const input = document.createElement('textarea');
+        input.value = text;
+        input.style.position = 'fixed';
+        input.style.opacity = '0';
+        document.body.appendChild(input);
+        input.select();
+        try {
+            document.execCommand('copy');
+            if (callback) callback();
+        } catch (e) {
+            console.error('Copy failed', e);
+        }
+        document.body.removeChild(input);
+    }
 
     function switchLevel(lvl) {
         // Reset Mula
@@ -413,6 +511,9 @@
         if (targetGroup) {
             targetGroup.classList.remove('hidden');
         }
+
+        // Switch destination bank account per level
+        updateBankAccountDisplay(lvl);
 
         // Uncheck hidden group checkboxes and hide their team containers
         document.querySelectorAll('.category-level-group.hidden input[type="checkbox"]').forEach(cb => {
