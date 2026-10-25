@@ -238,7 +238,7 @@
                     <div class="p-3 bg-slate-50 rounded-xl border border-slate-100 flex items-center justify-between">
                         <div>
                             <div class="font-bold text-xs text-slate-800">{{ $reg->full_name }}</div>
-                            <div class="text-[10px] text-slate-500">{{ $reg->class_grade }} &bull; {{ $reg->interest_field }}</div>
+                            <div class="text-[10px] text-slate-500">{{ $reg->class_grade }}{{ $reg->interest_field ? ' • '.$reg->interest_field : '' }}</div>
                         </div>
                         <span class="text-[10px] bg-blue-100 text-blue-800 font-bold px-2 py-0.5 rounded-full">
                             {{ $reg->status }}

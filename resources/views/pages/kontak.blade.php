@@ -148,17 +148,6 @@
                     </div>
 
                     <div>
-                        <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Pilihan Peminatan Bidang</label>
-                        <select name="interest_field" required class="w-full text-sm px-4 py-3 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-pmr-primary bg-white">
-                            <option value="Pertolongan Pertama (PP)">Pertolongan Pertama (PP) & Medis Lapangan</option>
-                            <option value="Kesiapsiagaan Bencana">Kesiapsiagaan Bencana & Evakuasi (PRS)</option>
-                            <option value="Donor Darah & Kesehatan">Donor Darah Sukarela & Promosi Kesehatan</option>
-                            <option value="Humas & Media Publikasi">Humas, Jurnalistik Kemanusiaan & Dokumentasi</option>
-                            <option value="Kepemimpinan & Logistik">Kepemimpinan, Dapur Umum & Logistik Darurat</option>
-                        </select>
-                    </div>
-
-                    <div>
                         <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Alasan / Motivasi Bergabung</label>
                         <textarea name="motivation" required rows="3" placeholder="Ceritakan motivasi Anda ingin menjadi relawan PMR Wira..." 
                                   class="w-full text-sm px-4 py-3 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-pmr-primary">{{ old('motivation') }}</textarea>

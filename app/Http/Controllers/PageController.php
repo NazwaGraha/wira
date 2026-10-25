@@ -268,7 +268,7 @@ class PageController extends Controller
             'nisn' => 'nullable|string|max:20',
             'phone' => 'required|string|max:20',
             'email' => 'nullable|email|max:255',
-            'interest_field' => 'required|string',
+            'interest_field' => 'nullable|string',
             'motivation' => 'required|string',
         ]);
 
