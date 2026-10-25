@@ -80,24 +80,41 @@ class CompetitionCategory extends Model
     }
 
     /**
-     * Check if a school is allowed to register multiple teams for this category.
-     * Restriction rule: maximum 1 team Putra and 1 team Putri per school,
-     * except for Cuci Tangan and Olimpiade (maximum 3 teams).
+     * Cek apakah cabang lomba memiliki kuota regu tak terbatas (khusus Mewarnai).
      */
-    public function isMultiTeamAllowed(): bool
+    public function isUnlimitedTeams(): bool
     {
         $name = strtolower($this->name ?? '');
 
-        return str_contains($name, 'cuci tangan') || str_contains($name, 'olimpiade') || str_contains($name, 'olympiade');
+        return str_contains($name, 'mewarnai');
     }
 
     /**
-     * Get maximum teams allowed per school for this category.
-     * Cuci Tangan and Olimpiade: max 3 teams.
-     * Other categories: max 1 team per gender/school.
+     * Cek apakah cabang lomba memperbolehkan pendaftaran lebih dari 1 regu.
+     * Semua cabang lomba kini mengizinkan multi regu (2 regu untuk cabang umum, 3 regu untuk olimpiade, tak terbatas untuk mewarnai).
+     */
+    public function isMultiTeamAllowed(): bool
+    {
+        return true;
+    }
+
+    /**
+     * Dapatkan kuota maksimum regu per sekolah untuk cabang lomba ini:
+     * - Mewarnai: Tidak dibatasi (unlimited).
+     * - Olimpiade Kepalangmerahan: Maksimal 3 regu.
+     * - Cabang lomba umum: Maksimal 2 regu (2 regu putra / 2 regu putri).
      */
     public function maxTeamsPerSchool(): int
     {
-        return $this->isMultiTeamAllowed() ? 3 : 1;
+        if ($this->isUnlimitedTeams()) {
+            return 999;
+        }
+
+        $name = strtolower($this->name ?? '');
+        if (str_contains($name, 'olimpiade') || str_contains($name, 'olympiade')) {
+            return 3;
+        }
+
+        return 2;
     }
 }

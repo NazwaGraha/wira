@@ -758,13 +758,10 @@ class CompetitionScoreController extends Controller
                 ->count();
             $maxAllowed = $category->maxTeamsPerSchool();
 
-            if ($existingCount >= $maxAllowed) {
+            if (! $category->isUnlimitedTeams() && $existingCount >= $maxAllowed) {
                 $genderLabel = $category->gender_category !== 'Umum' ? " {$category->gender_category}" : '';
-                if ($category->isMultiTeamAllowed()) {
-                    return redirect()->back()->with('error', "Sekolah '{$registration->school_name}' sudah mencapai batas maksimal {$maxAllowed} regu di cabang {$category->name}{$genderLabel}.");
-                } else {
-                    return redirect()->back()->with('error', "Sekolah '{$registration->school_name}' sudah memiliki 1 regu di cabang {$category->name}{$genderLabel}. Masing-masing sekolah dibatasi maksimal 1 regu Putra dan 1 regu Putri (kecuali Cuci Tangan dan Olimpiade maks. 3 regu).");
-                }
+
+                return redirect()->back()->with('error', "Sekolah '{$registration->school_name}' sudah mencapai batas maksimal {$maxAllowed} regu di cabang {$category->name}{$genderLabel}.");
             }
 
             // Check if exact team name already exists in this category

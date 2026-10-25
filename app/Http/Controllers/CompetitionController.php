@@ -144,10 +144,10 @@ class CompetitionController extends Controller
         $schoolNameClean = strtoupper(trim($validated['school_name']));
         $categoriesMap = CompetitionCategory::whereIn('id', $validated['categories'])->get()->keyBy('id');
 
-        // Validasi batasan kuota: 1 regu Putra dan 1 regu Putri per sekolah (khusus Cuci Tangan & Olimpiade maks. 3 regu)
+        // Validasi batasan kuota: 2 regu Putra dan 2 regu Putri per sekolah (khusus Olimpiade maks. 3 regu, Mewarnai tidak dibatasi)
         foreach ($validated['categories'] as $catId) {
             $cat = $categoriesMap->get($catId);
-            if (! $cat) {
+            if (! $cat || $cat->isUnlimitedTeams()) {
                 continue;
             }
 
@@ -157,19 +157,12 @@ class CompetitionController extends Controller
 
             if ($count > $maxAllowed) {
                 $genderLabel = $cat->gender_category !== 'Umum' ? " {$cat->gender_category}" : '';
-                if ($cat->isMultiTeamAllowed()) {
-                    return redirect()->back()
-                        ->withInput()
-                        ->withErrors([
-                            'categories' => "Cabang lomba '{$cat->name}{$genderLabel}' dibatasi maksimal 3 regu per sekolah. Anda mencoba mendaftarkan {$count} regu.",
-                        ]);
-                } else {
-                    return redirect()->back()
-                        ->withInput()
-                        ->withErrors([
-                            'categories' => "Cabang lomba '{$cat->name}{$genderLabel}' dibatasi maksimal 1 regu per sekolah (1 Putra / 1 Putri). Pendaftaran lebih dari 1 regu hanya diperbolehkan khusus cabang Cuci Tangan dan Olimpiade (maksimal 3 regu).",
-                        ]);
-                }
+
+                return redirect()->back()
+                    ->withInput()
+                    ->withErrors([
+                        'categories' => "Cabang lomba '{$cat->name}{$genderLabel}' dibatasi maksimal {$maxAllowed} regu per sekolah. Anda mencoba mendaftarkan {$count} regu.",
+                    ]);
             }
         }
 
@@ -183,7 +176,7 @@ class CompetitionController extends Controller
         if ($existingRegs->isNotEmpty()) {
             foreach ($validated['categories'] as $catId) {
                 $cat = $categoriesMap->get($catId);
-                if (! $cat) {
+                if (! $cat || $cat->isUnlimitedTeams()) {
                     continue;
                 }
 
@@ -198,19 +191,12 @@ class CompetitionController extends Controller
                 $maxAllowed = $cat->maxTeamsPerSchool();
                 if (($previouslyRegisteredCount + $newCount) > $maxAllowed) {
                     $genderLabel = $cat->gender_category !== 'Umum' ? " {$cat->gender_category}" : '';
-                    if ($cat->isMultiTeamAllowed()) {
-                        return redirect()->back()
-                            ->withInput()
-                            ->withErrors([
-                                'categories' => "Sekolah {$schoolNameClean} sudah mendaftarkan {$previouslyRegisteredCount} regu pada cabang '{$cat->name}{$genderLabel}'. Cabang ini dibatasi maksimal 3 regu per sekolah (Total menjadi ".($previouslyRegisteredCount + $newCount).' regu).',
-                            ]);
-                    } else {
-                        return redirect()->back()
-                            ->withInput()
-                            ->withErrors([
-                                'categories' => "Sekolah {$schoolNameClean} sudah terdaftar pada cabang '{$cat->name}{$genderLabel}' di nomor pendaftaran sebelumnya. Masing-masing sekolah dibatasi maksimal 1 regu Putra dan 1 regu Putri (kecuali Cuci Tangan dan Olimpiade maks. 3 regu).",
-                            ]);
-                    }
+
+                    return redirect()->back()
+                        ->withInput()
+                        ->withErrors([
+                            'categories' => "Sekolah {$schoolNameClean} sudah mendaftarkan {$previouslyRegisteredCount} regu pada cabang '{$cat->name}{$genderLabel}'. Cabang ini dibatasi maksimal {$maxAllowed} regu per sekolah (Total menjadi ".($previouslyRegisteredCount + $newCount).' regu).',
+                        ]);
                 }
             }
         }

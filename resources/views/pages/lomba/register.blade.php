@@ -198,16 +198,16 @@
                         <span class="w-6 h-6 rounded-full bg-red-600 text-white text-xs flex items-center justify-center font-bold">3</span>
                         Pilih Cabang Lomba & Jumlah Regu
                     </h3>
-                    <p class="text-xs text-slate-500 mb-3">Centang cabang lomba yang ingin diikuti. Masing-masing sekolah dibatasi <strong>maksimal 1 regu Putra dan 1 regu Putri</strong>, kecuali khusus cabang <strong>Ketangkasan Cuci Tangan</strong> dan <strong>Olimpiade Kepalangmerahan</strong> yang dibatasi <strong>maksimal 3 regu</strong> per sekolah.</p>
+                    <p class="text-xs text-slate-500 mb-3">Centang cabang lomba yang ingin diikuti. Setiap sekolah maksimal mengirimkan <strong>2 regu putra dan 2 regu putri</strong> untuk masing-masing cabang lomba umum, khusus cabang <strong>Olimpiade Kepalangmerahan maksimum 3 regu</strong>, dan untuk cabang <strong>Mewarnai tidak dibatasi</strong>.</p>
 
                     <div class="bg-amber-50 border border-amber-200 text-amber-950 p-4 rounded-2xl text-xs flex items-start gap-3 mb-4 shadow-2xs">
                         <i class="fa-solid fa-shield-halved text-amber-600 text-base mt-0.5 shrink-0"></i>
                         <div class="leading-relaxed space-y-1">
                             <strong class="text-amber-900 text-xs">Ketentuan Kuota Regu per Sekolah:</strong>
-                            <ul class="list-disc pl-4 space-y-0.5 text-amber-900/90">
-                                <li>Setiap sekolah dibatasi <strong>maksimal 1 regu Putra dan 1 regu Putri</strong> untuk masing-masing cabang lomba umum.</li>
-                                <li>Khusus cabang <strong>Ketangkasan Cuci Tangan</strong> dan <strong>Olimpiade Kepalangmerahan</strong>, masing-masing sekolah dibatasi <strong>maksimum 3 regu</strong>.</li>
-                                <li>Pada cabang lomba dengan kuota 1 regu, kuota terkunci otomatis guna mencegah pendaftaran ganda dari sekolah yang sama.</li>
+                            <ul class="list-disc pl-4 space-y-1 text-amber-900/90">
+                                <li>Setiap sekolah maksimal mengirimkan 2 regu putra dan 2 regu putri untuk masing-masing cabang lomba umum.</li>
+                                <li>Khusus cabang Olimpiade Kepalangmerahan masing-masing sekolah dibatasi maksimum 3 regu dan untuk cabang Mewarnai tidak dibatasi.</li>
+                                <li>Pada cabang lomba dengan kuota 2 regu, kuota terkunci otomatis guna mencegah pendaftaran dengan regu lebih dari ketentuan.</li>
                             </ul>
                         </div>
                     </div>
@@ -244,13 +244,17 @@
                                                         </span>
                                                     @endif
 
-                                                    @if($isMulti)
+                                                    @if($cat->isUnlimitedTeams())
+                                                        <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-black uppercase tracking-wider bg-purple-100 text-purple-800 border border-purple-300" title="Kuota regu tidak dibatasi">
+                                                            <i class="fa-solid fa-infinity text-purple-600"></i> Kuota: Tidak Dibatasi
+                                                        </span>
+                                                    @elseif($maxAllowed == 3)
                                                         <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-black uppercase tracking-wider bg-emerald-100 text-emerald-800 border border-emerald-300" title="Khusus cabang ini dibatasi maksimum 3 regu per sekolah">
                                                             <i class="fa-solid fa-layer-group text-emerald-600"></i> Kuota: Maks. 3 Regu
                                                         </span>
                                                     @else
-                                                        <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-bold uppercase tracking-wider bg-slate-100 text-slate-700 border border-slate-200" title="Dibatasi 1 regu per sekolah">
-                                                            <i class="fa-solid fa-user-check text-slate-500"></i> Kuota: Maks. 1 Regu
+                                                        <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-bold uppercase tracking-wider bg-blue-100 text-blue-800 border border-blue-300" title="Dibatasi maksimal 2 regu per sekolah">
+                                                            <i class="fa-solid fa-user-group text-blue-600"></i> Kuota: Maks. 2 Regu
                                                         </span>
                                                     @endif
                                                 </div>
