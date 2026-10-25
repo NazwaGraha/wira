@@ -198,7 +198,7 @@
                         <span class="w-6 h-6 rounded-full bg-red-600 text-white text-xs flex items-center justify-center font-bold">3</span>
                         Pilih Cabang Lomba & Jumlah Regu
                     </h3>
-                    <p class="text-xs text-slate-500 mb-3">Centang cabang lomba yang ingin diikuti. Setiap sekolah maksimal mengirimkan <strong>2 regu putra dan 2 regu putri</strong> untuk masing-masing cabang lomba umum, khusus cabang <strong>Olimpiade Kepalangmerahan maksimum 3 regu</strong>, dan untuk cabang <strong>Mewarnai tidak dibatasi</strong>.</p>
+                    <p class="text-xs text-slate-500 mb-3">Centang cabang lomba yang ingin diikuti.</p>
 
                     <div class="bg-amber-50 border border-amber-200 text-amber-950 p-4 rounded-2xl text-xs flex items-start gap-3 mb-4 shadow-2xs">
                         <i class="fa-solid fa-shield-halved text-amber-600 text-base mt-0.5 shrink-0"></i>
@@ -207,7 +207,6 @@
                             <ul class="list-disc pl-4 space-y-1 text-amber-900/90">
                                 <li>Setiap sekolah maksimal mengirimkan 2 regu putra dan 2 regu putri untuk masing-masing cabang lomba umum.</li>
                                 <li>Khusus cabang Olimpiade Kepalangmerahan masing-masing sekolah dibatasi maksimum 3 regu dan untuk cabang Mewarnai tidak dibatasi.</li>
-                                <li>Pada cabang lomba dengan kuota 2 regu, kuota terkunci otomatis guna mencegah pendaftaran dengan regu lebih dari ketentuan.</li>
                             </ul>
                         </div>
                     </div>
