@@ -107,6 +107,18 @@
             <!-- Submenu Data Anggota (Bisa diakses oleh semua anggota berstatus aktif) -->
             @if(auth()->user()?->canManageMembers())
             <div class="pt-4 pb-1 text-[11px] font-bold uppercase text-slate-500 tracking-wider px-3">Data Anggota</div>
+            <a href="{{ route('admin.member-registrations.index') }}" class="flex items-center gap-3 px-3 py-2.5 rounded-xl font-medium text-sm transition {{ request()->routeIs('admin.member-registrations.*') ? 'bg-pmr-primary text-white shadow-md shadow-red-950/40' : 'hover:bg-slate-800 text-slate-300' }}">
+                <i class="fa-solid fa-id-card-clip w-5 text-center text-amber-400"></i>
+                <div class="flex items-center justify-between flex-1">
+                    <span>Calon Anggota Baru</span>
+                    @php
+                        $pendingRegistrationsCount = \App\Models\MemberRegistration::where('status', 'pending')->count();
+                    @endphp
+                    @if($pendingRegistrationsCount > 0)
+                        <span class="bg-amber-500/20 text-amber-300 text-[10px] font-black px-2 py-0.5 rounded-full border border-amber-500/30">{{ $pendingRegistrationsCount }}</span>
+                    @endif
+                </div>
+            </a>
             <a href="{{ route('admin.members.create') }}" class="flex items-center gap-3 px-3 py-2.5 rounded-xl font-medium text-sm transition {{ request()->routeIs('admin.members.create') ? 'bg-pmr-primary text-white shadow-md shadow-red-950/40' : 'hover:bg-slate-800 text-slate-300' }}">
                 <i class="fa-solid fa-user-plus w-5 text-center text-emerald-400"></i>
                 <span>Input Data Anggota</span>

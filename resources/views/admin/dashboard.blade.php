@@ -57,7 +57,7 @@
     <!-- Card 4 -->
     <div class="bg-white p-4 sm:p-6 rounded-2xl border border-slate-200 shadow-sm flex items-center justify-between">
         <div>
-            <div class="text-[10px] sm:text-xs font-bold text-slate-400 uppercase tracking-wider">Pendaftar Relawan</div>
+            <div class="text-[10px] sm:text-xs font-bold text-slate-400 uppercase tracking-wider">Pendaftar Calon Anggota</div>
             <div class="text-2xl sm:text-3xl font-extrabold text-slate-900 mt-1">{{ $totalRegistrations }}</div>
             <div class="text-[10px] sm:text-[11px] text-pmr-primary font-semibold mt-1 truncate">
                 2026/2027
@@ -232,7 +232,12 @@
 
         <!-- Recent Registered Candidates -->
         <div class="bg-white rounded-3xl p-6 border border-slate-200 shadow-sm">
-            <h4 class="font-extrabold text-slate-900 text-sm mb-4">Pendaftar Relawan Baru</h4>
+            <div class="flex items-center justify-between mb-4">
+                <h4 class="font-extrabold text-slate-900 text-sm">Pendaftar Calon Anggota Baru</h4>
+                <a href="{{ route('admin.member-registrations.index') }}" class="text-[11px] text-pmr-primary font-bold hover:underline">
+                    Kelola Semua &rarr;
+                </a>
+            </div>
             <div class="space-y-3">
                 @forelse ($recentRegistrations as $reg)
                     <div class="p-3 bg-slate-50 rounded-xl border border-slate-100 flex items-center justify-between">

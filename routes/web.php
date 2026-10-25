@@ -26,6 +26,7 @@ use App\Http\Controllers\Admin\GalleryController;
 use App\Http\Controllers\Admin\HeroSlideController;
 use App\Http\Controllers\Admin\MediaManagerController;
 use App\Http\Controllers\Admin\MemberController;
+use App\Http\Controllers\Admin\MemberRegistrationController;
 use App\Http\Controllers\Admin\OrganizationController;
 use App\Http\Controllers\Admin\OrganizationGuidelineController;
 use App\Http\Controllers\Admin\PopupBannerController;
@@ -188,6 +189,13 @@ Route::prefix('admin')->name('admin.')->group(function () {
         // Prestasi & Penghargaan Organisasi
         Route::resource('prestasi', AchievementController::class)->names('prestasi');
         Route::post('/prestasi/{id}/toggle-featured', [AchievementController::class, 'toggleFeatured'])->name('prestasi.toggle-featured');
+
+        // Pendaftar Calon Anggota Baru
+        Route::get('/member-registrations', [MemberRegistrationController::class, 'index'])->name('member-registrations.index');
+        Route::get('/calon-anggota', [MemberRegistrationController::class, 'index']);
+        Route::patch('/member-registrations/{id}/status', [MemberRegistrationController::class, 'updateStatus'])->name('member-registrations.update-status');
+        Route::delete('/member-registrations/{id}', [MemberRegistrationController::class, 'destroy'])->name('member-registrations.destroy');
+        Route::post('/member-registrations/{id}/promote', [MemberRegistrationController::class, 'promoteToMember'])->name('member-registrations.promote');
 
         // Data Anggota
         Route::delete('/members/destroy-multiple', [MemberController::class, 'destroyMultiple'])->name('members.destroy-multiple');
