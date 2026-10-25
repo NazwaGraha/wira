@@ -266,9 +266,23 @@
                                                     @if(count($members) > 3)
                                                         <div class="text-[10px] text-slate-400 font-bold italic">+ {{ count($members) - 3 }} anggota lainnya</div>
                                                     @endif
+                                                    @if($team->members_file_url)
+                                                        <div class="pt-1">
+                                                            <a href="{{ $team->members_file_url }}" target="_blank" class="inline-flex items-center gap-1 text-[10px] font-bold text-emerald-700 hover:text-emerald-900 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded transition">
+                                                                <i class="fa-solid fa-file-excel"></i> File Excel
+                                                            </a>
+                                                        </div>
+                                                    @endif
                                                 </div>
                                             @else
                                                 <span class="text-slate-400 italic text-[11px]">Belum diisi nama anggota</span>
+                                                @if($team->members_file_url)
+                                                    <div class="pt-1">
+                                                        <a href="{{ $team->members_file_url }}" target="_blank" class="inline-flex items-center gap-1 text-[10px] font-bold text-emerald-700 hover:text-emerald-900 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded transition">
+                                                            <i class="fa-solid fa-file-excel"></i> File Excel
+                                                        </a>
+                                                    </div>
+                                                @endif
                                             @endif
                                         </td>
 

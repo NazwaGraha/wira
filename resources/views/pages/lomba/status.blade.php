@@ -130,14 +130,49 @@
                         <h4 class="font-bold text-sm text-slate-800 uppercase tracking-wider mb-3">Cabang Lomba yang Didaftarkan</h4>
                         <div class="border border-slate-200 rounded-xl overflow-hidden divide-y divide-slate-100">
                             @foreach($registration->teams as $team)
-                                <div class="p-4 flex items-center justify-between hover:bg-slate-50 transition">
-                                    <div>
-                                        <div class="font-bold text-slate-800 text-sm">{{ $team->category->name }} ({{ $team->category->gender_category }})</div>
-                                        <div class="text-xs text-slate-500">Nama Regu: <span class="font-semibold text-slate-700">{{ $team->team_name }}</span></div>
+                                <div class="p-4 hover:bg-slate-50 transition space-y-2.5">
+                                    <div class="flex items-center justify-between gap-3">
+                                        <div>
+                                            <div class="font-bold text-slate-800 text-sm">{{ $team->category->name }} ({{ $team->category->gender_category }})</div>
+                                            <div class="text-xs text-slate-500">Nama Regu: <span class="font-semibold text-slate-700">{{ $team->team_name }}</span></div>
+                                        </div>
+                                        <span class="bg-slate-100 text-slate-600 text-xs font-semibold px-3 py-1 rounded-lg shrink-0">
+                                            {{ $team->category->scoring_type == 'standard_time' ? 'Uji Ketangkasan / Waktu' : 'Uji Penilaian Teknis' }}
+                                        </span>
                                     </div>
-                                    <span class="bg-slate-100 text-slate-600 text-xs font-semibold px-3 py-1 rounded-lg">
-                                        {{ $team->category->scoring_type == 'standard_time' ? 'Uji Ketangkasan / Waktu' : 'Uji Penilaian Teknis' }}
-                                    </span>
+
+                                    @php
+                                        $members = is_array($team->members_list) ? $team->members_list : (is_string($team->members_list) ? json_decode($team->members_list, true) : []);
+                                    @endphp
+                                    @if(!empty($members) || $team->members_file_url)
+                                        <div class="bg-slate-50/80 border border-slate-200/80 rounded-xl p-3 text-xs space-y-2">
+                                            <div class="flex items-center justify-between text-[11px] font-bold text-slate-700">
+                                                <span class="flex items-center gap-1.5">
+                                                    <i class="fa-solid fa-users text-red-600"></i>
+                                                    <span>Daftar Peserta Regu ({{ count($members) }} Orang):</span>
+                                                </span>
+                                                @if($team->members_file_url)
+                                                    <a href="{{ $team->members_file_url }}" target="_blank" class="text-emerald-700 hover:text-emerald-900 inline-flex items-center gap-1 font-semibold">
+                                                        <i class="fa-solid fa-file-excel"></i> Unduh File Excel
+                                                    </a>
+                                                @endif
+                                            </div>
+                                            @if(!empty($members))
+                                                <div class="flex flex-wrap gap-1.5 pt-0.5">
+                                                    @foreach($members as $mIdx => $m)
+                                                        @php
+                                                            $mName = is_array($m) ? ($m['name'] ?? ($m['nama'] ?? 'Peserta')) : $m;
+                                                            $mRole = is_array($m) && !empty($m['role'] ?? ($m['peran'] ?? '')) ? ' (' . ($m['role'] ?? $m['peran']) . ')' : '';
+                                                        @endphp
+                                                        <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-lg text-[11px] font-medium bg-white border border-slate-200 text-slate-800 shadow-2xs">
+                                                            <span class="font-bold text-slate-400">{{ $mIdx + 1 }}.</span>
+                                                            <span>{{ $mName }}{{ $mRole }}</span>
+                                                        </span>
+                                                    @endforeach
+                                                </div>
+                                            @endif
+                                        </div>
+                                    @endif
                                 </div>
                             @endforeach
                         </div>

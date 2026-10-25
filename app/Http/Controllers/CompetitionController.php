@@ -10,6 +10,7 @@ use App\Models\CompetitionParticipantTeam;
 use App\Models\CompetitionRegistration;
 use App\Models\CompetitionScore;
 use App\Models\Gallery;
+use App\Services\CompetitionSpreadsheetService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Log;
@@ -138,6 +139,7 @@ class CompetitionController extends Controller
             'categories.*' => 'exists:competition_categories,id',
             'team_labels' => 'nullable|array',
             'team_members' => 'nullable|array',
+            'team_files' => 'nullable|array',
             'payment_proof' => 'required|image|mimes:jpeg,png,jpg,pdf|max:5120',
         ]);
 
@@ -233,10 +235,11 @@ class CompetitionController extends Controller
                 $maxAllowed = $cat ? $cat->maxTeamsPerSchool() : 1;
                 $filtered = array_slice($filtered, 0, $maxAllowed);
 
-                foreach ($filtered as $lbl) {
+                foreach ($filtered as $idx => $lbl) {
                     $teamsToCreate[] = [
                         'category_id' => $catId,
                         'label' => trim($lbl),
+                        'index' => $idx,
                     ];
                 }
             } else {
@@ -244,6 +247,7 @@ class CompetitionController extends Controller
                 $teamsToCreate[] = [
                     'category_id' => $catId,
                     'label' => $lbl,
+                    'index' => 0,
                 ];
             }
         }
@@ -272,17 +276,68 @@ class CompetitionController extends Controller
             'status' => 'pending',
         ]);
 
+        $spreadsheetService = app(CompetitionSpreadsheetService::class);
+
         foreach ($teamsToCreate as $teamData) {
             $catId = $teamData['category_id'];
             $label = $teamData['label'];
+            $idx = $teamData['index'] ?? 0;
             $teamName = $registration->school_name.($label ? " {$label}" : '');
+
+            $membersList = [];
+            $membersFilePath = null;
+
+            // 1. Ekstrak dari file Excel yang diunggah untuk regu ini
+            $uploadedFile = $request->file("team_files.{$catId}.{$idx}")
+                ?? $request->file("team_files_{$catId}_{$idx}");
+
+            if ($uploadedFile && $uploadedFile->isValid()) {
+                try {
+                    $filename = 'team_members_'.time().'_'.Str::random(6).'.'.$uploadedFile->getClientOriginalExtension();
+                    $membersFilePath = $uploadedFile->storeAs('competition_team_files', $filename, 'public');
+
+                    // Salin fallback jika di shared hosting
+                    if (file_exists(public_path('storage')) && ! is_link(public_path('storage'))) {
+                        File::ensureDirectoryExists(public_path('storage/competition_team_files'), 0755, true);
+                        @copy(storage_path('app/public/'.$membersFilePath), public_path('storage/'.$membersFilePath));
+                    }
+
+                    $membersList = $spreadsheetService->parseParticipantFile($uploadedFile);
+                } catch (\Throwable $e) {
+                    Log::warning("Gagal parse file Excel peserta regu {$teamName}: ".$e->getMessage());
+                }
+            }
+
+            // 2. Jika tidak ada file excel atau file excel kosong, cek input JSON/array nama anggota
+            if (empty($membersList)) {
+                $rawMembers = $request->input("team_members.{$catId}.{$idx}")
+                    ?? $request->input("team_members_{$catId}_{$idx}");
+
+                if (is_array($rawMembers)) {
+                    $membersList = $rawMembers;
+                } elseif (is_string($rawMembers) && trim($rawMembers) !== '') {
+                    $decoded = json_decode($rawMembers, true);
+                    if (is_array($decoded)) {
+                        $membersList = $decoded;
+                    } else {
+                        $lines = explode("\n", str_replace("\r", '', $rawMembers));
+                        foreach ($lines as $line) {
+                            $t = trim($line);
+                            if ($t) {
+                                $membersList[] = ['name' => $t, 'role' => 'Anggota'];
+                            }
+                        }
+                    }
+                }
+            }
 
             CompetitionParticipantTeam::create([
                 'competition_registration_id' => $registration->id,
                 'competition_category_id' => $catId,
                 'team_name' => $teamName,
                 'team_label' => $label,
-                'members_list' => [],
+                'members_list' => $membersList,
+                'members_file' => $membersFilePath,
             ]);
         }
 
@@ -322,6 +377,55 @@ class CompetitionController extends Controller
         }
 
         return view('pages.lomba.status', compact('registration', 'code'));
+    }
+
+    /**
+     * Download format template Excel untuk upload daftar anggota per regu
+     */
+    public function downloadParticipantTemplate(CompetitionSpreadsheetService $spreadsheetService)
+    {
+        $filePath = $spreadsheetService->downloadTemplate();
+        $filename = 'Template_Daftar_Peserta_Regu_PMR.xlsx';
+
+        return response()->download($filePath, $filename, [
+            'Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        ])->deleteFileAfterSend(true);
+    }
+
+    /**
+     * API AJAX untuk membaca & memvalidasi file Excel daftar anggota regu (Live Preview)
+     */
+    public function parseExcelPeserta(Request $request, CompetitionSpreadsheetService $spreadsheetService)
+    {
+        $request->validate([
+            'excel_file' => 'required|file|max:5120',
+        ]);
+
+        $file = $request->file('excel_file');
+        $ext = strtolower($file->getClientOriginalExtension());
+        if (! in_array($ext, ['xlsx', 'xls', 'csv', 'txt'])) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Format file harus berupa Excel (.xlsx) atau CSV (.csv).',
+            ], 422);
+        }
+
+        try {
+            $members = $spreadsheetService->parseParticipantFile($file);
+
+            return response()->json([
+                'success' => true,
+                'count' => count($members),
+                'members' => $members,
+                'filename' => $file->getClientOriginalName(),
+                'message' => count($members).' peserta berhasil dibaca dari file Excel.',
+            ]);
+        } catch (\Throwable $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Gagal membaca file Excel: '.$e->getMessage(),
+            ], 500);
+        }
     }
 
     public function receipt($code)

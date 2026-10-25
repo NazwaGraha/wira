@@ -71,14 +71,52 @@
                 <h3 class="font-extrabold text-sm text-slate-800 uppercase tracking-wider mb-4">Cabang Mata Lomba Terdaftar ({{ $registration->teams->count() }})</h3>
                 <div class="space-y-3">
                     @foreach($registration->teams as $team)
-                        <div class="p-4 bg-slate-50 border border-slate-200 rounded-xl flex items-center justify-between">
-                            <div>
-                                <div class="font-black text-slate-900 text-sm">{{ $team->category->name }} ({{ $team->category->gender_category }})</div>
-                                <div class="text-xs text-slate-500 mt-0.5">Nama Regu: <strong>{{ $team->team_name }}</strong></div>
+                        <div class="p-4 bg-slate-50 border border-slate-200 rounded-xl space-y-3">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <div class="font-black text-slate-900 text-sm">{{ $team->category->name }} ({{ $team->category->gender_category }})</div>
+                                    <div class="text-xs text-slate-500 mt-0.5">Nama Regu: <strong>{{ $team->team_name }}</strong></div>
+                                </div>
+                                <span class="bg-white border border-slate-200 text-slate-700 font-mono text-xs font-bold px-3 py-1 rounded-lg">
+                                    Rp {{ number_format($team->category ? $team->category->getFeeForWave($registration->registration_wave ?: 1) : floatval($registration->event->registration_fee ?: 150000), 0, ',', '.') }}
+                                </span>
                             </div>
-                            <span class="bg-white border border-slate-200 text-slate-700 font-mono text-xs font-bold px-3 py-1 rounded-lg">
-                                Rp {{ number_format($team->category ? $team->category->getFeeForWave($registration->registration_wave ?: 1) : floatval($registration->event->registration_fee ?: 150000), 0, ',', '.') }}
-                            </span>
+
+                            @php
+                                $members = is_array($team->members_list) ? $team->members_list : (is_string($team->members_list) ? json_decode($team->members_list, true) : []);
+                            @endphp
+                            @if(!empty($members) || $team->members_file_url)
+                                <div class="bg-white border border-slate-200 rounded-xl p-3 text-xs space-y-2">
+                                    <div class="flex items-center justify-between">
+                                        <span class="font-bold text-slate-700 flex items-center gap-1.5 text-xs">
+                                            <i class="fa-solid fa-users text-blue-600"></i>
+                                            Daftar Anggota / Peserta ({{ count($members) }} Orang):
+                                        </span>
+                                        @if($team->members_file_url)
+                                            <a href="{{ $team->members_file_url }}" target="_blank" class="inline-flex items-center gap-1.5 px-2.5 py-1 text-[11px] font-bold rounded-lg bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-emerald-100 transition">
+                                                <i class="fa-solid fa-file-excel text-emerald-600"></i>
+                                                <span>Download File Excel</span>
+                                            </a>
+                                        @endif
+                                    </div>
+                                    @if(!empty($members))
+                                        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-1.5 pt-1">
+                                            @foreach($members as $mIdx => $m)
+                                                @php
+                                                    $mName = is_array($m) ? ($m['name'] ?? ($m['nama'] ?? 'Peserta')) : $m;
+                                                    $mRole = is_array($m) && !empty($m['role'] ?? ($m['peran'] ?? '')) ? ' (' . ($m['role'] ?? $m['peran']) . ')' : '';
+                                                @endphp
+                                                <div class="bg-slate-50 border border-slate-200/80 px-2.5 py-1 rounded-md text-[11px] flex items-center justify-between">
+                                                    <span class="truncate font-medium text-slate-800"><span class="font-bold text-slate-400 mr-1">{{ $mIdx + 1 }}.</span>{{ $mName }}</span>
+                                                    @if($mRole)
+                                                        <span class="text-[10px] text-slate-500 font-semibold">{{ $mRole }}</span>
+                                                    @endif
+                                                </div>
+                                            @endforeach
+                                        </div>
+                                    @endif
+                                </div>
+                            @endif
                         </div>
                     @endforeach
                 </div>

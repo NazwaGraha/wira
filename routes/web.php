@@ -404,6 +404,7 @@ Route::get('/server-sync-update-pmr', function () {
         File::ensureDirectoryExists(storage_path('app/public/advisors'), 0755, true);
         File::ensureDirectoryExists(storage_path('app/public/members'), 0755, true);
         File::ensureDirectoryExists(storage_path('app/public/competition_payments'), 0755, true);
+        File::ensureDirectoryExists(storage_path('app/public/competition_team_files'), 0755, true);
         File::ensureDirectoryExists(storage_path('app/public/guidelines'), 0755, true);
         File::ensureDirectoryExists(storage_path('app/public/achievements/trophies'), 0755, true);
         File::ensureDirectoryExists(storage_path('app/public/achievements/gallery'), 0755, true);
@@ -425,6 +426,8 @@ Route::get('/server-sync-update-pmr', function () {
             File::copyDirectory(storage_path('app/public/achievements'), public_path('storage/achievements'));
             File::ensureDirectoryExists(public_path('storage/competition_payments'), 0755, true);
             File::copyDirectory(storage_path('app/public/competition_payments'), public_path('storage/competition_payments'));
+            File::ensureDirectoryExists(public_path('storage/competition_team_files'), 0755, true);
+            File::copyDirectory(storage_path('app/public/competition_team_files'), public_path('storage/competition_team_files'));
             File::ensureDirectoryExists(public_path('storage/hero-slides'), 0755, true);
             File::copyDirectory(storage_path('app/public/hero-slides'), public_path('storage/hero-slides'));
             File::ensureDirectoryExists(public_path('storage/popup-banners'), 0755, true);
@@ -460,7 +463,7 @@ Route::get('/storage/{path}', function ($path) {
     $cleanPath = ltrim(str_replace(['../', '..\\'], '', $path), '/');
     $firstFolder = explode('/', $cleanPath)[0];
     $allowedFolders = [
-        'advisors', 'members', 'competition_payments', 'galleries',
+        'advisors', 'members', 'competition_payments', 'competition_team_files', 'galleries',
         'donor-banners', 'broadcast_images', 'guidelines', 'achievements',
         'hero-slides', 'popup-banners', 'media',
     ];
@@ -500,6 +503,9 @@ Route::prefix('lomba')->name('lomba.')->group(function () {
     Route::get('/', [CompetitionController::class, 'index'])->name('index');
     Route::get('/daftar', [CompetitionController::class, 'register'])->name('register');
     Route::post('/daftar', [CompetitionController::class, 'store'])->name('store');
+    Route::get('/template-peserta', [CompetitionController::class, 'downloadParticipantTemplate'])->name('template-peserta');
+    Route::get('/template-peserta-regu', [CompetitionController::class, 'downloadParticipantTemplate']);
+    Route::post('/parse-excel-peserta', [CompetitionController::class, 'parseExcelPeserta'])->name('parse-excel-peserta');
     Route::get('/status', [CompetitionController::class, 'status'])->name('status');
     Route::get('/kwitansi/{code}', [CompetitionController::class, 'receipt'])->name('receipt');
     Route::get('/kwitansi/{code}', [CompetitionController::class, 'receipt'])->name('kwitansi');

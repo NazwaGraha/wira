@@ -211,6 +211,28 @@
                         </div>
                     </div>
 
+                    <!-- Banner Fasilitas Upload Excel Daftar Peserta Per Regu -->
+                    <div class="bg-gradient-to-r from-emerald-50 via-teal-50 to-emerald-50 border border-emerald-200 text-emerald-950 p-4 rounded-2xl text-xs flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4 shadow-2xs">
+                        <div class="flex items-start gap-3">
+                            <div class="w-8 h-8 rounded-xl bg-emerald-600 text-white flex items-center justify-center shrink-0 text-sm shadow-xs">
+                                <i class="fa-solid fa-file-excel"></i>
+                            </div>
+                            <div>
+                                <div class="font-extrabold text-emerald-950 text-xs flex items-center gap-1.5 flex-wrap">
+                                    <span>Upload Daftar Peserta Tiap Regu (Format Excel)</span>
+                                    <span class="bg-emerald-200 text-emerald-800 text-[10px] font-black uppercase px-2 py-0.5 rounded-full">Tersedia</span>
+                                </div>
+                                <p class="text-[11px] text-emerald-800/90 mt-0.5">
+                                    Unggah file Excel daftar nama peserta lomba untuk masing-masing regu. Nama peserta otomatis tersimpan ke database & tertera di kartu peserta.
+                                </p>
+                            </div>
+                        </div>
+                        <a href="{{ route('lomba.template-peserta') }}" download class="inline-flex items-center justify-center gap-2 px-3.5 py-2 bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white font-bold text-xs rounded-xl shadow-xs transition shrink-0">
+                            <i class="fa-solid fa-cloud-arrow-down"></i>
+                            <span>Unduh Template Excel Regu (.xlsx)</span>
+                        </a>
+                    </div>
+
                     @foreach(['Mula', 'Madya', 'Wira'] as $lvl)
                         <div id="category-group-{{ $lvl }}" class="category-level-group space-y-3 {{ $currentLevel == $lvl ? '' : 'hidden' }}">
                             @foreach($categoriesByLevel->get($lvl, []) as $cat)
@@ -284,7 +306,7 @@
                                     </div>
 
                                     <!-- Dynamic Team Inputs Container -->
-                                    <div id="teams-container-{{ $cat->id }}" class="teams-container space-y-2 pt-2.5 border-t border-slate-200/60 {{ $isChecked ? '' : 'hidden' }}">
+                                    <div id="teams-container-{{ $cat->id }}" class="teams-container space-y-2.5 pt-2.5 border-t border-slate-200/60 {{ $isChecked ? '' : 'hidden' }}">
                                         @php
                                             $defaultLabel = $isPa ? 'Regu Putra' : ($isPi ? 'Regu Putri' : 'Regu A');
                                             $oldLabels = old('team_labels.'.$cat->id, [$defaultLabel]);
@@ -293,14 +315,52 @@
                                             if (!$isMulti) $oldLabels = array_slice($oldLabels, 0, 1);
                                         @endphp
                                         @foreach($oldLabels as $idx => $lbl)
-                                            <div class="team-input-row flex items-center gap-2">
-                                                <span class="text-[11px] font-bold text-slate-500 w-24 shrink-0 row-index-label">{{ $isMulti ? 'Regu ' . chr(65 + $idx) . ':' : ($isPa ? 'Regu Putra:' : ($isPi ? 'Regu Putri:' : 'Nama Regu:')) }}</span>
-                                                <input type="text" name="team_labels[{{ $cat->id }}][]" value="{{ $lbl }}" placeholder="Label Regu" class="team-label-input flex-grow text-xs bg-white border border-slate-200 px-3 py-2 rounded-xl focus:outline-none focus:border-red-500 shadow-2xs font-semibold text-slate-800" oninput="calculateFee()" {{ !$isMulti ? '' : '' }}>
-                                                @if($isMulti)
-                                                    <button type="button" onclick="removeTeamRow(this, {{ $cat->id }})" class="btn-remove-team {{ count($oldLabels) > 1 ? '' : 'hidden' }} text-slate-400 hover:text-rose-600 hover:bg-rose-50 p-2 rounded-lg transition" title="Hapus Regu Ini">
-                                                        <i class="fa-solid fa-trash-can text-xs"></i>
-                                                    </button>
-                                                @endif
+                                            <div class="team-input-row bg-white border border-slate-200/90 rounded-xl p-3 shadow-2xs space-y-2.5 transition">
+                                                <div class="flex items-center gap-2">
+                                                    <span class="text-[11px] font-bold text-slate-600 w-24 shrink-0 row-index-label">{{ $isMulti ? 'Regu ' . chr(65 + $idx) . ':' : ($isPa ? 'Regu Putra:' : ($isPi ? 'Regu Putri:' : 'Nama Regu:')) }}</span>
+                                                    <input type="text" name="team_labels[{{ $cat->id }}][{{ $idx }}]" value="{{ $lbl }}" placeholder="Label Regu" class="team-label-input flex-grow text-xs bg-slate-50 border border-slate-200 px-3 py-2 rounded-xl focus:bg-white focus:outline-none focus:border-red-500 shadow-2xs font-semibold text-slate-800" oninput="calculateFee()">
+                                                    @if($isMulti)
+                                                        <button type="button" onclick="removeTeamRow(this, {{ $cat->id }})" class="btn-remove-team {{ count($oldLabels) > 1 ? '' : 'hidden' }} text-slate-400 hover:text-rose-600 hover:bg-rose-50 p-2 rounded-lg transition" title="Hapus Regu Ini">
+                                                            <i class="fa-solid fa-trash-can text-xs"></i>
+                                                        </button>
+                                                    @endif
+                                                </div>
+
+                                                <!-- Upload File Excel Peserta Regu Ini -->
+                                                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pt-2 border-t border-slate-100 text-xs">
+                                                    <div class="flex items-center flex-wrap gap-2">
+                                                        <input type="file" name="team_files[{{ $cat->id }}][{{ $idx }}]" accept=".xlsx,.xls,.csv" class="hidden team-file-input" onchange="handleTeamExcelUpload(this, {{ $cat->id }})">
+                                                        <input type="hidden" name="team_members[{{ $cat->id }}][{{ $idx }}]" class="team-members-json" value="">
+                                                        
+                                                        <button type="button" onclick="triggerFileInput(this)" class="inline-flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-bold rounded-lg border border-emerald-300 bg-emerald-50 text-emerald-800 hover:bg-emerald-100 hover:border-emerald-400 active:scale-95 transition shadow-2xs cursor-pointer">
+                                                            <i class="fa-solid fa-file-excel text-emerald-600 text-xs"></i>
+                                                            <span class="btn-upload-text">Upload Excel Peserta</span>
+                                                        </button>
+
+                                                        <a href="{{ route('lomba.template-peserta') }}" download class="inline-flex items-center gap-1 text-[11px] font-semibold text-slate-500 hover:text-emerald-700 hover:underline px-1.5 py-1 rounded transition" title="Unduh format template Excel untuk regu ini">
+                                                            <i class="fa-solid fa-download text-emerald-600 text-[10px]"></i>
+                                                            <span>Template Excel</span>
+                                                        </a>
+                                                    </div>
+
+                                                    <div class="team-file-status text-[11px] text-slate-400 flex items-center gap-1.5 truncate max-w-full sm:max-w-xs">
+                                                        <span class="status-text italic text-slate-400">(Opsional: unggah daftar peserta)</span>
+                                                    </div>
+                                                </div>
+
+                                                <!-- Live Preview Box (Tampil saat file excel berhasil di-parse) -->
+                                                <div class="team-members-preview-box hidden bg-emerald-50/70 border border-emerald-200 rounded-lg p-2.5 text-xs text-emerald-950 space-y-1.5">
+                                                    <div class="flex items-center justify-between gap-2">
+                                                        <span class="font-bold flex items-center gap-1.5 text-[11px] text-emerald-900">
+                                                            <i class="fa-solid fa-users text-emerald-600"></i>
+                                                            <span class="preview-count-label">0 Peserta Terdaftar di Excel</span>
+                                                        </span>
+                                                        <button type="button" onclick="togglePreviewList(this)" class="btn-toggle-preview text-[10px] font-bold text-emerald-700 hover:text-emerald-900 underline cursor-pointer">
+                                                            Sembunyikan
+                                                        </button>
+                                                    </div>
+                                                    <div class="preview-members-list flex flex-wrap gap-1 max-h-32 overflow-y-auto pt-1"></div>
+                                                </div>
                                             </div>
                                         @endforeach
                                     </div>
@@ -625,6 +685,123 @@
         calculateFee();
     }
 
+    function triggerFileInput(btn) {
+        const card = btn.closest('.team-input-row');
+        if (!card) return;
+        const fileInput = card.querySelector('.team-file-input');
+        if (fileInput) fileInput.click();
+    }
+
+    function handleTeamExcelUpload(input, catId) {
+        const card = input.closest('.team-input-row');
+        if (!card) return;
+
+        const file = input.files && input.files[0];
+        if (!file) return;
+
+        const statusEl = card.querySelector('.team-file-status');
+        const btnUploadText = card.querySelector('.btn-upload-text');
+        const membersInput = card.querySelector('.team-members-json');
+
+        if (statusEl) {
+            statusEl.innerHTML = `<span class="text-amber-600 font-semibold flex items-center gap-1.5"><i class="fa-solid fa-spinner fa-spin text-amber-500"></i> Membaca file ${escapeHtml(file.name)}...</span>`;
+        }
+        if (btnUploadText) btnUploadText.textContent = 'Membaca Excel...';
+
+        const formData = new FormData();
+        formData.append('excel_file', file);
+        formData.append('_token', '{{ csrf_token() }}');
+
+        fetch('{{ route("lomba.parse-excel-peserta") }}', {
+            method: 'POST',
+            body: formData,
+            headers: {
+                'Accept': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest',
+            }
+        })
+        .then(res => {
+            if (!res.ok) {
+                return res.json().then(errData => { throw new Error(errData.message || 'Gagal memproses file Excel.'); });
+            }
+            return res.json();
+        })
+        .then(data => {
+            if (data.success && Array.isArray(data.members)) {
+                if (membersInput) {
+                    membersInput.value = JSON.stringify(data.members);
+                }
+                if (statusEl) {
+                    statusEl.innerHTML = `<span class="text-emerald-700 font-bold flex items-center gap-1"><i class="fa-solid fa-circle-check text-emerald-600"></i> <span class="truncate max-w-[130px] sm:max-w-[200px]" title="${escapeHtml(data.filename)}">${escapeHtml(data.filename)}</span> (${data.count} Peserta)</span>`;
+                }
+                if (btnUploadText) btnUploadText.textContent = 'Ganti Excel';
+                renderMembersPreview(card, data.members);
+            } else {
+                throw new Error(data.message || 'Format file Excel tidak sesuai.');
+            }
+        })
+        .catch(err => {
+            if (statusEl) {
+                statusEl.innerHTML = `<span class="text-rose-600 font-semibold flex items-center gap-1"><i class="fa-solid fa-circle-exclamation"></i> ${escapeHtml(err.message)}</span>`;
+            }
+            if (btnUploadText) btnUploadText.textContent = 'Upload Excel Peserta';
+        });
+    }
+
+    function renderMembersPreview(card, members) {
+        const previewBox = card.querySelector('.team-members-preview-box');
+        const countLabel = card.querySelector('.preview-count-label');
+        const listEl = card.querySelector('.preview-members-list');
+        if (!previewBox || !listEl) return;
+
+        if (!members || members.length === 0) {
+            previewBox.classList.add('hidden');
+            return;
+        }
+
+        if (countLabel) {
+            countLabel.textContent = `${members.length} Peserta Terdaftar di Excel`;
+        }
+        listEl.innerHTML = '';
+
+        members.forEach((m, idx) => {
+            const badge = document.createElement('span');
+            badge.className = 'inline-flex items-center gap-1 px-2 py-0.5 rounded text-[11px] font-medium bg-white text-emerald-900 border border-emerald-200 shadow-2xs';
+            const name = m.name || m.nama || (typeof m === 'string' ? m : `Peserta ${idx + 1}`);
+            const role = (m.role || m.peran) ? ` (${m.role || m.peran})` : '';
+            badge.innerHTML = `<span class="font-bold text-emerald-700">${idx + 1}.</span> <span>${escapeHtml(name)}${escapeHtml(role)}</span>`;
+            listEl.appendChild(badge);
+        });
+
+        previewBox.classList.remove('hidden');
+    }
+
+    function togglePreviewList(btn) {
+        const card = btn.closest('.team-input-row');
+        if (!card) return;
+        const listEl = card.querySelector('.preview-members-list');
+        if (!listEl) return;
+        if (listEl.classList.contains('hidden')) {
+            listEl.classList.remove('hidden');
+            btn.textContent = 'Sembunyikan';
+        } else {
+            listEl.classList.add('hidden');
+            btn.textContent = 'Lihat Pratinjau';
+        }
+    }
+
+    function escapeHtml(text) {
+        if (!text) return '';
+        const map = {
+            '&': '&amp;',
+            '<': '&lt;',
+            '>': '&gt;',
+            '"': '&quot;',
+            "'": '&#039;'
+        };
+        return String(text).replace(/[&<>"']/g, function(m) { return map[m]; });
+    }
+
     function addTeamRow(catId) {
         const card = document.getElementById('cat-card-' + catId);
         const isMulti = card ? card.dataset.multi === 'true' : true;
@@ -649,14 +826,52 @@
         const defaultVal = isMulti ? `Regu ${letter}` : 'Regu Utama';
 
         const row = document.createElement('div');
-        row.className = 'team-input-row flex items-center gap-2';
+        row.className = 'team-input-row bg-white border border-slate-200/90 rounded-xl p-3 shadow-2xs space-y-2.5 transition';
         row.innerHTML = `
-            <span class="text-[11px] font-bold text-slate-500 w-24 shrink-0 row-index-label">${labelText}</span>
-            <input type="text" name="team_labels[${catId}][]" value="${defaultVal}" placeholder="Label Regu" class="team-label-input flex-grow text-xs bg-white border border-slate-200 px-3 py-2 rounded-xl focus:outline-none focus:border-red-500 shadow-2xs font-semibold text-slate-800" oninput="calculateFee()">
-            ${isMulti ? `
-            <button type="button" onclick="removeTeamRow(this, ${catId})" class="btn-remove-team text-slate-400 hover:text-rose-600 hover:bg-rose-50 p-2 rounded-lg transition" title="Hapus Regu Ini">
-                <i class="fa-solid fa-trash-can text-xs"></i>
-            </button>` : ''}
+            <div class="flex items-center gap-2">
+                <span class="text-[11px] font-bold text-slate-600 w-24 shrink-0 row-index-label">${labelText}</span>
+                <input type="text" name="team_labels[${catId}][${count}]" value="${defaultVal}" placeholder="Label Regu" class="team-label-input flex-grow text-xs bg-slate-50 border border-slate-200 px-3 py-2 rounded-xl focus:bg-white focus:outline-none focus:border-red-500 shadow-2xs font-semibold text-slate-800" oninput="calculateFee()">
+                ${isMulti ? `
+                <button type="button" onclick="removeTeamRow(this, ${catId})" class="btn-remove-team text-slate-400 hover:text-rose-600 hover:bg-rose-50 p-2 rounded-lg transition" title="Hapus Regu Ini">
+                    <i class="fa-solid fa-trash-can text-xs"></i>
+                </button>` : ''}
+            </div>
+
+            <!-- Upload File Excel Peserta Regu Ini -->
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pt-2 border-t border-slate-100 text-xs">
+                <div class="flex items-center flex-wrap gap-2">
+                    <input type="file" name="team_files[${catId}][${count}]" accept=".xlsx,.xls,.csv" class="hidden team-file-input" onchange="handleTeamExcelUpload(this, ${catId})">
+                    <input type="hidden" name="team_members[${catId}][${count}]" class="team-members-json" value="">
+                    
+                    <button type="button" onclick="triggerFileInput(this)" class="inline-flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-bold rounded-lg border border-emerald-300 bg-emerald-50 text-emerald-800 hover:bg-emerald-100 hover:border-emerald-400 active:scale-95 transition shadow-2xs cursor-pointer">
+                        <i class="fa-solid fa-file-excel text-emerald-600 text-xs"></i>
+                        <span class="btn-upload-text">Upload Excel Peserta</span>
+                    </button>
+
+                    <a href="{{ route('lomba.template-peserta') }}" download class="inline-flex items-center gap-1 text-[11px] font-semibold text-slate-500 hover:text-emerald-700 hover:underline px-1.5 py-1 rounded transition" title="Unduh format template Excel untuk regu ini">
+                        <i class="fa-solid fa-download text-emerald-600 text-[10px]"></i>
+                        <span>Template Excel</span>
+                    </a>
+                </div>
+
+                <div class="team-file-status text-[11px] text-slate-400 flex items-center gap-1.5 truncate max-w-full sm:max-w-xs">
+                    <span class="status-text italic text-slate-400">(Opsional: unggah daftar peserta)</span>
+                </div>
+            </div>
+
+            <!-- Live Preview Box -->
+            <div class="team-members-preview-box hidden bg-emerald-50/70 border border-emerald-200 rounded-lg p-2.5 text-xs text-emerald-950 space-y-1.5">
+                <div class="flex items-center justify-between gap-2">
+                    <span class="font-bold flex items-center gap-1.5 text-[11px] text-emerald-900">
+                        <i class="fa-solid fa-users text-emerald-600"></i>
+                        <span class="preview-count-label">0 Peserta Terdaftar di Excel</span>
+                    </span>
+                    <button type="button" onclick="togglePreviewList(this)" class="btn-toggle-preview text-[10px] font-bold text-emerald-700 hover:text-emerald-900 underline cursor-pointer">
+                        Sembunyikan
+                    </button>
+                </div>
+                <div class="preview-members-list flex flex-wrap gap-1 max-h-32 overflow-y-auto pt-1"></div>
+            </div>
         `;
         container.appendChild(row);
         updateRemoveButtons(catId);
@@ -690,6 +905,12 @@
                 const label = r.querySelector('.row-index-label');
                 if (label) label.textContent = `Regu ${String.fromCharCode(65 + idx)}:`;
             }
+            const labelInput = r.querySelector('.team-label-input');
+            if (labelInput) labelInput.name = `team_labels[${catId}][${idx}]`;
+            const fileInput = r.querySelector('.team-file-input');
+            if (fileInput) fileInput.name = `team_files[${catId}][${idx}]`;
+            const membersInput = r.querySelector('.team-members-json');
+            if (membersInput) membersInput.name = `team_members[${catId}][${idx}]`;
         });
 
         // Toggle btn-add-team state
