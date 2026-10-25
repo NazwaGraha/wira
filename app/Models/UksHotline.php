@@ -38,6 +38,11 @@ class UksHotline extends Model
             if (Schema::hasTable('uks_hotlines')) {
                 $hotline = static::first();
                 if ($hotline) {
+                    if (str_contains((string) $hotline->phone_number, '857') || empty($hotline->phone_number)) {
+                        $hotline->phone_number = '083872506817';
+                        $hotline->save();
+                    }
+
                     return $hotline;
                 }
             }

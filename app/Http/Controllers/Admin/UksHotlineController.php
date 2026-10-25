@@ -29,6 +29,8 @@ class UksHotlineController extends Controller
                 'description' => 'Layanan cepat tanggap pertolongan pertama (P3K), penanganan siswa sakit/pingsan saat upacara/KBM, serta evakuasi medis darurat di lingkungan SMAN 1 Ciawi.',
                 'whatsapp_message' => 'Halo Petugas Piket Medis PMR SMAN 1 Ciawi, saya membutuhkan bantuan medis/pertolongan pertama di lokasi: ',
             ]);
+        } elseif (str_contains((string) $hotline->phone_number, '857') || empty($hotline->phone_number)) {
+            $hotline->update(['phone_number' => '083872506817']);
         }
 
         return view('admin.uks-hotline.index', compact('hotline'));

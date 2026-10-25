@@ -348,6 +348,10 @@ Route::get('/server-sync-update-pmr', function () {
             // Ignore if migration already applied
         }
 
+        if (Schema::hasTable('uks_hotlines')) {
+            DB::table('uks_hotlines')->where('phone_number', 'like', '%857%')->orWhereNull('phone_number')->update(['phone_number' => '083872506817']);
+        }
+
         try {
             BackgroundMusicController::ensureTableExists();
         } catch (Throwable $e) {
