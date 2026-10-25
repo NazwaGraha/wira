@@ -42,8 +42,8 @@
                     </div>
                     <div>
                         <div class="text-xs font-bold text-slate-800">WhatsApp Hotline</div>
-                        <a href="https://wa.me/6285770246918" target="_blank" class="text-[11px] text-emerald-700 font-bold hover:underline mt-1 block">
-                            085770246918
+                        <a href="{{ $hotlineUks ? $hotlineUks->whatsapp_url : 'https://wa.me/6283872506817' }}" target="_blank" class="text-[11px] text-emerald-700 font-bold hover:underline mt-1 block">
+                            {{ $hotlineUks ? $hotlineUks->formatted_phone : '0838-7250-6817' }}
                         </a>
                     </div>
                 </div>

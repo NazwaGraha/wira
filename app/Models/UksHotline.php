@@ -47,7 +47,7 @@ class UksHotline extends Model
 
         // Default instance fallback
         return new static([
-            'phone_number' => '085770246918',
+            'phone_number' => '083872506817',
             'label' => 'Hotline UKS',
             'service_name' => 'Piket Medis & P3K Sekolah',
             'officer_name' => 'Tim Relawan PMR Wira SMAN 1 Ciawi',
@@ -73,11 +73,11 @@ class UksHotline extends Model
             return $raw;
         }
 
-        return $raw ? '62'.$raw : '6285770246918';
+        return $raw ? '62'.$raw : '6283872506817';
     }
 
     /**
-     * Format tampilan nomor HP yang nyaman dibaca (contoh: 0857-7024-6918).
+     * Format tampilan nomor HP yang nyaman dibaca (contoh: 0838-7250-6817).
      */
     public function getFormattedPhoneAttribute(): string
     {

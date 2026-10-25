@@ -138,7 +138,7 @@ class WiraKnowledgeSyncService
             'category' => 'organisasi',
             'title' => 'Profil & Identitas PMR Wira SMAN 1 Ciawi',
             'keywords' => ['profil', 'alamat', 'lokasi', 'kontak', 'email', 'markas', 'sekretariat', 'uks', 'sekolah', 'pandansari', 'veteran', 'terakreditasi a', 'sman 1 ciawi'],
-            'content' => 'PMR Wira Unit SMA Negeri 1 Ciawi adalah organisasi relawan sekolah terakreditasi A berkedudukan di Ruang UKS/PMR SMAN 1 Ciawi, Jl. Veteran III Banjarwaru, Ciawi, Kabupaten Bogor (Kode Pos 16720). Email resmi: pmrwirasman1c@gmail.com. Hotline Siaga Medis UKS: 0857-7024-6918. Masa bakti kepengurusan aktif adalah Ragana Dwi Pantara 2026/2027.',
+            'content' => 'PMR Wira Unit SMA Negeri 1 Ciawi adalah organisasi relawan sekolah terakreditasi A berkedudukan di Ruang UKS/PMR SMAN 1 Ciawi, Jl. Veteran III Banjarwaru, Ciawi, Kabupaten Bogor (Kode Pos 16720). Email resmi: pmrwirasman1c@gmail.com. Hotline Siaga Medis UKS: 0838-7250-6817. Masa bakti kepengurusan aktif adalah Ragana Dwi Pantara 2026/2027.',
         ];
     }
 
@@ -200,7 +200,7 @@ class WiraKnowledgeSyncService
      */
     protected function buildHotlineUksTopic(): array
     {
-        $phone = '0857-7024-6918';
+        $phone = '0838-7250-6817';
         $hours = 'Senin s.d. Jumat (07.00 - 16.00 WIB)';
         $officer = 'Petugas Medis Siaga UKS';
 
@@ -753,7 +753,7 @@ class WiraKnowledgeSyncService
                 'category' => 'p3k',
                 'title' => 'Resusitasi Jantung Paru (RJP / CPR) Standar PMR Wira',
                 'keywords' => ['rjp', 'cpr', 'resusitasi jantung paru', 'henti jantung', 'henti napas', 'kompresi dada', '30:2', 'karotis', 'bhd'],
-                'content' => "Protokol RJP (Resusitasi Jantung Paru) / CPR:\n1. Amankan 3A (Aman Diri, Aman Pasien, Aman Lingkungan).\n2. Cek respon korban (ASNT/AVPU) dengan tepuk pundak tegas: 'Kak! Bangun, Kak!'.\n3. Call for Help: Panggil tim medis darurat atau Hotline UKS (0857-7024-6918).\n4. Cek nadi karotis di leher dan pernapasan dada korban maksimal 10 detik.\n5. Lakukan Kompresi Dada (30 Kompresi : 2 Napas Buatan):\n   • Posisi tangan di pertengahan tulang dada (setengah bawah sternum).\n   • Kedalaman kompresi 5 - 6 cm (dewasa/remaja).\n   • Kecepatan kompresi 100 - 120 kali/menit (irama Stayin' Alive).\n   • Recoil dada penuh di setiap kompresi.\n6. Evaluasi denyut nadi dan napas tiap 5 siklus (~2 menit). Hentikan jika korban sadar, bantuan medis tiba, atau penolong kelelahan.\n🚨 Penting: Segera hubungi tim medis, ruang UKS, atau fasilitas kesehatan terdekat selagi langkah pertolongan pertama ini dilakukan.",
+                'content' => "Protokol RJP (Resusitasi Jantung Paru) / CPR:\n1. Amankan 3A (Aman Diri, Aman Pasien, Aman Lingkungan).\n2. Cek respon korban (ASNT/AVPU) dengan tepuk pundak tegas: 'Kak! Bangun, Kak!'.\n3. Call for Help: Panggil tim medis darurat atau Hotline UKS (0838-7250-6817).\n4. Cek nadi karotis di leher dan pernapasan dada korban maksimal 10 detik.\n5. Lakukan Kompresi Dada (30 Kompresi : 2 Napas Buatan):\n   • Posisi tangan di pertengahan tulang dada (setengah bawah sternum).\n   • Kedalaman kompresi 5 - 6 cm (dewasa/remaja).\n   • Kecepatan kompresi 100 - 120 kali/menit (irama Stayin' Alive).\n   • Recoil dada penuh di setiap kompresi.\n6. Evaluasi denyut nadi dan napas tiap 5 siklus (~2 menit). Hentikan jika korban sadar, bantuan medis tiba, atau penolong kelelahan.\n🚨 Penting: Segera hubungi tim medis, ruang UKS, atau fasilitas kesehatan terdekat selagi langkah pertolongan pertama ini dilakukan.",
             ],
             [
                 'id' => 'p3k_tandu_darurat',

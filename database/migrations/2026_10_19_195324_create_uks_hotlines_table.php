@@ -14,7 +14,7 @@ return new class extends Migration
     {
         Schema::create('uks_hotlines', function (Blueprint $table) {
             $table->id();
-            $table->string('phone_number')->default('085770246918');
+            $table->string('phone_number')->default('083872506817');
             $table->string('label')->default('Hotline UKS');
             $table->string('service_name')->default('Piket Medis & P3K Sekolah');
             $table->string('officer_name')->nullable()->default('Tim Relawan PMR Wira SMAN 1 Ciawi');
@@ -29,7 +29,7 @@ return new class extends Migration
 
         // Insert default initial hotline setting
         DB::table('uks_hotlines')->insert([
-            'phone_number' => '085770246918',
+            'phone_number' => '083872506817',
             'label' => 'Hotline UKS',
             'service_name' => 'Piket Medis & P3K Sekolah',
             'officer_name' => 'Tim Relawan PMR Wira SMAN 1 Ciawi',

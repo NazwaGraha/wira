@@ -18,7 +18,7 @@ class UksHotlineController extends Controller
         $hotline = UksHotline::first();
         if (! $hotline) {
             $hotline = UksHotline::create([
-                'phone_number' => '085770246918',
+                'phone_number' => '083872506817',
                 'label' => 'Hotline UKS',
                 'service_name' => 'Piket Medis & P3K Sekolah',
                 'officer_name' => 'Tim Relawan PMR Wira SMAN 1 Ciawi',

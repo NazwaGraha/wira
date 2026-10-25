@@ -33,7 +33,7 @@ class UksHotlineTest extends TestCase
         $user = User::factory()->create();
 
         $updateData = [
-            'phone_number' => '085770246918',
+            'phone_number' => '083872506817',
             'label' => 'Hotline UKS Siaga 1',
             'service_name' => 'Piket P3K & Respon Cepat Sekolah',
             'officer_name' => 'Relawan PMR Tim Rajawali',
@@ -51,7 +51,7 @@ class UksHotlineTest extends TestCase
         $response->assertSessionHas('success');
 
         $this->assertDatabaseHas('uks_hotlines', [
-            'phone_number' => '085770246918',
+            'phone_number' => '083872506817',
             'label' => 'Hotline UKS Siaga 1',
             'service_name' => 'Piket P3K & Respon Cepat Sekolah',
             'is_active' => true,
@@ -77,7 +77,7 @@ class UksHotlineTest extends TestCase
     {
         $hotline = UksHotline::current();
         $hotline->update([
-            'phone_number' => '085770246918',
+            'phone_number' => '083872506817',
             'label' => 'Hotline UKS Khusus',
             'service_name' => 'Pos Medis Darurat',
             'officer_name' => 'Tim Medis PMR',
@@ -92,7 +92,7 @@ class UksHotlineTest extends TestCase
         $response = $this->get('/');
         $response->assertStatus(200);
         $response->assertSee('Hotline UKS Khusus');
-        $response->assertSee('0857-7024-6918');
+        $response->assertSee('0838-7250-6817');
         $response->assertSee('openUksHotlineModal');
         $response->assertSee('uks-hotline-modal');
     }

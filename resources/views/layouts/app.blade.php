@@ -563,7 +563,7 @@
                         </li>
                         <li class="flex items-center gap-2.5">
                             <i class="fa-brands fa-whatsapp text-emerald-500"></i>
-                            <a href="https://wa.me/6285770246918" target="_blank" class="hover:text-white transition">085770246918</a>
+                            <a href="{{ $hotlineUks ? $hotlineUks->whatsapp_url : 'https://wa.me/6283872506817' }}" target="_blank" class="hover:text-white transition">{{ $hotlineUks ? $hotlineUks->phone_number : '083872506817' }}</a>
                         </li>
                     </ul>
                 </div>

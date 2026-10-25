@@ -1,3 +1,8 @@
+@php
+    $hotlineWidget = $hotlineUks ?? \App\Models\UksHotline::current();
+    $waNumberFormatted = $hotlineWidget ? $hotlineWidget->formatted_phone : '0838-7250-6817';
+    $waCleanNumber = $hotlineWidget ? $hotlineWidget->clean_phone : '6283872506817';
+@endphp
 <!-- Floating Widgets Dock (Pojok Kanan Bawah): Wira Agent AI + WhatsApp Berkedip -->
 <div class="fixed bottom-5 right-5 z-[90] flex flex-col items-end gap-3 select-none pointer-events-auto">
 
@@ -31,11 +36,11 @@
         <!-- Floating Tooltip Pill (Muncul saat hover & auto-attention) -->
         <div id="wa-floating-tooltip" class="hidden sm:flex items-center gap-2 mr-3 px-3.5 py-1.5 rounded-full bg-stone-900/95 text-white text-[11px] font-bold shadow-xl border border-emerald-500/40 backdrop-blur-md opacity-0 group-hover/wa:opacity-100 transition-all duration-200 pointer-events-none transform translate-x-2 group-hover/wa:translate-x-0 whitespace-nowrap">
             <span class="w-2 h-2 rounded-full bg-emerald-400 animate-ping"></span>
-            <span>Chat WhatsApp: <strong class="text-emerald-300 font-mono">0857-7024-6918</strong></span>
+            <span>Chat WhatsApp: <strong class="text-emerald-300 font-mono">{{ $waNumberFormatted }}</strong></span>
         </div>
 
         <!-- WhatsApp Circular Button dengan Animasi Berkedip & Radar Pulse -->
-        <a href="https://wa.me/6285770246918?text=Halo%20PMR%20Wira%20SMAN%201%20Ciawi%2C%20saya%20ingin%20bertanya%20informasi%20seputar%20PMR%20dan%20layanan%20UKS..." target="_blank" rel="noopener noreferrer" class="relative w-13 h-13 sm:w-14 sm:h-14 rounded-full bg-gradient-to-tr from-emerald-600 to-[#25D366] text-white shadow-[0_0_20px_rgba(37,211,102,0.6)] hover:shadow-[0_0_30px_rgba(37,211,102,0.9)] flex items-center justify-center border-2 border-white/80 transition-all duration-300 transform hover:scale-110 active:scale-95 group wa-pulse-btn" aria-label="Hubungi WhatsApp PMR Wira SMAN 1 Ciawi" title="Chat WhatsApp Resmi (0857-7024-6918)">
+        <a href="https://wa.me/{{ $waCleanNumber }}?text=Halo%20PMR%20Wira%20SMAN%201%20Ciawi%2C%20saya%20ingin%20bertanya%20informasi%20seputar%20PMR%20dan%20layanan%20UKS..." target="_blank" rel="noopener noreferrer" class="relative w-13 h-13 sm:w-14 sm:h-14 rounded-full bg-gradient-to-tr from-emerald-600 to-[#25D366] text-white shadow-[0_0_20px_rgba(37,211,102,0.6)] hover:shadow-[0_0_30px_rgba(37,211,102,0.9)] flex items-center justify-center border-2 border-white/80 transition-all duration-300 transform hover:scale-110 active:scale-95 group wa-pulse-btn" aria-label="Hubungi WhatsApp PMR Wira SMAN 1 Ciawi" title="Chat WhatsApp Resmi ({{ $waNumberFormatted }})">
             
             <!-- Radar Beacon Glowing Ping -->
             <span class="absolute -inset-1.5 rounded-full bg-emerald-400 animate-ping opacity-60 pointer-events-none"></span>
@@ -148,7 +153,7 @@
         </form>
         <div class="flex items-center justify-between text-[9px] text-stone-400 mt-1.5 px-1">
             <span>Didukung AI Gemini & Knowledge PMR</span>
-            <a href="https://wa.me/6285770246918" target="_blank" class="text-emerald-600 hover:underline font-bold flex items-center gap-1">
+            <a href="https://wa.me/{{ $waCleanNumber }}" target="_blank" class="text-emerald-600 hover:underline font-bold flex items-center gap-1">
                 <i class="fa-brands fa-whatsapp"></i> Chat Admin Langsung
             </a>
         </div>
@@ -310,7 +315,7 @@
         } catch (err) {
             console.error('Wira Agent network error:', err);
             setWiraTyping(false);
-            appendWiraMessage('assistant', 'Jaringan sedang sibuk atau offline. Silakan coba sesaat lagi, atau hubungi langsung via WhatsApp di nomor 0857-7024-6918.', getCurrentTime());
+            appendWiraMessage('assistant', 'Jaringan sedang sibuk atau offline. Silakan coba sesaat lagi, atau hubungi langsung via WhatsApp di nomor {{ $waNumberFormatted }}.', getCurrentTime());
         }
     }
 

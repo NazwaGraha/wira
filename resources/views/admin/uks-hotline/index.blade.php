@@ -72,7 +72,7 @@
                                     <i class="fa-brands fa-whatsapp text-emerald-600 text-sm"></i>
                                 </span>
                                 <input type="text" id="phone_number" name="phone_number" value="{{ old('phone_number', $hotline->phone_number) }}" required
-                                       placeholder="Contoh: 085770246918"
+                                       placeholder="Contoh: 083872506817"
                                        class="w-full pl-10 pr-4 py-2.5 rounded-xl border border-slate-200 focus:border-pmr-primary focus:ring-2 focus:ring-red-100 text-xs sm:text-sm font-bold text-slate-800 transition">
                             </div>
                             <p class="text-[11px] text-slate-400 mt-1">Gunakan nomor aktif petugas piket UKS atau koordinator medis yang mudah dihubungi.</p>

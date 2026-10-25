@@ -313,7 +313,7 @@ class KnowledgeSearchService
                 'category' => 'organisasi',
                 'title' => 'Profil & Identitas PMR Wira SMAN 1 Ciawi',
                 'keywords' => ['profil', 'alamat', 'lokasi', 'kontak', 'email', 'markas', 'sekretariat', 'uks'],
-                'content' => 'PMR Wira Unit SMA Negeri 1 Ciawi (Terakreditasi A) beralamat di Ruang UKS SMAN 1 Ciawi, Jl. Veteran III Banjarwaru, Ciawi, Bogor. Email: pmrwirasman1c@gmail.com. Hotline UKS: 0857-7024-6918. Masa bakti kepengurusan: Ragana Dwi Pantara 2026/2027.',
+                'content' => 'PMR Wira Unit SMA Negeri 1 Ciawi (Terakreditasi A) beralamat di Ruang UKS SMAN 1 Ciawi, Jl. Veteran III Banjarwaru, Ciawi, Bogor. Email: pmrwirasman1c@gmail.com. Hotline UKS: 0838-7250-6817. Masa bakti kepengurusan: Ragana Dwi Pantara 2026/2027.',
             ],
             [
                 'id' => 'biodata_pembina',

@@ -85,7 +85,7 @@ class WiraAgentTest extends TestCase
 
         $response->assertStatus(200);
         $this->assertStringContainsString('3A (Aman Diri, Aman Pasien, Aman Lingkungan)', $response->json('reply'));
-        $this->assertStringContainsString('0857-7024-6918', $response->json('reply'));
+        $this->assertStringContainsString('0838-7250-6817', $response->json('reply'));
     }
 
     public function test_wira_agent_handles_gabung_relawan_suggestion(): void
@@ -157,7 +157,7 @@ class WiraAgentTest extends TestCase
         $response = $this->get('/');
 
         $response->assertStatus(200);
-        $response->assertSee('https://wa.me/6285770246918', false);
+        $response->assertSee('https://wa.me/6283872506817', false);
         $response->assertSee('wa-pulse-btn', false);
         $response->assertSee('wira-agent-modal', false);
         $response->assertSee('🏆 Info Lomba PMR', false);

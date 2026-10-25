@@ -3,7 +3,7 @@
 - **Unit Organisasi:** PMR Wira Unit SMAN 1 Ciawi (Terakreditasi A)
 - **Alamat Markas:** Ruang UKS/PMR SMAN 1 Ciawi, Jl. Veteran III Banjarwaru, Ciawi, Kabupaten Bogor (Kode Pos 16720)
 - **Email Resmi:** pmrwirasman1c@gmail.com
-- **Hotline UKS:** 0857-7024-6918 (WhatsApp & Telepon Cepat)
+- **Hotline UKS:** 0838-7250-6817 (WhatsApp & Telepon Cepat)
 - **Masa Bakti Kabinet:** Ragana Dwi Pantara 2026/2027
 - **Semboyan Palang Merah:** *Siamo Tutti Fratelli* (Kita Semua Bersaudara)
 - **Visi:** Menjadi unit PMR Wira yang unggul, berkarakter, responsif, berprestasi, dan terdepan dalam aksi kemanusiaan berlandaskan 7 Prinsip Dasar PMI dan Tri Bakti PMR.
