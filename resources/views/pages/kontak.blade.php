@@ -3,6 +3,9 @@
 @section('title', 'Kontak & Pendaftaran Relawan')
 
 @section('content')
+@php
+    $hotlineUks = $hotlineUks ?? \App\Models\UksHotline::current();
+@endphp
 <!-- Page Header -->
 <section class="gradient-pmr text-white py-16">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
