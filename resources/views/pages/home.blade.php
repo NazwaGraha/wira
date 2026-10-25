@@ -362,7 +362,7 @@
 <!-- Call to Action Banner -->
 <section class="py-12 sm:py-16 gradient-pmr text-white">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-        <h2 class="text-2xl sm:text-4xl font-extrabold mb-3 sm:mb-4 tracking-tight">Siap Menjadi Bagian dari Relawan Kemanusiaan?</h2>
+        <h2 class="text-2xl sm:text-4xl font-extrabold mb-3 sm:mb-4 tracking-tight">Siap Menjadi Bagian dari Anggota PMR ?</h2>
         <p class="text-red-100 max-w-2xl mx-auto text-xs sm:text-base mb-6 sm:mb-8 leading-relaxed">
             Pendaftaran calon relawan PMR Wira SMAN 1 Ciawi periode Ragana Dwi Pantara 2026/2027 telah dibuka secara daring. Daftarkan diri Anda sekarang tanpa dipungut biaya!
         </p>
