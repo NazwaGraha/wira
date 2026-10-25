@@ -30,7 +30,7 @@
                     <div>
                         <div class="text-xs font-bold text-slate-800">Sekretariat PMR</div>
                         <div class="text-[11px] text-slate-500 mt-1 leading-snug">
-                            Ruang UKS SMAN 1 Ciawi, Jl. Veteran No. 46, Pandansari, Bogor.
+                            Ruang UKS SMAN 1 Ciawi, Jl. Veteran III Banjarwaru, Ciawi, Bogor.
                         </div>
                     </div>
                 </div>

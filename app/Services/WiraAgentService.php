@@ -476,7 +476,7 @@ PROMPT;
             $hotline = UksHotline::current();
             $context[] = '=== IDENTITAS MARKAS & HOTLINE UKS ===';
             $context[] = '• Organisasi: PMR Wira SMA Negeri 1 Ciawi (Terakreditasi A)';
-            $context[] = '• Alamat Markas: Ruang UKS/PMR SMAN 1 Ciawi, Jl. Veteran No. 46, Pandansari, Ciawi, Bogor (16720)';
+            $context[] = '• Alamat Markas: Ruang UKS/PMR SMAN 1 Ciawi, Jl. Veteran III Banjarwaru, Ciawi, Bogor (16720)';
             $context[] = '• Email Resmi: pmrwirasman1c@gmail.com';
             $context[] = "• Hotline Siaga UKS: {$hotline->formatted_phone} (WhatsApp: {$hotline->clean_phone})";
             $context[] = "• Jam Operasional UKS: {$hotline->operational_hours}";
@@ -1210,7 +1210,7 @@ PROMPT;
 
         // 29. Pertanyaan seputar Profil & UKS
         if (str_contains($lower, 'profil') || str_contains($lower, 'alamat') || str_contains($lower, 'lokasi') || str_contains($lower, 'kontak') || str_contains($lower, 'sekretariat') || str_contains($lower, 'uks') || str_contains($lower, 'markas') || str_contains($lower, 'hotline') || str_contains($lower, 'telepon')) {
-            return "Halo Sahabat Relawan! 🏫\n\n• **Organisasi:** PMR Wira Unit SMAN 1 Ciawi (Terakreditasi A).\n• **Alamat:** Ruang UKS/PMR SMAN 1 Ciawi, Jl. Veteran No. 46, Pandansari, Ciawi, Bogor.\n• **Hotline Siaga UKS:** 0857-7024-6918 (WhatsApp & Panggilan Cepat Langsung).\n• **Jam Layanan:** Senin - Jumat (07.00 - 16.00 WIB).\n• **Email Resmi:** pmrwirasman1c@gmail.com\n\nDi pojok kanan bawah website ini juga tersedia tombol WhatsApp langsung yang menghubungkan Kakak ke petugas medis siaga UKS!";
+            return "Halo Sahabat Relawan! 🏫\n\n• **Organisasi:** PMR Wira Unit SMAN 1 Ciawi (Terakreditasi A).\n• **Alamat:** Ruang UKS/PMR SMAN 1 Ciawi, Jl. Veteran III Banjarwaru, Ciawi, Bogor.\n• **Hotline Siaga UKS:** 0857-7024-6918 (WhatsApp & Panggilan Cepat Langsung).\n• **Jam Layanan:** Senin - Jumat (07.00 - 16.00 WIB).\n• **Email Resmi:** pmrwirasman1c@gmail.com\n\nDi pojok kanan bawah website ini juga tersedia tombol WhatsApp langsung yang menghubungkan Kakak ke petugas medis siaga UKS!";
         }
 
         // 30. Smart Knowledge Base (RAG) Fallback Search
@@ -2320,7 +2320,7 @@ PROMPT;
             ."• **Tema Utama:** \"Membangun Karakter Kemanusiaan Generasi Muda SMAN 1 Ciawi\"\n"
             ."• **Status Akreditasi:** Terakreditasi A • Unit PMR Wira Teladan Kabupaten Bogor\n"
             ."• **Pembina Utama:** Abdul Hamid Saputra, S.Hum., M.Pd. (Dewan Pembina Kehormatan: Drs. H. Mulyadi, M.Pd.)\n"
-            ."• **Sekretariat & Markas:** Ruang UKS/PMR SMAN 1 Ciawi, Jl. Veteran No. 46, Pandansari, Ciawi, Bogor\n\n"
+            ."• **Sekretariat & Markas:** Ruang UKS/PMR SMAN 1 Ciawi, Jl. Veteran III Banjarwaru, Ciawi, Bogor\n\n"
             ."🎯 **Tujuan & Peran Pembinaan:**\n"
             ."1. Membentuk karakter siswa yang memiliki kepekaan sosial tinggi, tangguh, dan berdisiplin.\n"
             ."2. Mengasah keahlian medis praktis Pertolongan Pertama (P3K) dan evakuasi korban bencana.\n"

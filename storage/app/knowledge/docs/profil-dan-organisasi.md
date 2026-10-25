@@ -1,7 +1,7 @@
 # Profil & Organisasi PMR Wira SMAN 1 Ciawi
 
 - **Unit Organisasi:** PMR Wira Unit SMAN 1 Ciawi (Terakreditasi A)
-- **Alamat Markas:** Ruang UKS/PMR SMAN 1 Ciawi, Jl. Veteran No. 46, Pandansari, Ciawi, Kabupaten Bogor (Kode Pos 16720)
+- **Alamat Markas:** Ruang UKS/PMR SMAN 1 Ciawi, Jl. Veteran III Banjarwaru, Ciawi, Kabupaten Bogor (Kode Pos 16720)
 - **Email Resmi:** pmrwirasman1c@gmail.com
 - **Hotline UKS:** 0857-7024-6918 (WhatsApp & Telepon Cepat)
 - **Masa Bakti Kabinet:** Ragana Dwi Pantara 2026/2027

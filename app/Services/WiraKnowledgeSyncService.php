@@ -138,7 +138,7 @@ class WiraKnowledgeSyncService
             'category' => 'organisasi',
             'title' => 'Profil & Identitas PMR Wira SMAN 1 Ciawi',
             'keywords' => ['profil', 'alamat', 'lokasi', 'kontak', 'email', 'markas', 'sekretariat', 'uks', 'sekolah', 'pandansari', 'veteran', 'terakreditasi a', 'sman 1 ciawi'],
-            'content' => 'PMR Wira Unit SMA Negeri 1 Ciawi adalah organisasi relawan sekolah terakreditasi A berkedudukan di Ruang UKS/PMR SMAN 1 Ciawi, Jl. Veteran No. 46, Pandansari, Ciawi, Kabupaten Bogor (Kode Pos 16720). Email resmi: pmrwirasman1c@gmail.com. Hotline Siaga Medis UKS: 0857-7024-6918. Masa bakti kepengurusan aktif adalah Ragana Dwi Pantara 2026/2027.',
+            'content' => 'PMR Wira Unit SMA Negeri 1 Ciawi adalah organisasi relawan sekolah terakreditasi A berkedudukan di Ruang UKS/PMR SMAN 1 Ciawi, Jl. Veteran III Banjarwaru, Ciawi, Kabupaten Bogor (Kode Pos 16720). Email resmi: pmrwirasman1c@gmail.com. Hotline Siaga Medis UKS: 0857-7024-6918. Masa bakti kepengurusan aktif adalah Ragana Dwi Pantara 2026/2027.',
         ];
     }
 
@@ -156,7 +156,7 @@ class WiraKnowledgeSyncService
                 ."• Tema Utama: \"Membangun Karakter Kemanusiaan Generasi Muda SMAN 1 Ciawi\"\n"
                 ."• Status Akreditasi: Terakreditasi A • Unit PMR Wira Teladan Kabupaten Bogor\n"
                 ."• Pembina Utama: Abdul Hamid Saputra, S.Hum., M.Pd. (Dewan Pembina Kehormatan: Drs. H. Mulyadi, M.Pd.)\n"
-                ."• Markas / Sekretariat: Ruang UKS/PMR SMAN 1 Ciawi, Jl. Veteran No. 46, Pandansari, Ciawi, Bogor\n"
+                ."• Markas / Sekretariat: Ruang UKS/PMR SMAN 1 Ciawi, Jl. Veteran III Banjarwaru, Ciawi, Bogor\n"
                 .'• Peran & Tujuan Pembinaan: Wadah pembentukan karakter relawan muda yang memiliki empati sosial tinggi, tangguh secara fisik dan mental, menguasai pertolongan pertama (P3K) medis, dan menjalin persahabatan antar-siswa berlandaskan 7 Prinsip Palang Merah dan Tri Bakti PMR.',
         ];
     }

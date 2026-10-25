@@ -555,7 +555,7 @@
                     <ul class="space-y-3 text-xs text-stone-400">
                         <li class="flex items-start gap-2.5">
                             <i class="fa-solid fa-location-dot text-red-500 mt-0.5"></i>
-                            <span>Ruang UKS / PMR SMAN 1 Ciawi<br>Jl. Veteran No. 46, Pandansari, Ciawi, Bogor, Jawa Barat 16720</span>
+                            <span>Jl. Veteran III Banjarwaru, Ciawi, Bogor, Jawa Barat 16720</span>
                         </li>
                         <li class="flex items-center gap-2.5">
                             <i class="fa-solid fa-envelope text-red-500"></i>
