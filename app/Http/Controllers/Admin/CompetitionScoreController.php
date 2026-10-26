@@ -256,7 +256,7 @@ class CompetitionScoreController extends Controller
             }
         }
 
-        $nextOrderNumber = $teams->count() + 1;
+        $nextOrderNumber = $category->generateNextOrderNumber(0);
 
         return view('admin.competition.scores.input', compact(
             'category',
@@ -830,10 +830,13 @@ class CompetitionScoreController extends Controller
                 return redirect()->back()->with('error', "Regu '{$teamName}' dari {$registration->school_name} sudah ada di lembar penilaian ini.");
             }
 
+            $slotIdx = $existingCount;
+            $orderNumber = ! empty($validated['order_number']) ? trim($validated['order_number']) : $category->generateNextOrderNumber($slotIdx, $label);
+
             CompetitionParticipantTeam::create([
                 'competition_registration_id' => $registration->id,
                 'competition_category_id' => $category->id,
-                'order_number' => $validated['order_number'] ?: null,
+                'order_number' => $orderNumber,
                 'team_name' => $teamName,
                 'team_label' => $label ?: null,
                 'is_active' => true,
@@ -864,10 +867,13 @@ class CompetitionScoreController extends Controller
             $label = trim($validated['team_label'] ?? '');
             $teamName = $registration->school_name.($label ? " {$label}" : '');
 
+            $slotIdx = $existingCount;
+            $orderNumber = ! empty($validated['order_number']) ? trim($validated['order_number']) : $category->generateNextOrderNumber($slotIdx, $label);
+
             CompetitionParticipantTeam::create([
                 'competition_registration_id' => $registration->id,
                 'competition_category_id' => $category->id,
-                'order_number' => $validated['order_number'] ?: null,
+                'order_number' => $orderNumber,
                 'team_name' => $teamName,
                 'team_label' => $label ?: null,
                 'is_active' => true,

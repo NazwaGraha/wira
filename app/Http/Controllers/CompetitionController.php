@@ -415,9 +415,12 @@ class CompetitionController extends Controller
                 }
             }
 
+            $orderNumber = $cat ? $cat->generateNextOrderNumber($idx, $label) : null;
+
             $teamPayload = [
                 'competition_registration_id' => $registration->id,
                 'competition_category_id' => $catId,
+                'order_number' => $orderNumber,
                 'team_name' => $teamName,
                 'team_label' => $label,
                 'members_list' => $membersList,

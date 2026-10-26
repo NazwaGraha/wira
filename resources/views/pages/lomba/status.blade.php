@@ -156,8 +156,20 @@
                                 <div class="p-4 hover:bg-slate-50 transition space-y-2.5">
                                     <div class="flex items-center justify-between gap-3">
                                         <div>
-                                            <div class="font-bold text-slate-800 text-sm">{{ $team->category->name }} ({{ $team->category->gender_category }})</div>
-                                            <div class="text-xs text-slate-500">Nama Regu: <span class="font-semibold text-slate-700">{{ $team->team_name }}</span></div>
+                                            <div class="flex items-center flex-wrap gap-2">
+                                                <div class="font-bold text-slate-800 text-sm">{{ $team->category->name }} ({{ $team->category->gender_category }})</div>
+                                                @if($team->order_number)
+                                                    <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-black font-mono bg-amber-100 text-amber-900 border border-amber-300">
+                                                        <i class="fa-solid fa-flag-checkered text-[9px] text-amber-600"></i> No. Urut: {{ $team->order_number }}
+                                                    </span>
+                                                @endif
+                                            </div>
+                                            <div class="text-xs text-slate-500 mt-0.5">
+                                                Nama Regu: <span class="font-semibold text-slate-700">{{ $team->team_name }}</span>
+                                                @if($team->full_order_code)
+                                                    &bull; <span class="font-mono text-slate-500 font-semibold text-[11px]">Kode: {{ $team->full_order_code }}</span>
+                                                @endif
+                                            </div>
                                         </div>
                                         <span class="bg-slate-100 text-slate-600 text-xs font-semibold px-3 py-1 rounded-lg shrink-0">
                                             {{ $team->category->scoring_type == 'standard_time' ? 'Uji Ketangkasan / Waktu' : 'Uji Penilaian Teknis' }}

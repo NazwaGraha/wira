@@ -97,7 +97,7 @@ class CompetitionParticipantController extends Controller
         $teams = $teamsQuery->get()->sortBy(function ($team) {
             $catPos = $team->category ? str_pad($team->category->order_position, 3, '0', STR_PAD_LEFT) : '999';
             $genderOrder = $team->category && $team->category->gender_category === 'Putra' ? '1' : ($team->category && $team->category->gender_category === 'Putri' ? '2' : '3');
-            $orderNum = $team->order_number ? str_pad($team->order_number, 4, '0', STR_PAD_LEFT) : '9999';
+            $orderNum = $team->order_number ?: 'ZZZZ';
 
             return "{$catPos}-{$genderOrder}-{$orderNum}-{$team->team_name}";
         });
@@ -228,20 +228,46 @@ class CompetitionParticipantController extends Controller
             });
         }
 
-        $teamsByCategory = $query->with('category')->get()->groupBy('competition_category_id');
+        $teamsByCategory = $query->with(['category', 'registration'])
+            ->orderBy('competition_registration_id')
+            ->orderBy('id')
+            ->get()
+            ->groupBy('competition_category_id');
 
         $totalAssigned = 0;
         foreach ($teamsByCategory as $catId => $teamsList) {
-            $num = 1;
-            foreach ($teamsList as $team) {
-                $formattedNum = str_pad($num, 2, '0', STR_PAD_LEFT);
-                $team->update(['order_number' => $formattedNum]);
-                $num++;
-                $totalAssigned++;
+            // Kelompokkan regu berdasarkan pendaftaran sekolah
+            $teamsByRegistration = $teamsList->groupBy(function ($t) {
+                return $t->competition_registration_id ? 'reg_'.$t->competition_registration_id : 'ots_'.$t->id;
+            });
+
+            // Bagi menjadi slot regu: Slot 0 (Regu A), Slot 1 (Regu B), Slot 2 (Regu C)
+            $slots = [];
+            foreach ($teamsByRegistration as $regTeams) {
+                foreach ($regTeams->values() as $idx => $team) {
+                    $slotIdx = $idx;
+                    if ($team->team_label && preg_match('/\b(?:regu\s+)?([B-Z])\b/i', $team->team_label, $m)) {
+                        $slotIdx = ord(strtoupper($m[1])) - 65;
+                    }
+                    $slots[$slotIdx][] = $team;
+                }
+            }
+
+            // Tetapkan nomor urut per slot: Regu A (A-01, A-02...), Regu B (B-01, B-02...), dst
+            ksort($slots);
+            foreach ($slots as $slotIdx => $teamsInSlot) {
+                $prefix = chr(65 + $slotIdx);
+                $num = 1;
+                foreach ($teamsInSlot as $team) {
+                    $formattedNum = sprintf('%s-%02d', $prefix, $num);
+                    $team->update(['order_number' => $formattedNum]);
+                    $num++;
+                    $totalAssigned++;
+                }
             }
         }
 
-        return redirect()->back()->with('success', "Nomor urut berhasil di-generate secara otomatis untuk {$totalAssigned} regu peserta!");
+        return redirect()->back()->with('success', "Nomor urut Skema 1 (Regu A lalu Regu B) berhasil di-generate secara otomatis untuk {$totalAssigned} regu peserta!");
     }
 
     public function printSheet(Request $request)
@@ -295,7 +321,7 @@ class CompetitionParticipantController extends Controller
         $teams = $query->get()->sortBy(function ($team) {
             $catPos = $team->category ? str_pad($team->category->order_position, 3, '0', STR_PAD_LEFT) : '999';
             $genderOrder = $team->category && $team->category->gender_category === 'Putra' ? '1' : ($team->category && $team->category->gender_category === 'Putri' ? '2' : '3');
-            $orderNum = $team->order_number ? str_pad($team->order_number, 4, '0', STR_PAD_LEFT) : '9999';
+            $orderNum = $team->order_number ?: 'ZZZZ';
 
             return "{$catPos}-{$genderOrder}-{$orderNum}-{$team->team_name}";
         });

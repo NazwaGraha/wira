@@ -139,12 +139,12 @@
 
             <!-- Auto-Number & Tools -->
             <div class="flex items-center gap-2 w-full md:w-auto justify-end">
-                <form action="{{ route('admin.competition-participants.auto-assign-orders') }}" method="POST" onsubmit="return confirm('Generate nomor urut otomatis (01, 02, 03...) untuk regu yang terfilter saat ini?');">
+                <form action="{{ route('admin.competition-participants.auto-assign-orders') }}" method="POST" onsubmit="return confirm('Generate nomor urut otomatis Skema 1 (Regu A: A-01.. lalu Regu B: B-01..) untuk regu yang terfilter saat ini?');">
                     @csrf
                     @if($categoryId) <input type="hidden" name="category_id" value="{{ $categoryId }}"> @endif
                     @if($level) <input type="hidden" name="level" value="{{ $level }}"> @endif
-                    <button type="submit" class="bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200 px-3.5 py-2 rounded-xl text-xs font-bold transition flex items-center gap-1.5">
-                        <i class="fa-solid fa-arrow-down-1-9"></i> Auto No. Urut (01..N)
+                    <button type="submit" class="bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200 px-3.5 py-2 rounded-xl text-xs font-bold transition flex items-center gap-1.5 shadow-2xs">
+                        <i class="fa-solid fa-shuffle text-indigo-600"></i> Auto No. Urut (Skema 1: A-01.. B-01..)
                     </button>
                 </form>
             </div>

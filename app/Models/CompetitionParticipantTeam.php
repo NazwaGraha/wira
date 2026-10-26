@@ -59,4 +59,31 @@ class CompetitionParticipantTeam extends Model
 
         return asset('storage/'.$cleanPath);
     }
+
+    /**
+     * Kode nomor urut lengkap dengan kode mata lomba (misal: LPP-MULA-PA-A01)
+     */
+    public function getFullOrderCodeAttribute(): ?string
+    {
+        if (empty($this->order_number)) {
+            return null;
+        }
+
+        $catCode = $this->category?->code;
+        $cleanOrder = str_replace('-', '', $this->order_number);
+
+        if ($catCode) {
+            return "{$catCode}-{$cleanOrder}";
+        }
+
+        return $this->order_number;
+    }
+
+    /**
+     * Format nomor urut sederhana untuk tampilan (misal: A-01 atau B-01)
+     */
+    public function getFormattedOrderNumberAttribute(): string
+    {
+        return $this->order_number ?: '-';
+    }
 }

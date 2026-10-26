@@ -239,4 +239,46 @@ class CompetitionCategory extends Model
             default => '12 / 10 / 8 / 6 / 4 Poin',
         };
     }
+
+    /**
+     * Generate nomor urut tampil berikutnya berdasarkan Skema 1 (Pemisahan Sesi Regu A, Regu B, Regu C):
+     * - Regu A (slot 0) -> A-01, A-02, A-03, dst.
+     * - Regu B (slot 1) -> B-01, B-02, B-03, dst.
+     * - Regu C (slot 2) -> C-01, C-02, C-03, dst.
+     *
+     * @param  int  $slotIndex  Indeks regu sekolah untuk kategori ini (0 untuk Regu A, 1 untuk Regu B, dst)
+     * @param  string|null  $label  Label regu (misal: "Regu A", "Regu B", "Regu Putra")
+     */
+    public function generateNextOrderNumber(int $slotIndex = 0, ?string $label = null): string
+    {
+        $prefix = 'A';
+        if ($slotIndex > 0) {
+            $prefix = chr(65 + $slotIndex);
+        } elseif ($label) {
+            if (preg_match('/\b(?:regu\s+)?([B-Z])\b/i', $label, $matches)) {
+                $prefix = strtoupper($matches[1]);
+            }
+        }
+
+        $existingOrders = CompetitionParticipantTeam::where('competition_category_id', $this->id)
+            ->where(function ($q) use ($prefix) {
+                $q->where('order_number', 'LIKE', "{$prefix}-%")
+                    ->orWhere('order_number', 'LIKE', "%-{$prefix}%");
+            })
+            ->pluck('order_number');
+
+        $maxNum = 0;
+        foreach ($existingOrders as $ord) {
+            if (preg_match('/'.preg_quote($prefix, '/').'[-]?(\d+)/i', (string) $ord, $matches)) {
+                $val = intval($matches[1]);
+                if ($val > $maxNum) {
+                    $maxNum = $val;
+                }
+            }
+        }
+
+        $nextNum = $maxNum + 1;
+
+        return sprintf('%s-%02d', $prefix, $nextNum);
+    }
 }
