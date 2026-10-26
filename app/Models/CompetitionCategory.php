@@ -99,6 +99,52 @@ class CompetitionCategory extends Model
     }
 
     /**
+     * Dapatkan jumlah standar anggota dalam satu regu untuk cabang lomba ini:
+     * - Pertolongan pertama : 3 orang dalam satu regu
+     * - Ketangkasan tandu : 2 orang dalam satu regu
+     * - Ketangkasan cuci tangan : 2 orang dalam satu regu
+     * - Mewarnai : 1 orang dalam satu regu
+     * - Cepat tepat : 3 orang dalam satu regu
+     * - Pendidikan remaja sebaya / PMR Favorite : 2 orang dalam satu regu
+     * - Olimpiade kepalangmerahan : 1 orang dalam satu regu
+     */
+    public function getRequiredTeamMembers(): int
+    {
+        if ($this->max_team_members && $this->max_team_members > 0) {
+            return (int) $this->max_team_members;
+        }
+
+        $name = strtolower($this->name ?? '');
+
+        if (str_contains($name, 'pertolongan pertama')) {
+            return 3;
+        }
+        if (str_contains($name, 'tandu')) {
+            return 2;
+        }
+        if (str_contains($name, 'cuci tangan')) {
+            return 2;
+        }
+        if (str_contains($name, 'mewarnai')) {
+            return 1;
+        }
+        if (str_contains($name, 'cepat tepat')) {
+            return 3;
+        }
+        if (str_contains($name, 'pendidikan remaja sebaya') || str_contains($name, 'prs') || str_contains($name, 'favorite') || str_contains($name, 'favorit')) {
+            return 2;
+        }
+        if (str_contains($name, 'olimpiade') || str_contains($name, 'olympiade')) {
+            return 1;
+        }
+        if (str_contains($name, 'mading')) {
+            return 2;
+        }
+
+        return 2;
+    }
+
+    /**
      * Dapatkan kuota maksimum regu per sekolah untuk cabang lomba ini:
      * - Mewarnai: Tidak dibatasi (unlimited).
      * - Olimpiade Kepalangmerahan: Maksimal 3 regu.

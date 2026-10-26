@@ -202,12 +202,26 @@
 
                     <div class="bg-amber-50 border border-amber-200 text-amber-950 p-4 rounded-2xl text-xs flex items-start gap-3 mb-4 shadow-2xs">
                         <i class="fa-solid fa-shield-halved text-amber-600 text-base mt-0.5 shrink-0"></i>
-                        <div class="leading-relaxed space-y-1">
-                            <strong class="text-amber-900 text-xs">Ketentuan Kuota Regu per Sekolah:</strong>
-                            <ul class="list-disc pl-4 space-y-1 text-amber-900/90">
-                                <li>Setiap sekolah maksimal mengirimkan 2 regu putra dan 2 regu putri untuk masing-masing cabang lomba umum.</li>
-                                <li>Khusus cabang Olimpiade Kepalangmerahan masing-masing sekolah dibatasi maksimum 3 regu dan untuk cabang Mewarnai tidak dibatasi.</li>
-                            </ul>
+                        <div class="leading-relaxed space-y-2 w-full">
+                            <div>
+                                <strong class="text-amber-900 text-xs">Ketentuan Kuota Regu per Sekolah:</strong>
+                                <ul class="list-disc pl-4 space-y-0.5 text-amber-900/90 mt-0.5">
+                                    <li>Setiap sekolah maksimal mengirimkan 2 regu putra dan 2 regu putri untuk masing-masing cabang lomba umum.</li>
+                                    <li>Khusus cabang Olimpiade Kepalangmerahan masing-masing sekolah dibatasi maksimum 3 regu dan untuk cabang Mewarnai tidak dibatasi.</li>
+                                </ul>
+                            </div>
+                            <div class="pt-1.5 border-t border-amber-200/80">
+                                <strong class="text-amber-900 text-xs">Aturan Jumlah Peserta / Anggota dalam 1 Regu:</strong>
+                                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-4 gap-y-1 text-[11px] text-amber-900/90 mt-1">
+                                    <div class="flex items-center gap-1.5"><i class="fa-solid fa-circle-check text-amber-600 text-[9px]"></i> <span><strong>Pertolongan Pertama:</strong> 3 orang / regu</span></div>
+                                    <div class="flex items-center gap-1.5"><i class="fa-solid fa-circle-check text-amber-600 text-[9px]"></i> <span><strong>Ketangkasan Tandu:</strong> 2 orang / regu</span></div>
+                                    <div class="flex items-center gap-1.5"><i class="fa-solid fa-circle-check text-amber-600 text-[9px]"></i> <span><strong>Ketangkasan Cuci Tangan:</strong> 2 orang / regu</span></div>
+                                    <div class="flex items-center gap-1.5"><i class="fa-solid fa-circle-check text-amber-600 text-[9px]"></i> <span><strong>Lomba Mewarnai:</strong> 1 orang / regu</span></div>
+                                    <div class="flex items-center gap-1.5"><i class="fa-solid fa-circle-check text-amber-600 text-[9px]"></i> <span><strong>Cepat Tepat:</strong> 3 orang / regu</span></div>
+                                    <div class="flex items-center gap-1.5"><i class="fa-solid fa-circle-check text-amber-600 text-[9px]"></i> <span><strong>Pendidikan Remaja Sebaya:</strong> 2 orang / regu</span></div>
+                                    <div class="flex items-center gap-1.5"><i class="fa-solid fa-circle-check text-amber-600 text-[9px]"></i> <span><strong>Olimpiade Kepalangmerahan:</strong> 1 orang / regu</span></div>
+                                </div>
+                            </div>
                         </div>
                     </div>
 
@@ -278,9 +292,15 @@
                                                             <i class="fa-solid fa-user-group text-blue-600"></i> Kuota: Maks. 2 Regu
                                                         </span>
                                                     @endif
+
+                                                    <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-black uppercase tracking-wider bg-emerald-100 text-emerald-800 border border-emerald-300" title="Aturan jumlah anggota per regu">
+                                                        <i class="fa-solid fa-users text-emerald-600"></i> {{ $cat->getRequiredTeamMembers() }} Orang / Regu
+                                                    </span>
                                                 </div>
                                                 <div class="text-xs text-slate-500 mt-1 flex items-center gap-2 flex-wrap">
                                                     <span>Tingkat: <span class="font-bold text-slate-700">PMR {{ $cat->level }}</span></span>
+                                                    <span>&bull;</span>
+                                                    <span>Jumlah Peserta: <strong class="text-emerald-700 font-bold">{{ $cat->getRequiredTeamMembers() }} Orang</strong></span>
                                                     <span>&bull;</span>
                                                     <span>Biaya ({{ $wave == 2 ? ($event->wave2_name ?: 'Gel. 2') : ($event->wave1_name ?: 'Gel. 1') }}): <strong class="text-red-600 font-bold font-mono">Rp {{ number_format($currentCatFee, 0, ',', '.') }}</strong> <span class="text-[11px] text-slate-400">/ Regu</span></span>
                                                     @if($cat->registration_fee_wave1 !== null && $cat->registration_fee_wave2 !== null && $cat->registration_fee_wave1 != $cat->registration_fee_wave2)
@@ -1038,6 +1058,12 @@
                             });
                         }
 
+                        const exp = grp.expected_members_count || 2;
+                        const isExact = (grp.members_count === exp);
+                        const sizeBadge = isExact
+                            ? `<span class="bg-emerald-600 text-white text-[10px] font-black px-2 py-0.5 rounded-full shrink-0 shadow-2xs"><i class="fa-solid fa-circle-check"></i> ${grp.members_count} / ${exp} Siswa</span>`
+                            : `<span class="bg-amber-500 text-white text-[10px] font-black px-2 py-0.5 rounded-full shrink-0 shadow-2xs" title="Standar kuota cabang ini: ${exp} orang per regu"><i class="fa-solid fa-triangle-exclamation"></i> ${grp.members_count} Siswa (Standar: ${exp})</span>`;
+
                         card.innerHTML = `
                             <div class="flex items-start justify-between gap-2 border-b border-slate-100 pb-1.5">
                                 <div>
@@ -1047,7 +1073,7 @@
                                         <span class="text-[10px] font-bold text-slate-600 bg-slate-100 px-1.5 py-0.2 rounded">${escapeHtml(grp.team_label)}</span>
                                     </div>
                                 </div>
-                                <span class="bg-emerald-600 text-white text-[10px] font-black px-2 py-0.5 rounded-full shrink-0">${grp.members_count} Siswa</span>
+                                ${sizeBadge}
                             </div>
                             <div class="space-y-0.5 pt-0.5 max-h-28 overflow-y-auto pr-0.5">
                                 ${membersHtml}

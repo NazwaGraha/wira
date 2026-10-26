@@ -268,7 +268,28 @@ class CompetitionSeeder extends Seeder
             ],
         ];
 
+        $teamSizeRules = [
+            'pertolongan pertama' => 3,
+            'tandu' => 2,
+            'cuci tangan' => 2,
+            'mewarnai' => 1,
+            'cepat tepat' => 3,
+            'pendidikan remaja sebaya' => 2,
+            'favorite' => 2,
+            'olimpiade' => 1,
+            'mading' => 2,
+        ];
+
         foreach ($categories as $cat) {
+            $catNameLower = strtolower($cat['name']);
+            $teamSize = 2;
+            foreach ($teamSizeRules as $kw => $size) {
+                if (str_contains($catNameLower, $kw)) {
+                    $teamSize = $size;
+                    break;
+                }
+            }
+
             CompetitionCategory::updateOrCreate(
                 [
                     'competition_event_id' => $event->id,
@@ -276,6 +297,7 @@ class CompetitionSeeder extends Seeder
                 ],
                 array_merge([
                     'registration_fee' => 150000,
+                    'max_team_members' => $teamSize,
                 ], $cat, ['competition_event_id' => $event->id])
             );
         }

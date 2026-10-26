@@ -548,7 +548,7 @@ class CompetitionSpreadsheetService
             'advisor_info' => $advisorName.($advisorPhone ? " ({$advisorPhone})" : ''),
             'advisor_email' => $advisorEmail,
             'school_address' => $schoolAddress,
-            'info_text' => "• Kolom E (Cabang Lomba) otomatis hanya memuat pilihan cabang yang dicentang saat pendaftaran: {$catListStr}. • Cukup upload 1 file Excel ini untuk semua regu yang didaftarkan.",
+            'info_text' => "• Ketentuan Jumlah Anggota per Regu: Pertolongan Pertama (3 orang), Ketangkasan Tandu (2 orang), Ketangkasan Cuci Tangan (2 orang), Mewarnai (1 orang), Cepat Tepat (3 orang), Pendidikan Remaja Sebaya (2 orang), Olimpiade Kepalangmerahan (1 orang). • Kolom E otomatis hanya memuat pilihan cabang yang dicentang: {$catListStr}. Cukup 1x upload file ini untuk semua regu.",
         ];
 
         $dataRows = [];
@@ -572,10 +572,23 @@ class CompetitionSpreadsheetService
                 $gCat = $team['gender'] ?? ($team['gender_category'] ?? 'Putra');
                 $tLabel = $team['team_label'] ?? 'Regu A';
 
+                $cNameLower = strtolower($cName);
+                $teamSize = match (true) {
+                    str_contains($cNameLower, 'pertolongan pertama') => 3,
+                    str_contains($cNameLower, 'tandu') => 2,
+                    str_contains($cNameLower, 'cuci tangan') => 2,
+                    str_contains($cNameLower, 'mewarnai') => 1,
+                    str_contains($cNameLower, 'cepat tepat') => 3,
+                    str_contains($cNameLower, 'pendidikan remaja sebaya') || str_contains($cNameLower, 'prs') || str_contains($cNameLower, 'favorite') || str_contains($cNameLower, 'favorit') => 2,
+                    str_contains($cNameLower, 'olimpiade') || str_contains($cNameLower, 'olympiade') => 1,
+                    str_contains($cNameLower, 'mading') => 2,
+                    default => 2,
+                };
+
                 $isFemale = str_contains(strtoupper($gCat), 'PUTRI');
                 $defaultG = $isFemale ? 'P' : 'L';
 
-                // Ketua Regu
+                // Ketua Regu / Peserta Utama
                 $leaderName = $isFemale
                     ? ($sampleNamesFemale[$fIdx++ % count($sampleNamesFemale)])
                     : ($sampleNamesMale[$mIdx++ % count($sampleNamesMale)]);
@@ -592,12 +605,11 @@ class CompetitionSpreadsheetService
                     $leaderName,
                     $defaultG,
                     'VIII-A',
-                    'Ketua Regu',
+                    $teamSize === 1 ? 'Peserta' : 'Ketua Regu',
                 ];
 
-                // 2 - 3 Anggota
-                $memberCount = str_contains(strtolower($cName), 'tandu') ? 1 : 2;
-                for ($s = 1; $s <= $memberCount; $s++) {
+                // Anggota tambahan sesuai kuota cabang (2 orang total => +1 anggota; 3 orang total => +2 anggota)
+                for ($s = 1; $s < $teamSize; $s++) {
                     $mName = $isFemale
                         ? ($sampleNamesFemale[$fIdx++ % count($sampleNamesFemale)])
                         : ($sampleNamesMale[$mIdx++ % count($sampleNamesMale)]);
@@ -619,14 +631,16 @@ class CompetitionSpreadsheetService
                 }
             }
         } else {
-            // Default sample rows sesuai mockup yang disetujui
+            // Default sample rows sesuai ketentuan jumlah anggota per regu
             $dataRows = [
+                // Pertolongan Pertama (3 orang per regu)
                 ['1', $regCode, $levelText, $schoolName, 'Pertolongan Pertama', 'Putra', 'Regu A', '0091234561', 'Ahmad Fauzi Pratama', 'L', 'VIII-A', 'Ketua Regu'],
                 ['2', $regCode, $levelText, $schoolName, 'Pertolongan Pertama', 'Putra', 'Regu A', '0091234562', 'Fajar Nugraha', 'L', 'VIII-C', 'Anggota'],
                 ['3', $regCode, $levelText, $schoolName, 'Pertolongan Pertama', 'Putra', 'Regu A', '0091234563', 'Dimas Aditya Saputra', 'L', 'VII-B', 'Anggota'],
                 ['4', $regCode, $levelText, $schoolName, 'Pertolongan Pertama', 'Putri', 'Regu A', '0097654321', 'Siti Rahma Azzahra', 'P', 'VIII-B', 'Ketua Regu'],
                 ['5', $regCode, $levelText, $schoolName, 'Pertolongan Pertama', 'Putri', 'Regu A', '0092345678', 'Nabila Rahmadani', 'P', 'VIII-C', 'Anggota'],
                 ['6', $regCode, $levelText, $schoolName, 'Pertolongan Pertama', 'Putri', 'Regu A', '0093456789', 'Putri Ayu Lestari', 'P', 'VII-A', 'Anggota'],
+                // Ketangkasan Tandu Reguler (2 orang per regu)
                 ['7', $regCode, $levelText, $schoolName, 'Ketangkasan Tandu Reguler', 'Putra', 'Regu A', '0094567890', 'Rizky Alamsyah', 'L', 'VII-C', 'Ketua Regu'],
                 ['8', $regCode, $levelText, $schoolName, 'Ketangkasan Tandu Reguler', 'Putra', 'Regu A', '0095678901', 'Kevin Maulana', 'L', 'VII-A', 'Anggota'],
             ];
@@ -636,7 +650,7 @@ class CompetitionSpreadsheetService
             'E' => implode(',', $categoryNames),
             'F' => 'Putra,Putri,Campuran',
             'J' => 'L,P',
-            'L' => 'Ketua Regu,Anggota,Cadangan',
+            'L' => 'Ketua Regu,Anggota,Cadangan,Peserta',
         ];
 
         return $this->createMassXlsxFile($metadata, self::MASS_COLUMNS, $dataRows, $validations);
@@ -1089,6 +1103,8 @@ class CompetitionSpreadsheetService
                     $roleClean = 'Ketua Regu';
                 } elseif (str_contains($rUpper, 'CADANG') || str_contains($rUpper, 'SUB')) {
                     $roleClean = 'Cadangan';
+                } elseif (str_contains($rUpper, 'PESERTA') || str_contains($rUpper, 'TUNGGAL') || str_contains($rUpper, 'INDIVIDU')) {
+                    $roleClean = 'Peserta';
                 } else {
                     $roleClean = 'Anggota';
                 }
@@ -1130,6 +1146,25 @@ class CompetitionSpreadsheetService
                 'role' => $participantItem['role'],
             ];
             $groupedTeams[$teamKey]['members_count']++;
+        }
+
+        // Hitung kuota standar per regu & validasi kesesuaian
+        foreach ($groupedTeams as $k => $grp) {
+            $cLower = strtolower($grp['category_name']);
+            $expected = match (true) {
+                str_contains($cLower, 'pertolongan pertama') => 3,
+                str_contains($cLower, 'tandu') => 2,
+                str_contains($cLower, 'cuci tangan') => 2,
+                str_contains($cLower, 'mewarnai') => 1,
+                str_contains($cLower, 'cepat tepat') => 3,
+                str_contains($cLower, 'pendidikan remaja sebaya') || str_contains($cLower, 'prs') || str_contains($cLower, 'favorite') || str_contains($cLower, 'favorit') => 2,
+                str_contains($cLower, 'olimpiade') || str_contains($cLower, 'olympiade') => 1,
+                str_contains($cLower, 'mading') => 2,
+                default => 2,
+            };
+
+            $groupedTeams[$k]['expected_members_count'] = $expected;
+            $groupedTeams[$k]['is_valid_size'] = ($grp['members_count'] === $expected);
         }
 
         return [
