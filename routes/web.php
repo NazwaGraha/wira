@@ -506,6 +506,8 @@ Route::prefix('lomba')->name('lomba.')->group(function () {
     Route::get('/template-peserta', [CompetitionController::class, 'downloadParticipantTemplate'])->name('template-peserta');
     Route::get('/template-peserta-regu', [CompetitionController::class, 'downloadParticipantTemplate']);
     Route::post('/parse-excel-peserta', [CompetitionController::class, 'parseExcelPeserta'])->name('parse-excel-peserta');
+    Route::post('/download-mass-template', [CompetitionController::class, 'downloadMassParticipantTemplate'])->name('download-mass-template');
+    Route::post('/parse-mass-excel', [CompetitionController::class, 'parseMassExcelPeserta'])->name('parse-mass-excel');
     Route::get('/status', [CompetitionController::class, 'status'])->name('status');
     Route::get('/kwitansi/{code}', [CompetitionController::class, 'receipt'])->name('receipt');
     Route::get('/kwitansi/{code}', [CompetitionController::class, 'receipt'])->name('kwitansi');

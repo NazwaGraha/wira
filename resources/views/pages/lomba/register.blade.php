@@ -372,6 +372,101 @@
 
                 <hr class="border-slate-100">
 
+                <!-- SECTION: Unggah Massal Berkas Peserta Lomba (1 File untuk Seluruh Regu) -->
+                <div id="mass-upload-section" class="bg-gradient-to-br from-emerald-50/70 via-white to-slate-50 border-2 border-dashed border-emerald-300 rounded-3xl p-5 sm:p-7 shadow-sm transition space-y-5">
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-emerald-100/90 pb-4">
+                        <div class="flex items-start sm:items-center gap-3.5">
+                            <div class="w-11 h-11 rounded-2xl bg-gradient-to-br from-[#107c41] to-emerald-700 text-white flex items-center justify-center text-xl shadow-md shrink-0">
+                                <i class="fa-solid fa-file-excel"></i>
+                            </div>
+                            <div>
+                                <div class="flex items-center gap-2 flex-wrap">
+                                    <h3 class="text-base sm:text-lg font-black text-slate-900 tracking-tight">Unggah Massal Berkas Peserta Lomba</h3>
+                                    <span class="bg-[#107c41] text-white text-[10px] font-black uppercase px-2.5 py-0.5 rounded-full shadow-2xs">Kolektif 1x Upload</span>
+                                </div>
+                                <p class="text-xs text-slate-600 mt-1 leading-relaxed">
+                                    Cukup unduh <strong>1 file template Excel</strong> yang otomatis memuat cabang yang Anda centang di atas, isi nama siswa, lalu unggah di sini untuk seluruh regu.
+                                </p>
+                            </div>
+                        </div>
+
+                        <div class="shrink-0 flex items-center gap-2">
+                            <button type="button" onclick="downloadDynamicMassTemplate()" id="btn-download-mass-template" class="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-gradient-to-r from-[#107c41] to-emerald-700 hover:from-emerald-700 hover:to-emerald-800 active:scale-95 text-white font-bold text-xs rounded-xl shadow-sm hover:shadow transition shrink-0 cursor-pointer">
+                                <i class="fa-solid fa-cloud-arrow-down text-sm text-emerald-200"></i>
+                                <span>Unduh Template Excel Massal (.xlsx)</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Informasi Otomatis & Alur Ringkas -->
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-3 text-xs">
+                        <div class="bg-white/90 border border-emerald-200/90 rounded-2xl p-3.5 flex items-start gap-3 shadow-2xs">
+                            <span class="w-6 h-6 rounded-full bg-emerald-100 text-emerald-800 font-bold flex items-center justify-center shrink-0 text-xs">1</span>
+                            <div>
+                                <strong class="text-slate-800 text-xs">No. Registrasi Sistem</strong>
+                                <p class="text-[11px] text-slate-500 mt-0.5">Ditanam &amp; terkunci otomatis:</p>
+                                <span class="inline-block mt-1 font-mono text-red-600 font-black bg-red-50 px-2 py-0.5 rounded border border-red-200/60 text-xs" id="display-preview-reg-code">{{ $previewRegistrationCode ?? 'SBB-M54342H' }}</span>
+                            </div>
+                        </div>
+
+                        <div class="bg-white/90 border border-emerald-200/90 rounded-2xl p-3.5 flex items-start gap-3 shadow-2xs">
+                            <span class="w-6 h-6 rounded-full bg-emerald-100 text-emerald-800 font-bold flex items-center justify-center shrink-0 text-xs">2</span>
+                            <div>
+                                <strong class="text-slate-800 text-xs">Dropdown Cabang Pilihan</strong>
+                                <p class="text-[11px] text-slate-500 mt-0.5">Kolom <em>Cabang Lomba</em> otomatis hanya berisi pilihan cabang yang Anda centang pada Langkah 3 di atas.</p>
+                            </div>
+                        </div>
+
+                        <div class="bg-white/90 border border-emerald-200/90 rounded-2xl p-3.5 flex items-start gap-3 shadow-2xs">
+                            <span class="w-6 h-6 rounded-full bg-emerald-100 text-emerald-800 font-bold flex items-center justify-center shrink-0 text-xs">3</span>
+                            <div>
+                                <strong class="text-slate-800 text-xs">Otomatis Terpetakan</strong>
+                                <p class="text-[11px] text-slate-500 mt-0.5">Siswa otomatis tersimpan ke tabel regu &amp; kategori masing-masing di database sekolah.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- File Upload Dropzone Area -->
+                    <div class="relative bg-white border-2 border-dashed border-emerald-300 hover:border-emerald-500 rounded-2xl p-6 text-center transition cursor-pointer group shadow-2xs" onclick="document.getElementById('mass_participants_file_input').click()">
+                        <input type="file" name="mass_participants_file" id="mass_participants_file_input" accept=".xlsx,.xls,.csv" class="hidden" onchange="handleMassExcelUpload(this)">
+                        <input type="hidden" name="registration_code" id="registration_code_input" value="{{ $previewRegistrationCode ?? 'SBB-M54342H' }}">
+
+                        <div class="flex flex-col items-center justify-center gap-2.5">
+                            <div class="w-14 h-14 rounded-2xl bg-emerald-50 group-hover:bg-emerald-100 text-emerald-600 flex items-center justify-center text-2xl transition">
+                                <i class="fa-solid fa-cloud-arrow-up"></i>
+                            </div>
+                            <div>
+                                <span class="text-sm font-bold text-slate-800 group-hover:text-emerald-700 transition">Klik untuk Memilih Berkas Excel Massal</span>
+                                <span class="text-xs text-slate-500 block mt-0.5">atau seret dan lepas berkas (.xlsx, .xls) ke area ini</span>
+                            </div>
+                            <div id="mass-file-info-badge" class="hidden inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-emerald-50 text-emerald-800 text-xs font-bold border border-emerald-300 mt-1 shadow-2xs">
+                                <i class="fa-solid fa-circle-check text-emerald-600 text-sm"></i>
+                                <span id="mass-file-name-text">Template_Massal.xlsx</span>
+                                <span id="mass-file-size-text" class="text-emerald-700/70 text-[10px]"></span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Live Preview Container for Mass Excel -->
+                    <div id="mass-preview-container" class="hidden bg-emerald-50/70 border border-emerald-300 rounded-2xl p-4 sm:p-5 text-xs space-y-3.5 shadow-2xs">
+                        <div class="flex items-center justify-between gap-2 border-b border-emerald-200/90 pb-3">
+                            <div class="flex items-center gap-2 font-bold text-emerald-950 text-sm">
+                                <i class="fa-solid fa-circle-check text-emerald-600 text-base"></i>
+                                <span id="mass-preview-summary-title">0 Peserta Berhasil Terdeteksi</span>
+                            </div>
+                            <button type="button" onclick="toggleMassPreviewDetails()" class="text-xs font-bold text-emerald-700 hover:text-emerald-900 underline cursor-pointer" id="btn-toggle-mass-preview">
+                                Sembunyikan Rincian
+                            </button>
+                        </div>
+
+                        <div id="mass-preview-teams-list" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 max-h-72 overflow-y-auto pr-1">
+                            <!-- Dynamic Cards for each detected team -->
+                        </div>
+                    </div>
+                </div>
+
+                <hr class="border-slate-100">
+
                 <!-- STEP 4: Pembayaran & Bukti Transfer -->
                 <div>
                     <h3 class="text-base font-extrabold text-slate-800 flex items-center gap-2 mb-4">
@@ -652,6 +747,17 @@
         // Switch destination bank account per level
         updateBankAccountDisplay(lvl);
 
+        // Update prefix No. Registrasi Sistem
+        const regCodeInput = document.getElementById('registration_code_input');
+        const regCodeDisplay = document.getElementById('display-preview-reg-code');
+        if (regCodeInput && regCodeDisplay) {
+            let currentCode = regCodeInput.value || 'SBB-M54342H';
+            const char = lvl === 'Mula' ? 'U' : (lvl === 'Wira' ? 'W' : 'M');
+            const newCode = currentCode.replace(/^SBB-[UMW]/, 'SBB-' + char);
+            regCodeInput.value = newCode;
+            regCodeDisplay.textContent = newCode;
+        }
+
         // Uncheck hidden group checkboxes and hide their team containers
         document.querySelectorAll('.category-level-group.hidden input[type="checkbox"]').forEach(cb => {
             cb.checked = false;
@@ -800,6 +906,195 @@
             "'": '&#039;'
         };
         return String(text).replace(/[&<>"']/g, function(m) { return map[m]; });
+    }
+
+    function downloadDynamicMassTemplate() {
+        const checkedBoxes = Array.from(document.querySelectorAll('.cat-checkbox:checked'));
+        if (checkedBoxes.length === 0) {
+            alert('Silakan centang minimal 1 cabang lomba pada Langkah 3 terlebih dahulu agar template Excel memuat pilihan cabang lomba Anda.');
+            const step3El = document.querySelector('.category-level-group:not(.hidden)') || document.querySelector('.category-level-group');
+            if (step3El) step3El.scrollIntoView({ behavior: 'smooth' });
+            return;
+        }
+
+        const schoolName = document.querySelector('input[name="school_name"]')?.value || '';
+        const activeLevelRadio = document.querySelector('input[name="level"]:checked');
+        const level = activeLevelRadio ? activeLevelRadio.value : 'Madya';
+        const advisorName = document.querySelector('input[name="advisor_name"]')?.value || '';
+        const advisorPhone = document.querySelector('input[name="advisor_phone"]')?.value || '';
+        const advisorEmail = document.querySelector('input[name="advisor_email"]')?.value || '';
+        const schoolAddress = document.querySelector('input[name="school_address"]')?.value || '';
+        const regCode = document.getElementById('registration_code_input')?.value || '';
+
+        const form = document.createElement('form');
+        form.method = 'POST';
+        form.action = '{{ route("lomba.download-mass-template") }}';
+        form.style.display = 'none';
+
+        const addField = (name, val) => {
+            const input = document.createElement('input');
+            input.type = 'hidden';
+            input.name = name;
+            input.value = val;
+            form.appendChild(input);
+        };
+
+        addField('_token', '{{ csrf_token() }}');
+        addField('school_name', schoolName);
+        addField('level', level);
+        addField('advisor_name', advisorName);
+        addField('advisor_phone', advisorPhone);
+        addField('advisor_email', advisorEmail);
+        addField('school_address', schoolAddress);
+        addField('registration_code', regCode);
+
+        checkedBoxes.forEach(cb => {
+            addField('categories[]', cb.value);
+            const catId = cb.value;
+            const container = document.getElementById('teams-container-' + catId);
+            if (container) {
+                const labelInputs = container.querySelectorAll('.team-label-input');
+                labelInputs.forEach((inp, idx) => {
+                    addField(`team_labels[${catId}][${idx}]`, inp.value);
+                });
+            }
+        });
+
+        document.body.appendChild(form);
+        form.submit();
+        setTimeout(() => form.remove(), 2500);
+    }
+
+    function handleMassExcelUpload(input) {
+        const file = input.files && input.files[0];
+        if (!file) return;
+
+        const infoBadge = document.getElementById('mass-file-info-badge');
+        const fileNameText = document.getElementById('mass-file-name-text');
+        const fileSizeText = document.getElementById('mass-file-size-text');
+        const previewContainer = document.getElementById('mass-preview-container');
+        const summaryTitle = document.getElementById('mass-preview-summary-title');
+        const teamsList = document.getElementById('mass-preview-teams-list');
+
+        if (infoBadge && fileNameText) {
+            infoBadge.classList.remove('hidden');
+            fileNameText.textContent = `Sedang membaca ${file.name}...`;
+            if (fileSizeText) fileSizeText.textContent = `(${(file.size / 1024).toFixed(1)} KB)`;
+        }
+
+        const formData = new FormData();
+        formData.append('excel_file', file);
+        formData.append('_token', '{{ csrf_token() }}');
+
+        fetch('{{ route("lomba.parse-mass-excel") }}', {
+            method: 'POST',
+            body: formData,
+            headers: {
+                'Accept': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest',
+            }
+        })
+        .then(res => {
+            if (!res.ok) {
+                return res.json().then(errData => { throw new Error(errData.message || 'Gagal memproses berkas Excel massal.'); });
+            }
+            return res.json();
+        })
+        .then(data => {
+            if (!data.success) {
+                throw new Error(data.message || 'Berkas tidak dapat dibaca.');
+            }
+
+            if (fileNameText) {
+                fileNameText.textContent = `${file.name} (${data.total_participants} Peserta, ${data.teams_count} Regu)`;
+            }
+
+            if (summaryTitle) {
+                summaryTitle.innerHTML = `<i class="fa-solid fa-circle-check text-emerald-600 text-base"></i> <span>${data.total_participants} Peserta Berhasil Terdeteksi untuk ${data.teams_count} Regu</span>`;
+            }
+
+            if (teamsList) {
+                teamsList.innerHTML = '';
+                if (Array.isArray(data.grouped) && data.grouped.length > 0) {
+                    data.grouped.forEach((grp, idx) => {
+                        const isPa = grp.gender_category === 'Putra';
+                        const isPi = grp.gender_category === 'Putri';
+                        const genderBadgeClass = isPa ? 'bg-blue-100 text-blue-800 border-blue-200' : (isPi ? 'bg-rose-100 text-rose-800 border-rose-200' : 'bg-slate-100 text-slate-800 border-slate-200');
+
+                        const card = document.createElement('div');
+                        card.className = 'bg-white border border-emerald-200 rounded-xl p-3 shadow-2xs space-y-2';
+
+                        let membersHtml = '';
+                        if (Array.isArray(grp.members)) {
+                            grp.members.forEach((m, mIdx) => {
+                                const isLeader = (m.role || '').toLowerCase().includes('ketua');
+                                const roleBadgeClass = isLeader ? 'bg-emerald-100 text-emerald-800 font-bold' : 'bg-slate-100 text-slate-700';
+                                membersHtml += `
+                                    <div class="flex items-center justify-between gap-1 text-[11px] py-0.5 border-b border-slate-100 last:border-none">
+                                        <span class="truncate font-semibold text-slate-800">${mIdx + 1}. ${escapeHtml(m.name)}</span>
+                                        <span class="text-[9px] px-1.5 py-0.2 rounded ${roleBadgeClass} shrink-0">${escapeHtml(m.role || 'Anggota')}</span>
+                                    </div>
+                                `;
+                            });
+                        }
+
+                        card.innerHTML = `
+                            <div class="flex items-start justify-between gap-2 border-b border-slate-100 pb-1.5">
+                                <div>
+                                    <div class="font-bold text-slate-900 text-xs">${escapeHtml(grp.category_name)}</div>
+                                    <div class="flex items-center gap-1 mt-0.5">
+                                        <span class="text-[10px] font-bold px-1.5 py-0.2 rounded border ${genderBadgeClass}">${escapeHtml(grp.gender_category)}</span>
+                                        <span class="text-[10px] font-bold text-slate-600 bg-slate-100 px-1.5 py-0.2 rounded">${escapeHtml(grp.team_label)}</span>
+                                    </div>
+                                </div>
+                                <span class="bg-emerald-600 text-white text-[10px] font-black px-2 py-0.5 rounded-full shrink-0">${grp.members_count} Siswa</span>
+                            </div>
+                            <div class="space-y-0.5 pt-0.5 max-h-28 overflow-y-auto pr-0.5">
+                                ${membersHtml}
+                            </div>
+                        `;
+                        teamsList.appendChild(card);
+                    });
+                }
+            }
+
+            if (previewContainer) {
+                previewContainer.classList.remove('hidden');
+            }
+
+            // Beri notifikasi di status regu pada Langkah 3 di atas
+            if (Array.isArray(data.grouped)) {
+                data.grouped.forEach(grp => {
+                    document.querySelectorAll('.team-input-row').forEach(row => {
+                        const lblInput = row.querySelector('.team-label-input');
+                        if (lblInput && (lblInput.value.toLowerCase().trim() === grp.team_label.toLowerCase().trim() || row.innerText.toLowerCase().includes(grp.category_name.toLowerCase()))) {
+                            const statusEl = row.querySelector('.team-file-status');
+                            if (statusEl) {
+                                statusEl.innerHTML = `<span class="text-emerald-700 font-bold flex items-center gap-1"><i class="fa-solid fa-circle-check text-emerald-600"></i> Terisi dari File Massal (${grp.members_count} Peserta)</span>`;
+                            }
+                        }
+                    });
+                });
+            }
+        })
+        .catch(err => {
+            if (infoBadge && fileNameText) {
+                fileNameText.innerHTML = `<span class="text-rose-600 font-bold"><i class="fa-solid fa-circle-exclamation"></i> ${escapeHtml(err.message)}</span>`;
+            }
+        });
+    }
+
+    function toggleMassPreviewDetails() {
+        const teamsList = document.getElementById('mass-preview-teams-list');
+        const btn = document.getElementById('btn-toggle-mass-preview');
+        if (!teamsList || !btn) return;
+        if (teamsList.classList.contains('hidden')) {
+            teamsList.classList.remove('hidden');
+            btn.textContent = 'Sembunyikan Rincian';
+        } else {
+            teamsList.classList.add('hidden');
+            btn.textContent = 'Lihat Rincian';
+        }
     }
 
     function addTeamRow(catId) {

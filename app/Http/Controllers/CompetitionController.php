@@ -112,8 +112,9 @@ class CompetitionController extends Controller
         $waveLabel = $event->getActiveWaveLabel();
         $countdownTarget = $event->getCountdownTarget();
         $bankAccounts = $event->getAllBankAccounts();
+        $previewRegistrationCode = CompetitionRegistration::generateRegistrationCode('Madya');
 
-        return view('pages.lomba.register', compact('event', 'categoriesByLevel', 'activeWave', 'waveLabel', 'countdownTarget', 'bankAccounts'));
+        return view('pages.lomba.register', compact('event', 'categoriesByLevel', 'activeWave', 'waveLabel', 'countdownTarget', 'bankAccounts', 'previewRegistrationCode'));
     }
 
     public function store(Request $request)
@@ -137,6 +138,8 @@ class CompetitionController extends Controller
             'school_address' => 'nullable|string',
             'categories' => 'required|array|min:1',
             'categories.*' => 'exists:competition_categories,id',
+            'registration_code' => 'nullable|string|max:50',
+            'mass_participants_file' => 'nullable|file|max:10240',
             'team_labels' => 'nullable|array',
             'team_members' => 'nullable|array',
             'team_files' => 'nullable|array',
@@ -203,7 +206,12 @@ class CompetitionController extends Controller
             }
         }
 
-        $code = CompetitionRegistration::generateRegistrationCode($validated['level'] ?? null);
+        $userCode = trim($request->input('registration_code', ''));
+        if (! empty($userCode) && ! CompetitionRegistration::where('registration_code', $userCode)->exists()) {
+            $code = $userCode;
+        } else {
+            $code = CompetitionRegistration::generateRegistrationCode($validated['level'] ?? null);
+        }
 
         $proofPath = null;
         if ($request->hasFile('payment_proof')) {
@@ -278,16 +286,37 @@ class CompetitionController extends Controller
 
         $spreadsheetService = app(CompetitionSpreadsheetService::class);
 
+        // Proses unggah massal jika pendaftar mengunggah 1 file Excel untuk semua regu
+        $parsedMass = null;
+        $massFilePath = null;
+        if ($request->hasFile('mass_participants_file') && $request->file('mass_participants_file')->isValid()) {
+            try {
+                $massFile = $request->file('mass_participants_file');
+                $filename = 'mass_participants_'.time().'_'.Str::random(6).'.'.$massFile->getClientOriginalExtension();
+                $massFilePath = $massFile->storeAs('competition_team_files', $filename, 'public');
+
+                if (file_exists(public_path('storage')) && ! is_link(public_path('storage'))) {
+                    File::ensureDirectoryExists(public_path('storage/competition_team_files'), 0755, true);
+                    @copy(storage_path('app/public/'.$massFilePath), public_path('storage/'.$massFilePath));
+                }
+
+                $parsedMass = $spreadsheetService->parseMassParticipantFile($massFile);
+            } catch (\Throwable $e) {
+                Log::warning("Gagal parse berkas Excel peserta massal [{$code}]: ".$e->getMessage());
+            }
+        }
+
         foreach ($teamsToCreate as $teamData) {
             $catId = $teamData['category_id'];
             $label = $teamData['label'];
             $idx = $teamData['index'] ?? 0;
+            $cat = $categoriesMap->get($catId);
             $teamName = $registration->school_name.($label ? " {$label}" : '');
 
             $membersList = [];
             $membersFilePath = null;
 
-            // 1. Ekstrak dari file Excel yang diunggah untuk regu ini
+            // 1. Ekstrak dari file Excel yang diunggah khusus untuk regu ini (jika ada)
             $uploadedFile = $request->file("team_files.{$catId}.{$idx}")
                 ?? $request->file("team_files_{$catId}_{$idx}");
 
@@ -308,7 +337,47 @@ class CompetitionController extends Controller
                 }
             }
 
-            // 2. Jika tidak ada file excel atau file excel kosong, cek input JSON/array nama anggota
+            // 2. Jika tidak ada file regu khusus, gunakan hasil parsing dari file unggah massal kolektif
+            if (empty($membersList) && ! empty($parsedMass['grouped']) && $cat) {
+                foreach ($parsedMass['grouped'] as $grp) {
+                    $catMatches = (strcasecmp(trim($grp['category_name']), trim($cat->name)) === 0);
+                    $genderMatches = true;
+                    if ($cat->gender_category && in_array($cat->gender_category, ['Putra', 'Putri'])) {
+                        $genderMatches = (strcasecmp(trim($grp['gender_category']), trim($cat->gender_category)) === 0);
+                    }
+                    $labelMatches = true;
+                    if (! empty($label) && ! empty($grp['team_label'])) {
+                        $cleanLbl1 = preg_replace('/^regu\s+/i', '', trim($label));
+                        $cleanLbl2 = preg_replace('/^regu\s+/i', '', trim($grp['team_label']));
+                        $labelMatches = (strcasecmp($cleanLbl1, $cleanLbl2) === 0);
+                    }
+
+                    if ($catMatches && $genderMatches && $labelMatches) {
+                        $membersList = $grp['members'];
+                        $membersFilePath = $massFilePath;
+                        break;
+                    }
+                }
+
+                // Fallback kedua: Jika label tidak cocok persis tapi kategori cocok dan hanya ada 1 regu pada kategori ini
+                if (empty($membersList)) {
+                    foreach ($parsedMass['grouped'] as $grp) {
+                        $catMatches = (strcasecmp(trim($grp['category_name']), trim($cat->name)) === 0);
+                        $genderMatches = true;
+                        if ($cat->gender_category && in_array($cat->gender_category, ['Putra', 'Putri'])) {
+                            $genderMatches = (strcasecmp(trim($grp['gender_category']), trim($cat->gender_category)) === 0);
+                        }
+
+                        if ($catMatches && $genderMatches) {
+                            $membersList = $grp['members'];
+                            $membersFilePath = $massFilePath;
+                            break;
+                        }
+                    }
+                }
+            }
+
+            // 3. Jika masih belum ada anggota, cek input JSON/array manual nama anggota
             if (empty($membersList)) {
                 $rawMembers = $request->input("team_members.{$catId}.{$idx}")
                     ?? $request->input("team_members_{$catId}_{$idx}");
@@ -424,6 +493,101 @@ class CompetitionController extends Controller
             return response()->json([
                 'success' => false,
                 'message' => 'Gagal membaca file Excel: '.$e->getMessage(),
+            ], 500);
+        }
+    }
+
+    /**
+     * Download format template Excel Massal Kolektif (1 File Seluruh Regu) dengan nomor registrasi & identitas sekolah
+     */
+    public function downloadMassParticipantTemplate(Request $request, CompetitionSpreadsheetService $spreadsheetService)
+    {
+        $schoolName = trim($request->input('school_name', ''));
+        $level = trim($request->input('level', 'Madya'));
+        $advisorName = trim($request->input('advisor_name', ''));
+        $advisorPhone = trim($request->input('advisor_phone', ''));
+        $advisorEmail = trim($request->input('advisor_email', ''));
+        $schoolAddress = trim($request->input('school_address', ''));
+        $regCode = trim($request->input('registration_code', ''));
+
+        if (empty($regCode)) {
+            $regCode = CompetitionRegistration::generateRegistrationCode($level);
+        }
+
+        $categoryIds = (array) $request->input('categories', []);
+        $categories = CompetitionCategory::whereIn('id', $categoryIds)->get();
+        $categoryNames = $categories->pluck('name')->unique()->values()->toArray();
+
+        $teams = [];
+        foreach ($categories as $cat) {
+            $labels = $request->input("team_labels.{$cat->id}");
+            if (is_array($labels)) {
+                $filtered = array_values(array_filter($labels, fn ($l) => $l !== null && trim($l) !== ''));
+                if (empty($filtered)) {
+                    $filtered = [$cat->gender_category === 'Putri' ? 'Regu Putri' : ($cat->gender_category === 'Putra' ? 'Regu Putra' : 'Regu A')];
+                }
+                foreach ($filtered as $lbl) {
+                    $teams[] = [
+                        'category_name' => $cat->name,
+                        'gender' => $cat->gender_category ?: 'Umum',
+                        'team_label' => trim($lbl),
+                    ];
+                }
+            } else {
+                $teams[] = [
+                    'category_name' => $cat->name,
+                    'gender' => $cat->gender_category ?: 'Umum',
+                    'team_label' => $cat->gender_category === 'Putri' ? 'Regu Putri' : ($cat->gender_category === 'Putra' ? 'Regu Putra' : 'Regu A'),
+                ];
+            }
+        }
+
+        $filePath = $spreadsheetService->downloadMassTemplate([
+            'registration_code' => $regCode,
+            'level' => $level,
+            'school_name' => $schoolName ?: 'SEKOLAH_PMR',
+            'advisor_name' => $advisorName,
+            'advisor_phone' => $advisorPhone,
+            'advisor_email' => $advisorEmail,
+            'school_address' => $schoolAddress,
+            'category_names' => $categoryNames,
+            'teams' => $teams,
+        ]);
+
+        $cleanSchoolSlug = Str::slug($schoolName ?: 'PMR');
+        $filename = "Template_Massal_Peserta_{$cleanSchoolSlug}.xlsx";
+
+        return response()->download($filePath, $filename, [
+            'Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        ])->deleteFileAfterSend(true);
+    }
+
+    /**
+     * API AJAX untuk membaca & memvalidasi file Excel Massal Kolektif (Live Preview)
+     */
+    public function parseMassExcelPeserta(Request $request, CompetitionSpreadsheetService $spreadsheetService)
+    {
+        $request->validate([
+            'excel_file' => 'required|file|max:10240',
+        ]);
+
+        $file = $request->file('excel_file');
+        $ext = strtolower($file->getClientOriginalExtension());
+        if (! in_array($ext, ['xlsx', 'xls', 'csv', 'txt'])) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Format file harus berupa Excel (.xlsx) atau CSV (.csv).',
+            ], 422);
+        }
+
+        try {
+            $result = $spreadsheetService->parseMassParticipantFile($file);
+
+            return response()->json($result);
+        } catch (\Throwable $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Gagal membaca berkas Excel Massal: '.$e->getMessage(),
             ], 500);
         }
     }
