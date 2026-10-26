@@ -658,6 +658,8 @@
                             <td class="py-3 px-4 text-slate-700 font-medium">
                                 @php
                                     $scoreLabel = match($cat->scoring_type) {
+                                        'practical_time' => 'Nilai Praktik + Waktu Praktik (Pertolongan Pertama)',
+                                        'written_time' => 'Nilai Tertulis + Waktu Tertulis (Olimpiade Kepalangmerahan)',
                                         'written_practical_time' => 'Tertulis (30%) + Praktik (70%) + Waktu',
                                         'standard_time' => 'Nilai Teknis + Waktu',
                                         'tandu_standard_time' => 'Ketangkasan Tandu Reguler (Waktu)',
@@ -815,11 +817,13 @@
                         Tipe Penilaian Juri <span class="text-red-500">*</span>
                     </label>
                     <select name="scoring_type" required class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:border-red-500 text-xs font-bold text-slate-800 bg-slate-50">
-                        <option value="written_practical_time">Ujian Tertulis 30% + Praktik 70% + Waktu (Pertolongan Pertama)</option>
+                        <option value="practical_time">Nilai Praktik + Waktu Praktik (Pertolongan Pertama)</option>
+                        <option value="written_time">Nilai Tertulis + Waktu Tertulis (Olimpiade Kepalangmerahan)</option>
                         <option value="standard_time">Nilai Teknis + Waktu (Tandu Reguler, Cuci Tangan)</option>
                         <option value="multi_criteria">Rubrik Kriteria Juri Jamak (Mading, Mewarnai)</option>
                         <option value="bracket_quiz">Cepat Tepat / Cerdas Cermat</option>
                         <option value="social_engagement">Sosial Media & Engagement (PMR Favorite)</option>
+                        <option value="written_practical_time">Ujian Tertulis 30% + Praktik 70% + Waktu (Kombinasi Tertulis & Praktik)</option>
                     </select>
                 </div>
             </div>
@@ -947,11 +951,13 @@
                         Tipe Penilaian Juri <span class="text-red-500">*</span>
                     </label>
                     <select name="scoring_type" id="edit-scoring" required class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:border-blue-500 text-xs font-bold text-slate-800 bg-slate-50">
-                        <option value="written_practical_time">Ujian Tertulis 30% + Praktik 70% + Waktu (Pertolongan Pertama)</option>
+                        <option value="practical_time">Nilai Praktik + Waktu Praktik (Pertolongan Pertama)</option>
+                        <option value="written_time">Nilai Tertulis + Waktu Tertulis (Olimpiade Kepalangmerahan)</option>
                         <option value="standard_time">Nilai Teknis + Waktu (Tandu Reguler, Cuci Tangan)</option>
                         <option value="multi_criteria">Rubrik Kriteria Juri Jamak (Mading, Mewarnai)</option>
                         <option value="bracket_quiz">Cepat Tepat / Cerdas Cermat</option>
                         <option value="social_engagement">Sosial Media & Engagement (PMR Favorite)</option>
+                        <option value="written_practical_time">Ujian Tertulis 30% + Praktik 70% + Waktu (Kombinasi Tertulis & Praktik)</option>
                     </select>
                 </div>
             </div>

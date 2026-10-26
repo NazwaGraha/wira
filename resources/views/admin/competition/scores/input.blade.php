@@ -37,7 +37,17 @@
             </div>
             <h2 class="text-2xl font-black text-slate-900 mt-1">{{ $category->name }} ({{ $category->gender_category }})</h2>
             <div class="text-xs text-slate-500 mt-0.5">
-                Model Penilaian: <strong>{{ ucwords(str_replace('_', ' ', $category->scoring_type)) }}</strong> &bull; Total Peserta Terverifikasi: <strong>{{ $teams->count() }} Tim</strong>
+                Model Penilaian: <strong>{{ match($category->scoring_type) {
+                    'practical_time' => 'Nilai Praktik & Waktu Praktik',
+                    'written_time' => 'Nilai Tertulis & Waktu Tertulis',
+                    'written_practical_time' => 'Nilai Tertulis & Praktik',
+                    'standard_time' => 'Nilai Teknis & Waktu',
+                    'tandu_standard_time' => 'Ketangkasan Tandu Reguler (Waktu)',
+                    'bracket_quiz' => 'Cepat Tepat / Cerdas Cermat',
+                    'multi_criteria' => 'Rubrik Kriteria Jamak',
+                    'social_engagement' => 'Engagement Media Sosial',
+                    default => ucwords(str_replace('_', ' ', $category->scoring_type))
+                } }}</strong> &bull; Total Peserta Terverifikasi: <strong>{{ $teams->count() }} Tim</strong>
             </div>
         </div>
 
@@ -193,6 +203,8 @@
 
     @php 
         $isTandu = str_contains(strtolower($category->name), 'tandu') || str_starts_with($category->code ?? '', 'LKTR') || $category->scoring_type === 'tandu_standard_time';
+        $isPertolonganPertama = $category->scoring_type === 'practical_time' || str_contains(strtolower($category->name), 'pertolongan pertama') || str_starts_with($category->code ?? '', 'LPP');
+        $isOlimpiade = $category->scoring_type === 'written_time' || str_contains(strtolower($category->name), 'olimpiade') || str_starts_with($category->code ?? '', 'OLIM');
     @endphp
 
     @if($isTandu)
@@ -636,8 +648,16 @@
                             <th class="px-4 py-3 {{ $isFinal ? 'w-24' : 'w-16' }} text-center">{{ $isFinal ? 'Meja Final' : 'No. Urut' }}</th>
                             <th class="px-4 py-3 min-w-[220px]">Nama Sekolah / Regu</th>
 
-                            @if($category->scoring_type == 'written_practical_time')
-                                <!-- LPP Madya/Wira -->
+                            @if($isPertolonganPertama)
+                                <!-- Pertolongan Pertama (Mula, Madya, Wira) - Hanya Nilai Praktik & Waktu Praktik -->
+                                <th class="px-4 py-3 w-32 text-center">Nilai Praktik</th>
+                                <th class="px-4 py-3 w-32 text-center">Waktu Praktik</th>
+                            @elseif($isOlimpiade)
+                                <!-- Olimpiade Kepalangmerahan - Hanya Nilai Tertulis & Waktu Tertulis -->
+                                <th class="px-4 py-3 w-32 text-center">Nilai Tertulis</th>
+                                <th class="px-4 py-3 w-32 text-center">Waktu Tertulis</th>
+                            @elseif($category->scoring_type == 'written_practical_time')
+                                <!-- LPP Legacy Combined -->
                                 <th class="px-4 py-3 w-28">Nilai Tertulis</th>
                                 <th class="px-4 py-3 w-28">Waktu Tertulis</th>
                                 <th class="px-4 py-3 w-28">Nilai Praktik</th>
@@ -710,7 +730,21 @@
                                 </td>
 
                                 <!-- Dynamic Inputs -->
-                                @if($category->scoring_type == 'written_practical_time')
+                                @if($isPertolonganPertama)
+                                    <td class="px-4 py-3">
+                                        <input type="number" step="0.01" name="scores[{{ $team->id }}][practical_score]" value="{{ $details['practical_score'] ?? ($details['score'] ?? '') }}" placeholder="0 - 100" class="input-practical-score w-full p-2 bg-slate-50 border border-slate-200 rounded-lg text-xs focus:bg-white focus:outline-none focus:border-red-500 font-semibold text-center">
+                                    </td>
+                                    <td class="px-4 py-3">
+                                        <input type="text" name="scores[{{ $team->id }}][practical_time]" value="{{ $details['practical_time'] ?? ($score?->time_recorded ?? '') }}" placeholder="06:30" class="input-practical-time w-full p-2 bg-slate-50 border border-slate-200 rounded-lg text-xs focus:bg-white focus:outline-none focus:border-red-500 font-mono text-center">
+                                    </td>
+                                @elseif($isOlimpiade)
+                                    <td class="px-4 py-3">
+                                        <input type="number" step="0.01" name="scores[{{ $team->id }}][written_score]" value="{{ $details['written_score'] ?? ($details['score'] ?? '') }}" placeholder="0 - 100" class="input-written-score w-full p-2 bg-slate-50 border border-slate-200 rounded-lg text-xs focus:bg-white focus:outline-none focus:border-red-500 font-semibold text-center">
+                                    </td>
+                                    <td class="px-4 py-3">
+                                        <input type="text" name="scores[{{ $team->id }}][written_time]" value="{{ $details['written_time'] ?? ($score?->time_recorded ?? '') }}" placeholder="25:00" class="input-written-time w-full p-2 bg-slate-50 border border-slate-200 rounded-lg text-xs focus:bg-white focus:outline-none focus:border-red-500 font-mono text-center">
+                                    </td>
+                                @elseif($category->scoring_type == 'written_practical_time')
                                     <td class="px-4 py-3">
                                         <input type="number" step="0.01" name="scores[{{ $team->id }}][written_score]" value="{{ $details['written_score'] ?? '' }}" placeholder="0 - 100" class="input-written-score w-full p-2 bg-slate-50 border border-slate-200 rounded-lg text-xs focus:bg-white focus:outline-none focus:border-red-500 font-semibold">
                                     </td>
@@ -1250,6 +1284,8 @@ window.confirmResetDatabase = function() {
 document.addEventListener('DOMContentLoaded', function() {
     const isTanduCategory = {{ $isTandu ? 'true' : 'false' }};
     const isFinalRound = {{ $isFinal ? 'true' : 'false' }};
+    const isPracticalCategory = {{ $isPertolonganPertama ? 'true' : 'false' }};
+    const isWrittenCategory = {{ $isOlimpiade ? 'true' : 'false' }};
     const scoringType = "{{ $category->scoring_type }}";
 
     function parseTimeToSeconds(timeStr) {
@@ -1331,7 +1367,10 @@ document.addEventListener('DOMContentLoaded', function() {
         const rowData = rows.map(row => {
             const finalInput = row.querySelector('.input-final-score');
             const scoreVal = finalInput ? parseFloat(finalInput.value) : NaN;
-            const timeInput = row.querySelector('.input-tandu-time') || row.querySelector('input[name*="time_recorded"]');
+            const timeInput = row.querySelector('.input-tandu-time') 
+                || row.querySelector('.input-practical-time') 
+                || row.querySelector('.input-written-time') 
+                || row.querySelector('input[name*="time_recorded"]');
             const timeStr = timeInput ? timeInput.value : '';
             const seconds = parseTimeToSeconds(timeStr) ?? 999999;
             const hasScore = !isNaN(scoreVal) && finalInput.value.trim() !== '' && scoreVal > 0;
@@ -1448,6 +1487,32 @@ document.addEventListener('DOMContentLoaded', function() {
 
             if (techInput) techInput.addEventListener('input', updateTanduRow);
             if (timeInput) timeInput.addEventListener('input', updateTanduRow);
+
+        } else if (isPracticalCategory || scoringType === 'practical_time') {
+            const practicalInput = row.querySelector('.input-practical-score');
+            const practicalTime = row.querySelector('.input-practical-time');
+
+            function updatePracticalRow() {
+                const p = parseFloat(practicalInput?.value || 0);
+                if (finalInput) finalInput.value = practicalInput?.value ? p.toFixed(2) : '';
+                window.recalculateAllRanks();
+            }
+
+            if (practicalInput) practicalInput.addEventListener('input', updatePracticalRow);
+            if (practicalTime) practicalTime.addEventListener('input', window.recalculateAllRanks);
+
+        } else if (isWrittenCategory || scoringType === 'written_time') {
+            const writtenInput = row.querySelector('.input-written-score');
+            const writtenTime = row.querySelector('.input-written-time');
+
+            function updateWrittenRow() {
+                const w = parseFloat(writtenInput?.value || 0);
+                if (finalInput) finalInput.value = writtenInput?.value ? w.toFixed(2) : '';
+                window.recalculateAllRanks();
+            }
+
+            if (writtenInput) writtenInput.addEventListener('input', updateWrittenRow);
+            if (writtenTime) writtenTime.addEventListener('input', window.recalculateAllRanks);
 
         } else if (scoringType === 'written_practical_time') {
             const writtenInput = row.querySelector('.input-written-score');

@@ -214,8 +214,12 @@
                                                         <span class="bg-rose-50 text-rose-700 border border-rose-200 px-2 py-0.5 rounded font-bold">Poin Waktu: +{{ $sc->score_details['time_score'] }} (Denda -{{ $sc->score_details['time_penalty'] }})</span>
                                                     @endif
                                                 </div>
-                                            @elseif(isset($sc->score_details['written_score']))
+                                            @elseif(isset($sc->score_details['written_score']) && isset($sc->score_details['practical_score']))
                                                 <span>Tertulis: <strong>{{ $sc->score_details['written_score'] }}</strong> ({{ $sc->score_details['written_time'] ?? '-' }}) &bull; Praktik: <strong>{{ $sc->score_details['practical_score'] }}</strong> ({{ $sc->score_details['practical_time'] ?? '-' }})</span>
+                                            @elseif(isset($sc->score_details['practical_score']))
+                                                <span>Praktik: <strong>{{ $sc->score_details['practical_score'] }}</strong> @if(!empty($sc->score_details['practical_time']))(Waktu: {{ $sc->score_details['practical_time'] }})@endif</span>
+                                            @elseif(isset($sc->score_details['written_score']))
+                                                <span>Tertulis: <strong>{{ $sc->score_details['written_score'] }}</strong> @if(!empty($sc->score_details['written_time']))(Waktu: {{ $sc->score_details['written_time'] }})@endif</span>
                                             @elseif(isset($sc->score_details['criteria_1']))
                                                 <span>Kriteria 1: <strong>{{ $sc->score_details['criteria_1'] }}</strong> &bull; Kriteria 2: <strong>{{ $sc->score_details['criteria_2'] }}</strong> @if(isset($sc->score_details['criteria_3'])) &bull; Kriteria 3: <strong>{{ $sc->score_details['criteria_3'] }}</strong> @endif</span>
                                             @elseif(isset($sc->score_details['likes']))

@@ -295,8 +295,64 @@ class CompetitionScoreController extends Controller
 
             // Auto-calculation logic based on category scoring type
             switch ($category->scoring_type) {
+                case 'practical_time':
+                    $practicalScore = floatval($data['practical_score'] ?? ($data['score'] ?? 0));
+                    $practicalTime = $data['practical_time'] ?? ($data['time_recorded'] ?? null);
+                    $data['practical_score'] = $practicalScore;
+                    $data['practical_time'] = $practicalTime;
+                    $timeRecorded = $practicalTime;
+                    $data['time_seconds'] = self::parseTimeToSeconds($practicalTime);
+
+                    if (isset($data['manual_final_score']) && $data['manual_final_score'] !== '') {
+                        $finalScore = floatval($data['manual_final_score']);
+                    } else {
+                        $finalScore = $practicalScore;
+                    }
+                    break;
+
+                case 'written_time':
+                    $writtenScore = floatval($data['written_score'] ?? ($data['score'] ?? 0));
+                    $writtenTime = $data['written_time'] ?? ($data['time_recorded'] ?? null);
+                    $data['written_score'] = $writtenScore;
+                    $data['written_time'] = $writtenTime;
+                    $timeRecorded = $writtenTime;
+                    $data['time_seconds'] = self::parseTimeToSeconds($writtenTime);
+
+                    if (isset($data['manual_final_score']) && $data['manual_final_score'] !== '') {
+                        $finalScore = floatval($data['manual_final_score']);
+                    } else {
+                        $finalScore = $writtenScore;
+                    }
+                    break;
+
                 case 'written_practical_time':
-                    // e.g. LPP Madya/Wira: Tertulis + Praktik
+                    // If Pertolongan Pertama or Olimpiade, honor new rules even under old type
+                    $isPP = str_contains(strtolower($category->name), 'pertolongan pertama') || str_starts_with($category->code ?? '', 'LPP');
+                    $isOlim = str_contains(strtolower($category->name), 'olimpiade') || str_starts_with($category->code ?? '', 'OLIM');
+
+                    if ($isPP) {
+                        $practicalScore = floatval($data['practical_score'] ?? ($data['score'] ?? 0));
+                        $practicalTime = $data['practical_time'] ?? ($data['time_recorded'] ?? null);
+                        $data['practical_score'] = $practicalScore;
+                        $data['practical_time'] = $practicalTime;
+                        $timeRecorded = $practicalTime;
+                        $data['time_seconds'] = self::parseTimeToSeconds($practicalTime);
+                        $finalScore = (isset($data['manual_final_score']) && $data['manual_final_score'] !== '') ? floatval($data['manual_final_score']) : $practicalScore;
+                        break;
+                    }
+
+                    if ($isOlim) {
+                        $writtenScore = floatval($data['written_score'] ?? ($data['score'] ?? 0));
+                        $writtenTime = $data['written_time'] ?? ($data['time_recorded'] ?? null);
+                        $data['written_score'] = $writtenScore;
+                        $data['written_time'] = $writtenTime;
+                        $timeRecorded = $writtenTime;
+                        $data['time_seconds'] = self::parseTimeToSeconds($writtenTime);
+                        $finalScore = (isset($data['manual_final_score']) && $data['manual_final_score'] !== '') ? floatval($data['manual_final_score']) : $writtenScore;
+                        break;
+                    }
+
+                    // Legacy combined Tertulis + Praktik
                     $writtenScore = floatval($data['written_score'] ?? 0);
                     $practicalScore = floatval($data['practical_score'] ?? 0);
                     if (isset($data['manual_final_score']) && $data['manual_final_score'] !== '') {
@@ -544,8 +600,8 @@ class CompetitionScoreController extends Controller
 
             $detailsA = is_array($a->score_details) ? $a->score_details : (json_decode($a->score_details ?? '', true) ?? []);
             $detailsB = is_array($b->score_details) ? $b->score_details : (json_decode($b->score_details ?? '', true) ?? []);
-            $secA = $detailsA['time_seconds'] ?? self::parseTimeToSeconds($a->time_recorded) ?? 999999;
-            $secB = $detailsB['time_seconds'] ?? self::parseTimeToSeconds($b->time_recorded) ?? 999999;
+            $secA = $detailsA['time_seconds'] ?? self::parseTimeToSeconds($detailsA['practical_time'] ?? ($detailsA['written_time'] ?? $a->time_recorded)) ?? 999999;
+            $secB = $detailsB['time_seconds'] ?? self::parseTimeToSeconds($detailsB['practical_time'] ?? ($detailsB['written_time'] ?? $b->time_recorded)) ?? 999999;
 
             return $secA <=> $secB;
         });

@@ -122,7 +122,20 @@
                     </h3>
 
                     <div class="text-xs text-slate-500 mt-2 space-y-1">
-                        <div>Tipe Penilaian: <strong class="text-slate-700">{{ ucwords(str_replace('_', ' ', $cat->scoring_type)) }}</strong></div>
+                        @php
+                            $scoreTypeLabel = match($cat->scoring_type) {
+                                'practical_time' => 'Praktik & Waktu',
+                                'written_time' => 'Tertulis & Waktu',
+                                'written_practical_time' => 'Tertulis & Praktik',
+                                'standard_time' => 'Teknis & Waktu',
+                                'tandu_standard_time' => 'Tandu Reguler & Waktu',
+                                'bracket_quiz' => 'Cepat Tepat / Cerdas Cermat',
+                                'multi_criteria' => 'Kriteria Jamak',
+                                'social_engagement' => 'Engagement / Medsos',
+                                default => ucwords(str_replace('_', ' ', $cat->scoring_type))
+                            };
+                        @endphp
+                        <div>Tipe Penilaian: <strong class="text-slate-700">{{ $scoreTypeLabel }}</strong></div>
                         <div>Poin Juara Umum: <strong class="text-red-600">{{ $cat->point_tier == 'tier_1' ? '10 / 8 / 6' : ($cat->point_tier == 'tier_2' ? '8 / 6 / 4' : '3 / 2 / 1') }} Poin</strong></div>
                     </div>
                 </div>
