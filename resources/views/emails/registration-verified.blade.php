@@ -119,6 +119,10 @@
             margin: 4px;
             box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08);
         }
+        .btn-whatsapp {
+            background-color: #16a34a;
+            color: #ffffff !important;
+        }
         .btn-green {
             background-color: #059669;
             color: #ffffff !important;
@@ -320,8 +324,27 @@
                 <strong style="color: #0f172a; font-size: 16px;">{{ $registration->school_name }}</strong>
             </div>
 
+            <!-- WhatsApp Group Invitation Banner -->
+            <div style="background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%); border: 1.5px solid #86efac; border-radius: 14px; padding: 18px 20px; text-align: center; margin: 20px 0; box-shadow: 0 3px 10px rgba(22, 163, 74, 0.08);">
+                <div style="display: inline-block; background-color: #16a34a; color: #ffffff; font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px; padding: 4px 12px; border-radius: 9999px; margin-bottom: 8px;">
+                    &#128172; WADAH KOMUNIKASI RESMI PESERTA
+                </div>
+                <h3 style="margin: 0 0 6px 0; font-size: 16px; font-weight: 900; color: #14532d;">
+                    Grup WhatsApp Peserta Tingkat PMR {{ $registration->level }}
+                </h3>
+                <p style="margin: 0 0 14px 0; font-size: 13px; color: #166534; line-height: 1.5;">
+                    Seluruh pendamping / pembina kontingen diwajibkan bergabung ke grup resmi untuk koordinasi teknis, informasi Technical Meeting (TM), dan pengundian nomor urut tampil.
+                </p>
+                <a href="{{ $registration->whatsapp_group_url }}" target="_blank" style="display: inline-block; background-color: #16a34a; color: #ffffff !important; font-weight: 900; font-size: 13px; padding: 12px 24px; border-radius: 12px; text-decoration: none; box-shadow: 0 4px 12px rgba(22, 163, 74, 0.35); text-transform: uppercase; letter-spacing: 0.3px;">
+                    &#128242; Gabung Grup WhatsApp (PMR {{ $registration->level }}) &rarr;
+                </a>
+            </div>
+
             <!-- Action Buttons -->
             <div class="btn-container">
+                <a href="{{ $registration->whatsapp_group_url }}" target="_blank" class="btn btn-whatsapp" style="background-color: #16a34a; color: #ffffff !important;">
+                    &#128172; Join Grup WA ({{ $registration->level }})
+                </a>
                 <a href="{{ url('/lomba/kwitansi/' . ($registration->registration_code ?: $registration->id)) }}" target="_blank" class="btn btn-green">
                     &#11015;&#65039; Unduh e-Kwitansi Sah (PDF)
                 </a>

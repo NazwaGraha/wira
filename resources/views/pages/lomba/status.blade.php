@@ -125,6 +125,29 @@
                         </div>
                     @endif
 
+                    <!-- WhatsApp Group Official Banner -->
+                    <div class="bg-gradient-to-r from-emerald-600 to-green-700 text-white rounded-2xl p-5 shadow-md flex flex-col sm:flex-row items-center justify-between gap-4">
+                        <div class="flex items-center gap-3.5">
+                            <div class="w-12 h-12 rounded-xl bg-white/20 backdrop-blur-xs flex items-center justify-center text-white text-2xl shrink-0">
+                                <i class="fa-brands fa-whatsapp"></i>
+                            </div>
+                            <div>
+                                <span class="bg-white/20 text-white text-[10px] font-black uppercase px-2 py-0.5 rounded tracking-wider">
+                                    Wadah Resmi Peserta PMR {{ $registration->level }}
+                                </span>
+                                <h4 class="font-extrabold text-white text-sm sm:text-base mt-0.5">
+                                    Gabung Grup WhatsApp Peserta Tingkat {{ $registration->level }}
+                                </h4>
+                                <p class="text-xs text-emerald-100 mt-0.5">
+                                    Wajib diikuti oleh pembina / pendamping untuk update informasi Technical Meeting (TM) & jadwal tampil.
+                                </p>
+                            </div>
+                        </div>
+                        <a href="{{ $registration->whatsapp_group_url }}" target="_blank" class="w-full sm:w-auto shrink-0 bg-white hover:bg-emerald-50 text-emerald-800 font-extrabold text-xs px-5 py-3 rounded-xl shadow-lg transition flex items-center justify-center gap-2 cursor-pointer">
+                            <i class="fa-brands fa-whatsapp text-emerald-600 text-base"></i> Join Grup WhatsApp &rarr;
+                        </a>
+                    </div>
+
                     <!-- Daftar Tim & Cabang Lomba -->
                     <div>
                         <h4 class="font-bold text-sm text-slate-800 uppercase tracking-wider mb-3">Cabang Lomba yang Didaftarkan</h4>

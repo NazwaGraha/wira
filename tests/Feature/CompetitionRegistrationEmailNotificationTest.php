@@ -122,4 +122,31 @@ class CompetitionRegistrationEmailNotificationTest extends TestCase
 
         $this->assertCount(2, $attachments);
     }
+
+    public function test_registration_mails_and_status_contain_correct_whatsapp_group_links_by_level(): void
+    {
+        $levels = [
+            'Mula' => 'https://chat.whatsapp.com/BUenufvlBK0EHOfpsKpoLi',
+            'Madya' => 'https://chat.whatsapp.com/KrkdA8yYjraDxrD0TyeJYj',
+            'Wira' => 'https://chat.whatsapp.com/BnsSIbpvpRxKsgUlp6YSYT',
+        ];
+
+        foreach ($levels as $level => $expectedUrl) {
+            $reg = new CompetitionRegistration([
+                'registration_code' => "SBB-{$level}01",
+                'school_name' => "Sekolah {$level}",
+                'level' => $level,
+                'advisor_name' => 'Pembina Test',
+                'advisor_email' => "pembina.{$level}@example.com",
+            ]);
+
+            $this->assertEquals($expectedUrl, $reg->whatsapp_group_url);
+
+            $submittedHtml = view('emails.registration-submitted', ['registration' => $reg])->render();
+            $this->assertStringContainsString($expectedUrl, $submittedHtml);
+
+            $verifiedHtml = view('emails.registration-verified', ['registration' => $reg])->render();
+            $this->assertStringContainsString($expectedUrl, $verifiedHtml);
+        }
+    }
 }

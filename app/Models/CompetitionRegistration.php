@@ -103,4 +103,31 @@ class CompetitionRegistration extends Model
 
         return $code;
     }
+
+    /**
+     * Dapatkan tautan link grup WhatsApp peserta resmi sesuai jenjang tingkatan:
+     * - Tingkat Mula: https://chat.whatsapp.com/BUenufvlBK0EHOfpsKpoLi
+     * - Tingkat Madya: https://chat.whatsapp.com/KrkdA8yYjraDxrD0TyeJYj
+     * - Tingkat Wira: https://chat.whatsapp.com/BnsSIbpvpRxKsgUlp6YSYT
+     */
+    public function getWhatsappGroupUrlAttribute(): string
+    {
+        $lvl = strtolower(trim($this->level ?? ''));
+
+        if ($lvl === 'mula') {
+            return 'https://chat.whatsapp.com/BUenufvlBK0EHOfpsKpoLi';
+        }
+
+        if ($lvl === 'madya') {
+            return 'https://chat.whatsapp.com/KrkdA8yYjraDxrD0TyeJYj';
+        }
+
+        // Default Wira
+        return 'https://chat.whatsapp.com/BnsSIbpvpRxKsgUlp6YSYT';
+    }
+
+    public function getWhatsappGroupUrl(): string
+    {
+        return $this->getWhatsappGroupUrlAttribute();
+    }
 }
