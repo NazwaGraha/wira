@@ -151,9 +151,10 @@ class CompetitionParticipantOrderNumberTest extends TestCase
         $responseCard = $this->get('/lomba/kartu-peserta/'.$reg->registration_code);
         $responseCard->assertStatus(200);
         $responseCard->assertSee('A-01');
-        $responseCard->assertSee('LPP-MULA-PA-A01');
+        $responseCard->assertSee('LPP-MULA-PA');
         $responseCard->assertSee('Ahmad Fauzi');
-        $responseCard->assertSee('Ketua Regu');
+        $responseCard->assertSee('Dimas Arya');
+        $responseCard->assertSee('SD NEGERI CONTOH');
 
         $responseStatus = $this->get('/lomba/status?code='.$reg->registration_code);
         $responseStatus->assertStatus(200);
