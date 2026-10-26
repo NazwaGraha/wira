@@ -11,6 +11,7 @@ use App\Models\CompetitionRegistration;
 use App\Models\CompetitionScore;
 use App\Models\Gallery;
 use App\Services\CompetitionSpreadsheetService;
+use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Log;
@@ -286,6 +287,20 @@ class CompetitionController extends Controller
 
         $spreadsheetService = app(CompetitionSpreadsheetService::class);
 
+        // Pastikan kolom members_file tersedia di database secara aman
+        $hasMembersFileColumn = false;
+        try {
+            $hasMembersFileColumn = Schema::hasColumn('competition_participant_teams', 'members_file');
+            if (! $hasMembersFileColumn) {
+                Schema::table('competition_participant_teams', function (Blueprint $table) {
+                    $table->string('members_file')->nullable()->after('members_list');
+                });
+                $hasMembersFileColumn = true;
+            }
+        } catch (\Throwable $e) {
+            $hasMembersFileColumn = false;
+        }
+
         // Proses unggah massal jika pendaftar mengunggah 1 file Excel untuk semua regu
         $parsedMass = null;
         $massFilePath = null;
@@ -400,14 +415,19 @@ class CompetitionController extends Controller
                 }
             }
 
-            CompetitionParticipantTeam::create([
+            $teamPayload = [
                 'competition_registration_id' => $registration->id,
                 'competition_category_id' => $catId,
                 'team_name' => $teamName,
                 'team_label' => $label,
                 'members_list' => $membersList,
-                'members_file' => $membersFilePath,
-            ]);
+            ];
+
+            if ($hasMembersFileColumn && ! empty($membersFilePath)) {
+                $teamPayload['members_file'] = $membersFilePath;
+            }
+
+            CompetitionParticipantTeam::create($teamPayload);
         }
 
         // Kirim email notifikasi tanda terima registrasi beserta lampiran PDF e-Kwitansi & Kartu Peserta
