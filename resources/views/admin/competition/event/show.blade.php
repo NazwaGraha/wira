@@ -168,7 +168,7 @@
                                 Rp {{ number_format($cat->registration_fee ?: ($event->registration_fee ?: 0), 0, ',', '.') }}
                             </span>
                             <div class="text-[10px] text-slate-400 uppercase font-semibold">
-                                {{ $cat->point_tier == 'tier_1' ? '10/8/6 Poin' : ($cat->point_tier == 'tier_2' ? '8/6/4 Poin' : '3/2/1 Poin') }}
+                                {{ $cat->getPointTierLabel() }}
                             </div>
                         </div>
                     </div>

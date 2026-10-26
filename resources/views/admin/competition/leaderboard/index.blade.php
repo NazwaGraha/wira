@@ -120,10 +120,10 @@
         </div>
 
         <!-- Ketentuan Poin Box -->
-        <div class="mt-6 p-4 bg-slate-50 rounded-xl border border-slate-200 text-xs text-slate-600 space-y-1">
-            <div class="font-bold text-slate-800 mb-1">Ketentuan Poin Juara Umum (Sesuai Regulasi SBB III):</div>
-            <div>&bull; <strong>LPP, LCT, Mading Kreasi, Olimpiade Kepalangmerahan:</strong> Juara 1 = 10 Poin, Juara 2 = 8 Poin, Juara 3 = 6 Poin</div>
-            <div>&bull; <strong>LKTR (Tandu), LKCT (Cuci Tangan), Mewarnai:</strong> Juara 1 = 8 Poin, Juara 2 = 6 Poin, Juara 3 = 4 Poin</div>
+        <div class="mt-6 p-4 bg-slate-50 rounded-xl border border-slate-200 text-xs text-slate-600 space-y-1.5">
+            <div class="font-bold text-slate-800 mb-1">Ketentuan Poin Juara Umum:</div>
+            <div>&bull; <strong>LPP, LCT, Lomba Pendidikan Remaja Sebaya, dan Olimpiade Kepalangmerahan:</strong> Juara 1 = 12 Poin, Juara 2 = 10 Poin, Juara 3 = 8 Poin, Juara Harapan 1 = 6 Poin, Juara Harapan 2 = 4 Poin</div>
+            <div>&bull; <strong>LKTR, LKCT, dan Lomba Mewarnai:</strong> Juara 1 = 10 Poin, Juara 2 = 8 Poin, Juara 3 = 6 Poin, Juara Harapan 1 = 4 Poin, Juara Harapan 2 = 2 Poin</div>
             <div>&bull; <strong>PMR Favorite:</strong> Juara 1 = 3 Poin, Juara 2 = 2 Poin, Juara 3 = 1 Poin</div>
         </div>
     </div>

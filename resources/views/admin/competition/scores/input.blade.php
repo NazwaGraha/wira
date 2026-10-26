@@ -839,8 +839,12 @@
                                                 <i class="fa-solid fa-medal text-amber-300"></i> Juara 3 (Perunggu)
                                             </span>
                                         @else
-                                            <span class="inline-flex items-center justify-center w-7 h-7 rounded-full bg-orange-400 text-white font-black text-xs shadow-md">3</span>
+                                            <span class="inline-flex items-center justify-center w-7 h-7 rounded-full bg-orange-400 text-white font-black text-xs shadow-md" title="Juara 3">3</span>
                                         @endif
+                                    @elseif($score?->rank == 4)
+                                        <span class="inline-flex items-center justify-center px-2 py-0.5 rounded-full bg-blue-100 text-blue-800 font-black text-[11px] border border-blue-200" title="Juara Harapan 1">Harapan 1</span>
+                                    @elseif($score?->rank == 5)
+                                        <span class="inline-flex items-center justify-center px-2 py-0.5 rounded-full bg-cyan-100 text-cyan-800 font-black text-[11px] border border-cyan-200" title="Juara Harapan 2">Harapan 2</span>
                                     @elseif($score?->rank)
                                         <span class="inline-flex items-center justify-center w-7 h-7 rounded-full bg-slate-200 text-slate-800 font-bold text-xs border border-slate-300">{{ $score->rank }}</span>
                                     @else
@@ -1423,7 +1427,13 @@ document.addEventListener('DOMContentLoaded', function() {
                         badgeHtml = '<span class="inline-flex items-center justify-center w-7 h-7 rounded-full bg-amber-500 text-white font-black text-xs shadow-md">2</span>';
                         d.row.classList.remove('bg-purple-50/40');
                     } else if (rank === 3) {
-                        badgeHtml = '<span class="inline-flex items-center justify-center w-7 h-7 rounded-full bg-orange-400 text-white font-black text-xs shadow-md">3</span>';
+                        badgeHtml = '<span class="inline-flex items-center justify-center w-7 h-7 rounded-full bg-orange-400 text-white font-black text-xs shadow-md" title="Juara 3">3</span>';
+                        d.row.classList.remove('bg-purple-50/40');
+                    } else if (rank === 4) {
+                        badgeHtml = '<span class="inline-flex items-center justify-center px-2 py-0.5 rounded-full bg-blue-100 text-blue-800 font-black text-[11px] border border-blue-200" title="Juara Harapan 1">Harapan 1</span>';
+                        d.row.classList.remove('bg-purple-50/40');
+                    } else if (rank === 5) {
+                        badgeHtml = '<span class="inline-flex items-center justify-center px-2 py-0.5 rounded-full bg-cyan-100 text-cyan-800 font-black text-[11px] border border-cyan-200" title="Juara Harapan 2">Harapan 2</span>';
                         d.row.classList.remove('bg-purple-50/40');
                     } else {
                         badgeHtml = `<span class="inline-flex items-center justify-center w-7 h-7 rounded-full bg-slate-200 text-slate-800 font-bold text-xs border border-slate-300">${rank}</span>`;

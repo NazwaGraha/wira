@@ -163,4 +163,80 @@ class CompetitionCategory extends Model
 
         return 2;
     }
+
+    /**
+     * Hitung perolehan poin juara umum berdasarkan peringkat (rank):
+     * - Tier 1 (LPP, LCT, Pendidikan Remaja Sebaya, Olimpiade Kepalangmerahan, Mading):
+     *   Juara 1: 12 poin, Juara 2: 10 poin, Juara 3: 8 poin, Juara Harapan 1: 6 poin, Juara Harapan 2: 4 poin
+     * - Tier 2 (LKTR, LKCT, Lomba Mewarnai):
+     *   Juara 1: 10 poin, Juara 2: 8 poin, Juara 3: 6 poin, Juara Harapan 1: 4 poin, Juara Harapan 2: 2 poin
+     * - Tier 3 (PMR Favorite):
+     *   Juara 1: 3 poin, Juara 2: 2 poin, Juara 3: 1 poin
+     */
+    public function getPointsForRank(?int $rank): int
+    {
+        if (! $rank || $rank < 1 || $rank > 5) {
+            return 0;
+        }
+
+        $tier = $this->point_tier;
+        $name = strtolower($this->name ?? '');
+        $code = strtoupper($this->code ?? '');
+
+        if (! $tier) {
+            if (str_contains($name, 'tandu') || str_contains($name, 'cuci tangan') || str_contains($name, 'mewarnai') || str_starts_with($code, 'LKTR') || str_starts_with($code, 'LKCT') || str_starts_with($code, 'MEWARNAI')) {
+                $tier = 'tier_2';
+            } elseif (str_contains($name, 'favorite') || str_contains($name, 'favorit') || str_starts_with($code, 'FAV')) {
+                $tier = 'tier_3';
+            } else {
+                $tier = 'tier_1';
+            }
+        }
+
+        if ($tier === 'tier_1') {
+            return match ($rank) {
+                1 => 12,
+                2 => 10,
+                3 => 8,
+                4 => 6,
+                5 => 4,
+                default => 0,
+            };
+        }
+
+        if ($tier === 'tier_2') {
+            return match ($rank) {
+                1 => 10,
+                2 => 8,
+                3 => 6,
+                4 => 4,
+                5 => 2,
+                default => 0,
+            };
+        }
+
+        if ($tier === 'tier_3') {
+            return match ($rank) {
+                1 => 3,
+                2 => 2,
+                3 => 1,
+                default => 0,
+            };
+        }
+
+        return 0;
+    }
+
+    /**
+     * Dapatkan label representasi aturan poin juara umum.
+     */
+    public function getPointTierLabel(): string
+    {
+        return match ($this->point_tier) {
+            'tier_1' => '12 / 10 / 8 / 6 / 4 Poin',
+            'tier_2' => '10 / 8 / 6 / 4 / 2 Poin',
+            'tier_3' => '3 / 2 / 1 Poin',
+            default => '12 / 10 / 8 / 6 / 4 Poin',
+        };
+    }
 }

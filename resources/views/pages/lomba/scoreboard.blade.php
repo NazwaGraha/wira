@@ -162,7 +162,7 @@
                     <div>
                         <h3 class="font-black text-slate-800 text-lg">{{ $selectedCategory->display_name }}</h3>
                         <p class="text-xs text-slate-500">
-                            Tipe Penilaian: <strong>{{ ucwords(str_replace('_', ' ', $selectedCategory->scoring_type)) }}</strong> &bull; Aturan Poin Juara: <strong>{{ $selectedCategory->point_tier == 'tier_1' ? '10 / 8 / 6' : ($selectedCategory->point_tier == 'tier_2' ? '8 / 6 / 4' : '3 / 2 / 1') }} Poin</strong>
+                            Tipe Penilaian: <strong>{{ ucwords(str_replace('_', ' ', $selectedCategory->scoring_type)) }}</strong> &bull; Aturan Poin Juara: <strong>{{ $selectedCategory->getPointTierLabel() }}</strong>
                         </p>
                     </div>
                     <div class="text-right">
@@ -190,11 +190,15 @@
                                         @if($sc->is_disqualified)
                                             <span class="bg-red-900 text-red-200 text-[10px] font-black px-2 py-0.5 rounded">DISKUALIFIKASI</span>
                                         @elseif($sc->rank == 1)
-                                            <span class="inline-flex items-center justify-center w-7 h-7 rounded-full bg-purple-600 text-white font-black text-xs">1</span>
+                                            <span class="inline-flex items-center justify-center w-7 h-7 rounded-full bg-purple-600 text-white font-black text-xs" title="Juara 1">1</span>
                                         @elseif($sc->rank == 2)
-                                            <span class="inline-flex items-center justify-center w-7 h-7 rounded-full bg-amber-500 text-white font-black text-xs">2</span>
+                                            <span class="inline-flex items-center justify-center w-7 h-7 rounded-full bg-amber-500 text-white font-black text-xs" title="Juara 2">2</span>
                                         @elseif($sc->rank == 3)
-                                            <span class="inline-flex items-center justify-center w-7 h-7 rounded-full bg-orange-400 text-white font-black text-xs">3</span>
+                                            <span class="inline-flex items-center justify-center w-7 h-7 rounded-full bg-orange-400 text-white font-black text-xs" title="Juara 3">3</span>
+                                        @elseif($sc->rank == 4)
+                                            <span class="inline-flex items-center justify-center px-2 py-0.5 rounded-full bg-blue-100 text-blue-800 font-black text-[11px] border border-blue-200" title="Juara Harapan 1">Harapan 1</span>
+                                        @elseif($sc->rank == 5)
+                                            <span class="inline-flex items-center justify-center px-2 py-0.5 rounded-full bg-cyan-100 text-cyan-800 font-black text-[11px] border border-cyan-200" title="Juara Harapan 2">Harapan 2</span>
                                         @else
                                             <span class="text-slate-500 font-bold text-xs">{{ $sc->rank ?: '-' }}</span>
                                         @endif

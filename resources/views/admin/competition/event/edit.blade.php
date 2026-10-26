@@ -674,9 +674,9 @@
 
                             <td class="py-3 px-4 whitespace-nowrap font-bold">
                                 @if($cat->point_tier === 'tier_1')
-                                    <span class="text-red-700 bg-red-50 border border-red-200 px-2 py-0.5 rounded text-[10px]">Tier 1 (10/8/6)</span>
+                                    <span class="text-red-700 bg-red-50 border border-red-200 px-2 py-0.5 rounded text-[10px]">Tier 1 (12/10/8/6/4)</span>
                                 @elseif($cat->point_tier === 'tier_2')
-                                    <span class="text-amber-700 bg-amber-50 border border-amber-200 px-2 py-0.5 rounded text-[10px]">Tier 2 (8/6/4)</span>
+                                    <span class="text-amber-700 bg-amber-50 border border-amber-200 px-2 py-0.5 rounded text-[10px]">Tier 2 (10/8/6/4/2)</span>
                                 @else
                                     <span class="text-slate-600 bg-slate-100 border border-slate-200 px-2 py-0.5 rounded text-[10px]">Tier 3 (3/2/1)</span>
                                 @endif
@@ -835,8 +835,8 @@
                         Tier Poin Juara Umum
                     </label>
                     <select name="point_tier" required class="w-full px-3 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:border-red-500 text-xs font-bold text-slate-800 bg-slate-50">
-                        <option value="tier_1" selected>Tier 1 (10 / 8 / 6 Poin)</option>
-                        <option value="tier_2">Tier 2 (8 / 6 / 4 Poin)</option>
+                        <option value="tier_1" selected>Tier 1 (12 / 10 / 8 / 6 / 4 Poin)</option>
+                        <option value="tier_2">Tier 2 (10 / 8 / 6 / 4 / 2 Poin)</option>
                         <option value="tier_3">Tier 3 (3 / 2 / 1 Poin)</option>
                     </select>
                 </div>
@@ -969,8 +969,8 @@
                         Tier Poin
                     </label>
                     <select name="point_tier" id="edit-tier" required class="w-full px-3 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:border-blue-500 text-xs font-bold text-slate-800 bg-slate-50">
-                        <option value="tier_1">Tier 1 (10 / 8 / 6 Poin)</option>
-                        <option value="tier_2">Tier 2 (8 / 6 / 4 Poin)</option>
+                        <option value="tier_1">Tier 1 (12 / 10 / 8 / 6 / 4 Poin)</option>
+                        <option value="tier_2">Tier 2 (10 / 8 / 6 / 4 / 2 Poin)</option>
                         <option value="tier_3">Tier 3 (3 / 2 / 1 Poin)</option>
                     </select>
                 </div>

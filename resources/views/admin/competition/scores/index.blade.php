@@ -136,7 +136,7 @@
                             };
                         @endphp
                         <div>Tipe Penilaian: <strong class="text-slate-700">{{ $scoreTypeLabel }}</strong></div>
-                        <div>Poin Juara Umum: <strong class="text-red-600">{{ $cat->point_tier == 'tier_1' ? '10 / 8 / 6' : ($cat->point_tier == 'tier_2' ? '8 / 6 / 4' : '3 / 2 / 1') }} Poin</strong></div>
+                        <div>Poin Juara Umum: <strong class="text-red-600">{{ $cat->getPointTierLabel() }}</strong></div>
                     </div>
                 </div>
 
