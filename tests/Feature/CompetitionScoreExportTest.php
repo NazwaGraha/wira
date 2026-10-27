@@ -173,21 +173,33 @@ class CompetitionScoreExportTest extends TestCase
         $openResult = $zip->open($tempXlsx);
         $this->assertTrue($openResult === true, 'File hasil export harus merupakan ZIP OpenXML yang valid');
 
-        // Periksa keberadaan file XML wajib
+        // Periksa keberadaan file XML wajib (3 Worksheets sesuai mockup visual)
         $this->assertNotFalse($zip->locateName('xl/worksheets/sheet1.xml'));
+        $this->assertNotFalse($zip->locateName('xl/worksheets/sheet2.xml'));
+        $this->assertNotFalse($zip->locateName('xl/worksheets/sheet3.xml'));
         $this->assertNotFalse($zip->locateName('xl/styles.xml'));
         $this->assertNotFalse($zip->locateName('xl/workbook.xml'));
 
         $sheetXml = $zip->getFromName('xl/worksheets/sheet1.xml');
+        $sheet2Xml = $zip->getFromName('xl/worksheets/sheet2.xml');
+        $sheet3Xml = $zip->getFromName('xl/worksheets/sheet3.xml');
+        $workbookXml = $zip->getFromName('xl/workbook.xml');
         $stylesXml = $zip->getFromName('xl/styles.xml');
 
         $zip->close();
         @unlink($tempXlsx);
 
-        // Verifikasi elemen visual mockup dalam XML:
+        // Verifikasi 3 sheet tab di workbook:
+        $this->assertStringContainsString('Lembar Nilai Utama', $workbookXml);
+        $this->assertStringContainsString('Rekap Juara Umum', $workbookXml);
+        $this->assertStringContainsString('Daftar Dewan Juri', $workbookXml);
+
+        // Verifikasi elemen visual mockup dalam Sheet 1:
         // 1. Kop dan Judul
         $this->assertStringContainsString('LEMBAR PENILAIAN RESMI DEWAN JURI LAPANGAN', $sheetXml);
         $this->assertStringContainsString('PALANG MERAH INDONESIA', $sheetXml);
+        $this->assertStringContainsString('OFFICIAL SCORE SHEET', $sheetXml);
+        $this->assertStringContainsString('Dokumen Sah Panitia', $sheetXml);
 
         // 2. Metadata Cabang & Dewan Juri
         $this->assertStringContainsString('Pertolongan Pertama', $sheetXml);
