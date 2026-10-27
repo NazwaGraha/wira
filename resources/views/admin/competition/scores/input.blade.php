@@ -10,6 +10,9 @@
     <a href="{{ route('lomba.scoreboard', ['level' => $category->level, 'category_id' => $category->id]) }}" target="_blank" class="bg-slate-800 hover:bg-slate-900 text-white px-4 py-2 rounded-xl font-bold text-xs transition flex items-center gap-1.5">
         <i class="fa-solid fa-tv"></i> Papan Skor Publik
     </a>
+    <button type="button" onclick="document.getElementById('export-mockup-modal').classList.remove('hidden')" class="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-xl font-bold text-xs transition flex items-center gap-1.5 shadow-sm">
+        <i class="fa-solid fa-file-excel"></i> Export Excel
+    </button>
 @endsection
 
 @section('content')
@@ -48,6 +51,26 @@
                     'social_engagement' => 'Engagement Media Sosial',
                     default => ucwords(str_replace('_', ' ', $category->scoring_type))
                 } }}</strong> &bull; Total Peserta Terverifikasi: <strong>{{ $teams->count() }} Tim</strong>
+            </div>
+
+            <!-- Dewan Juri Bertugas (Penugasan Resmi Sesuai Mapping) -->
+            <div class="mt-3 pt-3 border-t border-slate-100 flex items-center gap-2 flex-wrap">
+                <span class="text-xs font-bold text-slate-600 flex items-center gap-1.5">
+                    <i class="fa-solid fa-gavel text-amber-500"></i> Dewan Juri Penilai:
+                </span>
+                @forelse($category->assignedJuries as $jury)
+                    <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-xl bg-amber-50 text-amber-900 border border-amber-200 text-xs font-bold shadow-2xs">
+                        <i class="fa-solid fa-user-check text-amber-600 text-[10px]"></i> {{ $jury->name }}
+                        <span class="text-[10px] text-amber-600 font-mono">({{ $jury->username }})</span>
+                    </span>
+                @empty
+                    <span class="text-xs text-rose-500 font-semibold italic bg-rose-50 px-2.5 py-0.5 rounded-lg border border-rose-200">
+                        <i class="fa-solid fa-triangle-exclamation"></i> Belum ada juri yang dipetakan untuk cabang lomba ini.
+                    </span>
+                    <a href="{{ route('admin.competition-juries.index', ['event_id' => $category->competition_event_id]) }}" class="text-xs text-blue-600 font-bold hover:underline flex items-center gap-1">
+                        <i class="fa-solid fa-user-plus"></i> Petakan Juri Sekarang &rarr;
+                    </a>
+                @endforelse
             </div>
         </div>
 
@@ -725,6 +748,11 @@
                                         <span>{{ $team->registration?->school_name ?? $team->registration?->advisor_name }}</span>
                                         @if($team->registration?->registration_code)
                                             <span class="font-mono font-bold text-indigo-700 bg-indigo-50 border border-indigo-200 px-1.5 py-0.5 rounded text-[10px]">{{ $team->registration->registration_code }}</span>
+                                        @endif
+                                        @if($score?->jury)
+                                            <span class="inline-flex items-center gap-1 font-bold text-[10px] text-amber-800 bg-amber-50 border border-amber-200 px-1.5 py-0.5 rounded">
+                                                <i class="fa-solid fa-gavel text-[9px] text-amber-600"></i> Juri: {{ $score->jury->name }}
+                                            </span>
                                         @endif
                                     </div>
                                 </td>

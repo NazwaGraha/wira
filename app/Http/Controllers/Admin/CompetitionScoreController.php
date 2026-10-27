@@ -47,6 +47,8 @@ class CompetitionScoreController extends Controller
 
     public function input(CompetitionCategory $category, Request $request)
     {
+        $category->load('assignedJuries');
+
         $round = $request->query('round', 'Utama');
 
         // Fetch verified participant teams for this specific competition category
@@ -77,6 +79,7 @@ class CompetitionScoreController extends Controller
 
         $scores = CompetitionScore::where('competition_category_id', $category->id)
             ->where('round_name', $round)
+            ->with(['jury', 'photos'])
             ->get()
             ->keyBy('competition_participant_team_id');
 
