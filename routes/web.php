@@ -265,6 +265,7 @@ Route::prefix('admin')->name('admin.')->group(function () {
         // Penilaian Lomba (Input Nilai Juri / Panitia)
         Route::get('/competition-scores', [CompetitionScoreController::class, 'index'])->name('competition-scores.index');
         Route::get('/competition-scores/{category}/input', [CompetitionScoreController::class, 'input'])->name('competition-scores.input');
+        Route::get('/competition-scores/{category}/export-excel', [CompetitionScoreController::class, 'exportExcel'])->name('competition-scores.export-excel');
         Route::post('/competition-scores/{category}/save', [CompetitionScoreController::class, 'saveScores'])->name('competition-scores.save');
         Route::post('/competition-scores/{category}/reset', [CompetitionScoreController::class, 'resetScores'])->name('competition-scores.reset');
         Route::post('/competition-scores/{category}/assign-termins', [CompetitionScoreController::class, 'assignTermins'])->name('competition-scores.assign-termins');

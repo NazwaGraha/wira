@@ -145,9 +145,14 @@
                         {{ $cat->teams_count }} Tim Terdaftar
                     </span>
 
-                    <a href="{{ route('admin.competition-scores.input', $cat->id) }}" class="bg-red-600 hover:bg-red-700 text-white font-bold text-xs px-4 py-2 rounded-xl shadow-md transition flex items-center gap-1.5">
-                        <i class="fa-solid fa-pen-to-square"></i> Input Nilai Juri
-                    </a>
+                    <div class="flex items-center gap-2">
+                        <a href="{{ route('admin.competition-scores.export-excel', $cat->id) }}" title="Export Lembar Penilaian Excel (.xlsx)" class="bg-emerald-50 hover:bg-emerald-100 text-emerald-700 font-bold text-xs px-3 py-2 rounded-xl border border-emerald-200 transition flex items-center gap-1.5 shadow-2xs">
+                            <i class="fa-solid fa-file-excel"></i> Export Excel
+                        </a>
+                        <a href="{{ route('admin.competition-scores.input', $cat->id) }}" class="bg-red-600 hover:bg-red-700 text-white font-bold text-xs px-4 py-2 rounded-xl shadow-md transition flex items-center gap-1.5">
+                            <i class="fa-solid fa-pen-to-square"></i> Input Nilai Juri
+                        </a>
+                    </div>
                 </div>
             </div>
         @endforeach

@@ -2,6 +2,10 @@
 
 namespace App\Services;
 
+use App\Models\CompetitionCategory;
+use App\Models\CompetitionParticipantTeam;
+use App\Models\CompetitionScore;
+use Carbon\Carbon;
 use Illuminate\Http\UploadedFile;
 use ZipArchive;
 
@@ -35,6 +39,24 @@ class CompetitionSpreadsheetService
         'J' => ['key' => 'gender', 'label' => 'L / P', 'width' => 10, 'align' => 'center'],
         'K' => ['key' => 'class_grade', 'label' => 'Kelas', 'width' => 14, 'align' => 'center'],
         'L' => ['key' => 'role', 'label' => 'Jabatan / Peran *', 'width' => 22, 'align' => 'left'],
+    ];
+
+    /**
+     * Definisi 12 kolom Lembar Penilaian Juri Excel Resmi (Sesuai Mockup Disetujui)
+     */
+    public const SCORE_SHEET_COLUMNS = [
+        'A' => ['key' => 'order_number', 'label' => 'NO. URUT', 'width' => 12, 'align' => 'center'],
+        'B' => ['key' => 'reg_code', 'label' => 'KODE REG', 'width' => 20, 'align' => 'center'],
+        'C' => ['key' => 'school_name', 'label' => 'ASAL SEKOLAH / PANGKALAN', 'width' => 36, 'align' => 'left'],
+        'D' => ['key' => 'team_name', 'label' => 'NAMA REGU / KONTINGEN', 'width' => 28, 'align' => 'left'],
+        'E' => ['key' => 'practical_score', 'label' => 'NILAI PRAKTIK', 'width' => 16, 'align' => 'center'],
+        'F' => ['key' => 'time_recorded', 'label' => 'WAKTU (MM:SS)', 'width' => 16, 'align' => 'center'],
+        'G' => ['key' => 'time_score', 'label' => 'POIN WAKTU', 'width' => 15, 'align' => 'center'],
+        'H' => ['key' => 'final_score', 'label' => 'NILAI AKHIR', 'width' => 16, 'align' => 'center'],
+        'I' => ['key' => 'rank', 'label' => 'PERINGKAT', 'width' => 18, 'align' => 'center'],
+        'J' => ['key' => 'jury_name', 'label' => 'JURI PENILAI', 'width' => 26, 'align' => 'center'],
+        'K' => ['key' => 'photos_count', 'label' => 'FOTO', 'width' => 12, 'align' => 'center'],
+        'L' => ['key' => 'notes', 'label' => 'CATATAN JURI LAPANGAN', 'width' => 40, 'align' => 'left'],
     ];
 
     /**
@@ -1241,5 +1263,875 @@ class CompetitionSpreadsheetService
         }
 
         return $letter;
+    }
+
+    /**
+     * Hasilkan file Excel (.xlsx) Lembar Penilaian Juri Resmi sama persis dengan mockup visual
+     */
+    public function exportCategoryScoreSheetXlsx(CompetitionCategory $category, string $round = 'Utama'): string
+    {
+        $category->loadMissing(['assignedJuries', 'event']);
+
+        // Ambil seluruh tim yang terdaftar di kategori ini
+        $teams = CompetitionParticipantTeam::where('competition_category_id', $category->id)
+            ->where('is_active', true)
+            ->where(function ($q) {
+                $q->whereHas('registration', function ($rq) {
+                    $rq->where('status', 'verified');
+                })->orWhereNull('competition_registration_id');
+            })
+            ->with(['registration'])
+            ->orderBy('order_number')
+            ->get();
+
+        // Ambil data nilai
+        $scores = CompetitionScore::where('competition_category_id', $category->id)
+            ->where('round_name', $round)
+            ->with(['jury', 'photos'])
+            ->get()
+            ->keyBy('competition_participant_team_id');
+
+        // Petakan data baris peserta dan pisahkan scored vs unscored
+        $scoredItems = [];
+        $unscoredItems = [];
+
+        foreach ($teams as $team) {
+            $score = $scores->get($team->id);
+            $regCode = $team->registration?->registration_code ?: '-';
+            $schoolName = $team->registration?->school_name ?: $team->team_name;
+            $teamName = $team->team_label ?: $team->team_name;
+            $orderNo = $team->order_number ?: '-';
+
+            // Nilai Praktik / Teknis
+            $details = is_array($score?->score_details) ? $score->score_details : (json_decode($score?->score_details ?? '', true) ?? []);
+            $practicalScore = '-';
+            if (isset($details['practical_score']) && is_numeric($details['practical_score'])) {
+                $practicalScore = number_format((float) $details['practical_score'], 2);
+            } elseif (isset($details['score']) && is_numeric($details['score'])) {
+                $practicalScore = number_format((float) $details['score'], 2);
+            } elseif ($score?->final_score !== null) {
+                $practicalScore = number_format((float) $score->final_score, 2);
+            }
+
+            // Waktu
+            $timeRecorded = $score?->time_recorded ?: '-';
+
+            // Poin Waktu
+            $timeScore = '-';
+            if (isset($details['time_score']) && is_numeric($details['time_score'])) {
+                $timeScore = number_format((float) $details['time_score'], 1);
+            }
+
+            // Nilai Akhir
+            $finalScore = $score?->final_score !== null ? number_format((float) $score->final_score, 2) : '-';
+
+            // Peringkat
+            $rankNum = $score?->rank;
+            $isDisqualified = (bool) $score?->is_disqualified;
+            $rankLabel = '-';
+            if ($isDisqualified) {
+                $rankLabel = 'DISKUALIFIKASI';
+            } elseif ($rankNum === 1) {
+                $rankLabel = 'JUARA 1';
+            } elseif ($rankNum === 2) {
+                $rankLabel = 'JUARA 2';
+            } elseif ($rankNum === 3) {
+                $rankLabel = 'JUARA 3';
+            } elseif ($rankNum === 4) {
+                $rankLabel = 'Harapan 1';
+            } elseif ($rankNum === 5) {
+                $rankLabel = 'Harapan 2';
+            } elseif ($rankNum === 6) {
+                $rankLabel = 'Harapan 3';
+            } elseif ($rankNum > 6) {
+                $rankLabel = 'Peringkat '.$rankNum;
+            }
+
+            // Juri Penilai
+            $juryName = '-';
+            if ($score?->jury?->name) {
+                $juryName = $score->jury->name;
+            } elseif ($score?->jury?->username) {
+                $juryName = '@'.$score->jury->username;
+            }
+
+            // Foto
+            $photosCount = $score && $score->photos ? count($score->photos) : 0;
+            $photoText = $photosCount > 0 ? $photosCount.' Foto' : '-';
+
+            // Catatan
+            $notes = $score?->notes ?: '-';
+
+            $rowPayload = [
+                'order_number' => $orderNo,
+                'reg_code' => $regCode,
+                'school_name' => $schoolName,
+                'team_name' => $teamName,
+                'practical_score' => $practicalScore,
+                'time_recorded' => $timeRecorded,
+                'time_score' => $timeScore,
+                'final_score' => $finalScore,
+                'final_score_raw' => $score?->final_score !== null ? (float) $score->final_score : null,
+                'rank_label' => $rankLabel,
+                'rank_num' => $rankNum,
+                'is_disqualified' => $isDisqualified,
+                'jury_name' => $juryName,
+                'photo_text' => $photoText,
+                'notes' => $notes,
+            ];
+
+            if ($score && ($score->final_score !== null || $rankNum !== null)) {
+                $scoredItems[] = $rowPayload;
+            } else {
+                $unscoredItems[] = $rowPayload;
+            }
+        }
+
+        // Urutkan item yang sudah dinilai: rank 1, 2, 3...
+        usort($scoredItems, function ($a, $b) {
+            if ($a['rank_num'] !== null && $b['rank_num'] !== null) {
+                return $a['rank_num'] <=> $b['rank_num'];
+            }
+            if ($a['rank_num'] !== null) {
+                return -1;
+            }
+            if ($b['rank_num'] !== null) {
+                return 1;
+            }
+
+            return ($b['final_score_raw'] ?? 0) <=> ($a['final_score_raw'] ?? 0);
+        });
+
+        // Gabungkan: Juara teratas disusul peserta lainnya
+        $dataRows = array_merge($scoredItems, $unscoredItems);
+
+        // Metadata lomba & event
+        $eventName = $category->event?->name ?? 'SUA BHAKTI BERKARYA IV';
+        $eventYear = $category->event?->start_date ? Carbon::parse($category->event->start_date)->format('Y') : date('Y');
+
+        $levelText = match (strtolower($category->level ?? '')) {
+            'mula' => 'MULA (SD/MI)',
+            'wira' => 'WIRA (SMA/SMK)',
+            default => 'MADYA (SMP/MTs)',
+        };
+
+        $scoringModel = match ($category->scoring_type) {
+            'lpp' => 'Nilai Praktik, Tertulis & Waktu',
+            'multi_criteria' => 'Multi Kriteria Terstandarisasi',
+            'social_engagement' => 'Engagement Media Sosial (Likes & Stiker)',
+            default => 'Nilai Praktik & Waktu Praktik',
+        };
+
+        // Dewan Juri Bertugas
+        $juries = $category->assignedJuries ?? collect();
+        $jury1Name = $juries->count() > 0 ? $juries[0]->name : 'Dewan Juri I Lapangan';
+        $jury1User = $juries->count() > 0 && $juries[0]->username ? '@'.$juries[0]->username : '@juri1';
+        $jury2Name = $juries->count() > 1 ? $juries[1]->name : 'Dewan Juri II Lapangan';
+        $jury2User = $juries->count() > 1 && $juries[1]->username ? '@'.$juries[1]->username : '@juri2';
+
+        // Hitung statistik
+        $scoredCount = count($scoredItems);
+        $avgScore = '-';
+        $topScoreText = '-';
+        $fastestTimeText = '-';
+
+        if ($scoredCount > 0) {
+            $sumFinal = 0;
+            $countFinal = 0;
+            $topScoreVal = -1;
+            $topScoreTeam = '';
+
+            $minSeconds = 99999999;
+            $fastestTimeStr = '';
+            $fastestOrderNo = '';
+
+            foreach ($scoredItems as $item) {
+                if ($item['final_score_raw'] !== null && ! $item['is_disqualified']) {
+                    $sumFinal += $item['final_score_raw'];
+                    $countFinal++;
+
+                    if ($item['final_score_raw'] > $topScoreVal) {
+                        $topScoreVal = $item['final_score_raw'];
+                        $topScoreTeam = $item['school_name'];
+                    }
+                }
+
+                if ($item['time_recorded'] !== '-' && ! empty($item['time_recorded'])) {
+                    $tParts = explode(':', trim($item['time_recorded']));
+                    $sec = (count($tParts) === 2) ? (((int) $tParts[0] * 60) + (int) $tParts[1]) : (int) $tParts[0];
+                    if ($sec > 0 && $sec < $minSeconds) {
+                        $minSeconds = $sec;
+                        $fastestTimeStr = $item['time_recorded'];
+                        $fastestOrderNo = $item['order_number'];
+                    }
+                }
+            }
+
+            if ($countFinal > 0) {
+                $avgScore = number_format($sumFinal / $countFinal, 2);
+            }
+            if ($topScoreVal >= 0) {
+                $topScoreText = number_format($topScoreVal, 2).' ('.$topScoreTeam.')';
+            }
+            if ($minSeconds < 99999999) {
+                $fastestTimeText = $fastestTimeStr.' ('.$fastestOrderNo.')';
+            }
+        }
+
+        $meta = [
+            'event_title' => 'LOMBA KEPALANGMERAHAN "'.strtoupper($eventName).'" TAHUN '.$eventYear,
+            'category_name' => $category->name.($category->gender_category && $category->gender_category !== 'Umum' ? ' ('.$category->gender_category.')' : ''),
+            'code_round' => ($category->code ?: 'LOMBA').' • Babak '.$round,
+            'level_text' => $levelText,
+            'scoring_model' => $scoringModel,
+            'jury_1' => $jury1Name.' ('.$jury1User.')',
+            'jury_1_name' => $jury1Name,
+            'jury_1_user' => $jury1User,
+            'jury_2' => $jury2Name.' ('.$jury2User.')',
+            'jury_2_name' => $jury2Name,
+            'jury_2_user' => $jury2User,
+            'juries_count' => $juries->count(),
+            'export_date' => Carbon::now()->translatedFormat('d F Y'),
+            'export_time' => Carbon::now()->format('d/m/Y H:i').' WIB',
+            'stat_total_teams' => $scoredCount > 0 ? $scoredCount.' Regu' : count($dataRows).' Regu Terdaftar',
+            'stat_avg_score' => $avgScore,
+            'stat_top_score' => $topScoreText,
+            'stat_fastest_time' => $fastestTimeText,
+        ];
+
+        return $this->createScoreSheetXlsxFile($meta, $dataRows);
+    }
+
+    /**
+     * Bangun file Excel OpenXML XLSX Lembar Penilaian Juri sama persis dengan mockup visual
+     *
+     * @param  array<string, mixed>  $meta
+     * @param  array<int, array<string, mixed>>  $rows
+     */
+    protected function createScoreSheetXlsxFile(array $meta, array $rows): string
+    {
+        $tempFile = tempnam(sys_get_temp_dir(), 'pmr_scoresheet_');
+        $zip = new ZipArchive;
+        $zip->open($tempFile, ZipArchive::CREATE | ZipArchive::OVERWRITE);
+
+        // 1. Content Types
+        $contentTypes = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types">
+<Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/>
+<Default Extension="xml" ContentType="application/xml"/>
+<Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/>
+<Override PartName="/xl/worksheets/sheet1.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/>
+<Override PartName="/xl/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.styles+xml"/>
+</Types>';
+        $zip->addFromString('[Content_Types].xml', $contentTypes);
+
+        // 2. Package relationships
+        $rels = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">
+<Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="xl/workbook.xml"/>
+</Relationships>';
+        $zip->addFromString('_rels/.rels', $rels);
+
+        // 3. Workbook relationships
+        $wbRels = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">
+<Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet1.xml"/>
+<Relationship Id="rId2" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/>
+</Relationships>';
+        $zip->addFromString('xl/_rels/workbook.xml.rels', $wbRels);
+
+        // 4. Workbook
+        $workbook = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships">
+<sheets><sheet name="Lembar Nilai Utama" sheetId="1" r:id="rId1"/></sheets>
+</workbook>';
+        $zip->addFromString('xl/workbook.xml', $workbook);
+
+        // 5. Styles
+        $styles = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<styleSheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">
+<fonts count="13">
+  <!-- 0: Normal Slate -->
+  <font><name val="Calibri"/><sz val="10"/><color rgb="FF0F172A"/></font>
+  <!-- 1: Bold White -->
+  <font><b/><name val="Calibri"/><sz val="10"/><color rgb="FFFFFFFF"/></font>
+  <!-- 2: Bold Slate -->
+  <font><b/><name val="Calibri"/><sz val="10"/><color rgb="FF0F172A"/></font>
+  <!-- 3: Bold Red -->
+  <font><b/><name val="Calibri"/><sz val="10"/><color rgb="FFDC2626"/></font>
+  <!-- 4: Bold Title Kop -->
+  <font><b/><name val="Calibri"/><sz val="15"/><color rgb="FF0F172A"/></font>
+  <!-- 5: Bold Subtitle Kop -->
+  <font><b/><name val="Calibri"/><sz val="11"/><color rgb="FF334155"/></font>
+  <!-- 6: Bold Amber Jury Header -->
+  <font><b/><name val="Calibri"/><sz val="10"/><color rgb="FF78350F"/></font>
+  <!-- 7: Bold Blue Harapan -->
+  <font><b/><name val="Calibri"/><sz val="10"/><color rgb="FF1D4ED8"/></font>
+  <!-- 8: Bold Emerald Final Score -->
+  <font><b/><name val="Calibri"/><sz val="11"/><color rgb="FF047857"/></font>
+  <!-- 9: Italic Slate Notes -->
+  <font><i/><name val="Calibri"/><sz val="9.5"/><color rgb="FF64748B"/></font>
+  <!-- 10: Bold Amber Juara 1 -->
+  <font><b/><name val="Calibri"/><sz val="10"/><color rgb="FF451A03"/></font>
+  <!-- 11: Bold White 9.5 -->
+  <font><b/><name val="Calibri"/><sz val="9.5"/><color rgb="FFFFFFFF"/></font>
+  <!-- 12: Bold Dark Bronze Juara 3 -->
+  <font><b/><name val="Calibri"/><sz val="10"/><color rgb="FF7C2D12"/></font>
+</fonts>
+<fills count="15">
+  <fill><patternFill patternType="none"/></fill>
+  <fill><patternFill patternType="gray125"/></fill>
+  <!-- 2: Green Table Header -->
+  <fill><patternFill patternType="solid"><fgColor rgb="FF107C41"/></patternFill></fill>
+  <!-- 3: Dark Green Table Header Final Score -->
+  <fill><patternFill patternType="solid"><fgColor rgb="FF0B542B"/></patternFill></fill>
+  <!-- 4: Gold Table Header Rank -->
+  <fill><patternFill patternType="solid"><fgColor rgb="FFF59E0B"/></patternFill></fill>
+  <!-- 5: Emerald Table Header Jury -->
+  <fill><patternFill patternType="solid"><fgColor rgb="FF15803D"/></patternFill></fill>
+  <!-- 6: Juara 1 Soft Amber -->
+  <fill><patternFill patternType="solid"><fgColor rgb="FFFEF3C7"/></patternFill></fill>
+  <!-- 7: Juara 2 Soft Slate -->
+  <fill><patternFill patternType="solid"><fgColor rgb="FFF1F5F9"/></patternFill></fill>
+  <!-- 8: Juara 3 Soft Orange -->
+  <fill><patternFill patternType="solid"><fgColor rgb="FFFFEDD5"/></patternFill></fill>
+  <!-- 9: Harapan Soft Blue -->
+  <fill><patternFill patternType="solid"><fgColor rgb="FFEFF6FF"/></patternFill></fill>
+  <!-- 10: Zebra Lighter Slate -->
+  <fill><patternFill patternType="solid"><fgColor rgb="FFF8FAFC"/></patternFill></fill>
+  <!-- 11: Soft Green Highlight -->
+  <fill><patternFill patternType="solid"><fgColor rgb="FFECFDF5"/></patternFill></fill>
+  <!-- 12: Box Slate Header -->
+  <fill><patternFill patternType="solid"><fgColor rgb="FFF1F5F9"/></patternFill></fill>
+  <!-- 13: Box Amber Header -->
+  <fill><patternFill patternType="solid"><fgColor rgb="FFFEF3C7"/></patternFill></fill>
+  <!-- 14: White Fill -->
+  <fill><patternFill patternType="solid"><fgColor rgb="FFFFFFFF"/></patternFill></fill>
+</fills>
+<borders count="4">
+  <!-- 0: None -->
+  <border><left/><right/><top/><bottom/></border>
+  <!-- 1: Thin Gray All -->
+  <border>
+    <left style="thin"><color rgb="FFCBD5E1"/></left>
+    <right style="thin"><color rgb="FFCBD5E1"/></right>
+    <top style="thin"><color rgb="FFCBD5E1"/></top>
+    <bottom style="thin"><color rgb="FFCBD5E1"/></bottom>
+  </border>
+  <!-- 2: Double Bottom (Kop separator) -->
+  <border>
+    <left/><right/><top/>
+    <bottom style="double"><color rgb="FF0F172A"/></bottom>
+  </border>
+  <!-- 3: Medium Bottom (Signature Line) -->
+  <border>
+    <left/><right/><top/>
+    <bottom style="medium"><color rgb="FF0F172A"/></bottom>
+  </border>
+</borders>
+<cellStyleXfs count="1">
+  <xf numFmtId="0" fontId="0" fillId="0" borderId="0"/>
+</cellStyleXfs>
+<cellXfs count="38">
+  <!-- 0: Default Normal Left -->
+  <xf numFmtId="0" fontId="0" fillId="0" borderId="1" xfId="0" applyBorder="1" applyAlignment="1"><alignment horizontal="left" vertical="center"/></xf>
+  <!-- 1: Default Normal Center -->
+  <xf numFmtId="0" fontId="0" fillId="0" borderId="1" xfId="0" applyBorder="1" applyAlignment="1"><alignment horizontal="center" vertical="center"/></xf>
+  <!-- 2: Table Header Green Center -->
+  <xf numFmtId="0" fontId="1" fillId="2" borderId="1" xfId="0" applyFont="1" applyFill="1" applyBorder="1" applyAlignment="1"><alignment horizontal="center" vertical="center" wrapText="1"/></xf>
+  <!-- 3: Table Header Dark Green Center -->
+  <xf numFmtId="0" fontId="1" fillId="3" borderId="1" xfId="0" applyFont="1" applyFill="1" applyBorder="1" applyAlignment="1"><alignment horizontal="center" vertical="center" wrapText="1"/></xf>
+  <!-- 4: Table Header Gold Center -->
+  <xf numFmtId="0" fontId="2" fillId="4" borderId="1" xfId="0" applyFont="1" applyFill="1" applyBorder="1" applyAlignment="1"><alignment horizontal="center" vertical="center" wrapText="1"/></xf>
+  <!-- 5: Table Header Emerald Center -->
+  <xf numFmtId="0" fontId="1" fillId="5" borderId="1" xfId="0" applyFont="1" applyFill="1" applyBorder="1" applyAlignment="1"><alignment horizontal="center" vertical="center" wrapText="1"/></xf>
+  <!-- 6: Kop Red Center -->
+  <xf numFmtId="0" fontId="3" fillId="0" borderId="0" xfId="0" applyFont="1" applyAlignment="1"><alignment horizontal="center" vertical="center"/></xf>
+  <!-- 7: Kop Title Center -->
+  <xf numFmtId="0" fontId="4" fillId="0" borderId="0" xfId="0" applyFont="1" applyAlignment="1"><alignment horizontal="center" vertical="center"/></xf>
+  <!-- 8: Kop Subtitle Center -->
+  <xf numFmtId="0" fontId="5" fillId="0" borderId="0" xfId="0" applyFont="1" applyAlignment="1"><alignment horizontal="center" vertical="center"/></xf>
+  <!-- 9: Kop Double Border Bottom -->
+  <xf numFmtId="0" fontId="0" fillId="0" borderId="2" xfId="0" applyBorder="1"/>
+  <!-- 10: Info Box Header Left -->
+  <xf numFmtId="0" fontId="2" fillId="12" borderId="1" xfId="0" applyFont="1" applyFill="1" applyBorder="1" applyAlignment="1"><alignment horizontal="left" vertical="center"/></xf>
+  <!-- 11: Jury Box Header Left -->
+  <xf numFmtId="0" fontId="6" fillId="13" borderId="1" xfId="0" applyFont="1" applyFill="1" applyBorder="1" applyAlignment="1"><alignment horizontal="left" vertical="center"/></xf>
+  <!-- 12: Box Label Right -->
+  <xf numFmtId="0" fontId="5" fillId="10" borderId="1" xfId="0" applyFont="1" applyFill="1" applyBorder="1" applyAlignment="1"><alignment horizontal="right" vertical="center"/></xf>
+  <!-- 13: Box Value Left -->
+  <xf numFmtId="0" fontId="2" fillId="0" borderId="1" xfId="0" applyFont="1" applyBorder="1" applyAlignment="1"><alignment horizontal="left" vertical="center"/></xf>
+  <!-- 14: Juara 1 Center -->
+  <xf numFmtId="0" fontId="10" fillId="6" borderId="1" xfId="0" applyFont="1" applyFill="1" applyBorder="1" applyAlignment="1"><alignment horizontal="center" vertical="center"/></xf>
+  <!-- 15: Juara 1 Left -->
+  <xf numFmtId="0" fontId="2" fillId="6" borderId="1" xfId="0" applyFont="1" applyFill="1" applyBorder="1" applyAlignment="1"><alignment horizontal="left" vertical="center"/></xf>
+  <!-- 16: Juara 1 Nilai Akhir -->
+  <xf numFmtId="0" fontId="8" fillId="6" borderId="1" xfId="0" applyFont="1" applyFill="1" applyBorder="1" applyAlignment="1"><alignment horizontal="center" vertical="center"/></xf>
+  <!-- 17: Juara 2 Center -->
+  <xf numFmtId="0" fontId="2" fillId="7" borderId="1" xfId="0" applyFont="1" applyFill="1" applyBorder="1" applyAlignment="1"><alignment horizontal="center" vertical="center"/></xf>
+  <!-- 18: Juara 2 Left -->
+  <xf numFmtId="0" fontId="2" fillId="7" borderId="1" xfId="0" applyFont="1" applyFill="1" applyBorder="1" applyAlignment="1"><alignment horizontal="left" vertical="center"/></xf>
+  <!-- 19: Juara 2 Nilai Akhir -->
+  <xf numFmtId="0" fontId="8" fillId="7" borderId="1" xfId="0" applyFont="1" applyFill="1" applyBorder="1" applyAlignment="1"><alignment horizontal="center" vertical="center"/></xf>
+  <!-- 20: Juara 3 Center -->
+  <xf numFmtId="0" fontId="12" fillId="8" borderId="1" xfId="0" applyFont="1" applyFill="1" applyBorder="1" applyAlignment="1"><alignment horizontal="center" vertical="center"/></xf>
+  <!-- 21: Juara 3 Left -->
+  <xf numFmtId="0" fontId="2" fillId="8" borderId="1" xfId="0" applyFont="1" applyFill="1" applyBorder="1" applyAlignment="1"><alignment horizontal="left" vertical="center"/></xf>
+  <!-- 22: Juara 3 Nilai Akhir -->
+  <xf numFmtId="0" fontId="8" fillId="8" borderId="1" xfId="0" applyFont="1" applyFill="1" applyBorder="1" applyAlignment="1"><alignment horizontal="center" vertical="center"/></xf>
+  <!-- 23: Harapan Center -->
+  <xf numFmtId="0" fontId="7" fillId="9" borderId="1" xfId="0" applyFont="1" applyFill="1" applyBorder="1" applyAlignment="1"><alignment horizontal="center" vertical="center"/></xf>
+  <!-- 24: Regular Center -->
+  <xf numFmtId="0" fontId="0" fillId="0" borderId="1" xfId="0" applyFont="1" applyBorder="1" applyAlignment="1"><alignment horizontal="center" vertical="center"/></xf>
+  <!-- 25: Regular Left -->
+  <xf numFmtId="0" fontId="0" fillId="0" borderId="1" xfId="0" applyFont="1" applyBorder="1" applyAlignment="1"><alignment horizontal="left" vertical="center"/></xf>
+  <!-- 26: Regular Zebra Center -->
+  <xf numFmtId="0" fontId="0" fillId="10" borderId="1" xfId="0" applyFont="1" applyFill="1" applyBorder="1" applyAlignment="1"><alignment horizontal="center" vertical="center"/></xf>
+  <!-- 27: Regular Zebra Left -->
+  <xf numFmtId="0" fontId="0" fillId="10" borderId="1" xfId="0" applyFont="1" applyFill="1" applyBorder="1" applyAlignment="1"><alignment horizontal="left" vertical="center"/></xf>
+  <!-- 28: Regular Nilai Akhir -->
+  <xf numFmtId="0" fontId="8" fillId="11" borderId="1" xfId="0" applyFont="1" applyFill="1" applyBorder="1" applyAlignment="1"><alignment horizontal="center" vertical="center"/></xf>
+  <!-- 29: Catatan Juri Italic Left -->
+  <xf numFmtId="0" fontId="9" fillId="0" borderId="1" xfId="0" applyFont="1" applyBorder="1" applyAlignment="1"><alignment horizontal="left" vertical="center"/></xf>
+  <!-- 30: Catatan Juri Italic Zebra Left -->
+  <xf numFmtId="0" fontId="9" fillId="10" borderId="1" xfId="0" applyFont="1" applyFill="1" applyBorder="1" applyAlignment="1"><alignment horizontal="left" vertical="center"/></xf>
+  <!-- 31: Stat Summary Center -->
+  <xf numFmtId="0" fontId="2" fillId="12" borderId="1" xfId="0" applyFont="1" applyFill="1" applyBorder="1" applyAlignment="1"><alignment horizontal="center" vertical="center"/></xf>
+  <!-- 32: TTD Date Right -->
+  <xf numFmtId="0" fontId="9" fillId="0" borderId="0" xfId="0" applyFont="1" applyAlignment="1"><alignment horizontal="right" vertical="center"/></xf>
+  <!-- 33: TTD Jabatan Center -->
+  <xf numFmtId="0" fontId="2" fillId="0" borderId="0" xfId="0" applyFont="1" applyAlignment="1"><alignment horizontal="center" vertical="center"/></xf>
+  <!-- 34: TTD Nama Center -->
+  <xf numFmtId="0" fontId="2" fillId="0" borderId="3" xfId="0" applyFont="1" applyBorder="1" applyAlignment="1"><alignment horizontal="center" vertical="center"/></xf>
+  <!-- 35: TTD Sub Center -->
+  <xf numFmtId="0" fontId="9" fillId="0" borderId="0" xfId="0" applyFont="1" applyAlignment="1"><alignment horizontal="center" vertical="center"/></xf>
+  <!-- 36: Blank Separator -->
+  <xf numFmtId="0" fontId="0" fillId="0" borderId="0" xfId="0"/>
+  <!-- 37: Disqualified Center -->
+  <xf numFmtId="0" fontId="3" fillId="6" borderId="1" xfId="0" applyFont="1" applyFill="1" applyBorder="1" applyAlignment="1"><alignment horizontal="center" vertical="center"/></xf>
+</cellXfs>
+</styleSheet>';
+        $zip->addFromString('xl/styles.xml', $styles);
+
+        // 6. Column Widths
+        $colsXml = '<cols>';
+        $cIdx = 1;
+        foreach (self::SCORE_SHEET_COLUMNS as $colMeta) {
+            $w = $colMeta['width'] ?? 20;
+            $colsXml .= '<col min="'.$cIdx.'" max="'.$cIdx.'" width="'.$w.'" customWidth="1"/>';
+            $cIdx++;
+        }
+        $colsXml .= '</cols>';
+
+        // 7. Sheet Data
+        $sheetDataXml = '<sheetData>';
+
+        // Baris 1: Kop Red Title
+        $sheetDataXml .= '<row r="1" ht="22" customHeight="1">';
+        $sheetDataXml .= '<c r="A1" s="6" t="inlineStr"><is><t>PALANG MERAH INDONESIA • PMR WIRA SMA NEGERI 1 CIAWI</t></is></c>';
+        for ($c = 1; $c < 12; $c++) {
+            $sheetDataXml .= '<c r="'.$this->indexToColumnLetter($c).'1" s="6"/>';
+        }
+        $sheetDataXml .= '</row>';
+
+        // Baris 2: Kop Big Title
+        $sheetDataXml .= '<row r="2" ht="28" customHeight="1">';
+        $sheetDataXml .= '<c r="A2" s="7" t="inlineStr"><is><t>LEMBAR PENILAIAN RESMI DEWAN JURI LAPANGAN</t></is></c>';
+        for ($c = 1; $c < 12; $c++) {
+            $sheetDataXml .= '<c r="'.$this->indexToColumnLetter($c).'2" s="7"/>';
+        }
+        $sheetDataXml .= '</row>';
+
+        // Baris 3: Kop Subtitle Event
+        $sheetDataXml .= '<row r="3" ht="22" customHeight="1">';
+        $safeEventTitle = htmlspecialchars($meta['event_title'] ?? 'SUA BHAKTI BERKARYA IV', ENT_XML1);
+        $sheetDataXml .= '<c r="A3" s="8" t="inlineStr"><is><t>'.$safeEventTitle.'</t></is></c>';
+        for ($c = 1; $c < 12; $c++) {
+            $sheetDataXml .= '<c r="'.$this->indexToColumnLetter($c).'3" s="8"/>';
+        }
+        $sheetDataXml .= '</row>';
+
+        // Baris 4: Double border separator
+        $sheetDataXml .= '<row r="4" ht="8" customHeight="1">';
+        for ($c = 0; $c < 12; $c++) {
+            $sheetDataXml .= '<c r="'.$this->indexToColumnLetter($c).'4" s="9"/>';
+        }
+        $sheetDataXml .= '</row>';
+
+        // Baris 5: Spacing blank
+        $sheetDataXml .= '<row r="5" ht="8" customHeight="1">';
+        for ($c = 0; $c < 12; $c++) {
+            $sheetDataXml .= '<c r="'.$this->indexToColumnLetter($c).'5" s="36"/>';
+        }
+        $sheetDataXml .= '</row>';
+
+        // Baris 6: Box Headers (Informasi Cabang Lomba & Dewan Juri Bertugas)
+        $sheetDataXml .= '<row r="6" ht="24" customHeight="1">';
+        $sheetDataXml .= '<c r="A6" s="10" t="inlineStr"><is><t>📌 INFORMASI CABANG MATA LOMBA:</t></is></c>';
+        for ($c = 1; $c < 6; $c++) {
+            $sheetDataXml .= '<c r="'.$this->indexToColumnLetter($c).'6" s="10"/>';
+        }
+        $juryHeader = '⚖️ DEWAN JURI YANG BERTUGAS: ('.$meta['juries_count'].' Juri Terpetakan)';
+        $sheetDataXml .= '<c r="G6" s="11" t="inlineStr"><is><t>'.htmlspecialchars($juryHeader, ENT_XML1).'</t></is></c>';
+        for ($c = 7; $c < 12; $c++) {
+            $sheetDataXml .= '<c r="'.$this->indexToColumnLetter($c).'6" s="11"/>';
+        }
+        $sheetDataXml .= '</row>';
+
+        // Baris 7: Metadata Row 1
+        $sheetDataXml .= '<row r="7" ht="22" customHeight="1">';
+        $sheetDataXml .= '<c r="A7" s="12" t="inlineStr"><is><t>Mata Lomba:</t></is></c>';
+        $sheetDataXml .= '<c r="B7" s="12"/>';
+        $sheetDataXml .= '<c r="C7" s="13" t="inlineStr"><is><t>'.htmlspecialchars($meta['category_name'] ?? '', ENT_XML1).'</t></is></c>';
+        $sheetDataXml .= '<c r="D7" s="13"/>';
+        $sheetDataXml .= '<c r="E7" s="13"/>';
+        $sheetDataXml .= '<c r="F7" s="13"/>';
+        $sheetDataXml .= '<c r="G7" s="12" t="inlineStr"><is><t>Dewan Juri I:</t></is></c>';
+        $sheetDataXml .= '<c r="H7" s="12"/>';
+        $sheetDataXml .= '<c r="I7" s="13" t="inlineStr"><is><t>'.htmlspecialchars($meta['jury_1'] ?? '', ENT_XML1).'</t></is></c>';
+        $sheetDataXml .= '<c r="J7" s="13"/>';
+        $sheetDataXml .= '<c r="K7" s="13"/>';
+        $sheetDataXml .= '<c r="L7" s="13"/>';
+        $sheetDataXml .= '</row>';
+
+        // Baris 8: Metadata Row 2
+        $sheetDataXml .= '<row r="8" ht="22" customHeight="1">';
+        $sheetDataXml .= '<c r="A8" s="12" t="inlineStr"><is><t>Kode &amp; Babak:</t></is></c>';
+        $sheetDataXml .= '<c r="B8" s="12"/>';
+        $sheetDataXml .= '<c r="C8" s="13" t="inlineStr"><is><t>'.htmlspecialchars($meta['code_round'] ?? '', ENT_XML1).'</t></is></c>';
+        $sheetDataXml .= '<c r="D8" s="13"/>';
+        $sheetDataXml .= '<c r="E8" s="13"/>';
+        $sheetDataXml .= '<c r="F8" s="13"/>';
+        $sheetDataXml .= '<c r="G8" s="12" t="inlineStr"><is><t>Dewan Juri II:</t></is></c>';
+        $sheetDataXml .= '<c r="H8" s="12"/>';
+        $sheetDataXml .= '<c r="I8" s="13" t="inlineStr"><is><t>'.htmlspecialchars($meta['jury_2'] ?? '', ENT_XML1).'</t></is></c>';
+        $sheetDataXml .= '<c r="J8" s="13"/>';
+        $sheetDataXml .= '<c r="K8" s="13"/>';
+        $sheetDataXml .= '<c r="L8" s="13"/>';
+        $sheetDataXml .= '</row>';
+
+        // Baris 9: Metadata Row 3
+        $sheetDataXml .= '<row r="9" ht="22" customHeight="1">';
+        $sheetDataXml .= '<c r="A9" s="12" t="inlineStr"><is><t>Tingkatan:</t></is></c>';
+        $sheetDataXml .= '<c r="B9" s="12"/>';
+        $sheetDataXml .= '<c r="C9" s="13" t="inlineStr"><is><t>'.htmlspecialchars($meta['level_text'] ?? '', ENT_XML1).'</t></is></c>';
+        $sheetDataXml .= '<c r="D9" s="13"/>';
+        $sheetDataXml .= '<c r="E9" s="12" t="inlineStr"><is><t>Model Penilaian:</t></is></c>';
+        $sheetDataXml .= '<c r="F9" s="13" t="inlineStr"><is><t>'.htmlspecialchars($meta['scoring_model'] ?? '', ENT_XML1).'</t></is></c>';
+        $sheetDataXml .= '<c r="G9" s="12" t="inlineStr"><is><t>Koordinator / Panitia:</t></is></c>';
+        $sheetDataXml .= '<c r="H9" s="12"/>';
+        $sheetDataXml .= '<c r="I9" s="13" t="inlineStr"><is><t>Drs. H. Mulyadi, M.Pd / Muhammad Dwi Pantara</t></is></c>';
+        $sheetDataXml .= '<c r="J9" s="13"/>';
+        $sheetDataXml .= '<c r="K9" s="13"/>';
+        $sheetDataXml .= '<c r="L9" s="13"/>';
+        $sheetDataXml .= '</row>';
+
+        // Baris 10: Spacing blank
+        $sheetDataXml .= '<row r="10" ht="8" customHeight="1">';
+        for ($c = 0; $c < 12; $c++) {
+            $sheetDataXml .= '<c r="'.$this->indexToColumnLetter($c).'10" s="36"/>';
+        }
+        $sheetDataXml .= '</row>';
+
+        // Baris 11: Main Column Headers
+        $sheetDataXml .= '<row r="11" ht="28" customHeight="1">';
+        $colKeys = array_keys(self::SCORE_SHEET_COLUMNS);
+        foreach ($colKeys as $cIdx => $colKey) {
+            $colLetter = $this->indexToColumnLetter($cIdx);
+            $metaCol = self::SCORE_SHEET_COLUMNS[$colKey];
+
+            // Specific header styling: H -> Dark Green, I -> Gold, J -> Emerald
+            $sId = match ($colKey) {
+                'H' => 3,
+                'I' => 4,
+                'J' => 5,
+                default => 2,
+            };
+
+            $safeLabel = htmlspecialchars($metaCol['label'], ENT_XML1);
+            $sheetDataXml .= '<c r="'.$colLetter.'11" s="'.$sId.'" t="inlineStr"><is><t>'.$safeLabel.'</t></is></c>';
+        }
+        $sheetDataXml .= '</row>';
+
+        // Baris 12+: Data Rows
+        $currentRow = 12;
+        foreach ($rows as $rIdx => $rowItem) {
+            $isZebra = ($currentRow % 2 === 1);
+            $rankNum = $rowItem['rank_num'] ?? null;
+            $isDisq = $rowItem['is_disqualified'] ?? false;
+
+            // Tentukan tier style: Juara 1, 2, 3, Harapan, atau reguler
+            $tier = 'regular';
+            if ($isDisq) {
+                $tier = 'disqualified';
+            } elseif ($rankNum === 1) {
+                $tier = 'juara1';
+            } elseif ($rankNum === 2) {
+                $tier = 'juara2';
+            } elseif ($rankNum === 3) {
+                $tier = 'juara3';
+            } elseif ($rankNum >= 4 && $rankNum <= 6) {
+                $tier = 'harapan';
+            }
+
+            $sheetDataXml .= '<row r="'.$currentRow.'" ht="24" customHeight="1">';
+
+            // A: No Urut
+            $styleCenter = match ($tier) {
+                'juara1' => 14,
+                'juara2' => 17,
+                'juara3' => 20,
+                'harapan' => 23,
+                'disqualified' => 37,
+                default => ($isZebra ? 26 : 24),
+            };
+            $sheetDataXml .= '<c r="A'.$currentRow.'" s="'.$styleCenter.'" t="inlineStr"><is><t>'.htmlspecialchars((string) $rowItem['order_number'], ENT_XML1).'</t></is></c>';
+
+            // B: Kode Reg
+            $sheetDataXml .= '<c r="B'.$currentRow.'" s="'.$styleCenter.'" t="inlineStr"><is><t>'.htmlspecialchars((string) $rowItem['reg_code'], ENT_XML1).'</t></is></c>';
+
+            // C: Asal Sekolah
+            $styleLeft = match ($tier) {
+                'juara1' => 15,
+                'juara2' => 18,
+                'juara3' => 21,
+                default => ($isZebra ? 27 : 25),
+            };
+            $sheetDataXml .= '<c r="C'.$currentRow.'" s="'.$styleLeft.'" t="inlineStr"><is><t>'.htmlspecialchars((string) $rowItem['school_name'], ENT_XML1).'</t></is></c>';
+
+            // D: Nama Regu
+            $sheetDataXml .= '<c r="D'.$currentRow.'" s="'.$styleLeft.'" t="inlineStr"><is><t>'.htmlspecialchars((string) $rowItem['team_name'], ENT_XML1).'</t></is></c>';
+
+            // E: Nilai Praktik
+            $sheetDataXml .= '<c r="E'.$currentRow.'" s="'.$styleCenter.'" t="inlineStr"><is><t>'.htmlspecialchars((string) $rowItem['practical_score'], ENT_XML1).'</t></is></c>';
+
+            // F: Waktu MM:SS
+            $sheetDataXml .= '<c r="F'.$currentRow.'" s="'.$styleCenter.'" t="inlineStr"><is><t>'.htmlspecialchars((string) $rowItem['time_recorded'], ENT_XML1).'</t></is></c>';
+
+            // G: Poin Waktu
+            $sheetDataXml .= '<c r="G'.$currentRow.'" s="'.$styleCenter.'" t="inlineStr"><is><t>'.htmlspecialchars((string) $rowItem['time_score'], ENT_XML1).'</t></is></c>';
+
+            // H: Nilai Akhir
+            $styleFinal = match ($tier) {
+                'juara1' => 16,
+                'juara2' => 19,
+                'juara3' => 22,
+                default => 28,
+            };
+            $sheetDataXml .= '<c r="H'.$currentRow.'" s="'.$styleFinal.'" t="inlineStr"><is><t>'.htmlspecialchars((string) $rowItem['final_score'], ENT_XML1).'</t></is></c>';
+
+            // I: Peringkat
+            $sheetDataXml .= '<c r="I'.$currentRow.'" s="'.$styleCenter.'" t="inlineStr"><is><t>'.htmlspecialchars((string) $rowItem['rank_label'], ENT_XML1).'</t></is></c>';
+
+            // J: Juri Penilai
+            $sheetDataXml .= '<c r="J'.$currentRow.'" s="'.$styleCenter.'" t="inlineStr"><is><t>'.htmlspecialchars((string) $rowItem['jury_name'], ENT_XML1).'</t></is></c>';
+
+            // K: Foto
+            $sheetDataXml .= '<c r="K'.$currentRow.'" s="'.$styleCenter.'" t="inlineStr"><is><t>'.htmlspecialchars((string) $rowItem['photo_text'], ENT_XML1).'</t></is></c>';
+
+            // L: Catatan Juri
+            $styleNotes = ($isZebra ? 30 : 29);
+            $sheetDataXml .= '<c r="L'.$currentRow.'" s="'.$styleNotes.'" t="inlineStr"><is><t>'.htmlspecialchars((string) $rowItem['notes'], ENT_XML1).'</t></is></c>';
+
+            $sheetDataXml .= '</row>';
+            $currentRow++;
+        }
+
+        // Baris Spasi Setelah Tabel
+        $sheetDataXml .= '<row r="'.$currentRow.'" ht="8" customHeight="1">';
+        for ($c = 0; $c < 12; $c++) {
+            $sheetDataXml .= '<c r="'.$this->indexToColumnLetter($c).$currentRow.'" s="36"/>';
+        }
+        $sheetDataXml .= '</row>';
+        $currentRow++;
+
+        // Baris Ringkasan Statistik
+        $statRow = $currentRow;
+        $sheetDataXml .= '<row r="'.$statRow.'" ht="26" customHeight="1">';
+
+        // Total Peserta (A:C)
+        $sheetDataXml .= '<c r="A'.$statRow.'" s="31" t="inlineStr"><is><t>TOTAL PESERTA TAMPIL: '.htmlspecialchars((string) $meta['stat_total_teams'], ENT_XML1).'</t></is></c>';
+        $sheetDataXml .= '<c r="B'.$statRow.'" s="31"/>';
+        $sheetDataXml .= '<c r="C'.$statRow.'" s="31"/>';
+
+        // Rata-rata Nilai (D:F)
+        $sheetDataXml .= '<c r="D'.$statRow.'" s="31" t="inlineStr"><is><t>RATA-RATA NILAI AKHIR: '.htmlspecialchars((string) $meta['stat_avg_score'], ENT_XML1).'</t></is></c>';
+        $sheetDataXml .= '<c r="E'.$statRow.'" s="31"/>';
+        $sheetDataXml .= '<c r="F'.$statRow.'" s="31"/>';
+
+        // Nilai Tertinggi (G:I)
+        $sheetDataXml .= '<c r="G'.$statRow.'" s="31" t="inlineStr"><is><t>NILAI TERTINGGI: '.htmlspecialchars((string) $meta['stat_top_score'], ENT_XML1).'</t></is></c>';
+        $sheetDataXml .= '<c r="H'.$statRow.'" s="31"/>';
+        $sheetDataXml .= '<c r="I'.$statRow.'" s="31"/>';
+
+        // Waktu Tercepat (J:L)
+        $sheetDataXml .= '<c r="J'.$statRow.'" s="31" t="inlineStr"><is><t>WAKTU TERCEPAT: '.htmlspecialchars((string) $meta['stat_fastest_time'], ENT_XML1).'</t></is></c>';
+        $sheetDataXml .= '<c r="K'.$statRow.'" s="31"/>';
+        $sheetDataXml .= '<c r="L'.$statRow.'" s="31"/>';
+
+        $sheetDataXml .= '</row>';
+        $currentRow++;
+
+        // Baris Spasi Sebelum TTD
+        $sheetDataXml .= '<row r="'.$currentRow.'" ht="14" customHeight="1">';
+        for ($c = 0; $c < 12; $c++) {
+            $sheetDataXml .= '<c r="'.$this->indexToColumnLetter($c).$currentRow.'" s="36"/>';
+        }
+        $sheetDataXml .= '</row>';
+        $currentRow++;
+
+        // Baris Tanggal Pengesahan (I:L)
+        $ttdDateRow = $currentRow;
+        $sheetDataXml .= '<row r="'.$ttdDateRow.'" ht="20" customHeight="1">';
+        for ($c = 0; $c < 8; $c++) {
+            $sheetDataXml .= '<c r="'.$this->indexToColumnLetter($c).$ttdDateRow.'" s="36"/>';
+        }
+        $dateText = 'Bogor, '.($meta['export_date'] ?? date('d F Y'));
+        $sheetDataXml .= '<c r="I'.$ttdDateRow.'" s="32" t="inlineStr"><is><t>'.htmlspecialchars($dateText, ENT_XML1).'</t></is></c>';
+        $sheetDataXml .= '<c r="J'.$ttdDateRow.'" s="32"/>';
+        $sheetDataXml .= '<c r="K'.$ttdDateRow.'" s="32"/>';
+        $sheetDataXml .= '<c r="L'.$ttdDateRow.'" s="32"/>';
+        $sheetDataXml .= '</row>';
+        $currentRow++;
+
+        // Baris Jabatan TTD
+        $ttdPosRow = $currentRow;
+        $sheetDataXml .= '<row r="'.$ttdPosRow.'" ht="22" customHeight="1">';
+        // Juri I (A:C)
+        $sheetDataXml .= '<c r="A'.$ttdPosRow.'" s="33" t="inlineStr"><is><t>Dewan Juri I,</t></is></c>';
+        $sheetDataXml .= '<c r="B'.$ttdPosRow.'" s="33"/>';
+        $sheetDataXml .= '<c r="C'.$ttdPosRow.'" s="33"/>';
+        // Juri II (D:E)
+        $sheetDataXml .= '<c r="D'.$ttdPosRow.'" s="33" t="inlineStr"><is><t>Dewan Juri II,</t></is></c>';
+        $sheetDataXml .= '<c r="E'.$ttdPosRow.'" s="33"/>';
+        // Koordinator (F:H)
+        $sheetDataXml .= '<c r="F'.$ttdPosRow.'" s="33" t="inlineStr"><is><t>Koordinator Penjurian,</t></is></c>';
+        $sheetDataXml .= '<c r="G'.$ttdPosRow.'" s="33"/>';
+        $sheetDataXml .= '<c r="H'.$ttdPosRow.'" s="33"/>';
+        // Ketua Panitia (I:L)
+        $sheetDataXml .= '<c r="I'.$ttdPosRow.'" s="33" t="inlineStr"><is><t>Ketua Panitia Pelaksana,</t></is></c>';
+        $sheetDataXml .= '<c r="J'.$ttdPosRow.'" s="33"/>';
+        $sheetDataXml .= '<c r="K'.$ttdPosRow.'" s="33"/>';
+        $sheetDataXml .= '<c r="L'.$ttdPosRow.'" s="33"/>';
+        $sheetDataXml .= '</row>';
+        $currentRow++;
+
+        // Baris Spasi TTD
+        $ttdSpaceRow = $currentRow;
+        $sheetDataXml .= '<row r="'.$ttdSpaceRow.'" ht="48" customHeight="1">';
+        for ($c = 0; $c < 12; $c++) {
+            $sheetDataXml .= '<c r="'.$this->indexToColumnLetter($c).$ttdSpaceRow.'" s="36"/>';
+        }
+        $sheetDataXml .= '</row>';
+        $currentRow++;
+
+        // Baris Nama TTD (Underline / Single Bottom Border)
+        $ttdNameRow = $currentRow;
+        $sheetDataXml .= '<row r="'.$ttdNameRow.'" ht="22" customHeight="1">';
+        // Juri I (A:C)
+        $sheetDataXml .= '<c r="A'.$ttdNameRow.'" s="34" t="inlineStr"><is><t>'.htmlspecialchars((string) $meta['jury_1_name'], ENT_XML1).'</t></is></c>';
+        $sheetDataXml .= '<c r="B'.$ttdNameRow.'" s="34"/>';
+        $sheetDataXml .= '<c r="C'.$ttdNameRow.'" s="34"/>';
+        // Juri II (D:E)
+        $sheetDataXml .= '<c r="D'.$ttdNameRow.'" s="34" t="inlineStr"><is><t>'.htmlspecialchars((string) $meta['jury_2_name'], ENT_XML1).'</t></is></c>';
+        $sheetDataXml .= '<c r="E'.$ttdNameRow.'" s="34"/>';
+        // Koordinator (F:H)
+        $sheetDataXml .= '<c r="F'.$ttdNameRow.'" s="34" t="inlineStr"><is><t>Drs. H. Mulyadi, M.Pd</t></is></c>';
+        $sheetDataXml .= '<c r="G'.$ttdNameRow.'" s="34"/>';
+        $sheetDataXml .= '<c r="H'.$ttdNameRow.'" s="34"/>';
+        // Ketua Panitia (I:L)
+        $sheetDataXml .= '<c r="I'.$ttdNameRow.'" s="34" t="inlineStr"><is><t>Muhammad Dwi Pantara</t></is></c>';
+        $sheetDataXml .= '<c r="J'.$ttdNameRow.'" s="34"/>';
+        $sheetDataXml .= '<c r="K'.$ttdNameRow.'" s="34"/>';
+        $sheetDataXml .= '<c r="L'.$ttdNameRow.'" s="34"/>';
+        $sheetDataXml .= '</row>';
+        $currentRow++;
+
+        // Baris Subtitle TTD
+        $ttdSubRow = $currentRow;
+        $sheetDataXml .= '<row r="'.$ttdSubRow.'" ht="18" customHeight="1">';
+        // Juri I (A:C)
+        $sheetDataXml .= '<c r="A'.$ttdSubRow.'" s="35" t="inlineStr"><is><t>Juri Lapangan • '.htmlspecialchars((string) $meta['jury_1_user'], ENT_XML1).'</t></is></c>';
+        $sheetDataXml .= '<c r="B'.$ttdSubRow.'" s="35"/>';
+        $sheetDataXml .= '<c r="C'.$ttdSubRow.'" s="35"/>';
+        // Juri II (D:E)
+        $sheetDataXml .= '<c r="D'.$ttdSubRow.'" s="35" t="inlineStr"><is><t>Juri Lapangan • '.htmlspecialchars((string) $meta['jury_2_user'], ENT_XML1).'</t></is></c>';
+        $sheetDataXml .= '<c r="E'.$ttdSubRow.'" s="35"/>';
+        // Koordinator (F:H)
+        $sheetDataXml .= '<c r="F'.$ttdSubRow.'" s="35" t="inlineStr"><is><t>Pembina PMR Wira SMAN 1 Ciawi</t></is></c>';
+        $sheetDataXml .= '<c r="G'.$ttdSubRow.'" s="35"/>';
+        $sheetDataXml .= '<c r="H'.$ttdSubRow.'" s="35"/>';
+        // Ketua Panitia (I:L)
+        $sheetDataXml .= '<c r="I'.$ttdSubRow.'" s="35" t="inlineStr"><is><t>Sua Bhakti Berkarya IV</t></is></c>';
+        $sheetDataXml .= '<c r="J'.$ttdSubRow.'" s="35"/>';
+        $sheetDataXml .= '<c r="K'.$ttdSubRow.'" s="35"/>';
+        $sheetDataXml .= '<c r="L'.$ttdSubRow.'" s="35"/>';
+        $sheetDataXml .= '</row>';
+
+        $sheetDataXml .= '</sheetData>';
+
+        // 8. Merge Cells
+        $mergeCells = [
+            'A1:L1',
+            'A2:L2',
+            'A3:L3',
+            'A4:L4',
+            'A6:F6',
+            'G6:L6',
+            'A7:B7',
+            'C7:F7',
+            'G7:H7',
+            'I7:L7',
+            'A8:B8',
+            'C8:F8',
+            'G8:H8',
+            'I8:L8',
+            'A9:B9',
+            'C9:D9',
+            'G9:H9',
+            'I9:L9',
+            'A'.$statRow.':C'.$statRow,
+            'D'.$statRow.':F'.$statRow,
+            'G'.$statRow.':I'.$statRow,
+            'J'.$statRow.':L'.$statRow,
+            'I'.$ttdDateRow.':L'.$ttdDateRow,
+            'A'.$ttdPosRow.':C'.$ttdPosRow,
+            'D'.$ttdPosRow.':E'.$ttdPosRow,
+            'F'.$ttdPosRow.':H'.$ttdPosRow,
+            'I'.$ttdPosRow.':L'.$ttdPosRow,
+            'A'.$ttdNameRow.':C'.$ttdNameRow,
+            'D'.$ttdNameRow.':E'.$ttdNameRow,
+            'F'.$ttdNameRow.':H'.$ttdNameRow,
+            'I'.$ttdNameRow.':L'.$ttdNameRow,
+            'A'.$ttdSubRow.':C'.$ttdSubRow,
+            'D'.$ttdSubRow.':E'.$ttdSubRow,
+            'F'.$ttdSubRow.':H'.$ttdSubRow,
+            'I'.$ttdSubRow.':L'.$ttdSubRow,
+        ];
+
+        $mergeCellsXml = '<mergeCells count="'.count($mergeCells).'">';
+        foreach ($mergeCells as $mRange) {
+            $mergeCellsXml .= '<mergeCell ref="'.$mRange.'"/>';
+        }
+        $mergeCellsXml .= '</mergeCells>';
+
+        // 9. Worksheet XML with Frozen Pane at Row 11
+        $worksheet = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">
+<sheetViews>
+<sheetView tabSelected="1" workbookViewId="0">
+<pane ySplit="11" topLeftCell="A12" activePane="bottomLeft" state="frozen"/>
+</sheetView>
+</sheetViews>
+<sheetFormatPr defaultRowHeight="20"/>
+'.$colsXml.'
+'.$sheetDataXml.'
+'.$mergeCellsXml.'
+</worksheet>';
+
+        $zip->addFromString('xl/worksheets/sheet1.xml', $worksheet);
+        $zip->close();
+
+        return $tempFile;
     }
 }

@@ -8,6 +8,7 @@ use App\Models\CompetitionEvent;
 use App\Models\CompetitionParticipantTeam;
 use App\Models\CompetitionRegistration;
 use App\Models\CompetitionScore;
+use App\Services\CompetitionSpreadsheetService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 
@@ -906,5 +907,20 @@ class CompetitionScoreController extends Controller
             ->delete();
 
         return redirect()->back()->with('success', "Seluruh nilai dan peringkat untuk mata lomba '{$category->display_name}' ({$round}) berhasil di-reset dan dikosongkan.");
+    }
+
+    public function exportExcel(CompetitionCategory $category, Request $request, CompetitionSpreadsheetService $spreadsheetService)
+    {
+        $round = $request->query('round', 'Utama');
+        $filePath = $spreadsheetService->exportCategoryScoreSheetXlsx($category, $round);
+
+        $safeCatName = Str::slug($category->name, '_');
+        $safeLevel = Str::slug($category->level, '_');
+        $safeRound = Str::slug($round, '_');
+        $fileName = "Lembar_Penilaian_{$safeCatName}_{$safeLevel}_{$safeRound}.xlsx";
+
+        return response()->download($filePath, $fileName, [
+            'Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        ])->deleteFileAfterSend(true);
     }
 }

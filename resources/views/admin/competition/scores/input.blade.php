@@ -10,9 +10,9 @@
     <a href="{{ route('lomba.scoreboard', ['level' => $category->level, 'category_id' => $category->id]) }}" target="_blank" class="bg-slate-800 hover:bg-slate-900 text-white px-4 py-2 rounded-xl font-bold text-xs transition flex items-center gap-1.5">
         <i class="fa-solid fa-tv"></i> Papan Skor Publik
     </a>
-    <button type="button" onclick="document.getElementById('export-mockup-modal').classList.remove('hidden')" class="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-xl font-bold text-xs transition flex items-center gap-1.5 shadow-sm">
-        <i class="fa-solid fa-file-excel"></i> Export Excel
-    </button>
+    <a href="{{ route('admin.competition-scores.export-excel', ['category' => $category->id, 'round' => $round]) }}" class="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-xl font-bold text-xs transition flex items-center gap-1.5 shadow-sm">
+        <i class="fa-solid fa-file-excel"></i> Export Excel (.xlsx)
+    </a>
 @endsection
 
 @section('content')
