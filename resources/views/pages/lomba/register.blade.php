@@ -577,14 +577,19 @@
 
                         <!-- Ringkasan & Upload -->
                         <div class="space-y-4">
-                            <div class="bg-red-50 border border-red-100 rounded-xl p-4 flex justify-between items-center">
-                                <div>
-                                    <div class="text-xs text-red-800 font-medium">Total Regu Didaftarkan:</div>
-                                    <div class="text-sm font-bold text-red-900"><span id="selected-count">0</span> Regu Lomba</div>
+                            <div class="bg-red-50 border border-red-100 rounded-xl p-4">
+                                <div class="flex justify-between items-center">
+                                    <div>
+                                        <div class="text-xs text-red-800 font-medium">Total Regu Didaftarkan:</div>
+                                        <div class="text-sm font-bold text-red-900"><span id="selected-count">0</span> Regu Lomba</div>
+                                    </div>
+                                    <div class="text-right">
+                                        <div class="text-xs text-red-800 font-medium">Total Tagihan:</div>
+                                        <div class="text-xl font-black text-red-700" id="total-fee-display">Rp 0</div>
+                                    </div>
                                 </div>
-                                <div class="text-right">
-                                    <div class="text-xs text-red-800 font-medium">Total Tagihan:</div>
-                                    <div class="text-xl font-black text-red-700" id="total-fee-display">Rp 0</div>
+                                <div id="fee-breakdown-list" class="mt-3 pt-3 border-t border-red-200/60 space-y-1 text-[11px] text-red-900/90 hidden">
+                                    <!-- Rincian item dinamis -->
                                 </div>
                             </div>
 
@@ -616,7 +621,7 @@
 
 @push('scripts')
 <script>
-    const feePerCat = {{ $event->registration_fee }};
+    const feePerCat = {{ intval($event->registration_fee ?: 150000) }};
     const bankAccountsMap = @json($bankAccounts ?? []);
 
     function updateBankAccountDisplay(lvl) {
@@ -1252,10 +1257,12 @@
     function calculateFee() {
         let totalTeams = 0;
         let totalFee = 0;
+        const breakdownItems = [];
 
         document.querySelectorAll('.cat-checkbox:checked').forEach(cb => {
             const catId = cb.value;
-            const fee = parseFloat(cb.getAttribute('data-fee')) || feePerCat;
+            const rawFee = cb.getAttribute('data-fee');
+            const fee = (rawFee !== null && rawFee !== '' && !isNaN(rawFee)) ? parseFloat(rawFee) : feePerCat;
             const container = document.getElementById('teams-container-' + catId);
             let teamCount = 1;
             if (container) {
@@ -1263,13 +1270,43 @@
                 teamCount = Math.max(1, rows.length);
             }
             totalTeams += teamCount;
-            totalFee += (teamCount * fee);
+            const subtotal = teamCount * fee;
+            totalFee += subtotal;
+
+            const card = document.getElementById('cat-card-' + catId);
+            const catName = card ? (card.querySelector('.font-black.text-slate-900')?.innerText || 'Cabang Lomba') : 'Cabang Lomba';
+            breakdownItems.push({
+                name: catName,
+                count: teamCount,
+                fee: fee,
+                subtotal: subtotal
+            });
         });
 
         const countEl = document.getElementById('selected-count');
         const totalEl = document.getElementById('total-fee-display');
+        const breakdownEl = document.getElementById('fee-breakdown-list');
+
         if (countEl) countEl.innerText = totalTeams;
         if (totalEl) totalEl.innerText = 'Rp ' + totalFee.toLocaleString('id-ID');
+
+        if (breakdownEl) {
+            if (breakdownItems.length > 0) {
+                breakdownEl.classList.remove('hidden');
+                let html = '<div class="font-bold text-[10px] uppercase text-red-800 tracking-wider mb-1">Rincian Tagihan per Cabang:</div>';
+                breakdownItems.forEach(item => {
+                    const feeText = item.fee > 0 ? ('Rp ' + item.subtotal.toLocaleString('id-ID')) : '<span class="text-emerald-700 font-bold">Gratis (Rp 0)</span>';
+                    html += `<div class="flex justify-between items-center py-0.5 border-b border-red-100 last:border-none">
+                        <span class="truncate pr-2">${escapeHtml(item.name)} (${item.count} Regu)</span>
+                        <span class="font-mono font-bold shrink-0">${feeText}</span>
+                    </div>`;
+                });
+                breakdownEl.innerHTML = html;
+            } else {
+                breakdownEl.classList.add('hidden');
+                breakdownEl.innerHTML = '';
+            }
+        }
     }
 
     document.addEventListener('DOMContentLoaded', function() {
