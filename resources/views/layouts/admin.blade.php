@@ -278,11 +278,6 @@
                 <i class="fa-solid fa-arrow-up-right-from-square w-5 text-center"></i>
                 <span>Lihat Web Publik</span>
             </a>
-
-            <a href="/mockups/preview.html" target="_blank" class="flex items-center gap-3 px-3 py-2.5 rounded-xl font-medium text-sm transition hover:bg-slate-800 text-amber-300">
-                <i class="fa-solid fa-palette w-5 text-center"></i>
-                <span>Preview Mockup</span>
-            </a>
         </div>
 
         <!-- User Info & Logout -->
