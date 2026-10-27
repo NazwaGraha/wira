@@ -1291,11 +1291,14 @@ class CompetitionSpreadsheetService
             ->get()
             ->keyBy('competition_participant_team_id');
 
+        // Ambil juri yang dipetakan pada cabang mata lomba ini
+        $assignedJuries = $category->assignedJuries ?? collect();
+
         // Petakan data baris peserta dan pisahkan scored vs unscored
         $scoredItems = [];
         $unscoredItems = [];
 
-        foreach ($teams as $team) {
+        foreach ($teams as $tIdx => $team) {
             $score = $scores->get($team->id);
             $regCode = $team->registration?->registration_code ?: '-';
             $schoolName = $team->registration?->school_name ?: $team->team_name;
@@ -1347,12 +1350,28 @@ class CompetitionSpreadsheetService
                 $rankLabel = 'Peringkat '.$rankNum;
             }
 
-            // Juri Penilai
+            // Juri Penilai: Prioritaskan juri tersimpan di score; jika belum tersimpan, gunakan pemetaan dewan juri resmi untuk lomba ini
             $juryName = '-';
             if ($score?->jury?->name) {
                 $juryName = $score->jury->name;
             } elseif ($score?->jury?->username) {
                 $juryName = '@'.$score->jury->username;
+            } elseif ($assignedJuries->isNotEmpty()) {
+                if ($assignedJuries->count() === 1) {
+                    $juryName = $assignedJuries->first()->name ?: ('@'.$assignedJuries->first()->username);
+                } else {
+                    // Jika ada 2 juri atau lebih, petakan sesuai pos/prefix regu (A-xx -> Juri 1, B-xx -> Juri 2) atau rotasi urutan regu
+                    $upperOrder = strtoupper((string) $orderNo);
+                    if (str_starts_with($upperOrder, 'B') && isset($assignedJuries[1])) {
+                        $juryName = $assignedJuries[1]->name ?: ('@'.$assignedJuries[1]->username);
+                    } elseif (str_starts_with($upperOrder, 'A') && isset($assignedJuries[0])) {
+                        $juryName = $assignedJuries[0]->name ?: ('@'.$assignedJuries[0]->username);
+                    } else {
+                        $juryIndex = $tIdx % $assignedJuries->count();
+                        $targetJury = $assignedJuries[$juryIndex];
+                        $juryName = $targetJury->name ?: ('@'.$targetJury->username);
+                    }
+                }
             }
 
             // Foto

@@ -125,7 +125,7 @@ class CompetitionScoreExportTest extends TestCase
         CompetitionScore::create([
             'competition_category_id' => $category->id,
             'competition_participant_team_id' => $team2->id,
-            'jury_user_id' => $jury2->id,
+            'jury_user_id' => null, // Simulasi input admin tanpa juri_user_id langsung
             'round_name' => 'Utama',
             'score_details' => [
                 'practical_score' => 92.00,

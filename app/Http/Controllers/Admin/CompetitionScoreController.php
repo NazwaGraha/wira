@@ -287,6 +287,7 @@ class CompetitionScoreController extends Controller
 
     public function saveScores(CompetitionCategory $category, Request $request)
     {
+        $category->loadMissing('assignedJuries');
         $round = $request->input('round_name', 'Utama');
         $scoresData = $request->input('scores', []);
 
@@ -426,6 +427,17 @@ class CompetitionScoreController extends Controller
                 'round_name' => $round,
             ])->first();
 
+            $juryUserId = $existingScore?->jury_user_id;
+            if (! $juryUserId && $category->assignedJuries->isNotEmpty()) {
+                $teamModel = CompetitionParticipantTeam::find($teamId);
+                $orderNo = strtoupper((string) ($teamModel?->order_number ?? ''));
+                if (str_starts_with($orderNo, 'B') && isset($category->assignedJuries[1])) {
+                    $juryUserId = $category->assignedJuries[1]->id;
+                } else {
+                    $juryUserId = $category->assignedJuries[0]->id;
+                }
+            }
+
             $mergedDetails = array_merge($existingScore?->score_details ?? [], $data);
 
             CompetitionScore::updateOrCreate(
@@ -435,6 +447,7 @@ class CompetitionScoreController extends Controller
                     'round_name' => $round,
                 ],
                 [
+                    'jury_user_id' => $juryUserId,
                     'score_details' => $mergedDetails,
                     'final_score' => $isDisqualified ? 0 : $finalScore,
                     'time_recorded' => $timeRecorded,
