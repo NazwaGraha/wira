@@ -544,6 +544,8 @@ Route::prefix('lomba')->name('lomba.')->group(function () {
 Route::get('/juri/login', [JuryPortalController::class, 'showLogin'])->name('jury.login');
 Route::post('/juri/login', [JuryPortalController::class, 'login'])->name('jury.login.submit');
 Route::post('/juri/logout', [JuryPortalController::class, 'logout'])->name('jury.logout');
+Route::get('/juri/ganti-password-pertama', [JuryPortalController::class, 'showFirstPasswordChange'])->name('jury.first-password-change');
+Route::post('/juri/ganti-password-pertama', [JuryPortalController::class, 'updateFirstPassword'])->name('jury.first-password-change.submit');
 
 Route::middleware(['auth'])->prefix('juri')->name('jury.')->group(function () {
     Route::get('/', [JuryPortalController::class, 'dashboard'])->name('index');

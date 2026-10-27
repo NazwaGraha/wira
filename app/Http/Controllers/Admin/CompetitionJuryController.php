@@ -73,6 +73,7 @@ class CompetitionJuryController extends Controller
             'password' => Hash::make((string) $request->input('password')),
             'role' => 'jury',
             'phone' => $request->input('phone'),
+            'must_change_password' => true,
         ]);
 
         if ($request->has('category_ids')) {
@@ -102,6 +103,7 @@ class CompetitionJuryController extends Controller
 
         if ($request->filled('password')) {
             $data['password'] = Hash::make((string) $request->input('password'));
+            $data['must_change_password'] = true;
         }
 
         $jury->update($data);

@@ -114,6 +114,7 @@ class JuryPortalTest extends TestCase
             'email' => 'juri_tandu1@juri.pmr',
             'password' => Hash::make('123456'),
             'role' => 'jury',
+            'must_change_password' => false,
         ]);
         $jury->assignedCategories()->attach($catTanduMula->id);
 
@@ -129,6 +130,63 @@ class JuryPortalTest extends TestCase
         ]);
 
         $response->assertRedirect('/juri/dashboard');
+        $this->assertAuthenticated();
+        $this->assertEquals($jury->id, auth()->id());
+    }
+
+    public function test_jury_must_change_password_on_first_login_and_then_can_login_with_new_password(): void
+    {
+        [$event, $catTanduMula] = $this->createEventAndCategories();
+
+        $jury = User::create([
+            'name' => 'Kak Hendra Kusuma',
+            'username' => 'juri_tandu1',
+            'email' => 'juri_tandu1@juri.pmr',
+            'password' => Hash::make('123456'),
+            'role' => 'jury',
+            'must_change_password' => true,
+        ]);
+        $jury->assignedCategories()->attach($catTanduMula->id);
+
+        // 1. Submit login pertama kali dengan password lama
+        $response = $this->post('/juri/login', [
+            'username' => 'juri_tandu1',
+            'password' => '123456',
+        ]);
+
+        // Juri diarahkan ke halaman wajib ubah password
+        $response->assertRedirect(route('jury.first-password-change'));
+        $this->assertGuest();
+        $this->assertEquals($jury->id, session('jury_password_change_user_id'));
+
+        // 2. Buka form ganti password pertama
+        $formPage = $this->get(route('jury.first-password-change'));
+        $formPage->assertOk();
+        $formPage->assertSee('Buat Kata Sandi / PIN Baru');
+        $formPage->assertSee('Kak Hendra Kusuma');
+
+        // 3. Submit ganti password baru (misal: 'pin9999')
+        $changeResponse = $this->post(route('jury.first-password-change.submit'), [
+            'password' => 'pin9999',
+            'password_confirmation' => 'pin9999',
+        ]);
+
+        // Diarahkan kembali ke halaman login juri dengan pesan sukses
+        $changeResponse->assertRedirect(route('jury.login'));
+        $changeResponse->assertSessionHas('success');
+
+        // Verifikasi database: must_change_password menjadi false dan password terupdate
+        $jury->refresh();
+        $this->assertFalse($jury->must_change_password);
+        $this->assertTrue(Hash::check('pin9999', $jury->password));
+
+        // 4. Juri login kembali menggunakan username dan password baru
+        $secondLogin = $this->post('/juri/login', [
+            'username' => 'juri_tandu1',
+            'password' => 'pin9999',
+        ]);
+
+        $secondLogin->assertRedirect('/juri/dashboard');
         $this->assertAuthenticated();
         $this->assertEquals($jury->id, auth()->id());
     }

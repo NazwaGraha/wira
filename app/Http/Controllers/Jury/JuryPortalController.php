@@ -15,6 +15,7 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\File;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Str;
@@ -57,6 +58,15 @@ class JuryPortalController extends Controller
             ->first();
 
         if ($user && Auth::attempt(['id' => $user->id, 'password' => $password], $remember)) {
+            // Cek jika juri login pertama kali dan wajib ganti password
+            if ($user->role === 'jury' && $user->must_change_password) {
+                Auth::logout();
+                $request->session()->put('jury_password_change_user_id', $user->id);
+
+                return redirect()->route('jury.first-password-change')
+                    ->with('info', 'Ini adalah login pertama Anda. Demi keamanan, Anda wajib mengganti password / PIN awal terlebih dahulu.');
+            }
+
             $request->session()->regenerate();
 
             return redirect()->route('jury.dashboard');
@@ -65,6 +75,16 @@ class JuryPortalController extends Controller
         // Coba login via credentials default
         if (Auth::attempt(['login_id' => $username, 'password' => $password], $remember)
             || Auth::attempt(['username' => $username, 'password' => $password], $remember)) {
+            $authUser = Auth::user();
+            if ($authUser instanceof User && $authUser->role === 'jury' && $authUser->must_change_password) {
+                $uid = $authUser->id;
+                Auth::logout();
+                $request->session()->put('jury_password_change_user_id', $uid);
+
+                return redirect()->route('jury.first-password-change')
+                    ->with('info', 'Ini adalah login pertama Anda. Demi keamanan, Anda wajib mengganti password / PIN awal terlebih dahulu.');
+            }
+
             $request->session()->regenerate();
 
             return redirect()->route('jury.dashboard');
@@ -72,6 +92,60 @@ class JuryPortalController extends Controller
 
         return back()->withInput($request->only('username'))
             ->withErrors(['username' => 'Username atau PIN juri tidak cocok. Silakan tanyakan ke panitia.']);
+    }
+
+    /**
+     * Tampilan form wajib ganti password saat login pertama kali bagi juri
+     */
+    public function showFirstPasswordChange(Request $request): View|RedirectResponse
+    {
+        $userId = $request->session()->get('jury_password_change_user_id');
+        if (! $userId) {
+            return redirect()->route('jury.login')
+                ->with('error', 'Sesi penggantian password tidak ditemukan atau telah kedaluwarsa. Silakan login kembali.');
+        }
+
+        $user = User::find($userId);
+        if (! $user) {
+            return redirect()->route('jury.login');
+        }
+
+        return view('jury.first-password-change', compact('user'));
+    }
+
+    /**
+     * Proses simpan password baru pada login pertama kali bagi juri
+     */
+    public function updateFirstPassword(Request $request): RedirectResponse
+    {
+        $userId = $request->session()->get('jury_password_change_user_id');
+        if (! $userId) {
+            return redirect()->route('jury.login')
+                ->with('error', 'Sesi penggantian password telah berakhir. Silakan login kembali.');
+        }
+
+        $user = User::find($userId);
+        if (! $user) {
+            return redirect()->route('jury.login');
+        }
+
+        $request->validate([
+            'password' => ['required', 'string', 'min:4', 'confirmed'],
+        ], [
+            'password.required' => 'Password / PIN baru wajib diisi.',
+            'password.min' => 'Password / PIN baru minimal 4 karakter.',
+            'password.confirmed' => 'Konfirmasi password baru tidak cocok.',
+        ]);
+
+        $user->update([
+            'password' => Hash::make((string) $request->input('password')),
+            'must_change_password' => false,
+        ]);
+
+        $request->session()->forget('jury_password_change_user_id');
+
+        return redirect()->route('jury.login')
+            ->with('success', 'Kata sandi / PIN berhasil diperbarui! Silakan login sekarang menggunakan username dan kata sandi baru Anda.');
     }
 
     /**
@@ -103,6 +177,9 @@ class JuryPortalController extends Controller
                     }
                     if (! Schema::hasColumn('users', 'phone')) {
                         $table->string('phone')->nullable()->after('email');
+                    }
+                    if (! Schema::hasColumn('users', 'must_change_password')) {
+                        $table->boolean('must_change_password')->default(false)->after('role');
                     }
                 });
             }
@@ -154,12 +231,21 @@ class JuryPortalController extends Controller
     /**
      * Dashboard Utama Juri: Menampilkan mata lomba yang DITUGASKAN ke juri ini
      */
-    public function dashboard(Request $request): View
+    public function dashboard(Request $request): View|RedirectResponse
     {
         self::ensureTablesExist();
 
         /** @var User $user */
         $user = Auth::user();
+
+        if ($user instanceof User && ($user->role ?? null) === 'jury' && $user->must_change_password) {
+            $uid = $user->id;
+            Auth::logout();
+            $request->session()->put('jury_password_change_user_id', $uid);
+
+            return redirect()->route('jury.first-password-change')
+                ->with('info', 'Ini adalah login pertama Anda. Demi keamanan, Anda wajib mengganti password / PIN awal terlebih dahulu.');
+        }
 
         // Ambil event aktif
         $event = CompetitionEvent::where('is_active', true)->first()

@@ -1,6 +1,7 @@
 @extends('layouts.admin')
 
 @section('title', 'Input & Registrasi Juri - SUA BHAKTI BERKARYA')
+@section('page_title', 'Manajemen Juri')
 
 @section('content')
 <div class="space-y-6">
@@ -199,7 +200,18 @@
                                         <i class="fa-solid fa-gavel"></i>
                                     </div>
                                     <div>
-                                        <h4 class="font-black text-sm text-white">{{ $jury->name }}</h4>
+                                        <div class="flex items-center gap-2">
+                                            <h4 class="font-black text-sm text-white">{{ $jury->name }}</h4>
+                                            @if ($jury->must_change_password)
+                                                <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[9px] font-bold bg-amber-500/20 text-amber-300 border border-amber-500/30">
+                                                    <i class="fa-solid fa-key text-[8px]"></i> Wajib Ganti Sandi
+                                                </span>
+                                            @else
+                                                <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[9px] font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
+                                                    <i class="fa-solid fa-check text-[8px]"></i> Password Aktif
+                                                </span>
+                                            @endif
+                                        </div>
                                         <div class="text-xs text-slate-400 flex items-center gap-2 mt-0.5">
                                             <span class="font-mono text-amber-400 font-bold"><i class="fa-solid fa-at text-[10px]"></i> {{ $jury->username }}</span>
                                             @if ($jury->phone)
