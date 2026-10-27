@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class CompetitionScore extends Model
 {
@@ -13,6 +14,7 @@ class CompetitionScore extends Model
     protected $fillable = [
         'competition_category_id',
         'competition_participant_team_id',
+        'jury_user_id',
         'round_name',
         'score_details',
         'final_score',
@@ -37,5 +39,15 @@ class CompetitionScore extends Model
     public function team(): BelongsTo
     {
         return $this->belongsTo(CompetitionParticipantTeam::class, 'competition_participant_team_id');
+    }
+
+    public function jury(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'jury_user_id');
+    }
+
+    public function photos(): HasMany
+    {
+        return $this->hasMany(CompetitionScorePhoto::class, 'competition_score_id');
     }
 }

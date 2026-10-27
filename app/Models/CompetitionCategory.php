@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class CompetitionCategory extends Model
@@ -18,6 +19,7 @@ class CompetitionCategory extends Model
         'level',
         'gender_category',
         'scoring_type',
+        'is_photo_required',
         'point_tier',
         'criteria_schema',
         'registration_fee',
@@ -30,6 +32,7 @@ class CompetitionCategory extends Model
     ];
 
     protected $casts = [
+        'is_photo_required' => 'boolean',
         'criteria_schema' => 'array',
         'registration_fee' => 'decimal:2',
         'registration_fee_wave1' => 'decimal:2',
@@ -65,6 +68,16 @@ class CompetitionCategory extends Model
     public function scores(): HasMany
     {
         return $this->hasMany(CompetitionScore::class);
+    }
+
+    public function assignedJuries(): BelongsToMany
+    {
+        return $this->belongsToMany(
+            User::class,
+            'jury_category_assignments',
+            'competition_category_id',
+            'user_id'
+        )->withTimestamps();
     }
 
     public function getDisplayNameAttribute(): string

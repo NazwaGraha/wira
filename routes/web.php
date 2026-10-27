@@ -16,6 +16,7 @@ use App\Http\Controllers\Admin\CompetitionCheckinController;
 use App\Http\Controllers\Admin\CompetitionEventController;
 use App\Http\Controllers\Admin\CompetitionFeeController;
 use App\Http\Controllers\Admin\CompetitionInfoMenuController;
+use App\Http\Controllers\Admin\CompetitionJuryController;
 use App\Http\Controllers\Admin\CompetitionLeaderboardController;
 use App\Http\Controllers\Admin\CompetitionParticipantController;
 use App\Http\Controllers\Admin\CompetitionRegistrationController;
@@ -34,6 +35,7 @@ use App\Http\Controllers\Admin\UksHotlineController;
 use App\Http\Controllers\Admin\WiraAgentKnowledgeController;
 use App\Http\Controllers\ArticleController;
 use App\Http\Controllers\CompetitionController;
+use App\Http\Controllers\Jury\JuryPortalController;
 use App\Http\Controllers\MemberAreaController;
 use App\Http\Controllers\PageController;
 use App\Http\Controllers\WiraAgentController;
@@ -268,6 +270,9 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::post('/competition-scores/{category}/assign-termins', [CompetitionScoreController::class, 'assignTermins'])->name('competition-scores.assign-termins');
         Route::post('/competition-scores/{category}/quick-add-team', [CompetitionScoreController::class, 'quickAddTeam'])->name('competition-scores.quick-add-team');
         Route::delete('/competition-scores/{category}/teams/{team}', [CompetitionScoreController::class, 'removeTeam'])->name('competition-scores.remove-team');
+
+        // Manajemen Akun Juri & Pemetaan Lomba
+        Route::resource('competition-juries', CompetitionJuryController::class)->names('competition-juries');
 
         // Setup Biaya Pendaftaran Lomba
         Route::get('/competition-fees', [CompetitionFeeController::class, 'index'])->name('competition-fees.index');
@@ -514,4 +519,18 @@ Route::prefix('lomba')->name('lomba.')->group(function () {
     Route::get('/kartu-peserta/{code}', [CompetitionController::class, 'participantCards'])->name('cards');
     Route::get('/kartu-peserta/{code}', [CompetitionController::class, 'participantCards'])->name('kartu-peserta');
     Route::get('/live-scoreboard', [CompetitionController::class, 'liveScoreboard'])->name('scoreboard');
+});
+
+// ================= PORTAL PENILAIAN JURI LAPANGAN (MOBILE-FIRST) =================
+Route::get('/juri/login', [JuryPortalController::class, 'showLogin'])->name('jury.login');
+Route::post('/juri/login', [JuryPortalController::class, 'login'])->name('jury.login.submit');
+Route::post('/juri/logout', [JuryPortalController::class, 'logout'])->name('jury.logout');
+
+Route::middleware(['auth'])->prefix('juri')->name('jury.')->group(function () {
+    Route::get('/', [JuryPortalController::class, 'dashboard'])->name('index');
+    Route::get('/dashboard', [JuryPortalController::class, 'dashboard'])->name('dashboard');
+    Route::get('/kategori/{category}', [JuryPortalController::class, 'scoring'])->name('scoring');
+    Route::post('/kategori/{category}/regu/{team}/simpan', [JuryPortalController::class, 'saveScore'])->name('save-score');
+    Route::post('/upload-foto', [JuryPortalController::class, 'uploadPhoto'])->name('upload-photo');
+    Route::delete('/foto/{photo}', [JuryPortalController::class, 'deletePhoto'])->name('delete-photo');
 });

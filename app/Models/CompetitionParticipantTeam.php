@@ -42,6 +42,11 @@ class CompetitionParticipantTeam extends Model
         return $this->hasMany(CompetitionScore::class);
     }
 
+    public function photos(): HasMany
+    {
+        return $this->hasMany(CompetitionScorePhoto::class, 'competition_participant_team_id');
+    }
+
     /**
      * URL berkas Excel daftar anggota regu yang diunggah
      */

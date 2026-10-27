@@ -7,10 +7,11 @@ use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Hidden;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 
-#[Fillable(['name', 'email', 'password'])]
+#[Fillable(['name', 'username', 'email', 'password', 'role', 'phone'])]
 #[Hidden(['password', 'remember_token'])]
 class User extends Authenticatable
 {
@@ -30,14 +31,34 @@ class User extends Authenticatable
         ];
     }
 
+    public function assignedCategories(): BelongsToMany
+    {
+        return $this->belongsToMany(
+            CompetitionCategory::class,
+            'jury_category_assignments',
+            'user_id',
+            'competition_category_id'
+        )->withTimestamps();
+    }
+
+    public function isJury(): bool
+    {
+        return $this->role === 'jury';
+    }
+
+    public function isAdmin(): bool
+    {
+        return in_array($this->role, ['superuser', 'admin']);
+    }
+
     public function canAccessBackoffice(): bool
     {
-        return true;
+        return $this->isAdmin();
     }
 
     public function canDelete(): bool
     {
-        return true;
+        return $this->isAdmin();
     }
 
     public function canOnlyManageArticles(): bool
@@ -47,7 +68,7 @@ class User extends Authenticatable
 
     public function canManageMembers(): bool
     {
-        return true;
+        return $this->isAdmin();
     }
 
     public function isPurna(): bool
@@ -62,11 +83,15 @@ class User extends Authenticatable
 
     public function getRoleAttribute(): string
     {
-        return 'superuser';
+        return $this->attributes['role'] ?? 'admin';
     }
 
     public function getRoleLabelAttribute(): string
     {
-        return 'Administrator';
+        return match ($this->role) {
+            'jury' => 'Juri Lapangan',
+            'superuser' => 'Super Administrator',
+            default => 'Administrator',
+        };
     }
 }

@@ -4,6 +4,7 @@ namespace App\Auth;
 
 use App\Models\Advisor;
 use App\Models\Member;
+use App\Models\User;
 use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Contracts\Auth\UserProvider;
 use Illuminate\Contracts\Hashing\Hasher;
@@ -82,7 +83,12 @@ class PmrUserProvider implements UserProvider
             return $model;
         }
 
-        return Advisor::find($identifier);
+        $advisor = Advisor::find($identifier);
+        if ($advisor) {
+            return $advisor;
+        }
+
+        return User::find($identifier);
     }
 
     public function retrieveByToken($identifier, #[\SensitiveParameter] $token)
@@ -146,7 +152,15 @@ class PmrUserProvider implements UserProvider
             return $member;
         }
 
-        return Advisor::where('nip', $loginId)
+        $advisor = Advisor::where('nip', $loginId)
+            ->orWhere('email', $loginId)
+            ->first();
+
+        if ($advisor) {
+            return $advisor;
+        }
+
+        return User::where('username', $loginId)
             ->orWhere('email', $loginId)
             ->first();
     }
