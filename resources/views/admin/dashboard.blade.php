@@ -131,6 +131,61 @@
 
     <!-- Right Side: Live Blood Stock & Recent Candidate Registrations (4 Cols) -->
     <div class="lg:col-span-4 space-y-6">
+        <!-- SUA BHAKTI BERKARYA Management Widget -->
+        <div class="bg-gradient-to-br from-slate-900 via-slate-800 to-amber-950 rounded-3xl p-6 text-white shadow-lg border border-amber-900/40 relative overflow-hidden">
+            <div class="absolute -right-6 -bottom-6 w-32 h-32 bg-amber-500/10 rounded-full blur-2xl pointer-events-none"></div>
+
+            <div class="flex items-center justify-between mb-3 relative z-10">
+                <div class="flex items-center gap-2.5">
+                    <div class="w-9 h-9 rounded-xl bg-amber-500 text-slate-950 flex items-center justify-center text-sm font-black shadow-md shadow-amber-500/30">
+                        <i class="fa-solid fa-flag"></i>
+                    </div>
+                    <div>
+                        <h4 class="font-extrabold text-white text-sm">SUA BHAKTI BERKARYA</h4>
+                        <div class="text-[10px] text-amber-200">{{ $activeCompetitionEvent->title ?? 'Lomba PMR Wira SMAN 1 Ciawi' }}</div>
+                    </div>
+                </div>
+                <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-amber-400/20 text-amber-300 border border-amber-400/30">
+                    <span class="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse"></span> {{ $totalJuries }} Juri
+                </span>
+            </div>
+
+            <p class="text-xs text-slate-300 leading-relaxed mb-4 relative z-10">
+                Akses cepat manajemen registrasi akun juri lapangan, input penilaian peserta lomba, dan portal juri mobile.
+            </p>
+
+            <div class="grid grid-cols-2 gap-2 relative z-10">
+                <a href="{{ route('admin.competition-juries.index') }}" class="p-3 bg-amber-500/15 hover:bg-amber-500/25 border border-amber-500/30 rounded-2xl transition flex flex-col justify-between group">
+                    <div class="w-7 h-7 rounded-lg bg-amber-500 text-slate-950 flex items-center justify-center text-xs font-bold mb-2 group-hover:scale-110 transition">
+                        <i class="fa-solid fa-user-gear"></i>
+                    </div>
+                    <div>
+                        <div class="font-black text-xs text-amber-300 leading-snug">Input & Registrasi Juri</div>
+                        <div class="text-[10px] text-slate-400 mt-0.5">Kelola akun & mata lomba</div>
+                    </div>
+                </a>
+
+                <a href="{{ route('admin.competition-scores.index') }}" class="p-3 bg-white/10 hover:bg-white/15 border border-white/10 rounded-2xl transition flex flex-col justify-between group">
+                    <div class="w-7 h-7 rounded-lg bg-teal-500 text-white flex items-center justify-center text-xs font-bold mb-2 group-hover:scale-110 transition">
+                        <i class="fa-solid fa-calculator"></i>
+                    </div>
+                    <div>
+                        <div class="font-black text-xs text-white leading-snug">Input Nilai Lomba</div>
+                        <div class="text-[10px] text-slate-400 mt-0.5">Lembar nilai admin</div>
+                    </div>
+                </a>
+            </div>
+
+            <div class="mt-2.5 pt-2.5 border-t border-white/10 flex items-center justify-between text-[11px] relative z-10">
+                <a href="{{ route('jury.login') }}" target="_blank" class="text-sky-300 hover:text-sky-200 font-bold flex items-center gap-1.5 transition">
+                    <i class="fa-solid fa-mobile-screen-button text-xs"></i> Portal Juri Mobile &rarr;
+                </a>
+                <a href="{{ route('admin.competition-registrations.index') }}" class="text-slate-400 hover:text-white transition">
+                    Verifikasi Pendaftar &rarr;
+                </a>
+            </div>
+        </div>
+
         <!-- Wira Agent AI Knowledge Hub Widget -->
         <div class="bg-gradient-to-br from-slate-900 via-slate-800 to-red-950 rounded-3xl p-6 text-white shadow-lg border border-red-900/40 relative overflow-hidden">
             <div class="absolute -right-6 -bottom-6 w-28 h-28 bg-red-600/10 rounded-full blur-2xl pointer-events-none"></div>

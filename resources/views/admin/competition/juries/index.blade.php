@@ -1,6 +1,6 @@
 @extends('layouts.admin')
 
-@section('title', 'Kelola Akun Juri & Pemetaan Tugas Lomba')
+@section('title', 'Input & Registrasi Juri - SUA BHAKTI BERKARYA')
 
 @section('content')
 <div class="space-y-6">
@@ -9,10 +9,10 @@
         <div class="absolute -right-10 -bottom-10 w-60 h-60 bg-amber-500/10 rounded-full blur-3xl pointer-events-none"></div>
         <div>
             <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/30 text-xs font-bold uppercase tracking-wider mb-2">
-                <i class="fa-solid fa-users-gear"></i> Manajemen Juri & Penugasan
+                <i class="fa-solid fa-user-gear"></i> SUA BHAKTI BERKARYA &bull; Manajemen Juri
             </div>
             <h1 class="text-2xl sm:text-3xl font-black tracking-tight text-white flex items-center gap-2.5">
-                Akun Juri & Pemetaan Cabang Lomba
+                Input & Registrasi Juri
             </h1>
             <p class="text-slate-400 text-sm mt-1 max-w-2xl">
                 Buat kredensial akun login khusus juri lapangan dan petakan cabang mata lomba yang ditugaskan secara multi-cabang.

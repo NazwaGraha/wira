@@ -7,11 +7,14 @@ use App\Models\Activity;
 use App\Models\Article;
 use App\Models\BloodStock;
 use App\Models\Category;
+use App\Models\CompetitionEvent;
 use App\Models\MemberRegistration;
 use App\Models\OrganizationMember;
 use App\Models\OrganizationSetting;
+use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\File;
+use Illuminate\Support\Facades\Schema;
 
 class DashboardController extends Controller
 {
@@ -30,6 +33,14 @@ class DashboardController extends Controller
         $orgSetting = OrganizationSetting::first();
         $totalActivities = Activity::count();
         $recentActivities = Activity::latest('event_date')->take(3)->get();
+
+        $activeCompetitionEvent = Schema::hasTable('competition_events')
+            ? (CompetitionEvent::where('is_active', true)->first() ?: CompetitionEvent::latest('id')->first())
+            : null;
+
+        $totalJuries = (Schema::hasTable('users') && Schema::hasColumn('users', 'role'))
+            ? User::where('role', 'jury')->count()
+            : 0;
 
         $knowledgePath = storage_path('app/knowledge/knowledge.json');
         $wiraKnowledgeStats = [
@@ -62,7 +73,9 @@ class DashboardController extends Controller
             'orgSetting',
             'totalActivities',
             'recentActivities',
-            'wiraKnowledgeStats'
+            'wiraKnowledgeStats',
+            'activeCompetitionEvent',
+            'totalJuries'
         ));
     }
 }
