@@ -23,10 +23,10 @@
                 </div>
                 <div>
                     <div class="text-[11px] uppercase tracking-wider text-red-200 font-bold">Selamat Bertugas,</div>
-                    <h2 class="font-black text-base text-white leading-tight">{{ $user->name }}</h2>
+                    <h2 class="font-black text-base text-white leading-tight">{{ $user->name ?? $user->full_name ?? 'Petugas Juri' }}</h2>
                     <div class="text-[11px] text-red-100 flex items-center gap-1.5 mt-0.5">
                         <i class="fa-solid fa-id-badge text-[10px] text-amber-300"></i>
-                        <span>{{ $user->role_label ?? 'Juri Lapangan' }} &bull; {{ $user->username }}</span>
+                        <span>{{ $user->role_label ?? (($user->role ?? null) === 'jury' ? 'Juri Lapangan' : ($user->position ?? 'Petugas')) }} &bull; {{ $user->username ?? $user->nri ?? $user->email ?? 'Petugas' }}</span>
                     </div>
                 </div>
             </div>

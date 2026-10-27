@@ -355,10 +355,19 @@ Route::get('/server-sync-update-pmr', function () {
         Artisan::call('config:clear');
         Artisan::call('cache:clear');
         Artisan::call('optimize:clear');
+
+        $migrationOutput = '';
         try {
             Artisan::call('migrate', ['--force' => true]);
+            $migrationOutput = Artisan::output();
         } catch (Throwable $e) {
-            // Ignore if migration already applied
+            $migrationOutput = 'Migration notice/error: '.$e->getMessage();
+        }
+
+        try {
+            JuryPortalController::ensureTablesExist();
+        } catch (Throwable $e) {
+            Log::warning('JuryPortalController ensureTablesExist error: '.$e->getMessage());
         }
 
         if (Schema::hasTable('uks_hotlines')) {
@@ -410,6 +419,7 @@ Route::get('/server-sync-update-pmr', function () {
         File::ensureDirectoryExists(storage_path('app/public/members'), 0755, true);
         File::ensureDirectoryExists(storage_path('app/public/competition_payments'), 0755, true);
         File::ensureDirectoryExists(storage_path('app/public/competition_team_files'), 0755, true);
+        File::ensureDirectoryExists(storage_path('app/public/competition_evidences'), 0755, true);
         File::ensureDirectoryExists(storage_path('app/public/guidelines'), 0755, true);
         File::ensureDirectoryExists(storage_path('app/public/achievements/trophies'), 0755, true);
         File::ensureDirectoryExists(storage_path('app/public/achievements/gallery'), 0755, true);
@@ -433,6 +443,8 @@ Route::get('/server-sync-update-pmr', function () {
             File::copyDirectory(storage_path('app/public/competition_payments'), public_path('storage/competition_payments'));
             File::ensureDirectoryExists(public_path('storage/competition_team_files'), 0755, true);
             File::copyDirectory(storage_path('app/public/competition_team_files'), public_path('storage/competition_team_files'));
+            File::ensureDirectoryExists(public_path('storage/competition_evidences'), 0755, true);
+            File::copyDirectory(storage_path('app/public/competition_evidences'), public_path('storage/competition_evidences'));
             File::ensureDirectoryExists(public_path('storage/hero-slides'), 0755, true);
             File::copyDirectory(storage_path('app/public/hero-slides'), public_path('storage/hero-slides'));
             File::ensureDirectoryExists(public_path('storage/popup-banners'), 0755, true);
@@ -447,13 +459,20 @@ Route::get('/server-sync-update-pmr', function () {
         }
 
         $output = Artisan::output();
+        $juryTablesStatus = [
+            'jury_category_assignments' => Schema::hasTable('jury_category_assignments') ? 'OK' : 'MISSING',
+            'competition_score_photos' => Schema::hasTable('competition_score_photos') ? 'OK' : 'MISSING',
+            'users.role' => (Schema::hasTable('users') && Schema::hasColumn('users', 'role')) ? 'OK' : 'MISSING',
+            'competition_scores.jury_user_id' => (Schema::hasTable('competition_scores') && Schema::hasColumn('competition_scores', 'jury_user_id')) ? 'OK' : 'MISSING',
+        ];
 
         return response("<div style='font-family:sans-serif;padding:30px;max-width:600px;margin:auto;'>
             <h2 style='color:#059669;'>✅ Cache Server Berhasil Dibersihkan, Database Dimigrasi & Storage Symlink Disinkronkan!</h2>
             <div style='margin-bottom:10px;'><strong>Git Pull:</strong> <pre style='background:#f1f5f9;padding:10px;border-radius:8px;font-size:12px;overflow:auto;'>".htmlspecialchars($gitOutput)."</pre></div>
+            <div style='margin-bottom:10px;'><strong>Migration Output:</strong> <pre style='background:#f1f5f9;padding:10px;border-radius:8px;font-size:12px;overflow:auto;'>".htmlspecialchars($migrationOutput ?: '(No new migrations) - Status: '.json_encode($juryTablesStatus))."</pre></div>
             <div><strong>Artisan Output:</strong> <pre style='background:#f1f5f9;padding:10px;border-radius:8px;font-size:12px;overflow:auto;'>".htmlspecialchars($output)."</pre></div>
-            <p><a href='/admin/prestasi' style='display:inline-block;padding:10px 20px;background:#f59e0b;color:#1e293b;text-decoration:none;border-radius:8px;font-weight:bold;margin-right:10px;'>Buka Kelola Prestasi &rarr;</a>
-               <a href='/admin/members' style='display:inline-block;padding:10px 20px;background:#dc2626;color:white;text-decoration:none;border-radius:8px;font-weight:bold;'>Buka Data Anggota &rarr;</a></p>
+            <p><a href='/juri/dashboard' style='display:inline-block;padding:10px 20px;background:#dc2626;color:white;text-decoration:none;border-radius:8px;font-weight:bold;margin-right:10px;'>Buka Dashboard Juri &rarr;</a>
+               <a href='/admin/competition-juries' style='display:inline-block;padding:10px 20px;background:#f59e0b;color:#1e293b;text-decoration:none;border-radius:8px;font-weight:bold;'>Kelola Akun Juri &rarr;</a></p>
         </div>");
     } catch (Throwable $e) {
         return response("<div style='font-family:sans-serif;padding:30px;max-width:600px;margin:auto;color:#dc2626;'>
@@ -468,7 +487,7 @@ Route::get('/storage/{path}', function ($path) {
     $cleanPath = ltrim(str_replace(['../', '..\\'], '', $path), '/');
     $firstFolder = explode('/', $cleanPath)[0];
     $allowedFolders = [
-        'advisors', 'members', 'competition_payments', 'competition_team_files', 'galleries',
+        'advisors', 'members', 'competition_payments', 'competition_team_files', 'competition_evidences', 'galleries',
         'donor-banners', 'broadcast_images', 'guidelines', 'achievements',
         'hero-slides', 'popup-banners', 'media',
     ];

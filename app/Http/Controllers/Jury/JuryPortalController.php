@@ -9,11 +9,14 @@ use App\Models\CompetitionParticipantTeam;
 use App\Models\CompetitionScore;
 use App\Models\CompetitionScorePhoto;
 use App\Models\User;
+use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\File;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Str;
 use Illuminate\View\View;
 
@@ -84,10 +87,77 @@ class JuryPortalController extends Controller
     }
 
     /**
+     * Self-healing migration agar website juri di shared hosting tidak pernah Error 500
+     */
+    public static function ensureTablesExist(): void
+    {
+        try {
+            // 1. Kolom tambahan tabel users
+            if (Schema::hasTable('users')) {
+                Schema::table('users', function (Blueprint $table) {
+                    if (! Schema::hasColumn('users', 'username')) {
+                        $table->string('username')->nullable()->unique()->after('name');
+                    }
+                    if (! Schema::hasColumn('users', 'role')) {
+                        $table->string('role')->default('admin')->after('username');
+                    }
+                    if (! Schema::hasColumn('users', 'phone')) {
+                        $table->string('phone')->nullable()->after('email');
+                    }
+                });
+            }
+
+            // 2. Tabel pivot pemetaan juri
+            if (! Schema::hasTable('jury_category_assignments')) {
+                Schema::create('jury_category_assignments', function (Blueprint $table) {
+                    $table->id();
+                    $table->foreignId('user_id')->constrained('users')->cascadeOnDelete();
+                    $table->foreignId('competition_category_id')->constrained('competition_categories')->cascadeOnDelete();
+                    $table->timestamps();
+
+                    $table->unique(['user_id', 'competition_category_id'], 'uq_jury_category');
+                });
+            }
+
+            // 3. Kolom jury_user_id pada competition_scores
+            if (Schema::hasTable('competition_scores') && ! Schema::hasColumn('competition_scores', 'jury_user_id')) {
+                Schema::table('competition_scores', function (Blueprint $table) {
+                    $table->foreignId('jury_user_id')->nullable()->after('competition_participant_team_id')
+                        ->constrained('users')->nullOnDelete();
+                });
+            }
+
+            // 4. Kolom is_photo_required pada competition_categories
+            if (Schema::hasTable('competition_categories') && ! Schema::hasColumn('competition_categories', 'is_photo_required')) {
+                Schema::table('competition_categories', function (Blueprint $table) {
+                    $table->boolean('is_photo_required')->default(false)->after('scoring_type');
+                });
+            }
+
+            // 5. Tabel bukti foto competition_score_photos
+            if (! Schema::hasTable('competition_score_photos')) {
+                Schema::create('competition_score_photos', function (Blueprint $table) {
+                    $table->id();
+                    $table->foreignId('competition_score_id')->nullable()->constrained('competition_scores')->cascadeOnDelete();
+                    $table->foreignId('competition_participant_team_id')->constrained('competition_participant_teams')->cascadeOnDelete();
+                    $table->string('photo_path');
+                    $table->string('caption')->nullable();
+                    $table->string('file_size')->nullable();
+                    $table->timestamps();
+                });
+            }
+        } catch (\Throwable $e) {
+            Log::warning('JuryPortalController ensureTablesExist: '.$e->getMessage());
+        }
+    }
+
+    /**
      * Dashboard Utama Juri: Menampilkan mata lomba yang DITUGASKAN ke juri ini
      */
     public function dashboard(Request $request): View
     {
+        self::ensureTablesExist();
+
         /** @var User $user */
         $user = Auth::user();
 
@@ -96,7 +166,7 @@ class JuryPortalController extends Controller
             ?: CompetitionEvent::orderByDesc('id')->first();
 
         // Filter cabang lomba yang ditugaskan kepada juri
-        if ($user instanceof User && $user->role === 'jury') {
+        if ($user instanceof User && ($user->role ?? null) === 'jury' && Schema::hasTable('jury_category_assignments')) {
             $categoriesQuery = $user->assignedCategories();
         } else {
             // Jika admin/superuser yang sedang membuka portal juri, tampilkan semua cabang lomba aktif
@@ -118,11 +188,18 @@ class JuryPortalController extends Controller
 
         // Hitung progres penilaian untuk masing-masing cabang lomba
         $categoryIds = $categories->pluck('id')->toArray();
-        $scoresGrouped = CompetitionScore::whereIn('competition_category_id', $categoryIds)
-            ->select('competition_category_id', 'competition_participant_team_id')
-            ->distinct()
-            ->get()
-            ->groupBy('competition_category_id');
+        $scoresGrouped = collect();
+        if (Schema::hasTable('competition_scores')) {
+            try {
+                $scoresGrouped = CompetitionScore::whereIn('competition_category_id', $categoryIds)
+                    ->select('competition_category_id', 'competition_participant_team_id')
+                    ->distinct()
+                    ->get()
+                    ->groupBy('competition_category_id');
+            } catch (\Throwable $e) {
+                Log::warning('JuryPortalController dashboard scoresGrouped error: '.$e->getMessage());
+            }
+        }
 
         $totalTeamsAssigned = 0;
         $totalTeamsScored = 0;
@@ -137,9 +214,17 @@ class JuryPortalController extends Controller
         }
 
         // Total foto bukti yang tersimpan
-        $totalPhotosCount = CompetitionScorePhoto::whereHas('score', function ($q) use ($categoryIds) {
-            $q->whereIn('competition_category_id', $categoryIds);
-        })->count();
+        $totalPhotosCount = 0;
+        if (Schema::hasTable('competition_score_photos')) {
+            try {
+                $totalPhotosCount = CompetitionScorePhoto::whereHas('team', function ($q) use ($categoryIds) {
+                    $q->whereIn('competition_category_id', $categoryIds);
+                })->count();
+            } catch (\Throwable $e) {
+                Log::warning('JuryPortalController dashboard photos count error: '.$e->getMessage());
+                $totalPhotosCount = 0;
+            }
+        }
 
         return view('jury.dashboard', compact(
             'user',
@@ -156,15 +241,22 @@ class JuryPortalController extends Controller
      */
     public function scoring(CompetitionCategory $category, Request $request): View
     {
+        self::ensureTablesExist();
+
         /** @var User $user */
         $user = Auth::user();
 
         // Otorisasi: Juri hanya boleh membuka lomba tugasnya
-        if ($user instanceof User && $user->role === 'jury') {
+        if ($user instanceof User && ($user->role ?? null) === 'jury' && Schema::hasTable('jury_category_assignments')) {
             $hasAccess = $user->assignedCategories()->where('competition_categories.id', $category->id)->exists();
             if (! $hasAccess) {
                 abort(403, 'Anda tidak ditugaskan untuk menilai cabang lomba '.$category->name.' ('.$category->level.').');
             }
+        }
+
+        $withRelations = ['registration', 'scores'];
+        if (Schema::hasTable('competition_score_photos')) {
+            $withRelations[] = 'photos';
         }
 
         // Ambil semua regu peserta terverifikasi berurutan no urut tampil
@@ -174,7 +266,7 @@ class JuryPortalController extends Controller
                 $q->whereHas('registration', fn ($rq) => $rq->where('status', 'verified'))
                     ->orWhereNull('competition_registration_id');
             })
-            ->with(['registration', 'scores', 'photos'])
+            ->with($withRelations)
             ->orderBy('order_number')
             ->get();
 
@@ -228,6 +320,8 @@ class JuryPortalController extends Controller
      */
     public function saveScore(CompetitionCategory $category, CompetitionParticipantTeam $team, Request $request): RedirectResponse|JsonResponse
     {
+        self::ensureTablesExist();
+
         $request->validate([
             'final_score' => ['required', 'numeric', 'min:0', 'max:100'],
             'minutes' => ['nullable', 'integer', 'min:0', 'max:180'],
@@ -308,6 +402,8 @@ class JuryPortalController extends Controller
      */
     public function uploadPhoto(Request $request): JsonResponse
     {
+        self::ensureTablesExist();
+
         $teamId = $request->input('team_id');
         $caption = $request->input('caption', 'Dokumentasi Lapangan');
 

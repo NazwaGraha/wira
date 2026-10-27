@@ -14,7 +14,13 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
-        $middleware->redirectGuestsTo(fn () => route('admin.login'));
+        $middleware->redirectGuestsTo(function (Request $request) {
+            if ($request->is('juri*') || $request->routeIs('jury.*')) {
+                return route('jury.login');
+            }
+
+            return route('admin.login');
+        });
         $middleware->validateCsrfTokens(except: [
             'api/*',
         ]);

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Http\Controllers\Jury\JuryPortalController;
 use App\Models\CompetitionCategory;
 use App\Models\CompetitionEvent;
 use App\Models\User;
@@ -16,6 +17,8 @@ class CompetitionJuryController extends Controller
 {
     public function index(Request $request): View
     {
+        JuryPortalController::ensureTablesExist();
+
         $allEvents = CompetitionEvent::orderByDesc('id')->get();
         $selectedEventId = $request->query('event_id');
         if ($selectedEventId) {
@@ -46,6 +49,8 @@ class CompetitionJuryController extends Controller
 
     public function store(Request $request): RedirectResponse
     {
+        JuryPortalController::ensureTablesExist();
+
         $request->validate([
             'name' => ['required', 'string', 'max:255'],
             'username' => ['required', 'string', 'max:50', 'alpha_dash', 'unique:users,username'],
