@@ -1504,6 +1504,7 @@ class CompetitionSpreadsheetService
 
     /**
      * Bangun file Excel OpenXML XLSX Lembar Penilaian Juri sama persis 100% dengan mockup visual
+     * Bersih & compliant dengan standar ECMA-376 OpenXML tanpa error recovery Excel
      *
      * @param  array<string, mixed>  $meta
      * @param  array<int, array<string, mixed>>  $rows
@@ -1544,9 +1545,13 @@ class CompetitionSpreadsheetService
 </Relationships>';
         $zip->addFromString('xl/_rels/workbook.xml.rels', $wbRels);
 
-        // 4. Workbook with 3 tabs matching mockup
+        // 4. Workbook with workbookPr and bookViews
         $workbook = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships">
+<workbookPr date1904="false"/>
+<bookViews>
+<workbookView activeTab="0"/>
+</bookViews>
 <sheets>
 <sheet name="Lembar Nilai Utama" sheetId="1" r:id="rId1"/>
 <sheet name="Rekap Juara Umum" sheetId="2" r:id="rId2"/>
@@ -1573,7 +1578,7 @@ class CompetitionSpreadsheetService
     }
 
     /**
-     * XML Styles OpenXML komprehensif persis sesuai warna dan tipografi mockup visual
+     * XML Styles OpenXML komprehensif compliant dengan standar ECMA-376
      */
     protected function buildScoreSheetStylesXml(): string
     {
@@ -1653,23 +1658,26 @@ class CompetitionSpreadsheetService
 </fills>
 <borders count="7">
   <!-- 0: None -->
-  <border><left/><right/><top/><bottom/></border>
+  <border><left/><right/><top/><bottom/><diagonal/></border>
   <!-- 1: Thin Gray All #CBD5E1 -->
   <border>
     <left style="thin"><color rgb="FFCBD5E1"/></left>
     <right style="thin"><color rgb="FFCBD5E1"/></right>
     <top style="thin"><color rgb="FFCBD5E1"/></top>
     <bottom style="thin"><color rgb="FFCBD5E1"/></bottom>
+    <diagonal/>
   </border>
   <!-- 2: Double Bottom Black (Kop Separator) -->
   <border>
     <left/><right/><top/>
     <bottom style="double"><color rgb="FF0F172A"/></bottom>
+    <diagonal/>
   </border>
   <!-- 3: Medium Bottom Black (Signature Line) -->
   <border>
     <left/><right/><top/>
     <bottom style="medium"><color rgb="FF0F172A"/></bottom>
+    <diagonal/>
   </border>
   <!-- 4: Green Pill Border #86EFAC -->
   <border>
@@ -1677,6 +1685,7 @@ class CompetitionSpreadsheetService
     <right style="thin"><color rgb="FF86EFAC"/></right>
     <top style="thin"><color rgb="FF86EFAC"/></top>
     <bottom style="thin"><color rgb="FF86EFAC"/></bottom>
+    <diagonal/>
   </border>
   <!-- 5: Amber Pill Border #FCD34D -->
   <border>
@@ -1684,6 +1693,7 @@ class CompetitionSpreadsheetService
     <right style="thin"><color rgb="FFFCD34D"/></right>
     <top style="thin"><color rgb="FFFCD34D"/></top>
     <bottom style="thin"><color rgb="FFFCD34D"/></bottom>
+    <diagonal/>
   </border>
   <!-- 6: Blue Pill Border #BFDBFE -->
   <border>
@@ -1691,6 +1701,7 @@ class CompetitionSpreadsheetService
     <right style="thin"><color rgb="FFBFDBFE"/></right>
     <top style="thin"><color rgb="FFBFDBFE"/></top>
     <bottom style="thin"><color rgb="FFBFDBFE"/></bottom>
+    <diagonal/>
   </border>
 </borders>
 <cellStyleXfs count="1">
@@ -1730,9 +1741,9 @@ class CompetitionSpreadsheetService
   <!-- 15: Box Label Right -->
   <xf numFmtId="0" fontId="10" fillId="10" borderId="1" xfId="0" applyFont="1" applyFill="1" applyBorder="1" applyAlignment="1"><alignment horizontal="right" vertical="center"/></xf>
   <!-- 16: Box Value Left -->
-  <xf numFmtId="0" fontId="2" fillId="14" borderId="1" xfId="0" applyFont="1" applyFill="1" applyBorder="1" applyAlignment="1"><alignment horizontal="left" vertical="center"/></xf>
+  <xf numFmtId="0" fontId="2" fillId="14" borderId="1" xfId="0" applyFont="1" applyBorder="1" applyAlignment="1"><alignment horizontal="left" vertical="center"/></xf>
   <!-- 17: Box Value Blue Left -->
-  <xf numFmtId="0" fontId="7" fillId="14" borderId="1" xfId="0" applyFont="1" applyFill="1" applyBorder="1" applyAlignment="1"><alignment horizontal="left" vertical="center"/></xf>
+  <xf numFmtId="0" fontId="7" fillId="14" borderId="1" xfId="0" applyFont="1" applyBorder="1" applyAlignment="1"><alignment horizontal="left" vertical="center"/></xf>
   <!-- 18: Box Badge Blue Pill Center (WIRA) -->
   <xf numFmtId="0" fontId="18" fillId="9" borderId="6" xfId="0" applyFont="1" applyFill="1" applyBorder="1" applyAlignment="1"><alignment horizontal="center" vertical="center"/></xf>
   <!-- 19: Box Badge Pill White Center (@username) -->
@@ -1768,7 +1779,7 @@ class CompetitionSpreadsheetService
   <!-- 34: Foto Badge Green Center -->
   <xf numFmtId="0" fontId="12" fillId="12" borderId="4" xfId="0" applyFont="1" applyFill="1" applyBorder="1" applyAlignment="1"><alignment horizontal="center" vertical="center"/></xf>
   <!-- 35: Catatan Juri Italic Left -->
-  <xf numFmtId="0" fontId="9" fillId="14" borderId="1" xfId="0" applyFont="1" applyFill="1" applyBorder="1" applyAlignment="1"><alignment horizontal="left" vertical="center"/></xf>
+  <xf numFmtId="0" fontId="9" fillId="14" borderId="1" xfId="0" applyFont="1" applyBorder="1" applyAlignment="1"><alignment horizontal="left" vertical="center"/></xf>
   <!-- 36: Catatan Juri Italic Zebra Left -->
   <xf numFmtId="0" fontId="9" fillId="10" borderId="1" xfId="0" applyFont="1" applyFill="1" applyBorder="1" applyAlignment="1"><alignment horizontal="left" vertical="center"/></xf>
   <!-- 37: Stat Card Label Center -->
@@ -1796,6 +1807,9 @@ class CompetitionSpreadsheetService
   <!-- 48: Active Jury Status Emerald Center -->
   <xf numFmtId="0" fontId="8" fillId="11" borderId="1" xfId="0" applyFont="1" applyFill="1" applyBorder="1" applyAlignment="1"><alignment horizontal="center" vertical="center"/></xf>
 </cellXfs>
+<cellStyles count="1">
+  <cellStyle name="Normal" xfId="0" builtinId="0"/>
+</cellStyles>
 </styleSheet>';
     }
 
@@ -1845,7 +1859,7 @@ class CompetitionSpreadsheetService
         }
         $sheetDataXml .= '</row>';
 
-        // Baris 3: Kop Subtitle Event (Kiri A3:H3)
+        // Baris 3: Kop Subtitle Event (Kiri A3:H3) & Kanan (I3:L3)
         $sheetDataXml .= '<row r="3" ht="22" customHeight="1">';
         $safeEventTitle = htmlspecialchars($meta['event_title'] ?? 'LOMBA KEPALANGMERAHAN "SUA BHAKTI BERKARYA IV" TAHUN 2026', ENT_XML1);
         $sheetDataXml .= '<c r="A3" s="8" t="inlineStr"><is><t>'.$safeEventTitle.'</t></is></c>';
@@ -1857,7 +1871,7 @@ class CompetitionSpreadsheetService
         }
         $sheetDataXml .= '</row>';
 
-        // Baris 4: Double border separator
+        // Baris 4: Double border separator (A4:L4 tanpa perlu di-merge agar border ganda utuh di semua sel)
         $sheetDataXml .= '<row r="4" ht="8" customHeight="1">';
         for ($c = 0; $c < 12; $c++) {
             $sheetDataXml .= '<c r="'.$this->indexToColumnLetter($c).'4" s="9"/>';
@@ -2210,7 +2224,7 @@ class CompetitionSpreadsheetService
             'A2:H2',
             'I2:L2',
             'A3:H3',
-            'A4:L4',
+            'I3:L3',
             'A6:F6',
             'G6:J6',
             'K6:L6',
@@ -2255,12 +2269,13 @@ class CompetitionSpreadsheetService
         }
         $mergeCellsXml .= '</mergeCells>';
 
-        // 4. Worksheet XML with Frozen Pane at Row 11
+        // 4. Worksheet XML with Frozen Pane at Row 11 & proper selection
         return '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">
 <sheetViews>
 <sheetView tabSelected="1" workbookViewId="0">
 <pane ySplit="11" topLeftCell="A12" activePane="bottomLeft" state="frozen"/>
+<selection pane="bottomLeft" activeCell="A12" sqref="A12"/>
 </sheetView>
 </sheetViews>
 <sheetFormatPr defaultRowHeight="20"/>
@@ -2318,7 +2333,7 @@ class CompetitionSpreadsheetService
         $headers = ['NO.', 'PERINGKAT', 'NO. REG', 'SEKOLAH / PANGKALAN', 'NAMA TIM', 'NILAI AKHIR', 'PENGHARGAAN / TROPHY', 'KETERANGAN'];
         foreach ($headers as $hIdx => $hText) {
             $sId = ($hIdx === 5 ? 3 : ($hIdx === 1 ? 4 : 2));
-            $sheetDataXml .= '<c r="'.$this->indexToColumnLetter($hIdx).'6" s="'.$sId.'" t="inlineStr"><is><t>'.$hText.'</t></is></c>';
+            $sheetDataXml .= '<c r="'.$this->indexToColumnLetter($hIdx).'6" s="'.$sId.'" t="inlineStr"><is><t>'.htmlspecialchars($hText, ENT_XML1).'</t></is></c>';
         }
         $sheetDataXml .= '</row>';
 
@@ -2359,7 +2374,7 @@ class CompetitionSpreadsheetService
                 $sheetDataXml .= '<c r="D'.$cRow.'" s="'.$styleLeft.'" t="inlineStr"><is><t>'.htmlspecialchars((string) $item['school_name'], ENT_XML1).'</t></is></c>';
                 $sheetDataXml .= '<c r="E'.$cRow.'" s="'.$styleLeft.'" t="inlineStr"><is><t>'.htmlspecialchars((string) $item['team_name'], ENT_XML1).'</t></is></c>';
                 $sheetDataXml .= '<c r="F'.$cRow.'" s="'.$styleCenter.'" t="inlineStr"><is><t>'.htmlspecialchars((string) $item['final_score'], ENT_XML1).'</t></is></c>';
-                $sheetDataXml .= '<c r="G'.$cRow.'" s="'.$styleLeft.'" t="inlineStr"><is><t>'.$trophy.'</t></is></c>';
+                $sheetDataXml .= '<c r="G'.$cRow.'" s="'.$styleLeft.'" t="inlineStr"><is><t>'.htmlspecialchars($trophy, ENT_XML1).'</t></is></c>';
                 $sheetDataXml .= '<c r="H'.$cRow.'" s="'.$styleCenter.'" t="inlineStr"><is><t>Sah Dewan Juri</t></is></c>';
                 $sheetDataXml .= '</row>';
                 $cRow++;
@@ -2390,7 +2405,7 @@ class CompetitionSpreadsheetService
 
         return '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">
-<sheetViews><sheetView tabSelected="0" workbookViewId="0"/></sheetViews>
+<sheetViews><sheetView workbookViewId="0"/></sheetViews>
 <sheetFormatPr defaultRowHeight="20"/>
 '.$colsXml.'
 '.$sheetDataXml.'
@@ -2443,7 +2458,7 @@ class CompetitionSpreadsheetService
         $sheetDataXml .= '<row r="6" ht="26" customHeight="1">';
         $headers = ['NO.', 'NAMA LENGKAP & GELAR', 'USERNAME AKUN', 'BIDANG PENJURIAN', 'MATA LOMBA DITUGASKAN', 'STATUS AKUN', 'TANDA TANGAN'];
         foreach ($headers as $hIdx => $hText) {
-            $sheetDataXml .= '<c r="'.$this->indexToColumnLetter($hIdx).'6" s="2" t="inlineStr"><is><t>'.$hText.'</t></is></c>';
+            $sheetDataXml .= '<c r="'.$this->indexToColumnLetter($hIdx).'6" s="2" t="inlineStr"><is><t>'.htmlspecialchars($hText, ENT_XML1).'</t></is></c>';
         }
         $sheetDataXml .= '</row>';
 
@@ -2491,7 +2506,7 @@ class CompetitionSpreadsheetService
 
         return '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">
-<sheetViews><sheetView tabSelected="0" workbookViewId="0"/></sheetViews>
+<sheetViews><sheetView workbookViewId="0"/></sheetViews>
 <sheetFormatPr defaultRowHeight="20"/>
 '.$colsXml.'
 '.$sheetDataXml.'
