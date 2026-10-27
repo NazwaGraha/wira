@@ -4,6 +4,9 @@
 @section('page_title', 'Rekapitulasi Poin & Klasemen Juara Umum')
 
 @section('top_actions')
+    <a href="{{ route('admin.competition-leaderboard.export-excel', array_merge(request()->query(), ['level' => $level])) }}" class="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2.5 rounded-xl font-bold text-xs transition flex items-center gap-2 shadow-sm">
+        <i class="fa-solid fa-file-excel"></i> Export Excel
+    </a>
     <a href="{{ route('lomba.scoreboard', ['level' => $level]) }}" target="_blank" class="bg-slate-800 hover:bg-slate-900 text-white px-4 py-2.5 rounded-xl font-bold text-xs transition flex items-center gap-2">
         <i class="fa-solid fa-tv"></i> Tampilkan di Proyektor
     </a>
@@ -61,6 +64,9 @@
                 <h3 class="font-black text-base text-slate-900">Tabel Rekapitulasi Poin Juara Umum</h3>
                 <p class="text-xs text-slate-500">Matriks akumulasi perolehan poin dari semua cabang lomba tingkat PMR {{ $level }}.</p>
             </div>
+            <a href="{{ route('admin.competition-leaderboard.export-excel', array_merge(request()->query(), ['level' => $level])) }}" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs px-4 py-2.5 rounded-xl transition flex items-center gap-2 shadow-sm">
+                <i class="fa-solid fa-file-excel text-sm"></i> Export Data ke Excel
+            </a>
         </div>
 
         <div class="overflow-x-auto">

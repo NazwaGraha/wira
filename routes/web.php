@@ -289,6 +289,7 @@ Route::prefix('admin')->name('admin.')->group(function () {
 
         // Rekap Juara Umum & Klasemen
         Route::get('/competition-leaderboard', [CompetitionLeaderboardController::class, 'index'])->name('competition-leaderboard.index');
+        Route::get('/competition-leaderboard/export-excel', [CompetitionLeaderboardController::class, 'exportExcel'])->name('competition-leaderboard.export-excel');
 
         // Siaran Email / Informasi Kegiatan & Undangan Lomba
         Route::get('/competition-broadcast', [CompetitionBroadcastController::class, 'index'])->name('competition-broadcast.index');

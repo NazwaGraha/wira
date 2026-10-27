@@ -3,10 +3,12 @@
 namespace App\Services;
 
 use App\Models\CompetitionCategory;
+use App\Models\CompetitionEvent;
 use App\Models\CompetitionParticipantTeam;
 use App\Models\CompetitionScore;
 use Carbon\Carbon;
 use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Collection;
 use ZipArchive;
 
 class CompetitionSpreadsheetService
@@ -2517,6 +2519,951 @@ class CompetitionSpreadsheetService
         $sheetDataXml .= '</sheetData>';
 
         $merge = ['A1:G1', 'A2:G2', 'A3:G3', 'A4:G4'];
+        $mergeXml = '<mergeCells count="'.count($merge).'">';
+        foreach ($merge as $m) {
+            $mergeXml .= '<mergeCell ref="'.$m.'"/>';
+        }
+        $mergeXml .= '</mergeCells>';
+
+        return '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">
+<sheetViews><sheetView workbookViewId="0"/></sheetViews>
+<sheetFormatPr defaultRowHeight="20"/>
+'.$colsXml.'
+'.$sheetDataXml.'
+'.$mergeXml.'
+</worksheet>';
+    }
+
+    /**
+     * Hasilkan file Excel (.xlsx) Rekapitulasi Poin & Klasemen Akhir Juara Umum sama persis dengan mockup visual
+     */
+    public function exportLeaderboardStandingsXlsx(?CompetitionEvent $event, string $level, Collection $categories, Collection $standings): string
+    {
+        $eventName = $event?->name ?? 'SUA BHAKTI BERKARYA IV';
+        $eventYear = $event?->start_date ? Carbon::parse($event->start_date)->format('Y') : date('Y');
+
+        $levelText = match (strtolower($level)) {
+            'mula' => 'PMR MULA (SD/MI)',
+            'madya' => 'PMR MADYA (SMP/MTs)',
+            'wira' => 'PMR WIRA (SMA/SMK/MA)',
+            default => 'PMR '.ucwords($level),
+        };
+
+        $totalSchools = $standings->count();
+        $totalCategories = $categories->count();
+        $totalMedals = $totalCategories * 3;
+
+        $topSchool = $standings->first();
+        $topScoreText = $topSchool ? $topSchool['total_points'].' Pts ('.$topSchool['school_name'].')' : '0 Pts';
+        $avgScore = $totalSchools > 0 ? number_format($standings->avg('total_points'), 1).' Pts' : '0 Pts';
+
+        $meta = [
+            'event_title' => 'LOMBA KEPALANGMERAHAN "'.$eventName.'" TAHUN '.$eventYear,
+            'level' => $level,
+            'level_text' => $levelText,
+            'categories_count' => $totalCategories,
+            'schools_count' => $totalSchools,
+            'export_date' => Carbon::now()->translatedFormat('d F Y'),
+            'export_time' => Carbon::now()->format('d/m/Y H:i').' WIB',
+            'stat_total_schools' => $totalSchools.' Pangkalan',
+            'stat_total_medals' => $totalMedals.' Trophy Juara',
+            'stat_top_points' => $topScoreText,
+            'stat_avg_points' => $avgScore,
+        ];
+
+        return $this->createLeaderboardXlsxFile($meta, $categories, $standings);
+    }
+
+    /**
+     * Bangun file Excel OpenXML XLSX Rekapitulasi Klasemen Juara Umum
+     */
+    protected function createLeaderboardXlsxFile(array $meta, Collection $categories, Collection $standings): string
+    {
+        $tempFile = tempnam(sys_get_temp_dir(), 'pmr_leaderboard_');
+        $zip = new ZipArchive;
+        $zip->open($tempFile, ZipArchive::CREATE | ZipArchive::OVERWRITE);
+
+        // 1. Content Types (3 Worksheets: Klasemen Juara Umum, Distribusi Medali Lomba, Daftar Kontingen Sekolah)
+        $contentTypes = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types">
+<Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/>
+<Default Extension="xml" ContentType="application/xml"/>
+<Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/>
+<Override PartName="/xl/worksheets/sheet1.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/>
+<Override PartName="/xl/worksheets/sheet2.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/>
+<Override PartName="/xl/worksheets/sheet3.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/>
+<Override PartName="/xl/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.styles+xml"/>
+</Types>';
+        $zip->addFromString('[Content_Types].xml', $contentTypes);
+
+        // 2. Package relationships
+        $rels = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">
+<Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="xl/workbook.xml"/>
+</Relationships>';
+        $zip->addFromString('_rels/.rels', $rels);
+
+        // 3. Workbook relationships
+        $wbRels = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">
+<Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet1.xml"/>
+<Relationship Id="rId2" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet2.xml"/>
+<Relationship Id="rId3" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet3.xml"/>
+<Relationship Id="rId4" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/>
+</Relationships>';
+        $zip->addFromString('xl/_rels/workbook.xml.rels', $wbRels);
+
+        // 4. Workbook with 3 tabs matching mockup
+        $workbook = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships">
+<workbookPr date1904="false"/>
+<bookViews>
+<workbookView activeTab="0"/>
+</bookViews>
+<sheets>
+<sheet name="Klasemen Juara Umum" sheetId="1" r:id="rId1"/>
+<sheet name="Distribusi Medali Lomba" sheetId="2" r:id="rId2"/>
+<sheet name="Daftar Kontingen Sekolah" sheetId="3" r:id="rId3"/>
+</sheets>
+</workbook>';
+        $zip->addFromString('xl/workbook.xml', $workbook);
+
+        // 5. Styles (gunakan buildScoreSheetStylesXml yang sudah lengkap dan teruji)
+        $zip->addFromString('xl/styles.xml', $this->buildScoreSheetStylesXml());
+
+        // 6. Sheet 1: Klasemen Juara Umum
+        $zip->addFromString('xl/worksheets/sheet1.xml', $this->buildMainLeaderboardSheetXml($meta, $categories, $standings));
+
+        // 7. Sheet 2: Distribusi Medali Lomba
+        $zip->addFromString('xl/worksheets/sheet2.xml', $this->buildCategoryMedalDistributionSheetXml($meta, $categories));
+
+        // 8. Sheet 3: Daftar Kontingen Sekolah
+        $zip->addFromString('xl/worksheets/sheet3.xml', $this->buildLeaderboardSchoolListSheetXml($meta, $standings));
+
+        $zip->close();
+
+        return $tempFile;
+    }
+
+    /**
+     * Bangun XML Sheet 1: Klasemen Juara Umum (Sama persis 100% dengan Mockup Visual)
+     */
+    protected function buildMainLeaderboardSheetXml(array $meta, Collection $categories, Collection $standings): string
+    {
+        $catCount = $categories->count();
+        // Kolom: Rank (0), Sekolah (1), Kategori (2 s.d. 2+catCount-1), Emas, Perak, Perunggu, Total Poin, Status Prestasi
+        // Total Kolom = 2 + catCount + 3 + 1 + 1 = catCount + 7
+        $totalCols = $catCount + 7;
+        $lastColIdx = $totalCols - 1;
+        $lastColLetter = $this->indexToColumnLetter($lastColIdx);
+
+        // Titik tengah untuk Kop & Box
+        $midColIdx = max(3, (int) floor($totalCols / 2));
+        $midColLetter = $this->indexToColumnLetter($midColIdx - 1);
+        $nextColLetter = $this->indexToColumnLetter($midColIdx);
+
+        // 1. Column Widths
+        $colsXml = '<cols>';
+        $colsXml .= '<col min="1" max="1" width="8" customWidth="1"/>'; // A: Rank
+        $colsXml .= '<col min="2" max="2" width="34" customWidth="1"/>'; // B: Nama Sekolah
+        $cMin = 3;
+        foreach ($categories as $cat) {
+            $colsXml .= '<col min="'.$cMin.'" max="'.$cMin.'" width="14" customWidth="1"/>';
+            $cMin++;
+        }
+        $colsXml .= '<col min="'.$cMin.'" max="'.$cMin.'" width="9" customWidth="1"/>'; // Emas
+        $cMin++;
+        $colsXml .= '<col min="'.$cMin.'" max="'.$cMin.'" width="9" customWidth="1"/>'; // Perak
+        $cMin++;
+        $colsXml .= '<col min="'.$cMin.'" max="'.$cMin.'" width="9" customWidth="1"/>'; // Perunggu
+        $cMin++;
+        $colsXml .= '<col min="'.$cMin.'" max="'.$cMin.'" width="16" customWidth="1"/>'; // Total Poin
+        $cMin++;
+        $colsXml .= '<col min="'.$cMin.'" max="'.$cMin.'" width="24" customWidth="1"/>'; // Status Prestasi
+        $colsXml .= '</cols>';
+
+        $sheetDataXml = '<sheetData>';
+
+        // Baris 1: Kop Red Title (Kiri) & Badge Official Leaderboard Sheet (Kanan)
+        $sheetDataXml .= '<row r="1" ht="24" customHeight="1">';
+        $sheetDataXml .= '<c r="A1" s="6" t="inlineStr"><is><t>PALANG MERAH INDONESIA • PMR WIRA SMA NEGERI 1 CIAWI</t></is></c>';
+        for ($c = 1; $c < $midColIdx; $c++) {
+            $sheetDataXml .= '<c r="'.$this->indexToColumnLetter($c).'1" s="6"/>';
+        }
+        $sheetDataXml .= '<c r="'.$nextColLetter.'1" s="10" t="inlineStr"><is><t>OFFICIAL LEADERBOARD SHEET</t></is></c>';
+        for ($c = $midColIdx + 1; $c < $totalCols; $c++) {
+            $sheetDataXml .= '<c r="'.$this->indexToColumnLetter($c).'1" s="10"/>';
+        }
+        $sheetDataXml .= '</row>';
+
+        // Baris 2: Kop Big Title (Kiri) & Info Dicetak Sah (Kanan)
+        $sheetDataXml .= '<row r="2" ht="28" customHeight="1">';
+        $sheetDataXml .= '<c r="A2" s="7" t="inlineStr"><is><t>REKAPITULASI POIN &amp; KLASEMEN AKHIR JUARA UMUM</t></is></c>';
+        for ($c = 1; $c < $midColIdx; $c++) {
+            $sheetDataXml .= '<c r="'.$this->indexToColumnLetter($c).'2" s="7"/>';
+        }
+        $printInfo = 'Dokumen Sah Panitia • Dicetak: '.($meta['export_time'] ?? date('d/m/Y H:i').' WIB');
+        $sheetDataXml .= '<c r="'.$nextColLetter.'2" s="11" t="inlineStr"><is><t>'.htmlspecialchars($printInfo, ENT_XML1).'</t></is></c>';
+        for ($c = $midColIdx + 1; $c < $totalCols; $c++) {
+            $sheetDataXml .= '<c r="'.$this->indexToColumnLetter($c).'2" s="11"/>';
+        }
+        $sheetDataXml .= '</row>';
+
+        // Baris 3: Kop Subtitle Event (Kiri)
+        $sheetDataXml .= '<row r="3" ht="22" customHeight="1">';
+        $safeEventTitle = htmlspecialchars($meta['event_title'].' • TINGKAT '.$meta['level_text'], ENT_XML1);
+        $sheetDataXml .= '<c r="A3" s="8" t="inlineStr"><is><t>'.$safeEventTitle.'</t></is></c>';
+        for ($c = 1; $c < $midColIdx; $c++) {
+            $sheetDataXml .= '<c r="'.$this->indexToColumnLetter($c).'3" s="8"/>';
+        }
+        for ($c = $midColIdx; $c < $totalCols; $c++) {
+            $sheetDataXml .= '<c r="'.$this->indexToColumnLetter($c).'3" s="46"/>';
+        }
+        $sheetDataXml .= '</row>';
+
+        // Baris 4: Double border separator
+        $sheetDataXml .= '<row r="4" ht="8" customHeight="1">';
+        for ($c = 0; $c < $totalCols; $c++) {
+            $sheetDataXml .= '<c r="'.$this->indexToColumnLetter($c).'4" s="9"/>';
+        }
+        $sheetDataXml .= '</row>';
+
+        // Baris 5: Spacing blank
+        $sheetDataXml .= '<row r="5" ht="8" customHeight="1">';
+        for ($c = 0; $c < $totalCols; $c++) {
+            $sheetDataXml .= '<c r="'.$this->indexToColumnLetter($c).'5" s="46"/>';
+        }
+        $sheetDataXml .= '</row>';
+
+        // Baris 6: Box Headers (Informasi Tingkatan di Kiri, Sistem Poin di Kanan)
+        $sheetDataXml .= '<row r="6" ht="24" customHeight="1">';
+        $sheetDataXml .= '<c r="A6" s="12" t="inlineStr"><is><t>ℹ️ INFORMASI TINGKATAN &amp; EVENT:</t></is></c>';
+        for ($c = 1; $c < $midColIdx; $c++) {
+            $sheetDataXml .= '<c r="'.$this->indexToColumnLetter($c).'6" s="12"/>';
+        }
+        $sheetDataXml .= '<c r="'.$nextColLetter.'6" s="13" t="inlineStr"><is><t>🏆 SISTEM PEROLEHAN POIN JUARA UMUM:</t></is></c>';
+        for ($c = $midColIdx + 1; $c < $totalCols; $c++) {
+            $sheetDataXml .= '<c r="'.$this->indexToColumnLetter($c).'6" s="13"/>';
+        }
+        $sheetDataXml .= '</row>';
+
+        // Baris 7: Metadata Row 1
+        $sheetDataXml .= '<row r="7" ht="22" customHeight="1">';
+        $sheetDataXml .= '<c r="A7" s="15" t="inlineStr"><is><t>Tingkatan Lomba:</t></is></c>';
+        $sheetDataXml .= '<c r="B7" s="18" t="inlineStr"><is><t>'.htmlspecialchars($meta['level_text'], ENT_XML1).'</t></is></c>';
+        for ($c = 2; $c < $midColIdx; $c++) {
+            $sheetDataXml .= '<c r="'.$this->indexToColumnLetter($c).'7" s="18"/>';
+        }
+        $sheetDataXml .= '<c r="'.$nextColLetter.'7" s="15" t="inlineStr"><is><t>Tier 1 (Utama):</t></is></c>';
+        $tier1Rule = 'Juara 1: 12 pts | Juara 2: 10 pts | Juara 3: 8 pts | Harapan 1: 6 pts';
+        $sheetDataXml .= '<c r="'.$this->indexToColumnLetter($midColIdx + 1).'7" s="16" t="inlineStr"><is><t>'.htmlspecialchars($tier1Rule, ENT_XML1).'</t></is></c>';
+        for ($c = $midColIdx + 2; $c < $totalCols; $c++) {
+            $sheetDataXml .= '<c r="'.$this->indexToColumnLetter($c).'7" s="16"/>';
+        }
+        $sheetDataXml .= '</row>';
+
+        // Baris 8: Metadata Row 2
+        $sheetDataXml .= '<row r="8" ht="22" customHeight="1">';
+        $sheetDataXml .= '<c r="A8" s="15" t="inlineStr"><is><t>Cabang Lomba:</t></is></c>';
+        $sheetDataXml .= '<c r="B8" s="16" t="inlineStr"><is><t>'.htmlspecialchars((string) $meta['stat_total_medals'].' ('.$meta['categories_count'].' Cabang Mata Lomba)', ENT_XML1).'</t></is></c>';
+        for ($c = 2; $c < $midColIdx; $c++) {
+            $sheetDataXml .= '<c r="'.$this->indexToColumnLetter($c).'8" s="16"/>';
+        }
+        $sheetDataXml .= '<c r="'.$nextColLetter.'8" s="15" t="inlineStr"><is><t>Tier 2 (Pendukung):</t></is></c>';
+        $tier2Rule = 'Juara 1: 10 pts | Juara 2: 8 pts | Juara 3: 6 pts | Harapan 1: 4 pts';
+        $sheetDataXml .= '<c r="'.$this->indexToColumnLetter($midColIdx + 1).'8" s="16" t="inlineStr"><is><t>'.htmlspecialchars($tier2Rule, ENT_XML1).'</t></is></c>';
+        for ($c = $midColIdx + 2; $c < $totalCols; $c++) {
+            $sheetDataXml .= '<c r="'.$this->indexToColumnLetter($c).'8" s="16"/>';
+        }
+        $sheetDataXml .= '</row>';
+
+        // Baris 9: Metadata Row 3
+        $sheetDataXml .= '<row r="9" ht="22" customHeight="1">';
+        $sheetDataXml .= '<c r="A9" s="15" t="inlineStr"><is><t>Total Kontingen:</t></is></c>';
+        $sheetDataXml .= '<c r="B9" s="16" t="inlineStr"><is><t>'.htmlspecialchars((string) $meta['stat_total_schools'], ENT_XML1).'</t></is></c>';
+        for ($c = 2; $c < $midColIdx; $c++) {
+            $sheetDataXml .= '<c r="'.$this->indexToColumnLetter($c).'9" s="16"/>';
+        }
+        $sheetDataXml .= '<c r="'.$nextColLetter.'9" s="15" t="inlineStr"><is><t>Aturan Seri (Tie-Break):</t></is></c>';
+        $tieRule = 'Keunggulan Jumlah Medali Emas > Perak > Perunggu';
+        $sheetDataXml .= '<c r="'.$this->indexToColumnLetter($midColIdx + 1).'9" s="48" t="inlineStr"><is><t>'.htmlspecialchars($tieRule, ENT_XML1).'</t></is></c>';
+        for ($c = $midColIdx + 2; $c < $totalCols; $c++) {
+            $sheetDataXml .= '<c r="'.$this->indexToColumnLetter($c).'9" s="48"/>';
+        }
+        $sheetDataXml .= '</row>';
+
+        // Baris 10: Spacing blank
+        $sheetDataXml .= '<row r="10" ht="8" customHeight="1">';
+        for ($c = 0; $c < $totalCols; $c++) {
+            $sheetDataXml .= '<c r="'.$this->indexToColumnLetter($c).'10" s="46"/>';
+        }
+        $sheetDataXml .= '</row>';
+
+        // Baris 11-13: Podium 3 Besar Juara Umum (Highlight Cards)
+        $podium1 = $standings->get(0);
+        $podium2 = $standings->get(1);
+        $podium3 = $standings->get(2);
+
+        $podCol1End = max(3, (int) floor($totalCols / 3));
+        $podCol2End = max($podCol1End + 3, (int) floor($totalCols * 2 / 3));
+
+        // Podium Header Row (Baris 11)
+        $sheetDataXml .= '<row r="11" ht="22" customHeight="1">';
+        // Card 1: Juara Umum 1 (Gold)
+        $sheetDataXml .= '<c r="A11" s="20" t="inlineStr"><is><t>🥇 JUARA UMUM I (PIALA BERGILIR)</t></is></c>';
+        for ($c = 1; $c < $podCol1End; $c++) {
+            $sheetDataXml .= '<c r="'.$this->indexToColumnLetter($c).'11" s="20"/>';
+        }
+        // Card 2: Juara Umum 2 (Silver)
+        $sheetDataXml .= '<c r="'.$this->indexToColumnLetter($podCol1End).'11" s="22" t="inlineStr"><is><t>🥈 JUARA UMUM II (TROPHY TETAP)</t></is></c>';
+        for ($c = $podCol1End + 1; $c < $podCol2End; $c++) {
+            $sheetDataXml .= '<c r="'.$this->indexToColumnLetter($c).'11" s="22"/>';
+        }
+        // Card 3: Juara Umum 3 (Bronze)
+        $sheetDataXml .= '<c r="'.$this->indexToColumnLetter($podCol2End).'11" s="24" t="inlineStr"><is><t>🥉 JUARA UMUM III (TROPHY TETAP)</t></is></c>';
+        for ($c = $podCol2End + 1; $c < $totalCols; $c++) {
+            $sheetDataXml .= '<c r="'.$this->indexToColumnLetter($c).'11" s="24"/>';
+        }
+        $sheetDataXml .= '</row>';
+
+        // Podium School Name Row (Baris 12)
+        $sheetDataXml .= '<row r="12" ht="26" customHeight="1">';
+        // P1 School
+        $p1School = $podium1['school_name'] ?? 'Belum Ditentukan';
+        $sheetDataXml .= '<c r="A12" s="21" t="inlineStr"><is><t>'.htmlspecialchars($p1School, ENT_XML1).'</t></is></c>';
+        for ($c = 1; $c < $podCol1End; $c++) {
+            $sheetDataXml .= '<c r="'.$this->indexToColumnLetter($c).'12" s="21"/>';
+        }
+        // P2 School
+        $p2School = $podium2['school_name'] ?? 'Belum Ditentukan';
+        $sheetDataXml .= '<c r="'.$this->indexToColumnLetter($podCol1End).'12" s="23" t="inlineStr"><is><t>'.htmlspecialchars($p2School, ENT_XML1).'</t></is></c>';
+        for ($c = $podCol1End + 1; $c < $podCol2End; $c++) {
+            $sheetDataXml .= '<c r="'.$this->indexToColumnLetter($c).'12" s="23"/>';
+        }
+        // P3 School
+        $p3School = $podium3['school_name'] ?? 'Belum Ditentukan';
+        $sheetDataXml .= '<c r="'.$this->indexToColumnLetter($podCol2End).'12" s="25" t="inlineStr"><is><t>'.htmlspecialchars($p3School, ENT_XML1).'</t></is></c>';
+        for ($c = $podCol2End + 1; $c < $totalCols; $c++) {
+            $sheetDataXml .= '<c r="'.$this->indexToColumnLetter($c).'12" s="25"/>';
+        }
+        $sheetDataXml .= '</row>';
+
+        // Podium Points Row (Baris 13)
+        $sheetDataXml .= '<row r="13" ht="24" customHeight="1">';
+        // P1 Score
+        $p1ScoreText = ($podium1 ? $podium1['total_points'].' Poin' : '0 Poin').' • '.($podium1['gold_count'] ?? 0).' Emas, '.($podium1['silver_count'] ?? 0).' Perak, '.($podium1['bronze_count'] ?? 0).' Perunggu';
+        $sheetDataXml .= '<c r="A13" s="20" t="inlineStr"><is><t>'.htmlspecialchars($p1ScoreText, ENT_XML1).'</t></is></c>';
+        for ($c = 1; $c < $podCol1End; $c++) {
+            $sheetDataXml .= '<c r="'.$this->indexToColumnLetter($c).'13" s="20"/>';
+        }
+        // P2 Score
+        $p2ScoreText = ($podium2 ? $podium2['total_points'].' Poin' : '0 Poin').' • '.($podium2['gold_count'] ?? 0).' Emas, '.($podium2['silver_count'] ?? 0).' Perak, '.($podium2['bronze_count'] ?? 0).' Perunggu';
+        $sheetDataXml .= '<c r="'.$this->indexToColumnLetter($podCol1End).'13" s="22" t="inlineStr"><is><t>'.htmlspecialchars($p2ScoreText, ENT_XML1).'</t></is></c>';
+        for ($c = $podCol1End + 1; $c < $podCol2End; $c++) {
+            $sheetDataXml .= '<c r="'.$this->indexToColumnLetter($c).'13" s="22"/>';
+        }
+        // P3 Score
+        $p3ScoreText = ($podium3 ? $podium3['total_points'].' Poin' : '0 Poin').' • '.($podium3['gold_count'] ?? 0).' Emas, '.($podium3['silver_count'] ?? 0).' Perak, '.($podium3['bronze_count'] ?? 0).' Perunggu';
+        $sheetDataXml .= '<c r="'.$this->indexToColumnLetter($podCol2End).'13" s="24" t="inlineStr"><is><t>'.htmlspecialchars($p3ScoreText, ENT_XML1).'</t></is></c>';
+        for ($c = $podCol2End + 1; $c < $totalCols; $c++) {
+            $sheetDataXml .= '<c r="'.$this->indexToColumnLetter($c).'13" s="24"/>';
+        }
+        $sheetDataXml .= '</row>';
+
+        // Baris 14: Spacing blank
+        $sheetDataXml .= '<row r="14" ht="8" customHeight="1">';
+        for ($c = 0; $c < $totalCols; $c++) {
+            $sheetDataXml .= '<c r="'.$this->indexToColumnLetter($c).'14" s="46"/>';
+        }
+        $sheetDataXml .= '</row>';
+
+        // Baris 15: Main Table Headers
+        $sheetDataXml .= '<row r="15" ht="28" customHeight="1">';
+        $sheetDataXml .= '<c r="A15" s="4" t="inlineStr"><is><t>RANK</t></is></c>'; // Gold
+        $sheetDataXml .= '<c r="B15" s="2" t="inlineStr"><is><t>NAMA SEKOLAH / PANGKALAN</t></is></c>'; // Green
+
+        $colIter = 2;
+        foreach ($categories as $cat) {
+            $catLabel = $cat->code ?? $cat->name;
+            $sheetDataXml .= '<c r="'.$this->indexToColumnLetter($colIter).'15" s="2" t="inlineStr"><is><t>'.htmlspecialchars($catLabel, ENT_XML1).'</t></is></c>';
+            $colIter++;
+        }
+
+        // Medals Header
+        $sheetDataXml .= '<c r="'.$this->indexToColumnLetter($colIter).'15" s="2" t="inlineStr"><is><t>🥇 E</t></is></c>';
+        $colIter++;
+        $sheetDataXml .= '<c r="'.$this->indexToColumnLetter($colIter).'15" s="2" t="inlineStr"><is><t>🥈 P</t></is></c>';
+        $colIter++;
+        $sheetDataXml .= '<c r="'.$this->indexToColumnLetter($colIter).'15" s="2" t="inlineStr"><is><t>🥉 B</t></is></c>';
+        $colIter++;
+
+        // Total Poin & Status Prestasi
+        $sheetDataXml .= '<c r="'.$this->indexToColumnLetter($colIter).'15" s="3" t="inlineStr"><is><t>TOTAL POIN</t></is></c>'; // Dark Green
+        $colIter++;
+        $sheetDataXml .= '<c r="'.$this->indexToColumnLetter($colIter).'15" s="5" t="inlineStr"><is><t>STATUS PRESTASI</t></is></c>'; // Emerald
+        $sheetDataXml .= '</row>';
+
+        // Baris 16+: Standings Rows
+        $currentRow = 16;
+        foreach ($standings as $stIdx => $st) {
+            $isZebra = ($currentRow % 2 === 1);
+            $rankNum = $st['rank'];
+
+            $tier = 'regular';
+            if ($rankNum === 1) {
+                $tier = 'juara1';
+            } elseif ($rankNum === 2) {
+                $tier = 'juara2';
+            } elseif ($rankNum === 3) {
+                $tier = 'juara3';
+            } elseif ($rankNum >= 4 && $rankNum <= 6) {
+                $tier = 'harapan';
+            }
+
+            $styleCenter = match ($tier) {
+                'juara1' => 20,
+                'juara2' => 22,
+                'juara3' => 24,
+                'harapan' => 26,
+                default => ($isZebra ? 32 : 1),
+            };
+
+            $styleLeft = match ($tier) {
+                'juara1' => 21,
+                'juara2' => 23,
+                'juara3' => 25,
+                'harapan' => 27,
+                default => ($isZebra ? 33 : 0),
+            };
+
+            $styleTotal = match ($tier) {
+                'juara1' => 20,
+                'juara2' => 22,
+                'juara3' => 24,
+                default => ($isZebra ? 31 : 29),
+            };
+
+            $predikat = match ($rankNum) {
+                1 => 'JUARA UMUM I',
+                2 => 'JUARA UMUM II',
+                3 => 'JUARA UMUM III',
+                4 => 'Peringkat Harapan I',
+                5 => 'Peringkat Harapan II',
+                6 => 'Peringkat Harapan III',
+                default => 'Peringkat '.$rankNum,
+            };
+
+            $sheetDataXml .= '<row r="'.$currentRow.'" ht="24" customHeight="1">';
+
+            // A: Rank
+            $sheetDataXml .= '<c r="A'.$currentRow.'" s="'.$styleCenter.'" t="inlineStr"><is><t>'.$rankNum.'</t></is></c>';
+
+            // B: Nama Sekolah
+            $sheetDataXml .= '<c r="B'.$currentRow.'" s="'.$styleLeft.'" t="inlineStr"><is><t>'.htmlspecialchars((string) $st['school_name'], ENT_XML1).'</t></is></c>';
+
+            // Kolom Cabang Lomba
+            $cCol = 2;
+            foreach ($categories as $cat) {
+                $pts = $st['categories'][$cat->id] ?? 0;
+                $ptsText = $pts > 0 ? (string) $pts : '-';
+                $ptsStyle = $pts > 0 ? 47 : $styleCenter; // 47: red highlight badge chip jika > 0
+                $sheetDataXml .= '<c r="'.$this->indexToColumnLetter($cCol).$currentRow.'" s="'.$ptsStyle.'" t="inlineStr"><is><t>'.$ptsText.'</t></is></c>';
+                $cCol++;
+            }
+
+            // Emas, Perak, Perunggu
+            $sheetDataXml .= '<c r="'.$this->indexToColumnLetter($cCol).$currentRow.'" s="'.$styleCenter.'" t="inlineStr"><is><t>'.($st['gold_count'] ?? 0).'</t></is></c>';
+            $cCol++;
+            $sheetDataXml .= '<c r="'.$this->indexToColumnLetter($cCol).$currentRow.'" s="'.$styleCenter.'" t="inlineStr"><is><t>'.($st['silver_count'] ?? 0).'</t></is></c>';
+            $cCol++;
+            $sheetDataXml .= '<c r="'.$this->indexToColumnLetter($cCol).$currentRow.'" s="'.$styleCenter.'" t="inlineStr"><is><t>'.($st['bronze_count'] ?? 0).'</t></is></c>';
+            $cCol++;
+
+            // Total Poin
+            $sheetDataXml .= '<c r="'.$this->indexToColumnLetter($cCol).$currentRow.'" s="'.$styleTotal.'" t="inlineStr"><is><t>'.$st['total_points'].'</t></is></c>';
+            $cCol++;
+
+            // Status Prestasi
+            $sheetDataXml .= '<c r="'.$this->indexToColumnLetter($cCol).$currentRow.'" s="'.$styleCenter.'" t="inlineStr"><is><t>'.$predikat.'</t></is></c>';
+
+            $sheetDataXml .= '</row>';
+            $currentRow++;
+        }
+
+        // Baris Spasi Setelah Tabel
+        $sheetDataXml .= '<row r="'.$currentRow.'" ht="10" customHeight="1">';
+        for ($c = 0; $c < $totalCols; $c++) {
+            $sheetDataXml .= '<c r="'.$this->indexToColumnLetter($c).$currentRow.'" s="46"/>';
+        }
+        $sheetDataXml .= '</row>';
+        $currentRow++;
+
+        // 4 Card Ringkasan Statistik
+        $statLabelRow = $currentRow;
+        $sheetDataXml .= '<row r="'.$statLabelRow.'" ht="18" customHeight="1">';
+
+        $cStep = max(2, (int) floor($totalCols / 4));
+        $c1End = $cStep;
+        $c2End = $cStep * 2;
+        $c3End = $cStep * 3;
+
+        // Card 1 Label
+        $sheetDataXml .= '<c r="A'.$statLabelRow.'" s="37" t="inlineStr"><is><t>TOTAL PANGKALAN:</t></is></c>';
+        for ($c = 1; $c < $c1End; $c++) {
+            $sheetDataXml .= '<c r="'.$this->indexToColumnLetter($c).$statLabelRow.'" s="37"/>';
+        }
+        // Card 2 Label
+        $sheetDataXml .= '<c r="'.$this->indexToColumnLetter($c1End).$statLabelRow.'" s="37" t="inlineStr"><is><t>TOTAL MEDALI DIPEREBUTKAN:</t></is></c>';
+        for ($c = $c1End + 1; $c < $c2End; $c++) {
+            $sheetDataXml .= '<c r="'.$this->indexToColumnLetter($c).$statLabelRow.'" s="37"/>';
+        }
+        // Card 3 Label
+        $sheetDataXml .= '<c r="'.$this->indexToColumnLetter($c2End).$statLabelRow.'" s="37" t="inlineStr"><is><t>POIN TERTINGGI:</t></is></c>';
+        for ($c = $c2End + 1; $c < $c3End; $c++) {
+            $sheetDataXml .= '<c r="'.$this->indexToColumnLetter($c).$statLabelRow.'" s="37"/>';
+        }
+        // Card 4 Label
+        $sheetDataXml .= '<c r="'.$this->indexToColumnLetter($c3End).$statLabelRow.'" s="37" t="inlineStr"><is><t>RATA-RATA POIN:</t></is></c>';
+        for ($c = $c3End + 1; $c < $totalCols; $c++) {
+            $sheetDataXml .= '<c r="'.$this->indexToColumnLetter($c).$statLabelRow.'" s="37"/>';
+        }
+        $sheetDataXml .= '</row>';
+        $currentRow++;
+
+        // Baris Nilai Statistik
+        $statValRow = $currentRow;
+        $sheetDataXml .= '<row r="'.$statValRow.'" ht="26" customHeight="1">';
+        // Card 1 Value (Hitam Bold)
+        $sheetDataXml .= '<c r="A'.$statValRow.'" s="38" t="inlineStr"><is><t>'.htmlspecialchars((string) $meta['stat_total_schools'], ENT_XML1).'</t></is></c>';
+        for ($c = 1; $c < $c1End; $c++) {
+            $sheetDataXml .= '<c r="'.$this->indexToColumnLetter($c).$statValRow.'" s="38"/>';
+        }
+        // Card 2 Value (Biru Bold)
+        $sheetDataXml .= '<c r="'.$this->indexToColumnLetter($c1End).$statValRow.'" s="39" t="inlineStr"><is><t>'.htmlspecialchars((string) $meta['stat_total_medals'], ENT_XML1).'</t></is></c>';
+        for ($c = $c1End + 1; $c < $c2End; $c++) {
+            $sheetDataXml .= '<c r="'.$this->indexToColumnLetter($c).$statValRow.'" s="39"/>';
+        }
+        // Card 3 Value (Hijau Bold)
+        $sheetDataXml .= '<c r="'.$this->indexToColumnLetter($c2End).$statValRow.'" s="40" t="inlineStr"><is><t>'.htmlspecialchars((string) $meta['stat_top_points'], ENT_XML1).'</t></is></c>';
+        for ($c = $c2End + 1; $c < $c3End; $c++) {
+            $sheetDataXml .= '<c r="'.$this->indexToColumnLetter($c).$statValRow.'" s="40"/>';
+        }
+        // Card 4 Value (Oranye Bold)
+        $sheetDataXml .= '<c r="'.$this->indexToColumnLetter($c3End).$statValRow.'" s="41" t="inlineStr"><is><t>'.htmlspecialchars((string) $meta['stat_avg_points'], ENT_XML1).'</t></is></c>';
+        for ($c = $c3End + 1; $c < $totalCols; $c++) {
+            $sheetDataXml .= '<c r="'.$this->indexToColumnLetter($c).$statValRow.'" s="41"/>';
+        }
+        $sheetDataXml .= '</row>';
+        $currentRow++;
+
+        // Baris Spasi Sebelum TTD
+        $sheetDataXml .= '<row r="'.$currentRow.'" ht="16" customHeight="1">';
+        for ($c = 0; $c < $totalCols; $c++) {
+            $sheetDataXml .= '<c r="'.$this->indexToColumnLetter($c).$currentRow.'" s="46"/>';
+        }
+        $sheetDataXml .= '</row>';
+        $currentRow++;
+
+        // Baris Tanggal Pengesahan
+        $ttdDateRow = $currentRow;
+        $sheetDataXml .= '<row r="'.$ttdDateRow.'" ht="20" customHeight="1">';
+        for ($c = 0; $c < $c3End; $c++) {
+            $sheetDataXml .= '<c r="'.$this->indexToColumnLetter($c).$ttdDateRow.'" s="46"/>';
+        }
+        $dateText = 'Bogor, '.($meta['export_date'] ?? date('d F Y'));
+        $sheetDataXml .= '<c r="'.$this->indexToColumnLetter($c3End).$ttdDateRow.'" s="42" t="inlineStr"><is><t>'.htmlspecialchars($dateText, ENT_XML1).'</t></is></c>';
+        for ($c = $c3End + 1; $c < $totalCols; $c++) {
+            $sheetDataXml .= '<c r="'.$this->indexToColumnLetter($c).$ttdDateRow.'" s="42"/>';
+        }
+        $sheetDataXml .= '</row>';
+        $currentRow++;
+
+        // Baris Jabatan TTD (4 Kolom)
+        $ttdPosRow = $currentRow;
+        $sheetDataXml .= '<row r="'.$ttdPosRow.'" ht="22" customHeight="1">';
+        // Kolom 1
+        $sheetDataXml .= '<c r="A'.$ttdPosRow.'" s="43" t="inlineStr"><is><t>Koordinator Rekapitulasi &amp; Skoring,</t></is></c>';
+        for ($c = 1; $c < $c1End; $c++) {
+            $sheetDataXml .= '<c r="'.$this->indexToColumnLetter($c).$ttdPosRow.'" s="43"/>';
+        }
+        // Kolom 2
+        $sheetDataXml .= '<c r="'.$this->indexToColumnLetter($c1End).$ttdPosRow.'" s="43" t="inlineStr"><is><t>Dewan Juri Kehormatan,</t></is></c>';
+        for ($c = $c1End + 1; $c < $c2End; $c++) {
+            $sheetDataXml .= '<c r="'.$this->indexToColumnLetter($c).$ttdPosRow.'" s="43"/>';
+        }
+        // Kolom 3
+        $sheetDataXml .= '<c r="'.$this->indexToColumnLetter($c2End).$ttdPosRow.'" s="43" t="inlineStr"><is><t>Pembina PMR Wira SMAN 1 Ciawi,</t></is></c>';
+        for ($c = $c2End + 1; $c < $c3End; $c++) {
+            $sheetDataXml .= '<c r="'.$this->indexToColumnLetter($c).$ttdPosRow.'" s="43"/>';
+        }
+        // Kolom 4
+        $sheetDataXml .= '<c r="'.$this->indexToColumnLetter($c3End).$ttdPosRow.'" s="43" t="inlineStr"><is><t>Ketua Panitia Pelaksana,</t></is></c>';
+        for ($c = $c3End + 1; $c < $totalCols; $c++) {
+            $sheetDataXml .= '<c r="'.$this->indexToColumnLetter($c).$ttdPosRow.'" s="43"/>';
+        }
+        $sheetDataXml .= '</row>';
+        $currentRow++;
+
+        // Baris Spasi TTD
+        $ttdSpaceRow = $currentRow;
+        $sheetDataXml .= '<row r="'.$ttdSpaceRow.'" ht="48" customHeight="1">';
+        for ($c = 0; $c < $totalCols; $c++) {
+            $sheetDataXml .= '<c r="'.$this->indexToColumnLetter($c).$ttdSpaceRow.'" s="46"/>';
+        }
+        $sheetDataXml .= '</row>';
+        $currentRow++;
+
+        // Baris Nama TTD (Underline / Medium Bottom Border)
+        $ttdNameRow = $currentRow;
+        $sheetDataXml .= '<row r="'.$ttdNameRow.'" ht="22" customHeight="1">';
+        // Kolom 1
+        $sheetDataXml .= '<c r="A'.$ttdNameRow.'" s="44" t="inlineStr"><is><t>( Drs. H. Mulyadi, M.Pd )</t></is></c>';
+        for ($c = 1; $c < $c1End; $c++) {
+            $sheetDataXml .= '<c r="'.$this->indexToColumnLetter($c).$ttdNameRow.'" s="44"/>';
+        }
+        // Kolom 2
+        $sheetDataXml .= '<c r="'.$this->indexToColumnLetter($c1End).$ttdNameRow.'" s="44" t="inlineStr"><is><t>( Dr. H. Ahmad Fauzi, M.Pd )</t></is></c>';
+        for ($c = $c1End + 1; $c < $c2End; $c++) {
+            $sheetDataXml .= '<c r="'.$this->indexToColumnLetter($c).$ttdNameRow.'" s="44"/>';
+        }
+        // Kolom 3
+        $sheetDataXml .= '<c r="'.$this->indexToColumnLetter($c2End).$ttdNameRow.'" s="44" t="inlineStr"><is><t>( Dra. Hj. Siti Rohmah, M.M )</t></is></c>';
+        for ($c = $c2End + 1; $c < $c3End; $c++) {
+            $sheetDataXml .= '<c r="'.$this->indexToColumnLetter($c).$ttdNameRow.'" s="44"/>';
+        }
+        // Kolom 4
+        $sheetDataXml .= '<c r="'.$this->indexToColumnLetter($c3End).$ttdNameRow.'" s="44" t="inlineStr"><is><t>( Muhammad Dwi Pantara )</t></is></c>';
+        for ($c = $c3End + 1; $c < $totalCols; $c++) {
+            $sheetDataXml .= '<c r="'.$this->indexToColumnLetter($c).$ttdNameRow.'" s="44"/>';
+        }
+        $sheetDataXml .= '</row>';
+        $currentRow++;
+
+        // Baris Subtitle TTD
+        $ttdSubRow = $currentRow;
+        $sheetDataXml .= '<row r="'.$ttdSubRow.'" ht="18" customHeight="1">';
+        // Kolom 1
+        $sheetDataXml .= '<c r="A'.$ttdSubRow.'" s="45" t="inlineStr"><is><t>Koordinator Teknis Skoring</t></is></c>';
+        for ($c = 1; $c < $c1End; $c++) {
+            $sheetDataXml .= '<c r="'.$this->indexToColumnLetter($c).$ttdSubRow.'" s="45"/>';
+        }
+        // Kolom 2
+        $sheetDataXml .= '<c r="'.$this->indexToColumnLetter($c1End).$ttdSubRow.'" s="45" t="inlineStr"><is><t>Koordinator Dewan Juri Lapangan</t></is></c>';
+        for ($c = $c1End + 1; $c < $c2End; $c++) {
+            $sheetDataXml .= '<c r="'.$this->indexToColumnLetter($c).$ttdSubRow.'" s="45"/>';
+        }
+        // Kolom 3
+        $sheetDataXml .= '<c r="'.$this->indexToColumnLetter($c2End).$ttdSubRow.'" s="45" t="inlineStr"><is><t>Pembina PMR PMI Unit SMAN 1 Ciawi</t></is></c>';
+        for ($c = $c2End + 1; $c < $c3End; $c++) {
+            $sheetDataXml .= '<c r="'.$this->indexToColumnLetter($c).$ttdSubRow.'" s="45"/>';
+        }
+        // Kolom 4
+        $sheetDataXml .= '<c r="'.$this->indexToColumnLetter($c3End).$ttdSubRow.'" s="45" t="inlineStr"><is><t>Ketua Pelaksana Sua Bhakti Berkarya IV</t></is></c>';
+        for ($c = $c3End + 1; $c < $totalCols; $c++) {
+            $sheetDataXml .= '<c r="'.$this->indexToColumnLetter($c).$ttdSubRow.'" s="45"/>';
+        }
+        $sheetDataXml .= '</row>';
+
+        $sheetDataXml .= '</sheetData>';
+
+        // 3. Merge Cells Sesuai Mockup
+        $p1EndLetter = $this->indexToColumnLetter($podCol1End - 1);
+        $p2StartLetter = $this->indexToColumnLetter($podCol1End);
+        $p2EndLetter = $this->indexToColumnLetter($podCol2End - 1);
+        $p3StartLetter = $this->indexToColumnLetter($podCol2End);
+
+        $c1EndLetter = $this->indexToColumnLetter($c1End - 1);
+        $c2StartLetter = $this->indexToColumnLetter($c1End);
+        $c2EndLetter = $this->indexToColumnLetter($c2End - 1);
+        $c3StartLetter = $this->indexToColumnLetter($c2End);
+        $c3EndLetter = $this->indexToColumnLetter($c3End - 1);
+        $c4StartLetter = $this->indexToColumnLetter($c3End);
+
+        $mergeCells = [
+            'A1:'.$midColLetter.'1',
+            $nextColLetter.'1:'.$lastColLetter.'1',
+            'A2:'.$midColLetter.'2',
+            $nextColLetter.'2:'.$lastColLetter.'2',
+            'A3:'.$midColLetter.'3',
+            $nextColLetter.'3:'.$lastColLetter.'3',
+            'A6:'.$midColLetter.'6',
+            $nextColLetter.'6:'.$lastColLetter.'6',
+            'B7:'.$midColLetter.'7',
+            $this->indexToColumnLetter($midColIdx + 1).'7:'.$lastColLetter.'7',
+            'B8:'.$midColLetter.'8',
+            $this->indexToColumnLetter($midColIdx + 1).'8:'.$lastColLetter.'8',
+            'B9:'.$midColLetter.'9',
+            $this->indexToColumnLetter($midColIdx + 1).'9:'.$lastColLetter.'9',
+            // Podium Cards
+            'A11:'.$p1EndLetter.'11',
+            $p2StartLetter.'11:'.$p2EndLetter.'11',
+            $p3StartLetter.'11:'.$lastColLetter.'11',
+            'A12:'.$p1EndLetter.'12',
+            $p2StartLetter.'12:'.$p2EndLetter.'12',
+            $p3StartLetter.'12:'.$lastColLetter.'12',
+            'A13:'.$p1EndLetter.'13',
+            $p2StartLetter.'13:'.$p2EndLetter.'13',
+            $p3StartLetter.'13:'.$lastColLetter.'13',
+            // Statistik
+            'A'.$statLabelRow.':'.$c1EndLetter.$statLabelRow,
+            $c2StartLetter.$statLabelRow.':'.$c2EndLetter.$statLabelRow,
+            $c3StartLetter.$statLabelRow.':'.$c3EndLetter.$statLabelRow,
+            $c4StartLetter.$statLabelRow.':'.$lastColLetter.$statLabelRow,
+            'A'.$statValRow.':'.$c1EndLetter.$statValRow,
+            $c2StartLetter.$statValRow.':'.$c2EndLetter.$statValRow,
+            $c3StartLetter.$statValRow.':'.$c3EndLetter.$statValRow,
+            $c4StartLetter.$statValRow.':'.$lastColLetter.$statValRow,
+            // TTD
+            $c4StartLetter.$ttdDateRow.':'.$lastColLetter.$ttdDateRow,
+            'A'.$ttdPosRow.':'.$c1EndLetter.$ttdPosRow,
+            $c2StartLetter.$ttdPosRow.':'.$c2EndLetter.$ttdPosRow,
+            $c3StartLetter.$ttdPosRow.':'.$c3EndLetter.$ttdPosRow,
+            $c4StartLetter.$ttdPosRow.':'.$lastColLetter.$ttdPosRow,
+            'A'.$ttdNameRow.':'.$c1EndLetter.$ttdNameRow,
+            $c2StartLetter.$ttdNameRow.':'.$c2EndLetter.$ttdNameRow,
+            $c3StartLetter.$ttdNameRow.':'.$c3EndLetter.$ttdNameRow,
+            $c4StartLetter.$ttdNameRow.':'.$lastColLetter.$ttdNameRow,
+            'A'.$ttdSubRow.':'.$c1EndLetter.$ttdSubRow,
+            $c2StartLetter.$ttdSubRow.':'.$c2EndLetter.$ttdSubRow,
+            $c3StartLetter.$ttdSubRow.':'.$c3EndLetter.$ttdSubRow,
+            $c4StartLetter.$ttdSubRow.':'.$lastColLetter.$ttdSubRow,
+        ];
+
+        $mergeCellsXml = '<mergeCells count="'.count($mergeCells).'">';
+        foreach ($mergeCells as $mRange) {
+            $mergeCellsXml .= '<mergeCell ref="'.$mRange.'"/>';
+        }
+        $mergeCellsXml .= '</mergeCells>';
+
+        // 4. Worksheet XML with Frozen Pane at Row 15 & selection
+        return '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">
+<sheetViews>
+<sheetView tabSelected="1" workbookViewId="0">
+<pane ySplit="15" topLeftCell="A16" activePane="bottomLeft" state="frozen"/>
+<selection pane="bottomLeft" activeCell="A16" sqref="A16"/>
+</sheetView>
+</sheetViews>
+<sheetFormatPr defaultRowHeight="20"/>
+'.$colsXml.'
+'.$sheetDataXml.'
+'.$mergeCellsXml.'
+</worksheet>';
+    }
+
+    /**
+     * XML Sheet 2: Distribusi Medali Lomba
+     */
+    protected function buildCategoryMedalDistributionSheetXml(array $meta, Collection $categories): string
+    {
+        $colsXml = '<cols>
+<col min="1" max="1" width="8" customWidth="1"/>
+<col min="2" max="2" width="16" customWidth="1"/>
+<col min="3" max="3" width="30" customWidth="1"/>
+<col min="4" max="4" width="18" customWidth="1"/>
+<col min="5" max="5" width="28" customWidth="1"/>
+<col min="6" max="6" width="28" customWidth="1"/>
+<col min="7" max="7" width="28" customWidth="1"/>
+</cols>';
+
+        $sheetDataXml = '<sheetData>';
+
+        // Title
+        $sheetDataXml .= '<row r="1" ht="24" customHeight="1">';
+        $sheetDataXml .= '<c r="A1" s="6" t="inlineStr"><is><t>PALANG MERAH INDONESIA • PMR WIRA SMA NEGERI 1 CIAWI</t></is></c>';
+        $sheetDataXml .= '</row>';
+
+        $sheetDataXml .= '<row r="2" ht="28" customHeight="1">';
+        $sheetDataXml .= '<c r="A2" s="7" t="inlineStr"><is><t>DISTRIBUSI PEROLEHAN MEDALI PER CABANG LOMBA</t></is></c>';
+        $sheetDataXml .= '</row>';
+
+        $sheetDataXml .= '<row r="3" ht="20" customHeight="1">';
+        $sub = 'Kegiatan: '.$meta['event_title'].' • Tingkat '.$meta['level_text'];
+        $sheetDataXml .= '<c r="A3" s="8" t="inlineStr"><is><t>'.htmlspecialchars($sub, ENT_XML1).'</t></is></c>';
+        $sheetDataXml .= '</row>';
+
+        $sheetDataXml .= '<row r="4" ht="8" customHeight="1">';
+        for ($c = 0; $c < 7; $c++) {
+            $sheetDataXml .= '<c r="'.$this->indexToColumnLetter($c).'4" s="9"/>';
+        }
+        $sheetDataXml .= '</row>';
+
+        $sheetDataXml .= '<row r="5" ht="12" customHeight="1"/>';
+
+        // Headers
+        $sheetDataXml .= '<row r="6" ht="26" customHeight="1">';
+        $headers = ['NO.', 'KODE', 'MATA LOMBA', 'TIER POIN', '🥇 JUARA 1 (EMAS)', '🥈 JUARA 2 (PERAK)', '🥉 JUARA 3 (PERUNGGU)'];
+        foreach ($headers as $hIdx => $hText) {
+            $sId = match ($hIdx) {
+                4 => 4,
+                5 => 2,
+                6 => 2,
+                default => 2,
+            };
+            $sheetDataXml .= '<c r="'.$this->indexToColumnLetter($hIdx).'6" s="'.$sId.'" t="inlineStr"><is><t>'.htmlspecialchars($hText, ENT_XML1).'</t></is></c>';
+        }
+        $sheetDataXml .= '</row>';
+
+        $cRow = 7;
+        foreach ($categories as $idx => $cat) {
+            $topScores = CompetitionScore::where('competition_category_id', $cat->id)
+                ->where('is_disqualified', false)
+                ->whereIn('rank', [1, 2, 3])
+                ->with('team.registration')
+                ->get()
+                ->keyBy('rank');
+
+            $j1 = $topScores->get(1)?->team?->registration?->school_name ?? ($topScores->get(1)?->team?->team_name ?? '-');
+            $j2 = $topScores->get(2)?->team?->registration?->school_name ?? ($topScores->get(2)?->team?->team_name ?? '-');
+            $j3 = $topScores->get(3)?->team?->registration?->school_name ?? ($topScores->get(3)?->team?->team_name ?? '-');
+
+            $tierName = match ($cat->point_tier) {
+                'tier_2' => 'Tier 2 (10 pts)',
+                'tier_3' => 'Tier 3 (3 pts)',
+                default => 'Tier 1 (12 pts)',
+            };
+
+            $isZebra = ($cRow % 2 === 1);
+            $sCenter = $isZebra ? 32 : 1;
+            $sLeft = $isZebra ? 33 : 0;
+
+            $sheetDataXml .= '<row r="'.$cRow.'" ht="24" customHeight="1">';
+            $sheetDataXml .= '<c r="A'.$cRow.'" s="'.$sCenter.'" t="inlineStr"><is><t>'.($idx + 1).'</t></is></c>';
+            $sheetDataXml .= '<c r="B'.$cRow.'" s="'.$sCenter.'" t="inlineStr"><is><t>'.htmlspecialchars($cat->code ?? '-', ENT_XML1).'</t></is></c>';
+            $sheetDataXml .= '<c r="C'.$cRow.'" s="'.$sLeft.'" t="inlineStr"><is><t>'.htmlspecialchars($cat->name, ENT_XML1).'</t></is></c>';
+            $sheetDataXml .= '<c r="D'.$cRow.'" s="'.$sCenter.'" t="inlineStr"><is><t>'.htmlspecialchars($tierName, ENT_XML1).'</t></is></c>';
+            $sheetDataXml .= '<c r="E'.$cRow.'" s="20" t="inlineStr"><is><t>'.htmlspecialchars($j1, ENT_XML1).'</t></is></c>';
+            $sheetDataXml .= '<c r="F'.$cRow.'" s="22" t="inlineStr"><is><t>'.htmlspecialchars($j2, ENT_XML1).'</t></is></c>';
+            $sheetDataXml .= '<c r="G'.$cRow.'" s="24" t="inlineStr"><is><t>'.htmlspecialchars($j3, ENT_XML1).'</t></is></c>';
+            $sheetDataXml .= '</row>';
+            $cRow++;
+        }
+
+        $sheetDataXml .= '</sheetData>';
+
+        $merge = ['A1:G1', 'A2:G2', 'A3:G3', 'A4:G4'];
+        $mergeXml = '<mergeCells count="'.count($merge).'">';
+        foreach ($merge as $m) {
+            $mergeXml .= '<mergeCell ref="'.$m.'"/>';
+        }
+        $mergeXml .= '</mergeCells>';
+
+        return '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">
+<sheetViews><sheetView workbookViewId="0"/></sheetViews>
+<sheetFormatPr defaultRowHeight="20"/>
+'.$colsXml.'
+'.$sheetDataXml.'
+'.$mergeXml.'
+</worksheet>';
+    }
+
+    /**
+     * XML Sheet 3: Daftar Kontingen Sekolah
+     */
+    protected function buildLeaderboardSchoolListSheetXml(array $meta, Collection $standings): string
+    {
+        $colsXml = '<cols>
+<col min="1" max="1" width="8" customWidth="1"/>
+<col min="2" max="2" width="36" customWidth="1"/>
+<col min="3" max="3" width="20" customWidth="1"/>
+<col min="4" max="4" width="12" customWidth="1"/>
+<col min="5" max="5" width="12" customWidth="1"/>
+<col min="6" max="6" width="12" customWidth="1"/>
+<col min="7" max="7" width="16" customWidth="1"/>
+<col min="8" max="8" width="22" customWidth="1"/>
+</cols>';
+
+        $sheetDataXml = '<sheetData>';
+
+        // Title
+        $sheetDataXml .= '<row r="1" ht="24" customHeight="1">';
+        $sheetDataXml .= '<c r="A1" s="6" t="inlineStr"><is><t>PALANG MERAH INDONESIA • PMR WIRA SMA NEGERI 1 CIAWI</t></is></c>';
+        $sheetDataXml .= '</row>';
+
+        $sheetDataXml .= '<row r="2" ht="28" customHeight="1">';
+        $sheetDataXml .= '<c r="A2" s="7" t="inlineStr"><is><t>DAFTAR PANGKALAN SEKOLAH &amp; PEROLEHAN AKHIR</t></is></c>';
+        $sheetDataXml .= '</row>';
+
+        $sheetDataXml .= '<row r="3" ht="20" customHeight="1">';
+        $sub = 'Peserta Kejuaraan: '.$meta['event_title'].' • Tingkat '.$meta['level_text'];
+        $sheetDataXml .= '<c r="A3" s="8" t="inlineStr"><is><t>'.htmlspecialchars($sub, ENT_XML1).'</t></is></c>';
+        $sheetDataXml .= '</row>';
+
+        $sheetDataXml .= '<row r="4" ht="8" customHeight="1">';
+        for ($c = 0; $c < 8; $c++) {
+            $sheetDataXml .= '<c r="'.$this->indexToColumnLetter($c).'4" s="9"/>';
+        }
+        $sheetDataXml .= '</row>';
+
+        $sheetDataXml .= '<row r="5" ht="12" customHeight="1"/>';
+
+        // Headers
+        $sheetDataXml .= '<row r="6" ht="26" customHeight="1">';
+        $headers = ['RANK', 'NAMA SEKOLAH / PANGKALAN', 'TINGKATAN', '🥇 EMAS', '🥈 PERAK', '🥉 PERUNGGU', 'TOTAL POIN', 'STATUS PRESTASI'];
+        foreach ($headers as $hIdx => $hText) {
+            $sId = match ($hIdx) {
+                0 => 4,
+                6 => 3,
+                default => 2,
+            };
+            $sheetDataXml .= '<c r="'.$this->indexToColumnLetter($hIdx).'6" s="'.$sId.'" t="inlineStr"><is><t>'.htmlspecialchars($hText, ENT_XML1).'</t></is></c>';
+        }
+        $sheetDataXml .= '</row>';
+
+        $cRow = 7;
+        foreach ($standings as $st) {
+            $isZebra = ($cRow % 2 === 1);
+            $rankNum = $st['rank'];
+
+            $predikat = match ($rankNum) {
+                1 => 'JUARA UMUM I',
+                2 => 'JUARA UMUM II',
+                3 => 'JUARA UMUM III',
+                4 => 'Peringkat Harapan I',
+                5 => 'Peringkat Harapan II',
+                6 => 'Peringkat Harapan III',
+                default => 'Peringkat '.$rankNum,
+            };
+
+            $styleCenter = match ($rankNum) {
+                1 => 20,
+                2 => 22,
+                3 => 24,
+                default => ($isZebra ? 32 : 1),
+            };
+
+            $styleLeft = match ($rankNum) {
+                1 => 21,
+                2 => 23,
+                3 => 25,
+                default => ($isZebra ? 33 : 0),
+            };
+
+            $styleTotal = match ($rankNum) {
+                1 => 20,
+                2 => 22,
+                3 => 24,
+                default => ($isZebra ? 31 : 29),
+            };
+
+            $sheetDataXml .= '<row r="'.$cRow.'" ht="24" customHeight="1">';
+            $sheetDataXml .= '<c r="A'.$cRow.'" s="'.$styleCenter.'" t="inlineStr"><is><t>'.$rankNum.'</t></is></c>';
+            $sheetDataXml .= '<c r="B'.$cRow.'" s="'.$styleLeft.'" t="inlineStr"><is><t>'.htmlspecialchars($st['school_name'], ENT_XML1).'</t></is></c>';
+            $sheetDataXml .= '<c r="C'.$cRow.'" s="'.$styleCenter.'" t="inlineStr"><is><t>'.htmlspecialchars($meta['level'], ENT_XML1).'</t></is></c>';
+            $sheetDataXml .= '<c r="D'.$cRow.'" s="'.$styleCenter.'" t="inlineStr"><is><t>'.($st['gold_count'] ?? 0).'</t></is></c>';
+            $sheetDataXml .= '<c r="E'.$cRow.'" s="'.$styleCenter.'" t="inlineStr"><is><t>'.($st['silver_count'] ?? 0).'</t></is></c>';
+            $sheetDataXml .= '<c r="F'.$cRow.'" s="'.$styleCenter.'" t="inlineStr"><is><t>'.($st['bronze_count'] ?? 0).'</t></is></c>';
+            $sheetDataXml .= '<c r="G'.$cRow.'" s="'.$styleTotal.'" t="inlineStr"><is><t>'.$st['total_points'].'</t></is></c>';
+            $sheetDataXml .= '<c r="H'.$cRow.'" s="'.$styleCenter.'" t="inlineStr"><is><t>'.$predikat.'</t></is></c>';
+            $sheetDataXml .= '</row>';
+            $cRow++;
+        }
+
+        $sheetDataXml .= '</sheetData>';
+
+        $merge = ['A1:H1', 'A2:H2', 'A3:H3', 'A4:H4'];
         $mergeXml = '<mergeCells count="'.count($merge).'">';
         foreach ($merge as $m) {
             $mergeXml .= '<mergeCell ref="'.$m.'"/>';
