@@ -19,7 +19,7 @@ return new class extends Migration
             $table->enum('level', ['Mula', 'Madya', 'Wira']);
             $table->enum('gender_category', ['Putra', 'Putri', 'Campuran', 'Umum'])->default('Umum');
             $table->string('scoring_type')->default('standard_time'); // standard_time, written_practical_time, multi_criteria, social_engagement, bracket_quiz
-            $table->enum('point_tier', ['tier_1', 'tier_2', 'tier_3'])->default('tier_1'); // tier_1: 10/8/6, tier_2: 8/6/4, tier_3: 3/2/1
+            $table->string('point_tier', 20)->default('tier_1'); // tier_1, tier_2, tier_3, tier_4
             $table->json('criteria_schema')->nullable(); // e.g. ["Kreativitas", "Presentasi"] or criteria configs
             $table->integer('max_team_members')->default(1);
             $table->boolean('has_rounds')->default(false); // e.g. LCT has multiple rounds

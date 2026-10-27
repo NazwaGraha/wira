@@ -3321,6 +3321,7 @@ class CompetitionSpreadsheetService
             $tierName = match ($cat->point_tier) {
                 'tier_2' => 'Tier 2 (10 pts)',
                 'tier_3' => 'Tier 3 (3 pts)',
+                'tier_4' => 'Tier 4 (0 pts)',
                 default => 'Tier 1 (12 pts)',
             };
 

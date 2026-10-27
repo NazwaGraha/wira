@@ -677,8 +677,10 @@
                                     <span class="text-red-700 bg-red-50 border border-red-200 px-2 py-0.5 rounded text-[10px]">Tier 1 (12/10/8/6/4)</span>
                                 @elseif($cat->point_tier === 'tier_2')
                                     <span class="text-amber-700 bg-amber-50 border border-amber-200 px-2 py-0.5 rounded text-[10px]">Tier 2 (10/8/6/4/2)</span>
+                                @elseif($cat->point_tier === 'tier_3')
+                                    <span class="text-blue-700 bg-blue-50 border border-blue-200 px-2 py-0.5 rounded text-[10px]">Tier 3 (3/2/1)</span>
                                 @else
-                                    <span class="text-slate-600 bg-slate-100 border border-slate-200 px-2 py-0.5 rounded text-[10px]">Tier 3 (3/2/1)</span>
+                                    <span class="text-slate-600 bg-slate-100 border border-slate-200 px-2 py-0.5 rounded text-[10px]">Tier 4 (0 Poin)</span>
                                 @endif
                             </td>
 
@@ -838,6 +840,7 @@
                         <option value="tier_1" selected>Tier 1 (12 / 10 / 8 / 6 / 4 Poin)</option>
                         <option value="tier_2">Tier 2 (10 / 8 / 6 / 4 / 2 Poin)</option>
                         <option value="tier_3">Tier 3 (3 / 2 / 1 Poin)</option>
+                        <option value="tier_4">Tier 4 ( 0 Poin )</option>
                     </select>
                 </div>
 
@@ -972,6 +975,7 @@
                         <option value="tier_1">Tier 1 (12 / 10 / 8 / 6 / 4 Poin)</option>
                         <option value="tier_2">Tier 2 (10 / 8 / 6 / 4 / 2 Poin)</option>
                         <option value="tier_3">Tier 3 (3 / 2 / 1 Poin)</option>
+                        <option value="tier_4">Tier 4 ( 0 Poin )</option>
                     </select>
                 </div>
 

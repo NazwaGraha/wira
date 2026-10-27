@@ -237,6 +237,10 @@ class CompetitionCategory extends Model
             };
         }
 
+        if ($tier === 'tier_4') {
+            return 0;
+        }
+
         return 0;
     }
 
@@ -249,6 +253,7 @@ class CompetitionCategory extends Model
             'tier_1' => '12 / 10 / 8 / 6 / 4 Poin',
             'tier_2' => '10 / 8 / 6 / 4 / 2 Poin',
             'tier_3' => '3 / 2 / 1 Poin',
+            'tier_4' => '0 Poin',
             default => '12 / 10 / 8 / 6 / 4 Poin',
         };
     }

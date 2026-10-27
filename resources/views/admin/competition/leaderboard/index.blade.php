@@ -131,6 +131,7 @@
             <div>&bull; <strong>LPP, LCT, Lomba Pendidikan Remaja Sebaya, dan Olimpiade Kepalangmerahan:</strong> Juara 1 = 12 Poin, Juara 2 = 10 Poin, Juara 3 = 8 Poin, Juara Harapan 1 = 6 Poin, Juara Harapan 2 = 4 Poin</div>
             <div>&bull; <strong>LKTR, LKCT, dan Lomba Mewarnai:</strong> Juara 1 = 10 Poin, Juara 2 = 8 Poin, Juara 3 = 6 Poin, Juara Harapan 1 = 4 Poin, Juara Harapan 2 = 2 Poin</div>
             <div>&bull; <strong>PMR Favorite:</strong> Juara 1 = 3 Poin, Juara 2 = 2 Poin, Juara 3 = 1 Poin</div>
+            <div>&bull; <strong>Tier 4 (Non-Juara Umum / Eksibisi):</strong> 0 Poin</div>
         </div>
     </div>
 
