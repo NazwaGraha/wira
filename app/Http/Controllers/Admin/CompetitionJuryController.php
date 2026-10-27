@@ -84,8 +84,10 @@ class CompetitionJuryController extends Controller
             ->with('success', "Akun juri '{$jury->name}' berhasil dibuat dan dipetakan ke cabang lomba.");
     }
 
-    public function update(Request $request, User $jury): RedirectResponse
+    public function update(Request $request, User|string|int $jury): RedirectResponse
     {
+        $jury = $jury instanceof User && $jury->exists ? $jury : User::findOrFail($jury);
+
         $request->validate([
             'name' => ['required', 'string', 'max:255'],
             'username' => ['required', 'string', 'max:50', 'alpha_dash', Rule::unique('users', 'username')->ignore($jury->id)],
@@ -93,6 +95,11 @@ class CompetitionJuryController extends Controller
             'phone' => ['nullable', 'string', 'max:20'],
             'category_ids' => ['nullable', 'array'],
             'category_ids.*' => ['exists:competition_categories,id'],
+        ], [
+            'name.required' => 'Nama lengkap juri wajib diisi.',
+            'username.required' => 'Username / kode login juri wajib diisi.',
+            'username.unique' => 'Username ini sudah digunakan.',
+            'password.min' => 'Kata sandi minimal 4 karakter.',
         ]);
 
         $data = [
@@ -114,8 +121,9 @@ class CompetitionJuryController extends Controller
             ->with('success', "Data akun dan penugasan juri '{$jury->name}' berhasil diperbarui.");
     }
 
-    public function destroy(User $jury): RedirectResponse
+    public function destroy(User|string|int $jury): RedirectResponse
     {
+        $jury = $jury instanceof User && $jury->exists ? $jury : User::findOrFail($jury);
         $name = $jury->name;
         $jury->assignedCategories()->detach();
         $jury->delete();

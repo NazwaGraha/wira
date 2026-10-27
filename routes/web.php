@@ -272,7 +272,9 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::delete('/competition-scores/{category}/teams/{team}', [CompetitionScoreController::class, 'removeTeam'])->name('competition-scores.remove-team');
 
         // Manajemen Akun Juri & Pemetaan Lomba
-        Route::resource('competition-juries', CompetitionJuryController::class)->names('competition-juries');
+        Route::resource('competition-juries', CompetitionJuryController::class)
+            ->parameters(['competition-juries' => 'jury'])
+            ->names('competition-juries');
 
         // Setup Biaya Pendaftaran Lomba
         Route::get('/competition-fees', [CompetitionFeeController::class, 'index'])->name('competition-fees.index');

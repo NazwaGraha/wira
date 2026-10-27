@@ -104,6 +104,47 @@ class JuryPortalTest extends TestCase
         $this->assertFalse($jury->assignedCategories->contains('id', $catOlimpiade->id));
     }
 
+    public function test_admin_can_update_jury_without_duplicate_username_error(): void
+    {
+        [$event, $catTanduMula, $catTanduMadya, $catOlimpiade] = $this->createEventAndCategories();
+
+        $jury = User::create([
+            'name' => 'Kak Hendra Kusuma',
+            'username' => 'juri_tandu1',
+            'email' => 'juri_tandu1@juri.pmr',
+            'password' => Hash::make('123456'),
+            'role' => 'jury',
+            'phone' => '081234567890',
+            'must_change_password' => false,
+        ]);
+        $jury->assignedCategories()->sync([$catTanduMula->id]);
+
+        // Login sebagai admin
+        $this->post('/admin/login', [
+            'login_id' => 'admin',
+            'password' => 'pmrwirasmanic',
+        ]);
+
+        // Update juri dengan username YANG SAMA persis
+        $response = $this->put("/admin/competition-juries/{$jury->id}", [
+            'name' => 'Kak Hendra Kusuma (Updated)',
+            'username' => 'juri_tandu1', // username sama
+            'phone' => '089999999999',
+            'category_ids' => [$catTanduMula->id, $catOlimpiade->id],
+        ]);
+
+        $response->assertRedirect('/admin/competition-juries');
+        $response->assertSessionHas('success');
+        $response->assertSessionDoesntHaveErrors();
+
+        $jury->refresh();
+        $this->assertEquals('Kak Hendra Kusuma (Updated)', $jury->name);
+        $this->assertEquals('juri_tandu1', $jury->username);
+        $this->assertEquals('089999999999', $jury->phone);
+        $this->assertCount(2, $jury->assignedCategories);
+        $this->assertTrue($jury->assignedCategories->contains('id', $catOlimpiade->id));
+    }
+
     public function test_jury_can_login_via_jury_portal(): void
     {
         [$event, $catTanduMula] = $this->createEventAndCategories();
