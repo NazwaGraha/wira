@@ -87,6 +87,7 @@
                         <!-- Right: Transparent Mascot Photo aligned with Badge -->
                         @php
                             $lvlKey = strtolower($cat->level); // mula, madya, wira
+                            $levelCapital = ucfirst(strtolower($cat->level)); // Mula, Madya, Wira
                             $genderKey = 'Umum';
                             if ($cat->gender_category === 'Putra') {
                                 $genderKey = 'Putra';
@@ -94,20 +95,25 @@
                                 $genderKey = 'Putri';
                             }
 
-                            // Priority 1: Level subfolder (images/mascot/{level}/Kategori_{gender}.png)
+                            // Priority 1: Format penamaan eksplisit user (e.g. MulaPutra.png, MadyaPutri.png, WiraPutra.png)
+                            $namedPath = "images/mascot/{$levelCapital}{$genderKey}.png";
+                            // Priority 2: Level subfolder (images/mascot/{level}/Kategori_{gender}.png)
                             $subPath = "images/mascot/{$lvlKey}/Kategori_{$genderKey}.png";
-                            // Priority 2: Flat PMR path (images/mascot/pmr_{level}_{gender}.png)
+                            // Priority 3: Flat PMR path (images/mascot/pmr_{level}_{gender}.png)
                             $flatPath = "images/mascot/pmr_{$lvlKey}_" . strtolower($genderKey) . ".png";
-                            // Priority 3: Root mascot path (images/mascot/Kategori_{gender}.png)
-                            $rootPath = "images/mascot/Kategori_{$genderKey}.png";
+                            // Priority 4: Fallback gender
+                            $fallbackGender = ($genderKey === 'Putri') ? 'Putra' : 'Putri';
+                            $fallbackNamedPath = "images/mascot/{$levelCapital}{$fallbackGender}.png";
 
                             $chosenFile = null;
-                            if (file_exists(public_path($subPath))) {
+                            if (file_exists(public_path($namedPath))) {
+                                $chosenFile = $namedPath;
+                            } elseif (file_exists(public_path($subPath))) {
                                 $chosenFile = $subPath;
                             } elseif (file_exists(public_path($flatPath))) {
                                 $chosenFile = $flatPath;
-                            } elseif ($cat->level === 'Mula' && file_exists(public_path($rootPath))) {
-                                $chosenFile = $rootPath;
+                            } elseif (file_exists(public_path($fallbackNamedPath))) {
+                                $chosenFile = $fallbackNamedPath;
                             }
                         @endphp
                         @if($chosenFile)
