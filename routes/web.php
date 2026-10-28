@@ -22,6 +22,7 @@ use App\Http\Controllers\Admin\CompetitionMascotController;
 use App\Http\Controllers\Admin\CompetitionParticipantController;
 use App\Http\Controllers\Admin\CompetitionRegistrationController;
 use App\Http\Controllers\Admin\CompetitionScoreController;
+use App\Http\Controllers\Admin\ContentSetupController;
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\GalleryCategoryController;
 use App\Http\Controllers\Admin\GalleryController;
@@ -128,6 +129,13 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::get('/media-manager', [MediaManagerController::class, 'index'])->name('media-manager.index');
         Route::post('/media-manager/section', [MediaManagerController::class, 'updateSection'])->name('media-manager.update-section');
         Route::post('/media-manager/section/reset', [MediaManagerController::class, 'resetSection'])->name('media-manager.reset-section');
+
+        // Setup Konten Website (Beranda, Profil Ekstrakurikuler, dll)
+        Route::prefix('setup-konten')->name('content-setup.')->group(function () {
+            Route::get('/beranda', [ContentSetupController::class, 'home'])->name('home');
+            Route::post('/beranda/profil', [ContentSetupController::class, 'updateHomeProfile'])->name('home.profile.update');
+            Route::post('/beranda/profil/reset', [ContentSetupController::class, 'resetHomeProfile'])->name('home.profile.reset');
+        });
 
         // Pengaturan Slider Hero Banner
         Route::resource('hero-slides', HeroSlideController::class)->names([

@@ -122,36 +122,33 @@
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 sm:gap-12 items-center">
         <div>
             <div class="inline-flex items-center gap-2 text-pmr-primary font-bold text-xs uppercase tracking-widest mb-3">
-                <i class="fa-solid fa-shield-heart"></i> Profil Ekstrakurikuler
+                <i class="{{ $homeProfileImage?->display_tagline_icon ?? 'fa-solid fa-shield-heart' }}"></i> {{ $homeProfileImage?->display_tagline ?? 'Profil Ekstrakurikuler' }}
             </div>
             <h2 class="text-2xl sm:text-4xl font-extrabold text-slate-900 tracking-tight leading-tight mb-4 sm:mb-6">
-                Membangun Karakter Kemanusiaan Generasi Muda SMAN 1 Ciawi
+                {{ $homeProfileImage?->display_headline ?? 'Membangun Karakter Kemanusiaan Generasi Muda SMAN 1 Ciawi' }}
             </h2>
             <p class="text-slate-600 leading-relaxed text-sm sm:text-base mb-6">
-                Palang Merah Remaja (PMR) Wira SMAN 1 Ciawi adalah wadah pembinaan dan pengembangan anggota remaja PMI tingkat SMA. Kami berkomitmen menanamkan nilai-nilai Tri Bakti PMR serta 7 Prinsip Dasar Palang Merah dan Bulan Sabit Merah Internasional.
+                {{ $homeProfileImage?->display_body_text ?? 'Palang Merah Remaja (PMR) Wira SMAN 1 Ciawi adalah wadah pembinaan dan pengembangan anggota remaja PMI tingkat SMA. Kami berkomitmen menanamkan nilai-nilai Tri Bakti PMR serta 7 Prinsip Dasar Palang Merah dan Bulan Sabit Merah Internasional.' }}
             </p>
+            @php
+                $homeChecklist = $homeProfileImage?->display_checklist_items ?? [
+                    'Meningkatkan keterampilan pertolongan pertama (P3K) dan tanggap darurat bencana.',
+                    'Menyelenggarakan aksi donor darah sukarela secara berkala bersama UDD PMI.',
+                    'Membentuk jiwa kepemimpinan, kerelawanan, dan persahabatan antar siswa.',
+                ];
+            @endphp
             <div class="space-y-3 mb-8">
+                @foreach($homeChecklist as $item)
                 <div class="flex items-start gap-3">
                     <div class="w-6 h-6 rounded-full bg-red-100 text-pmr-primary flex items-center justify-center text-xs mt-0.5 flex-shrink-0">
                         <i class="fa-solid fa-check"></i>
                     </div>
-                    <span class="text-xs sm:text-sm text-slate-700 font-medium">Meningkatkan keterampilan pertolongan pertama (P3K) dan tanggap darurat bencana.</span>
+                    <span class="text-xs sm:text-sm text-slate-700 font-medium">{{ $item }}</span>
                 </div>
-                <div class="flex items-start gap-3">
-                    <div class="w-6 h-6 rounded-full bg-red-100 text-pmr-primary flex items-center justify-center text-xs mt-0.5 flex-shrink-0">
-                        <i class="fa-solid fa-check"></i>
-                    </div>
-                    <span class="text-xs sm:text-sm text-slate-700 font-medium">Menyelenggarakan aksi donor darah sukarela secara berkala bersama UDD PMI.</span>
-                </div>
-                <div class="flex items-start gap-3">
-                    <div class="w-6 h-6 rounded-full bg-red-100 text-pmr-primary flex items-center justify-center text-xs mt-0.5 flex-shrink-0">
-                        <i class="fa-solid fa-check"></i>
-                    </div>
-                    <span class="text-xs sm:text-sm text-slate-700 font-medium">Membentuk jiwa kepemimpinan, kerelawanan, dan persahabatan antar siswa.</span>
-                </div>
+                @endforeach
             </div>
-            <a href="{{ route('tentang-kami') }}" class="inline-flex items-center gap-2 bg-pmr-primary hover:bg-pmr-dark text-white font-bold text-xs uppercase tracking-wider px-6 py-3.5 rounded-xl shadow-md transition">
-                Baca Profil Selengkapnya <i class="fa-solid fa-arrow-right"></i>
+            <a href="{{ $homeProfileImage?->display_button_url ?? route('tentang-kami') }}" class="inline-flex items-center gap-2 bg-pmr-primary hover:bg-pmr-dark text-white font-bold text-xs uppercase tracking-wider px-6 py-3.5 rounded-xl shadow-md transition">
+                {{ $homeProfileImage?->display_button_text ?? 'Baca Profil Selengkapnya' }} <i class="fa-solid fa-arrow-right"></i>
             </a>
         </div>
         <div class="relative">
@@ -163,8 +160,8 @@
                     <i class="fa-solid fa-certificate"></i>
                 </div>
                 <div>
-                    <div class="font-extrabold text-slate-800 text-xs sm:text-sm">{{ $homeProfileImage?->badge_text ?? 'Terakreditasi A' }}</div>
-                    <div class="text-[10px] sm:text-xs text-slate-500">{{ $homeProfileImage?->badge_subtext ?? 'Unit PMR Wira Teladan Kab. Bogor' }}</div>
+                    <div class="font-extrabold text-slate-800 text-xs sm:text-sm">{{ $homeProfileImage?->display_badge_text ?? 'Terakreditasi A' }}</div>
+                    <div class="text-[10px] sm:text-xs text-slate-500">{{ $homeProfileImage?->display_badge_subtext ?? 'Unit PMR Wira Teladan Kab. Bogor' }}</div>
                 </div>
             </div>
         </div>

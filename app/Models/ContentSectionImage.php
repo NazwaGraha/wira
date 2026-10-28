@@ -13,12 +13,82 @@ class ContentSectionImage extends Model
     protected $fillable = [
         'section_key',
         'title',
+        'tagline',
+        'tagline_icon',
+        'headline',
+        'body_text',
+        'checklist_items',
+        'button_text',
+        'button_url',
         'page_name',
         'image_path',
         'badge_text',
         'badge_subtext',
         'description',
     ];
+
+    protected $casts = [
+        'checklist_items' => 'array',
+    ];
+
+    /**
+     * Fallback getters untuk memastikan tampilan visual 100% konsisten dengan desain beranda.
+     */
+    public function getDisplayTaglineAttribute(): string
+    {
+        return ! empty($this->tagline) ? $this->tagline : 'Profil Ekstrakurikuler';
+    }
+
+    public function getDisplayTaglineIconAttribute(): string
+    {
+        return ! empty($this->tagline_icon) ? $this->tagline_icon : 'fa-solid fa-shield-heart';
+    }
+
+    public function getDisplayHeadlineAttribute(): string
+    {
+        return ! empty($this->headline) ? $this->headline : 'Membangun Karakter Kemanusiaan Generasi Muda SMAN 1 Ciawi';
+    }
+
+    public function getDisplayBodyTextAttribute(): string
+    {
+        return ! empty($this->body_text) ? $this->body_text : 'Palang Merah Remaja (PMR) Wira SMAN 1 Ciawi adalah wadah pembinaan dan pengembangan anggota remaja PMI tingkat SMA. Kami berkomitmen menanamkan nilai-nilai Tri Bakti PMR serta 7 Prinsip Dasar Palang Merah dan Bulan Sabit Merah Internasional.';
+    }
+
+    public function getDisplayChecklistItemsAttribute(): array
+    {
+        if (! empty($this->checklist_items) && is_array($this->checklist_items)) {
+            $filtered = array_values(array_filter($this->checklist_items, fn ($item) => filled(trim((string) $item))));
+            if (! empty($filtered)) {
+                return $filtered;
+            }
+        }
+
+        return [
+            'Meningkatkan keterampilan pertolongan pertama (P3K) dan tanggap darurat bencana.',
+            'Menyelenggarakan aksi donor darah sukarela secara berkala bersama UDD PMI.',
+            'Membentuk jiwa kepemimpinan, kerelawanan, dan persahabatan antar siswa.',
+        ];
+    }
+
+    public function getDisplayButtonTextAttribute(): string
+    {
+        return ! empty($this->button_text) ? $this->button_text : 'Baca Profil Selengkapnya';
+    }
+
+    public function getDisplayButtonUrlAttribute(): string
+    {
+        return ! empty($this->button_url) ? $this->button_url : route('tentang-kami');
+    }
+
+    public function getDisplayBadgeTextAttribute(): string
+    {
+        return ! empty($this->badge_text) ? $this->badge_text : 'Terakreditasi A';
+    }
+
+    public function getDisplayBadgeSubtextAttribute(): string
+    {
+        return ! empty($this->badge_subtext) ? $this->badge_subtext : 'Unit PMR Wira Teladan Kab. Bogor';
+    }
 
     /**
      * URL gambar publik yang aman dan fleksibel.
@@ -60,6 +130,17 @@ class ContentSectionImage extends Model
             'home_profile' => [
                 'section_key' => 'home_profile',
                 'title' => 'Profil Ekstrakurikuler',
+                'tagline' => 'Profil Ekstrakurikuler',
+                'tagline_icon' => 'fa-solid fa-shield-heart',
+                'headline' => 'Membangun Karakter Kemanusiaan Generasi Muda SMAN 1 Ciawi',
+                'body_text' => 'Palang Merah Remaja (PMR) Wira SMAN 1 Ciawi adalah wadah pembinaan dan pengembangan anggota remaja PMI tingkat SMA. Kami berkomitmen menanamkan nilai-nilai Tri Bakti PMR serta 7 Prinsip Dasar Palang Merah dan Bulan Sabit Merah Internasional.',
+                'checklist_items' => [
+                    'Meningkatkan keterampilan pertolongan pertama (P3K) dan tanggap darurat bencana.',
+                    'Menyelenggarakan aksi donor darah sukarela secara berkala bersama UDD PMI.',
+                    'Membentuk jiwa kepemimpinan, kerelawanan, dan persahabatan antar siswa.',
+                ],
+                'button_text' => 'Baca Profil Selengkapnya',
+                'button_url' => '/tentang-kami',
                 'page_name' => 'Halaman Beranda',
                 'image_path' => '/mockups/02_tentang_kami.jpg',
                 'badge_text' => 'Terakreditasi A',
