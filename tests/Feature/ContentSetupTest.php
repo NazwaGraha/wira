@@ -66,7 +66,7 @@ class ContentSetupTest extends TestCase
             'image' => $fakeImage,
         ]);
 
-        $response->assertRedirect(route('admin.content-setup.home'));
+        $response->assertRedirect(route('admin.content-setup.home', ['tab' => 'profile']));
         $response->assertSessionHas('success');
 
         $profile = ContentSectionImage::getSection('home_profile');
@@ -90,7 +90,7 @@ class ContentSetupTest extends TestCase
 
         $response = $this->actingAs($admin)->post(route('admin.content-setup.home.profile.reset'));
 
-        $response->assertRedirect(route('admin.content-setup.home'));
+        $response->assertRedirect(route('admin.content-setup.home', ['tab' => 'profile']));
         $response->assertSessionHas('success');
 
         $profile->refresh();
@@ -108,5 +108,86 @@ class ContentSetupTest extends TestCase
         $response->assertSee('Terakreditasi A');
         $response->assertSee('Unit PMR Wira Teladan Kab. Bogor');
         $response->assertSee('Baca Profil Selengkapnya');
+        $response->assertSee('Pilar Aksi Kemanusiaan');
+        $response->assertSee('Program Unggulan PMR Wira');
+        $response->assertSee('Donor Darah Sukarela');
+        $response->assertSee('Pertolongan Pertama (PP)');
+        $response->assertSee('Siaga Bencana & Sosial');
+    }
+
+    public function test_admin_can_access_home_pillars_setup_tab(): void
+    {
+        $admin = $this->createAdmin();
+
+        $response = $this->actingAs($admin)->get(route('admin.content-setup.home', ['tab' => 'pillars']));
+
+        $response->assertStatus(200);
+        $response->assertSee('Pilar Aksi Kemanusiaan');
+        $response->assertSee('Program Unggulan PMR Wira');
+        $response->assertSee('Donor Darah Sukarela');
+        $response->assertSee('Pertolongan Pertama (PP)');
+        $response->assertSee('Siaga Bencana & Sosial');
+    }
+
+    public function test_admin_can_update_home_pillars_content(): void
+    {
+        $admin = $this->createAdmin();
+
+        $response = $this->actingAs($admin)->post(route('admin.content-setup.home.pillars.update'), [
+            'tagline' => '3 Pilar Utama Relawan',
+            'headline' => 'Program Aksi Kemanusiaan Unggulan',
+            'body_text' => 'Deskripsi layanan baru untuk uji coba pembaruan konten pilar.',
+            'cards' => [
+                [
+                    'icon' => 'fa-solid fa-droplet',
+                    'title' => 'Donor Darah Rutin',
+                    'description' => 'Aksi donor darah berkala.',
+                    'button_text' => 'Lihat Jadwal',
+                    'button_url' => '/donor-darah',
+                ],
+                [
+                    'icon' => 'fa-solid fa-briefcase-medical',
+                    'title' => 'Pelayanan P3K Sekolah',
+                    'description' => 'Siaga P3K di setiap event sekolah.',
+                    'button_text' => 'Info Layanan',
+                    'button_url' => '/kegiatan',
+                ],
+                [
+                    'icon' => 'fa-solid fa-people-roof',
+                    'title' => 'Tanggap Darurat dan Mitigasi',
+                    'description' => 'Edukasi kebencanaan dan mitigasi gempa.',
+                    'button_text' => 'Baca Mitigasi',
+                    'button_url' => '/artikel',
+                ],
+            ],
+        ]);
+
+        $response->assertRedirect(route('admin.content-setup.home', ['tab' => 'pillars']));
+        $response->assertSessionHas('success');
+
+        $pillars = ContentSectionImage::getSection('home_pillars');
+        $this->assertEquals('3 Pilar Utama Relawan', $pillars->tagline);
+        $this->assertEquals('Program Aksi Kemanusiaan Unggulan', $pillars->headline);
+        $this->assertEquals('Deskripsi layanan baru untuk uji coba pembaruan konten pilar.', $pillars->body_text);
+        $this->assertCount(3, $pillars->display_programs);
+        $this->assertEquals('Donor Darah Rutin', $pillars->display_programs[0]['title']);
+    }
+
+    public function test_admin_can_reset_home_pillars_content_to_default(): void
+    {
+        $admin = $this->createAdmin();
+        $pillars = ContentSectionImage::getSection('home_pillars');
+        $pillars->update([
+            'headline' => 'Judul Pilar Diubah',
+        ]);
+
+        $response = $this->actingAs($admin)->post(route('admin.content-setup.home.pillars.reset'));
+
+        $response->assertRedirect(route('admin.content-setup.home', ['tab' => 'pillars']));
+        $response->assertSessionHas('success');
+
+        $pillars->refresh();
+        $this->assertEquals('Program Unggulan PMR Wira', $pillars->headline);
+        $this->assertEquals('Pilar Aksi Kemanusiaan', $pillars->tagline);
     }
 }

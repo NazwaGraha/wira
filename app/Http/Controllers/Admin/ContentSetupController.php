@@ -15,11 +15,17 @@ class ContentSetupController extends Controller
     /**
      * Tampilkan formulir pengaturan konten halaman Beranda.
      */
-    public function home(): View
+    public function home(Request $request): View
     {
-        $homeProfile = ContentSectionImage::getSection('home_profile');
+        $activeTab = $request->query('tab', 'profile');
+        if (! in_array($activeTab, ['profile', 'pillars'], true)) {
+            $activeTab = 'profile';
+        }
 
-        return view('admin.content-setup.home', compact('homeProfile'));
+        $homeProfile = ContentSectionImage::getSection('home_profile');
+        $homePillars = ContentSectionImage::getSection('home_pillars');
+
+        return view('admin.content-setup.home', compact('activeTab', 'homeProfile', 'homePillars'));
     }
 
     /**
@@ -78,7 +84,7 @@ class ContentSetupController extends Controller
 
         $homeProfile->update($data);
 
-        return redirect()->route('admin.content-setup.home')
+        return redirect()->route('admin.content-setup.home', ['tab' => 'profile'])
             ->with('success', 'Konten Section Profil Ekstrakurikuler berhasil diperbarui.');
     }
 
@@ -107,8 +113,96 @@ class ContentSetupController extends Controller
             'badge_subtext' => 'Unit PMR Wira Teladan Kab. Bogor',
         ]);
 
-        return redirect()->route('admin.content-setup.home')
+        return redirect()->route('admin.content-setup.home', ['tab' => 'profile'])
             ->with('success', 'Konten Section Profil Ekstrakurikuler berhasil dikembalikan ke pengaturan bawaan.');
+    }
+
+    /**
+     * Perbarui konten section Pilar Aksi Kemanusiaan (Program Unggulan) pada halaman Beranda.
+     */
+    public function updateHomePillars(Request $request): RedirectResponse
+    {
+        $validated = $request->validate([
+            'tagline' => 'nullable|string|max:100',
+            'headline' => 'required|string|max:255',
+            'body_text' => 'required|string|max:2000',
+            'cards' => 'required|array|min:1',
+            'cards.*.icon' => 'nullable|string|max:100',
+            'cards.*.title' => 'required|string|max:255',
+            'cards.*.description' => 'required|string|max:1000',
+            'cards.*.button_text' => 'nullable|string|max:100',
+            'cards.*.button_url' => 'nullable|string|max:255',
+        ], [
+            'headline.required' => 'Judul utama section (H1/H2) wajib diisi.',
+            'body_text.required' => 'Deskripsi ringkas pilar layanan wajib diisi.',
+            'cards.*.title.required' => 'Nama program pada kartu wajib diisi.',
+            'cards.*.description.required' => 'Deskripsi program pada kartu wajib diisi.',
+        ]);
+
+        $homePillars = ContentSectionImage::getSection('home_pillars');
+
+        $cleanedCards = [];
+        foreach ($validated['cards'] as $card) {
+            if (! empty($card['title'])) {
+                $cleanedCards[] = [
+                    'icon' => ! empty($card['icon']) ? $card['icon'] : 'fa-solid fa-droplet',
+                    'title' => $card['title'],
+                    'description' => $card['description'] ?? '',
+                    'button_text' => ! empty($card['button_text']) ? $card['button_text'] : 'Lihat Selengkapnya',
+                    'button_url' => ! empty($card['button_url']) ? $card['button_url'] : '#',
+                ];
+            }
+        }
+
+        $homePillars->update([
+            'tagline' => $validated['tagline'] ?? $homePillars->display_tagline,
+            'headline' => $validated['headline'],
+            'body_text' => $validated['body_text'],
+            'cards_data' => ! empty($cleanedCards) ? $cleanedCards : $homePillars->display_programs,
+        ]);
+
+        return redirect()->route('admin.content-setup.home', ['tab' => 'pillars'])
+            ->with('success', 'Konten Section Pilar Aksi Kemanusiaan berhasil diperbarui.');
+    }
+
+    /**
+     * Kembalikan konten Pilar Aksi Kemanusiaan ke nilai bawaan.
+     */
+    public function resetHomePillars(): RedirectResponse
+    {
+        $homePillars = ContentSectionImage::getSection('home_pillars');
+
+        $homePillars->update([
+            'tagline' => 'Pilar Aksi Kemanusiaan',
+            'headline' => 'Program Unggulan PMR Wira',
+            'body_text' => 'Tiga bidang layanan utama yang menjadi denyut nadi pengabdian kami di lingkungan SMAN 1 Ciawi.',
+            'cards_data' => [
+                [
+                    'icon' => 'fa-solid fa-droplet',
+                    'title' => 'Donor Darah Sukarela',
+                    'description' => 'Edukasi pentingnya donor darah bagi remaja usia 17 tahun ke atas serta aksi donor darah berkala bekerja sama dengan PMI Kabupaten Bogor.',
+                    'button_text' => 'Cek Stok & Jadwal',
+                    'button_url' => '/donor-darah',
+                ],
+                [
+                    'icon' => 'fa-solid fa-kit-medical',
+                    'title' => 'Pertolongan Pertama (PP)',
+                    'description' => 'Pelatihan intensif pembalutan, pembidaian, RJP/CPR, dan evakuasi korban untuk memastikan keselamatan di setiap kegiatan sekolah.',
+                    'button_text' => 'Lihat Modul & Kegiatan',
+                    'button_url' => '/kegiatan',
+                ],
+                [
+                    'icon' => 'fa-solid fa-shield-halved',
+                    'title' => 'Siaga Bencana & Sosial',
+                    'description' => 'Simulasi evakuasi gempa, sekolah aman bencana, serta penggalangan donasi dan bakti sosial untuk warga terdampak musibah.',
+                    'button_text' => 'Panduan Mitigasi',
+                    'button_url' => '/artikel?kategori=kesiapsiagaan-bencana',
+                ],
+            ],
+        ]);
+
+        return redirect()->route('admin.content-setup.home', ['tab' => 'pillars'])
+            ->with('success', 'Konten Section Pilar Aksi Kemanusiaan berhasil dikembalikan ke pengaturan bawaan.');
     }
 
     /**

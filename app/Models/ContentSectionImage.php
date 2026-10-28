@@ -18,6 +18,7 @@ class ContentSectionImage extends Model
         'headline',
         'body_text',
         'checklist_items',
+        'cards_data',
         'button_text',
         'button_url',
         'page_name',
@@ -29,6 +30,7 @@ class ContentSectionImage extends Model
 
     protected $casts = [
         'checklist_items' => 'array',
+        'cards_data' => 'array',
     ];
 
     /**
@@ -36,7 +38,11 @@ class ContentSectionImage extends Model
      */
     public function getDisplayTaglineAttribute(): string
     {
-        return ! empty($this->tagline) ? $this->tagline : 'Profil Ekstrakurikuler';
+        if (! empty($this->tagline)) {
+            return $this->tagline;
+        }
+
+        return $this->section_key === 'home_pillars' ? 'Pilar Aksi Kemanusiaan' : 'Profil Ekstrakurikuler';
     }
 
     public function getDisplayTaglineIconAttribute(): string
@@ -46,12 +52,67 @@ class ContentSectionImage extends Model
 
     public function getDisplayHeadlineAttribute(): string
     {
-        return ! empty($this->headline) ? $this->headline : 'Membangun Karakter Kemanusiaan Generasi Muda SMAN 1 Ciawi';
+        if (! empty($this->headline)) {
+            return $this->headline;
+        }
+
+        return $this->section_key === 'home_pillars' ? 'Program Unggulan PMR Wira' : 'Membangun Karakter Kemanusiaan Generasi Muda SMAN 1 Ciawi';
     }
 
     public function getDisplayBodyTextAttribute(): string
     {
-        return ! empty($this->body_text) ? $this->body_text : 'Palang Merah Remaja (PMR) Wira SMAN 1 Ciawi adalah wadah pembinaan dan pengembangan anggota remaja PMI tingkat SMA. Kami berkomitmen menanamkan nilai-nilai Tri Bakti PMR serta 7 Prinsip Dasar Palang Merah dan Bulan Sabit Merah Internasional.';
+        if (! empty($this->body_text)) {
+            return $this->body_text;
+        }
+
+        return $this->section_key === 'home_pillars'
+            ? 'Tiga bidang layanan utama yang menjadi denyut nadi pengabdian kami di lingkungan SMAN 1 Ciawi.'
+            : 'Palang Merah Remaja (PMR) Wira SMAN 1 Ciawi adalah wadah pembinaan dan pengembangan anggota remaja PMI tingkat SMA. Kami berkomitmen menanamkan nilai-nilai Tri Bakti PMR serta 7 Prinsip Dasar Palang Merah dan Bulan Sabit Merah Internasional.';
+    }
+
+    public function getDisplayProgramsAttribute(): array
+    {
+        if (! empty($this->cards_data) && is_array($this->cards_data)) {
+            $cleaned = [];
+            foreach ($this->cards_data as $card) {
+                if (! empty($card['title'])) {
+                    $cleaned[] = [
+                        'icon' => ! empty($card['icon']) ? $card['icon'] : 'fa-solid fa-droplet',
+                        'title' => $card['title'],
+                        'description' => $card['description'] ?? '',
+                        'button_text' => ! empty($card['button_text']) ? $card['button_text'] : 'Lihat Selengkapnya',
+                        'button_url' => ! empty($card['button_url']) ? $card['button_url'] : '#',
+                    ];
+                }
+            }
+            if (! empty($cleaned)) {
+                return $cleaned;
+            }
+        }
+
+        return [
+            [
+                'icon' => 'fa-solid fa-droplet',
+                'title' => 'Donor Darah Sukarela',
+                'description' => 'Edukasi pentingnya donor darah bagi remaja usia 17 tahun ke atas serta aksi donor darah berkala bekerja sama dengan PMI Kabupaten Bogor.',
+                'button_text' => 'Cek Stok & Jadwal',
+                'button_url' => route('donor-darah'),
+            ],
+            [
+                'icon' => 'fa-solid fa-kit-medical',
+                'title' => 'Pertolongan Pertama (PP)',
+                'description' => 'Pelatihan intensif pembalutan, pembidaian, RJP/CPR, dan evakuasi korban untuk memastikan keselamatan di setiap kegiatan sekolah.',
+                'button_text' => 'Lihat Modul & Kegiatan',
+                'button_url' => route('kegiatan'),
+            ],
+            [
+                'icon' => 'fa-solid fa-shield-halved',
+                'title' => 'Siaga Bencana & Sosial',
+                'description' => 'Simulasi evakuasi gempa, sekolah aman bencana, serta penggalangan donasi dan bakti sosial untuk warga terdampak musibah.',
+                'button_text' => 'Panduan Mitigasi',
+                'button_url' => route('artikel.index').'?kategori=kesiapsiagaan-bencana',
+            ],
+        ];
     }
 
     public function getDisplayChecklistItemsAttribute(): array
@@ -155,6 +216,38 @@ class ContentSectionImage extends Model
                 'badge_text' => 'PMR Tingkat Wira',
                 'badge_subtext' => 'Binaan PMI Kab. Bogor & SMAN 1 Ciawi',
                 'description' => 'Foto profil pengenalan di samping naskah definisi resmi PMR Wira.',
+            ],
+            'home_pillars' => [
+                'section_key' => 'home_pillars',
+                'title' => 'Program Unggulan PMR Wira',
+                'page_name' => 'Halaman Beranda',
+                'image_path' => '',
+                'tagline' => 'Pilar Aksi Kemanusiaan',
+                'headline' => 'Program Unggulan PMR Wira',
+                'body_text' => 'Tiga bidang layanan utama yang menjadi denyut nadi pengabdian kami di lingkungan SMAN 1 Ciawi.',
+                'cards_data' => [
+                    [
+                        'icon' => 'fa-solid fa-droplet',
+                        'title' => 'Donor Darah Sukarela',
+                        'description' => 'Edukasi pentingnya donor darah bagi remaja usia 17 tahun ke atas serta aksi donor darah berkala bekerja sama dengan PMI Kabupaten Bogor.',
+                        'button_text' => 'Cek Stok & Jadwal',
+                        'button_url' => '/donor-darah',
+                    ],
+                    [
+                        'icon' => 'fa-solid fa-kit-medical',
+                        'title' => 'Pertolongan Pertama (PP)',
+                        'description' => 'Pelatihan intensif pembalutan, pembidaian, RJP/CPR, dan evakuasi korban untuk memastikan keselamatan di setiap kegiatan sekolah.',
+                        'button_text' => 'Lihat Modul & Kegiatan',
+                        'button_url' => '/kegiatan',
+                    ],
+                    [
+                        'icon' => 'fa-solid fa-shield-halved',
+                        'title' => 'Siaga Bencana & Sosial',
+                        'description' => 'Simulasi evakuasi gempa, sekolah aman bencana, serta penggalangan donasi dan bakti sosial untuk warga terdampak musibah.',
+                        'button_text' => 'Panduan Mitigasi',
+                        'button_url' => '/artikel?kategori=kesiapsiagaan-bencana',
+                    ],
+                ],
             ],
         ];
 

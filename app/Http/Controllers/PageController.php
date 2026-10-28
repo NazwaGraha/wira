@@ -86,8 +86,9 @@ class PageController extends Controller
         }
 
         $homeProfileImage = ContentSectionImage::getSection('home_profile');
+        $homePillars = ContentSectionImage::getSection('home_pillars');
 
-        return view('pages.home', compact('heroSlides', 'featuredArticle', 'latestArticles', 'activities', 'bloodStocks', 'featuredAchievements', 'activePopupBanner', 'homeProfileImage'));
+        return view('pages.home', compact('heroSlides', 'featuredArticle', 'latestArticles', 'activities', 'bloodStocks', 'featuredAchievements', 'activePopupBanner', 'homeProfileImage', 'homePillars'));
     }
 
     public function tentangKami()

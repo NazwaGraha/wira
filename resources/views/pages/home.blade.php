@@ -172,53 +172,52 @@
 <section class="py-12 sm:py-20 bg-slate-100/70 border-y border-slate-200/80">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="text-center max-w-3xl mx-auto mb-10 sm:mb-16">
-            <div class="text-pmr-primary font-bold text-xs uppercase tracking-widest mb-2">Pilar Aksi Kemanusiaan</div>
-            <h2 class="text-2xl sm:text-4xl font-extrabold text-slate-900 tracking-tight">Program Unggulan PMR Wira</h2>
-            <p class="text-slate-600 text-xs sm:text-sm mt-2 sm:mt-3">Tiga bidang layanan utama yang menjadi denyut nadi pengabdian kami di lingkungan SMAN 1 Ciawi.</p>
+            <div class="text-pmr-primary font-bold text-xs uppercase tracking-widest mb-2">{{ $homePillars?->display_tagline ?? 'Pilar Aksi Kemanusiaan' }}</div>
+            <h2 class="text-2xl sm:text-4xl font-extrabold text-slate-900 tracking-tight">{{ $homePillars?->display_headline ?? 'Program Unggulan PMR Wira' }}</h2>
+            <p class="text-slate-600 text-xs sm:text-sm mt-2 sm:mt-3">{{ $homePillars?->display_body_text ?? 'Tiga bidang layanan utama yang menjadi denyut nadi pengabdian kami di lingkungan SMAN 1 Ciawi.' }}</p>
         </div>
 
+        @php
+            $displayPrograms = $homePillars?->display_programs ?? [
+                [
+                    'icon' => 'fa-solid fa-droplet',
+                    'title' => 'Donor Darah Sukarela',
+                    'description' => 'Edukasi pentingnya donor darah bagi remaja usia 17 tahun ke atas serta aksi donor darah berkala bekerja sama dengan PMI Kabupaten Bogor.',
+                    'button_text' => 'Cek Stok & Jadwal',
+                    'button_url' => route('donor-darah'),
+                ],
+                [
+                    'icon' => 'fa-solid fa-kit-medical',
+                    'title' => 'Pertolongan Pertama (PP)',
+                    'description' => 'Pelatihan intensif pembalutan, pembidaian, RJP/CPR, dan evakuasi korban untuk memastikan keselamatan di setiap kegiatan sekolah.',
+                    'button_text' => 'Lihat Modul & Kegiatan',
+                    'button_url' => route('kegiatan'),
+                ],
+                [
+                    'icon' => 'fa-solid fa-shield-halved',
+                    'title' => 'Siaga Bencana & Sosial',
+                    'description' => 'Simulasi evakuasi gempa, sekolah aman bencana, serta penggalangan donasi dan bakti sosial untuk warga terdampak musibah.',
+                    'button_text' => 'Panduan Mitigasi',
+                    'button_url' => route('artikel.index') . '?kategori=kesiapsiagaan-bencana',
+                ],
+            ];
+        @endphp
+
         <div class="grid grid-cols-1 md:grid-cols-3 gap-6 sm:gap-8">
-            <!-- Program 1 -->
+            @foreach($displayPrograms as $prog)
             <div class="bg-white rounded-3xl p-6 sm:p-8 shadow-sm hover:shadow-xl border border-slate-200/60 transition duration-300 flex flex-col">
                 <div class="w-14 h-14 sm:w-16 sm:h-16 rounded-2xl bg-red-50 text-pmr-primary flex items-center justify-center text-2xl sm:text-3xl mb-4 sm:mb-6 shadow-inner">
-                    <i class="fa-solid fa-droplet"></i>
+                    <i class="{{ $prog['icon'] ?? 'fa-solid fa-star' }}"></i>
                 </div>
-                <h3 class="text-lg sm:text-xl font-bold text-slate-800 mb-2 sm:mb-3">Donor Darah Sukarela</h3>
+                <h3 class="text-lg sm:text-xl font-bold text-slate-800 mb-2 sm:mb-3">{{ $prog['title'] ?? '' }}</h3>
                 <p class="text-slate-600 text-xs sm:text-sm leading-relaxed mb-6 flex-grow">
-                    Edukasi pentingnya donor darah bagi remaja usia 17 tahun ke atas serta aksi donor darah berkala bekerja sama dengan PMI Kabupaten Bogor.
+                    {{ $prog['description'] ?? '' }}
                 </p>
-                <a href="{{ route('donor-darah') }}" class="text-pmr-primary font-bold text-xs uppercase tracking-wider flex items-center gap-1.5 hover:gap-2.5 transition-all">
-                    Cek Stok & Jadwal <i class="fa-solid fa-arrow-right text-[10px]"></i>
+                <a href="{{ $prog['button_url'] ?? '#' }}" class="text-pmr-primary font-bold text-xs uppercase tracking-wider flex items-center gap-1.5 hover:gap-2.5 transition-all">
+                    {{ $prog['button_text'] ?? 'Lihat Selengkapnya' }} <i class="fa-solid fa-arrow-right text-[10px]"></i>
                 </a>
             </div>
-
-            <!-- Program 2 -->
-            <div class="bg-white rounded-3xl p-6 sm:p-8 shadow-sm hover:shadow-xl border border-slate-200/60 transition duration-300 flex flex-col">
-                <div class="w-14 h-14 sm:w-16 sm:h-16 rounded-2xl bg-red-50 text-pmr-primary flex items-center justify-center text-2xl sm:text-3xl mb-4 sm:mb-6 shadow-inner">
-                    <i class="fa-solid fa-kit-medical"></i>
-                </div>
-                <h3 class="text-lg sm:text-xl font-bold text-slate-800 mb-2 sm:mb-3">Pertolongan Pertama (PP)</h3>
-                <p class="text-slate-600 text-xs sm:text-sm leading-relaxed mb-6 flex-grow">
-                    Pelatihan intensif pembalutan, pembidaian, RJP/CPR, dan evakuasi korban untuk memastikan keselamatan di setiap kegiatan sekolah.
-                </p>
-                <a href="{{ route('kegiatan') }}" class="text-pmr-primary font-bold text-xs uppercase tracking-wider flex items-center gap-1.5 hover:gap-2.5 transition-all">
-                    Lihat Modul & Kegiatan <i class="fa-solid fa-arrow-right text-[10px]"></i>
-                </a>
-            </div>
-
-            <!-- Program 3 -->
-            <div class="bg-white rounded-3xl p-6 sm:p-8 shadow-sm hover:shadow-xl border border-slate-200/60 transition duration-300 flex flex-col">
-                <div class="w-14 h-14 sm:w-16 sm:h-16 rounded-2xl bg-red-50 text-pmr-primary flex items-center justify-center text-2xl sm:text-3xl mb-4 sm:mb-6 shadow-inner">
-                    <i class="fa-solid fa-shield-halved"></i>
-                </div>
-                <h3 class="text-lg sm:text-xl font-bold text-slate-800 mb-2 sm:mb-3">Siaga Bencana & Sosial</h3>
-                <p class="text-slate-600 text-xs sm:text-sm leading-relaxed mb-6 flex-grow">
-                    Simulasi evakuasi gempa, sekolah aman bencana, serta penggalangan donasi dan bakti sosial untuk warga terdampak musibah.
-                </p>
-                <a href="{{ route('artikel.index') }}?kategori=kesiapsiagaan-bencana" class="text-pmr-primary font-bold text-xs uppercase tracking-wider flex items-center gap-1.5 hover:gap-2.5 transition-all">
-                    Panduan Mitigasi <i class="fa-solid fa-arrow-right text-[10px]"></i>
-                </a>
-            </div>
+            @endforeach
         </div>
     </div>
 </section>

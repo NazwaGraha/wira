@@ -130,11 +130,13 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::post('/media-manager/section', [MediaManagerController::class, 'updateSection'])->name('media-manager.update-section');
         Route::post('/media-manager/section/reset', [MediaManagerController::class, 'resetSection'])->name('media-manager.reset-section');
 
-        // Setup Konten Website (Beranda, Profil Ekstrakurikuler, dll)
+        // Setup Konten Website (Beranda, Profil Ekstrakurikuler, Pilar Aksi Kemanusiaan, dll)
         Route::prefix('setup-konten')->name('content-setup.')->group(function () {
             Route::get('/beranda', [ContentSetupController::class, 'home'])->name('home');
             Route::post('/beranda/profil', [ContentSetupController::class, 'updateHomeProfile'])->name('home.profile.update');
             Route::post('/beranda/profil/reset', [ContentSetupController::class, 'resetHomeProfile'])->name('home.profile.reset');
+            Route::post('/beranda/pilar', [ContentSetupController::class, 'updateHomePillars'])->name('home.pillars.update');
+            Route::post('/beranda/pilar/reset', [ContentSetupController::class, 'resetHomePillars'])->name('home.pillars.reset');
         });
 
         // Pengaturan Slider Hero Banner
