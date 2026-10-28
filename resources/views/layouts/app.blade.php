@@ -285,11 +285,11 @@
                     </a>
                 </nav>
 
-                <!-- Action Button Gabung Relawan (Desktop Only) -->
+                <!-- Action Button Daftar Jadi Anggota PMR (Desktop Only) -->
                 <div class="hidden xl:flex items-center gap-3 flex-shrink-0">
                     <a href="{{ route('kontak') }}#daftar" class="bg-white text-pmr-primary hover:bg-red-50 hover:shadow-xl font-extrabold text-xs uppercase tracking-wider px-5 py-2.5 rounded-full transition-all duration-200 transform hover:-translate-y-0.5 active:scale-95 shadow-md flex items-center gap-2 whitespace-nowrap">
                         <i class="fa-solid fa-hand-holding-heart text-red-600"></i>
-                        <span>Gabung Relawan</span>
+                        <span>Daftar Jadi Anggota PMR</span>
                     </a>
                 </div>
 
@@ -428,7 +428,7 @@
             <!-- Call to Action Button in Mobile Menu (Full Width White Button - Mockup Match) -->
             <div class="space-y-2 pt-1">
                 <a href="{{ route('kontak') }}#daftar" class="block text-center w-full bg-white hover:bg-red-50 text-pmr-primary font-black py-3.5 rounded-xl shadow-xl text-xs uppercase tracking-wider flex items-center justify-center gap-2 transition active:scale-95">
-                    <i class="fa-solid fa-hand-holding-heart text-red-600 text-sm"></i> Daftar Jadi Relawan PMR
+                    <i class="fa-solid fa-hand-holding-heart text-red-600 text-sm"></i> Daftar Jadi Anggota PMR
                 </a>
 
                 @auth
