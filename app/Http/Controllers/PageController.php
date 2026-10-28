@@ -183,8 +183,23 @@ class PageController extends Controller
         }
         $guideline = OrganizationGuideline::current();
         $aboutIntroImage = ContentSectionImage::getSection('about_intro');
+        $aboutIntro = $aboutIntroImage;
+        $aboutTriBakti = ContentSectionImage::getSection('about_tri_bakti');
+        $aboutPrinciples = ContentSectionImage::getSection('about_principles');
+        $aboutVisionMission = ContentSectionImage::getSection('about_vision_mission');
 
-        return view('pages.tentang-kami', compact('organizationSetting', 'organizationMembers', 'allMembers', 'allAdvisors', 'guideline', 'aboutIntroImage'));
+        return view('pages.tentang-kami', compact(
+            'organizationSetting',
+            'organizationMembers',
+            'allMembers',
+            'allAdvisors',
+            'guideline',
+            'aboutIntroImage',
+            'aboutIntro',
+            'aboutTriBakti',
+            'aboutPrinciples',
+            'aboutVisionMission'
+        ));
     }
 
     public function pedomanOrganisasi()

@@ -130,13 +130,24 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::post('/media-manager/section', [MediaManagerController::class, 'updateSection'])->name('media-manager.update-section');
         Route::post('/media-manager/section/reset', [MediaManagerController::class, 'resetSection'])->name('media-manager.reset-section');
 
-        // Setup Konten Website (Beranda, Profil Ekstrakurikuler, Pilar Aksi Kemanusiaan, dll)
+        // Setup Konten Website (Beranda, Tentang Kami, dll)
         Route::prefix('setup-konten')->name('content-setup.')->group(function () {
             Route::get('/beranda', [ContentSetupController::class, 'home'])->name('home');
             Route::post('/beranda/profil', [ContentSetupController::class, 'updateHomeProfile'])->name('home.profile.update');
             Route::post('/beranda/profil/reset', [ContentSetupController::class, 'resetHomeProfile'])->name('home.profile.reset');
             Route::post('/beranda/pilar', [ContentSetupController::class, 'updateHomePillars'])->name('home.pillars.update');
             Route::post('/beranda/pilar/reset', [ContentSetupController::class, 'resetHomePillars'])->name('home.pillars.reset');
+
+            // Setup Konten Halaman Tentang Kami
+            Route::get('/tentang-kami', [ContentSetupController::class, 'about'])->name('about');
+            Route::post('/tentang-kami/mengenal', [ContentSetupController::class, 'updateAboutIntro'])->name('about.intro.update');
+            Route::post('/tentang-kami/mengenal/reset', [ContentSetupController::class, 'resetAboutIntro'])->name('about.intro.reset');
+            Route::post('/tentang-kami/tri-bakti', [ContentSetupController::class, 'updateAboutTriBakti'])->name('about.tri-bakti.update');
+            Route::post('/tentang-kami/tri-bakti/reset', [ContentSetupController::class, 'resetAboutTriBakti'])->name('about.tri-bakti.reset');
+            Route::post('/tentang-kami/prinsip', [ContentSetupController::class, 'updateAboutPrinciples'])->name('about.principles.update');
+            Route::post('/tentang-kami/prinsip/reset', [ContentSetupController::class, 'resetAboutPrinciples'])->name('about.principles.reset');
+            Route::post('/tentang-kami/visi-misi', [ContentSetupController::class, 'updateAboutVisionMission'])->name('about.vision-mission.update');
+            Route::post('/tentang-kami/visi-misi/reset', [ContentSetupController::class, 'resetAboutVisionMission'])->name('about.vision-mission.reset');
         });
 
         // Pengaturan Slider Hero Banner

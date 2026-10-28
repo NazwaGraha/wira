@@ -132,11 +132,18 @@
             @if(!in_array(auth()->user()?->role, ['anggota', 'staff_bidang'], true))
             <!-- Setup Konten -->
             <div class="pt-4 pb-1 text-[11px] font-bold uppercase text-slate-500 tracking-wider px-3">Setup Konten</div>
-            <a href="{{ route('admin.content-setup.home') }}" class="flex items-center gap-3 px-3 py-2.5 rounded-xl font-medium text-sm transition {{ request()->routeIs('admin.content-setup.*') ? 'bg-pmr-primary text-white shadow-md shadow-red-950/40' : 'hover:bg-slate-800 text-slate-300' }}">
+            <a href="{{ route('admin.content-setup.home') }}" class="flex items-center gap-3 px-3 py-2.5 rounded-xl font-medium text-sm transition {{ request()->routeIs('admin.content-setup.home*') ? 'bg-pmr-primary text-white shadow-md shadow-red-950/40' : 'hover:bg-slate-800 text-slate-300' }}">
                 <i class="fa-solid fa-house-laptop w-5 text-center text-rose-400"></i>
                 <div class="flex items-center justify-between flex-grow">
                     <span>Beranda</span>
                     <span class="text-[9px] bg-rose-500/20 text-rose-300 border border-rose-500/30 px-1.5 py-0.2 rounded font-black uppercase">Home</span>
+                </div>
+            </a>
+            <a href="{{ route('admin.content-setup.about') }}" class="flex items-center gap-3 px-3 py-2.5 rounded-xl font-medium text-sm transition {{ request()->routeIs('admin.content-setup.about*') ? 'bg-pmr-primary text-white shadow-md shadow-red-950/40' : 'hover:bg-slate-800 text-slate-300' }}">
+                <i class="fa-solid fa-circle-info w-5 text-center text-amber-400"></i>
+                <div class="flex items-center justify-between flex-grow">
+                    <span>Tentang Kami</span>
+                    <span class="text-[9px] bg-amber-500/20 text-amber-300 border border-amber-500/30 px-1.5 py-0.2 rounded font-black uppercase">Profil</span>
                 </div>
             </a>
 
