@@ -341,7 +341,7 @@
                 </button>
 
                 <div class="min-w-0">
-                    <h1 class="text-sm sm:text-xl font-extrabold text-slate-900 truncate">@yield('page_title', 'Manajemen Artikel')</h1>
+                    <h1 class="text-sm sm:text-xl font-extrabold text-slate-900 truncate">@yield('page_title', 'Admin Panel')</h1>
                     <p class="text-[10px] sm:text-xs text-slate-500 truncate hidden sm:block">PMR Wira SMAN 1 Ciawi &bull; Periode Ragana Dwi Pantara 2026/2027</p>
                 </div>
             </div>

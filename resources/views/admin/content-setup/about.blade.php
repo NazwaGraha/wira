@@ -1,6 +1,7 @@
 @extends('layouts.admin')
 
 @section('title', 'Setup Konten Tentang Kami')
+@section('page_title', 'Setup Konten Halaman Tentang Kami')
 
 @section('content')
 <div class="space-y-6">

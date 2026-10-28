@@ -38,7 +38,8 @@ class ContentSetupTest extends TestCase
         $response = $this->actingAs($admin)->get(route('admin.content-setup.home'));
 
         $response->assertStatus(200);
-        $response->assertSee('Setup Konten Beranda');
+        $response->assertSee('Setup Konten Halaman Beranda');
+        $response->assertDontSee('Manajemen Artikel');
         $response->assertSee('Profil Ekstrakurikuler');
         $response->assertSee('Membangun Karakter Kemanusiaan Generasi Muda SMAN 1 Ciawi');
         $response->assertSee('Pratinjau Langsung (Live Preview)');
@@ -197,6 +198,8 @@ class ContentSetupTest extends TestCase
 
         $response = $this->actingAs($admin)->get(route('admin.content-setup.about', ['tab' => 'intro']));
         $response->assertStatus(200);
+        $response->assertSee('Setup Konten Halaman Tentang Kami');
+        $response->assertDontSee('Manajemen Artikel');
         $response->assertSee('Setup Konten Tentang Kami');
         $response->assertSee('MENGENAL PMR');
 

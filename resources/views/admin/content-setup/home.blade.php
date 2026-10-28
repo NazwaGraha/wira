@@ -1,6 +1,7 @@
 @extends('layouts.admin')
 
 @section('title', 'Setup Konten Beranda - ' . ($activeTab === 'pillars' ? 'Pilar Aksi Kemanusiaan' : 'Profil Ekstrakurikuler'))
+@section('page_title', 'Setup Konten Halaman Beranda')
 
 @section('content')
 <div class="space-y-6">
