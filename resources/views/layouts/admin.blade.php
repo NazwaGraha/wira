@@ -226,6 +226,13 @@
                 <i class="fa-solid fa-calculator w-5 text-center text-teal-400"></i>
                 <span>Input Nilai Lomba</span>
             </a>
+            <a href="{{ route('admin.competition-mascots.index') }}" class="flex items-center gap-3 px-3 py-2.5 rounded-xl font-medium text-sm transition {{ request()->routeIs('admin.competition-mascots.*') ? 'bg-pmr-primary text-white shadow-md shadow-red-950/40' : 'hover:bg-slate-800 text-slate-300' }}">
+                <i class="fa-solid fa-cat w-5 text-center text-amber-300"></i>
+                <div class="flex items-center justify-between flex-grow">
+                    <span>Maskot Lomba</span>
+                    <span class="text-[9px] bg-amber-400/20 text-amber-300 border border-amber-400/30 px-1.5 py-0.2 rounded font-black uppercase">Foto</span>
+                </div>
+            </a>
             <a href="{{ route('admin.competition-leaderboard.index') }}" class="flex items-center gap-3 px-3 py-2.5 rounded-xl font-medium text-sm transition {{ request()->routeIs('admin.competition-leaderboard.*') ? 'bg-pmr-primary text-white shadow-md shadow-red-950/40' : 'hover:bg-slate-800 text-slate-300' }}">
                 <i class="fa-solid fa-trophy w-5 text-center text-yellow-400"></i>
                 <span>Rekap Juara Umum</span>

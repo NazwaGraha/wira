@@ -38,16 +38,23 @@
     <!-- Event Selector & History Bar -->
     @include('admin.competition.partials.event-selector')
 
-    <!-- Level Tabs -->
-    <div class="flex flex-wrap gap-2">
-        <a href="{{ route('admin.competition-scores.index', array_merge(request()->query(), ['level' => 'Mula'])) }}" class="px-6 py-3 rounded-xl font-extrabold text-sm transition {{ $level == 'Mula' ? 'bg-emerald-600 text-white shadow-md shadow-emerald-600/30 border border-emerald-600' : 'bg-white text-slate-700 hover:bg-emerald-50 hover:text-emerald-700 hover:border-emerald-300 border border-slate-200' }}">
-            <i class="fa-solid fa-child-reaching mr-1.5"></i> PMR MULA (SD)
-        </a>
-        <a href="{{ route('admin.competition-scores.index', array_merge(request()->query(), ['level' => 'Madya'])) }}" class="px-6 py-3 rounded-xl font-extrabold text-sm transition {{ $level == 'Madya' ? 'bg-blue-600 text-white shadow-md shadow-blue-600/30 border border-blue-600' : 'bg-white text-slate-700 hover:bg-blue-50 hover:text-blue-700 hover:border-blue-300 border border-slate-200' }}">
-            <i class="fa-solid fa-user-group mr-1.5"></i> PMR MADYA (SMP)
-        </a>
-        <a href="{{ route('admin.competition-scores.index', array_merge(request()->query(), ['level' => 'Wira'])) }}" class="px-6 py-3 rounded-xl font-extrabold text-sm transition {{ $level == 'Wira' ? 'bg-amber-400 text-slate-950 font-black shadow-md shadow-amber-400/30 border border-amber-400' : 'bg-white text-slate-700 hover:bg-amber-50 hover:text-amber-800 hover:border-amber-300 border border-slate-200' }}">
-            <i class="fa-solid fa-graduation-cap mr-1.5"></i> PMR WIRA (SMA)
+    <!-- Level Tabs & Actions -->
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+        <div class="flex flex-wrap gap-2">
+            <a href="{{ route('admin.competition-scores.index', array_merge(request()->query(), ['level' => 'Mula'])) }}" class="px-6 py-3 rounded-xl font-extrabold text-sm transition {{ $level == 'Mula' ? 'bg-emerald-600 text-white shadow-md shadow-emerald-600/30 border border-emerald-600' : 'bg-white text-slate-700 hover:bg-emerald-50 hover:text-emerald-700 hover:border-emerald-300 border border-slate-200' }}">
+                <i class="fa-solid fa-child-reaching mr-1.5"></i> PMR MULA (SD)
+            </a>
+            <a href="{{ route('admin.competition-scores.index', array_merge(request()->query(), ['level' => 'Madya'])) }}" class="px-6 py-3 rounded-xl font-extrabold text-sm transition {{ $level == 'Madya' ? 'bg-blue-600 text-white shadow-md shadow-blue-600/30 border border-blue-600' : 'bg-white text-slate-700 hover:bg-blue-50 hover:text-blue-700 hover:border-blue-300 border border-slate-200' }}">
+                <i class="fa-solid fa-user-group mr-1.5"></i> PMR MADYA (SMP)
+            </a>
+            <a href="{{ route('admin.competition-scores.index', array_merge(request()->query(), ['level' => 'Wira'])) }}" class="px-6 py-3 rounded-xl font-extrabold text-sm transition {{ $level == 'Wira' ? 'bg-amber-400 text-slate-950 font-black shadow-md shadow-amber-400/30 border border-amber-400' : 'bg-white text-slate-700 hover:bg-amber-50 hover:text-amber-800 hover:border-amber-300 border border-slate-200' }}">
+                <i class="fa-solid fa-graduation-cap mr-1.5"></i> PMR WIRA (SMA)
+            </a>
+        </div>
+
+        <a href="{{ route('admin.competition-mascots.index', ['level' => $level]) }}" class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl font-bold text-xs bg-white text-slate-700 hover:text-amber-700 hover:bg-amber-50 border border-slate-200 hover:border-amber-300 shadow-2xs transition self-start sm:self-auto" title="Kelola dan unggah gambar maskot lomba">
+            <i class="fa-solid fa-cat text-amber-500 text-sm"></i>
+            <span>Kelola Maskot Lomba</span>
         </a>
     </div>
 

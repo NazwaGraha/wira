@@ -18,6 +18,7 @@ use App\Http\Controllers\Admin\CompetitionFeeController;
 use App\Http\Controllers\Admin\CompetitionInfoMenuController;
 use App\Http\Controllers\Admin\CompetitionJuryController;
 use App\Http\Controllers\Admin\CompetitionLeaderboardController;
+use App\Http\Controllers\Admin\CompetitionMascotController;
 use App\Http\Controllers\Admin\CompetitionParticipantController;
 use App\Http\Controllers\Admin\CompetitionRegistrationController;
 use App\Http\Controllers\Admin\CompetitionScoreController;
@@ -271,6 +272,10 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::post('/competition-scores/{category}/assign-termins', [CompetitionScoreController::class, 'assignTermins'])->name('competition-scores.assign-termins');
         Route::post('/competition-scores/{category}/quick-add-team', [CompetitionScoreController::class, 'quickAddTeam'])->name('competition-scores.quick-add-team');
         Route::delete('/competition-scores/{category}/teams/{team}', [CompetitionScoreController::class, 'removeTeam'])->name('competition-scores.remove-team');
+
+        // Manajemen Gambar Maskot Lomba (Mula, Madya, Wira)
+        Route::get('/competition-mascots', [CompetitionMascotController::class, 'index'])->name('competition-mascots.index');
+        Route::post('/competition-mascots', [CompetitionMascotController::class, 'update'])->name('competition-mascots.update');
 
         // Manajemen Akun Juri & Pemetaan Lomba
         Route::resource('competition-juries', CompetitionJuryController::class)
