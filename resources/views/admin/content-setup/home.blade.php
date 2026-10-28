@@ -58,7 +58,7 @@
         </div>
     @endif
 
-    <!-- Tab Navigasi Konten -->
+    <!-- Tab Navigasi Konten Beranda -->
     <div class="flex items-center gap-2 overflow-x-auto pb-1 border-b border-slate-200">
         <a href="{{ route('admin.content-setup.home', ['tab' => 'profile']) }}" class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl font-bold text-xs uppercase tracking-wider transition {{ $activeTab === 'profile' ? 'bg-pmr-primary text-white shadow-sm shadow-red-950/20' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100' }}">
             <i class="fa-solid fa-shield-heart"></i>
@@ -67,18 +67,6 @@
         <a href="{{ route('admin.content-setup.home', ['tab' => 'pillars']) }}" class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl font-bold text-xs uppercase tracking-wider transition {{ $activeTab === 'pillars' ? 'bg-pmr-primary text-white shadow-sm shadow-red-950/20' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100' }}">
             <i class="fa-solid fa-hand-holding-heart"></i>
             <span>Pilar Aksi Kemanusiaan</span>
-        </a>
-        <a href="{{ route('admin.hero-slides.index') }}" class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl font-bold text-xs uppercase tracking-wider transition text-slate-600 hover:text-slate-900 hover:bg-slate-100">
-            <i class="fa-solid fa-images"></i>
-            <span>Hero Slider</span>
-        </a>
-        <a href="{{ route('admin.media-manager.index') }}" class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl font-bold text-xs uppercase tracking-wider transition text-slate-600 hover:text-slate-900 hover:bg-slate-100">
-            <i class="fa-solid fa-photo-film"></i>
-            <span>Kelola Gambar & Media</span>
-        </a>
-        <a href="{{ route('admin.popup-banner.index') }}" class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl font-bold text-xs uppercase tracking-wider transition text-slate-600 hover:text-slate-900 hover:bg-slate-100">
-            <i class="fa-solid fa-bullhorn"></i>
-            <span>Popup Banner</span>
         </a>
     </div>
 
