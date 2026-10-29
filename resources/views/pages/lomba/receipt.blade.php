@@ -530,22 +530,29 @@
             font-weight: 600;
         }
 
-        /* Print Media Styles */
+        /* Print Media Styles - Exact 100% Full-Bleed A4 */
         @page {
-            size: A4 portrait;
-            margin: 0;
+            size: 210mm 297mm;
+            margin: 0mm;
         }
 
         @media print {
-            html, body {
-                background: #ffffff !important;
-                padding: 0 !important;
-                margin: 0 !important;
-                width: 100% !important;
-                height: 100% !important;
-                overflow: hidden !important;
+            * {
                 -webkit-print-color-adjust: exact !important;
                 print-color-adjust: exact !important;
+                box-shadow: none !important;
+                text-shadow: none !important;
+                backdrop-filter: none !important;
+                -webkit-backdrop-filter: none !important;
+            }
+
+            html, body {
+                width: 210mm !important;
+                height: 297mm !important;
+                margin: 0 !important;
+                padding: 0 !important;
+                background: #ffffff !important;
+                overflow: hidden !important;
             }
 
             .no-print {
@@ -553,25 +560,28 @@
             }
 
             .kwitansi-wrapper {
-                width: 100% !important;
-                max-width: 100% !important;
+                width: 210mm !important;
+                height: 297mm !important;
+                max-width: none !important;
                 padding: 0 !important;
                 margin: 0 !important;
-                display: flex !important;
-                justify-content: center !important;
-                align-items: flex-start !important;
+                display: block !important;
                 overflow: hidden !important;
             }
 
             .kwitansi-canvas {
+                width: 724px !important;
+                height: 1024px !important;
+                min-width: 724px !important;
+                min-height: 1024px !important;
                 box-shadow: none !important;
                 border-radius: 0 !important;
-                margin: 0 auto !important;
+                margin: 0 !important;
+                transform: scale(1.0963) !important;
+                transform-origin: 0 0 !important;
                 page-break-inside: avoid !important;
                 page-break-after: avoid !important;
                 page-break-before: avoid !important;
-                -webkit-print-color-adjust: exact !important;
-                print-color-adjust: exact !important;
             }
         }
     </style>
