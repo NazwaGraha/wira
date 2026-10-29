@@ -41,6 +41,7 @@ use App\Http\Controllers\Jury\JuryPortalController;
 use App\Http\Controllers\MemberAreaController;
 use App\Http\Controllers\PageController;
 use App\Http\Controllers\WiraAgentController;
+use App\Models\CompetitionInfoMenu;
 use App\Services\OrganizationSyncService;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\File;
@@ -494,6 +495,22 @@ Route::get('/server-sync-update-pmr', function () {
             OrganizationSyncService::syncAll();
         } catch (Throwable $e) {
             Log::warning('Organization sync error on server-sync-update: '.$e->getMessage());
+        }
+
+        // Sinkronisasi link Instagram resmi pada Menu Informasi Lomba
+        try {
+            if (Schema::hasTable('competition_info_menus')) {
+                CompetitionInfoMenu::where('category_badge', 'like', '%Galeri%')
+                    ->orWhere('title', 'like', '%Dokumentasi%')
+                    ->orWhere('button_text', 'like', '%Galeri%')
+                    ->update([
+                        'action_type' => 'link',
+                        'url_link' => 'https://www.instagram.com/pmr_sman1c',
+                        'button_text' => 'Buka Galeri Foto & Video',
+                    ]);
+            }
+        } catch (Throwable $e) {
+            Log::warning('CompetitionInfoMenu instagram link sync error: '.$e->getMessage());
         }
 
         $output = Artisan::output();

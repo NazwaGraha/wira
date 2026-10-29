@@ -948,8 +948,10 @@
                 @forelse($infoMenus as $menu)
                     @php
                         $pal = $menu->theme_classes;
+                        $isGalleryMedia = str_contains(strtolower($menu->category_badge ?? ''), 'galeri') || str_contains(strtolower($menu->button_text ?? ''), 'galeri') || str_contains(strtolower($menu->title ?? ''), 'dokumentasi');
                         $hasFile = ($menu->action_type === 'file' && $menu->file_path);
-                        $isLink = in_array($menu->action_type, ['link', 'whatsapp']) && $menu->url_link;
+                        $isLink = (in_array($menu->action_type, ['link', 'whatsapp']) || $isGalleryMedia) && ($menu->url_link || $isGalleryMedia);
+                        $menuLink = $isGalleryMedia ? ($menu->url_link ?: 'https://www.instagram.com/pmr_sman1c') : $menu->url_link;
                     @endphp
                     <div class="bg-slate-800/70 hover:bg-slate-800/95 border-2 border-slate-700/70 {{ $pal['border_hover'] }} rounded-3xl p-5 sm:p-6 transition-all duration-200 flex flex-col justify-between group hover:shadow-xl {{ $pal['shadow_hover'] }}">
                         <div class="space-y-3.5">
@@ -982,9 +984,13 @@
                                     <span>{{ ($menu->button_text && !in_array($menu->button_text, ['Hubungi Contact Person', 'Pilih Contact Person', 'Chat WhatsApp Panitia'])) ? $menu->button_text : 'Hubungi Panitia' }}</span>
                                 </button>
                             @elseif($isLink)
-                                <a href="{{ $menu->url_link }}" target="_blank" class="w-full py-2.5 sm:py-3 px-4 rounded-xl {{ $pal['btn_bg'] }} {{ $pal['btn_text'] }} font-black text-xs transition border {{ $pal['btn_border'] }} flex items-center justify-center gap-2 shadow-sm">
-                                    <i class="fa-solid fa-arrow-up-right-from-square"></i>
-                                    <span>{{ $menu->button_text ?: 'Buka Tautan' }}</span>
+                                <a href="{{ $menuLink }}" target="_blank" rel="noopener noreferrer" class="w-full py-2.5 sm:py-3 px-4 rounded-xl {{ $pal['btn_bg'] }} {{ $pal['btn_text'] }} font-black text-xs transition border {{ $pal['btn_border'] }} flex items-center justify-center gap-2 shadow-sm">
+                                    @if($isGalleryMedia)
+                                        <i class="fa-brands fa-instagram text-sm"></i>
+                                    @else
+                                        <i class="fa-solid fa-arrow-up-right-from-square"></i>
+                                    @endif
+                                    <span>{{ $menu->button_text ?: 'Buka Galeri Foto & Video' }}</span>
                                 </a>
                             @else
                                 <button type="button" onclick="handleDocumentAction('{{ addslashes($menu->title) }}', 'notice')" class="w-full py-2.5 sm:py-3 px-4 rounded-xl {{ $pal['btn_bg'] }} {{ $pal['btn_text'] }} font-black text-xs transition border {{ $pal['btn_border'] }} flex items-center justify-center gap-2 cursor-pointer shadow-sm">

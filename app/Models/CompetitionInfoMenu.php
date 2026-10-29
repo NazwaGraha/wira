@@ -172,6 +172,34 @@ class CompetitionInfoMenu extends Model
         return null;
     }
 
+    public function getUrlLinkAttribute(?string $value): ?string
+    {
+        $badge = strtolower($this->attributes['category_badge'] ?? '');
+        $title = strtolower($this->attributes['title'] ?? '');
+        $btn = strtolower($this->attributes['button_text'] ?? '');
+
+        if (str_contains($badge, 'galeri') || str_contains($title, 'dokumentasi') || str_contains($btn, 'galeri')) {
+            if (empty($value) || str_contains($value, 'instagram.com/pmr')) {
+                return 'https://www.instagram.com/pmr_sman1c';
+            }
+        }
+
+        return $value;
+    }
+
+    public function getActionTypeAttribute(?string $value): ?string
+    {
+        $badge = strtolower($this->attributes['category_badge'] ?? '');
+        $btn = strtolower($this->attributes['button_text'] ?? '');
+        $filePath = $this->attributes['file_path'] ?? null;
+
+        if ((str_contains($badge, 'galeri') || str_contains($btn, 'galeri')) && empty($filePath)) {
+            return 'link';
+        }
+
+        return $value ?: 'notice';
+    }
+
     /**
      * Get theme color classes dictionary
      */
@@ -397,7 +425,7 @@ class CompetitionInfoMenu extends Model
                 'description' => 'Koleksi foto, video rekaman lomba, dan kilas balik gelaran Sua Bhakti Berkarya.',
                 'action_type' => 'link',
                 'file_path' => null,
-                'url_link' => 'https://instagram.com/pmrwirasman1c',
+                'url_link' => 'https://www.instagram.com/pmr_sman1c',
                 'button_text' => 'Buka Galeri Foto & Video',
                 'order_position' => 7,
                 'is_active' => true,
