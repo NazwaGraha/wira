@@ -107,7 +107,7 @@
             border-radius: 4px;
         }
 
-        /* Top Header Elements (Dinaikkan 2 cm ke atas) */
+        /* Top Header Elements (Naik 2 cm) */
         .header-box {
             position: absolute;
             top: 88px;
@@ -299,7 +299,7 @@
             display: inline-block;
         }
 
-        /* Table Card Container */
+        /* Grouped Table Card Container */
         .table-container {
             position: absolute;
             top: 370px;
@@ -312,149 +312,89 @@
             padding: 7px 10px 5px;
         }
 
-        /* Split 2-Columns for > 6 teams */
-        .split-columns {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 10px;
-        }
-
-        .col-table, .single-table {
+        .grouped-table {
             width: 100%;
             border-collapse: separate;
             border-spacing: 0;
         }
 
-        .col-table thead th {
+        .grouped-table thead th {
             background: #f0f9ff;
             color: #0369a1;
-            font-size: 7.2px;
-            font-weight: 800;
-            letter-spacing: 0.4px;
-            text-transform: uppercase;
-            padding: 3.5px 3px;
-            border-bottom: 1.5px solid #bae6fd;
-        }
-
-        .col-table thead th:first-child { border-top-left-radius: 4px; }
-        .col-table thead th:last-child { border-top-right-radius: 4px; }
-        .col-table thead th.th-no { width: 16px; text-align: center; }
-        .col-table thead th.th-lomba { text-align: left; padding-left: 4px; }
-        .col-table thead th.th-regu { width: 38px; text-align: center; }
-        .col-table thead th.th-biaya { width: 55px; text-align: right; padding-right: 4px; }
-
-        .col-table tbody tr:nth-child(even), .single-table tbody tr:nth-child(even) {
-            background: #f8fafc;
-        }
-
-        .col-table tbody tr:nth-child(odd), .single-table tbody tr:nth-child(odd) {
-            background: #ffffff;
-        }
-
-        .col-table td {
-            padding: 3px 2px;
-            border-bottom: 1px solid #f1f5f9;
-        }
-
-        .col-table td.col-no {
-            font-weight: 700;
-            color: #475569;
-            text-align: center;
-            font-size: 7.8px;
-        }
-
-        .col-table td.col-lomba {
-            font-weight: 600;
-            color: #0f172a;
-            font-size: 7.2px;
-            white-space: nowrap;
-            padding-left: 4px;
-        }
-
-        .col-table td.col-regu {
-            text-align: center;
-        }
-
-        .col-table td.col-biaya {
-            font-weight: 700;
-            color: #0f172a;
-            text-align: right;
-            font-size: 7.8px;
-            white-space: nowrap;
-            padding-right: 4px;
-        }
-
-        /* 1-Column Table for <= 6 teams */
-        .single-table thead th {
-            background: #f0f9ff;
-            color: #0369a1;
-            font-size: 8px;
+            font-size: 7.5px;
             font-weight: 800;
             letter-spacing: 0.5px;
             text-transform: uppercase;
-            padding: 5px 8px;
+            padding: 5px 6px;
             border-bottom: 1.5px solid #bae6fd;
         }
 
-        .single-table thead th:first-child { border-top-left-radius: 6px; }
-        .single-table thead th:last-child { border-top-right-radius: 6px; }
-        .single-table thead th.th-no { width: 30px; text-align: center; }
-        .single-table thead th.th-lomba { text-align: left; padding-left: 8px; }
-        .single-table thead th.th-regu { width: 100px; text-align: center; }
-        .single-table thead th.th-biaya { width: 110px; text-align: right; padding-right: 8px; }
+        .grouped-table thead th:first-child { border-top-left-radius: 6px; }
+        .grouped-table thead th:last-child { border-top-right-radius: 6px; }
+        .grouped-table thead th.th-no { width: 32px; text-align: center; }
+        .grouped-table thead th.th-lomba { text-align: left; padding-left: 8px; }
+        .grouped-table thead th.th-regu { width: 85px; text-align: center; }
+        .grouped-table thead th.th-biaya { width: 105px; text-align: right; padding-right: 8px; }
+        .grouped-table thead th.th-total { width: 110px; text-align: right; padding-right: 8px; }
 
-        .single-table td {
-            padding: 6.5px 4px;
+        .grouped-table tbody tr:nth-child(even) { background: #f8fafc; }
+        .grouped-table tbody tr:nth-child(odd) { background: #ffffff; }
+
+        .grouped-table td {
+            padding: 5px 6px;
             border-bottom: 1px solid #f1f5f9;
         }
 
-        .single-table td.col-no {
+        .grouped-table td.col-no {
             font-weight: 700;
             color: #475569;
             text-align: center;
-            font-size: 9px;
+            font-size: 8.5px;
         }
 
-        .single-table td.col-lomba {
+        .grouped-table td.col-lomba {
             font-weight: 600;
             color: #0f172a;
-            font-size: 8.8px;
+            font-size: 8.5px;
             padding-left: 8px;
         }
 
-        .single-table td.col-regu {
+        .grouped-table td.col-regu {
             text-align: center;
         }
 
-        .single-table td.col-biaya {
-            font-weight: 700;
-            color: #0f172a;
+        .grouped-table .regu-badge {
+            display: inline-block;
+            background: #e0f2fe;
+            color: #0369a1;
+            padding: 1.5px 8px;
+            border-radius: 4px;
+            font-weight: 800;
+            font-size: 8.5px;
+        }
+
+        .grouped-table td.col-biaya {
+            font-weight: 600;
+            color: #334155;
             text-align: right;
-            font-size: 9.5px;
+            font-size: 8.5px;
             white-space: nowrap;
             padding-right: 8px;
         }
 
-        .regu-pill {
-            display: inline-block;
-            background: #e0f2fe;
-            color: #0369a1;
-            font-size: 7.2px;
-            font-weight: 700;
-            padding: 1.5px 5px;
-            border-radius: 4px;
+        .grouped-table td.col-total {
+            font-weight: 800;
+            color: #0f172a;
+            text-align: right;
+            font-size: 9px;
             white-space: nowrap;
-        }
-
-        .single-table .regu-pill {
-            font-size: 8px;
-            padding: 2px 7px;
+            padding-right: 8px;
         }
 
         /* Total Bar Full Width */
         .total-bar {
             margin-top: 5px;
-            padding: 4px 10px;
+            padding: 5px 12px;
             background: #f8fafc;
             border-top: 1.5px solid #0284c7;
             border-radius: 0 0 8px 8px;
@@ -465,16 +405,17 @@
 
         .total-bar .summary-tag {
             font-size: 8.5px;
-            font-weight: 700;
+            font-weight: 800;
             color: #0369a1;
             background: #e0f2fe;
-            padding: 2.5px 9px;
+            padding: 2.5px 10px;
             border-radius: 10px;
             border: 1px solid #bae6fd;
+            letter-spacing: 0.3px;
         }
 
         .total-bar .total-text {
-            font-size: 9px;
+            font-size: 9.5px;
             font-weight: 800;
             color: #334155;
             letter-spacing: 0.5px;
@@ -482,10 +423,10 @@
         }
 
         .total-bar .total-amount {
-            font-size: 13px;
+            font-size: 14px;
             font-weight: 900;
             color: #0f172a;
-            margin-left: 8px;
+            margin-left: 10px;
         }
 
         /* Signature Block (Diturunkan 5 cm) */
@@ -703,108 +644,64 @@
                 </div>
             </div>
 
-            <!-- Table Cabang Mata Lomba & Biaya (Adaptif Otomatis) -->
+            <!-- Table Cabang Mata Lomba & Biaya (Format Excel Grouped By Cabang Lomba) -->
             <div class="table-container">
                 @php
-                    $teams = $registration->teams;
-                    $teamCount = $teams->count();
+                    $groupedCategories = $registration->teams->groupBy(function($team) {
+                        return $team->competition_category_id ?: ($team->category ? $team->category->id : $team->team_name);
+                    });
+                    $totalRegisteredTeams = $registration->teams->count();
+                    $calculatedTotalPayment = 0;
                 @endphp
 
-                @if($teamCount > 6)
-                    {{-- Mode Banyak / Maksimal Regu: Split 2-Kolom Sejajar --}}
-                    @php
-                        $half = (int) ceil($teamCount / 2);
-                        $col1 = $teams->slice(0, $half);
-                        $col2 = $teams->slice($half);
-                    @endphp
-                    <div class="split-columns">
-                        <!-- Kolom Kiri -->
-                        <table class="col-table">
-                            <thead>
-                                <tr>
-                                    <th class="th-no">NO</th>
-                                    <th class="th-lomba">CABANG MATA LOMBA</th>
-                                    <th class="th-regu">REGU</th>
-                                    <th class="th-biaya">BIAYA</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                @foreach($col1 as $idx => $team)
-                                    @php
-                                        $teamFee = $team->category ? $team->category->getFeeForWave($registration->registration_wave ?: 1) : floatval($registration->event->registration_fee ?: 150000);
-                                    @endphp
-                                    <tr>
-                                        <td class="col-no">{{ $idx + 1 }}</td>
-                                        <td class="col-lomba">{{ $team->category ? $team->category->name : 'Mata Lomba' }} ({{ $team->category ? $team->category->gender_category : 'Umum' }})</td>
-                                        <td class="col-regu"><span class="regu-pill">{{ $team->team_name }}</span></td>
-                                        <td class="col-biaya">Rp {{ number_format($teamFee, 0, ',', '.') }}</td>
-                                    </tr>
-                                @endforeach
-                            </tbody>
-                        </table>
-
-                        <!-- Kolom Kanan -->
-                        <table class="col-table">
-                            <thead>
-                                <tr>
-                                    <th class="th-no">NO</th>
-                                    <th class="th-lomba">CABANG MATA LOMBA</th>
-                                    <th class="th-regu">REGU</th>
-                                    <th class="th-biaya">BIAYA</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                @foreach($col2 as $idx => $team)
-                                    @php
-                                        $teamFee = $team->category ? $team->category->getFeeForWave($registration->registration_wave ?: 1) : floatval($registration->event->registration_fee ?: 150000);
-                                    @endphp
-                                    <tr>
-                                        <td class="col-no">{{ $half + $idx + 1 }}</td>
-                                        <td class="col-lomba">{{ $team->category ? $team->category->name : 'Mata Lomba' }} ({{ $team->category ? $team->category->gender_category : 'Umum' }})</td>
-                                        <td class="col-regu"><span class="regu-pill">{{ $team->team_name }}</span></td>
-                                        <td class="col-biaya">Rp {{ number_format($teamFee, 0, ',', '.') }}</td>
-                                    </tr>
-                                @endforeach
-                            </tbody>
-                        </table>
-                    </div>
-                @else
-                    {{-- Mode Standar / Sebagian Regu (<= 6 Regu): 1 Kolom Luas & Proporsional --}}
-                    <table class="single-table">
-                        <thead>
+                <table class="grouped-table">
+                    <thead>
+                        <tr>
+                            <th class="th-no">NO</th>
+                            <th class="th-lomba">CABANG MATA LOMBA</th>
+                            <th class="th-regu">JUMLAH REGU</th>
+                            <th class="th-biaya">BIAYA PER REGU</th>
+                            <th class="th-total">JUMLAH</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @forelse($groupedCategories as $catId => $teamsGroup)
+                            @php
+                                $firstTeam = $teamsGroup->first();
+                                $category = $firstTeam->category;
+                                $categoryName = $category ? $category->name : 'Mata Lomba';
+                                $gender = $category ? $category->gender_category : 'Umum';
+                                $branchLabel = ($gender && $gender !== '-' && !str_contains($categoryName, $gender)) 
+                                    ? "{$categoryName} ({$gender})" 
+                                    : $categoryName;
+                                $teamCount = $teamsGroup->count();
+                                $feePerTeam = $category 
+                                    ? $category->getFeeForWave($registration->registration_wave ?: 1) 
+                                    : floatval($registration->event->registration_fee ?: 150000);
+                                $subtotal = $teamCount * $feePerTeam;
+                                $calculatedTotalPayment += $subtotal;
+                            @endphp
                             <tr>
-                                <th class="th-no">NO</th>
-                                <th class="th-lomba">CABANG MATA LOMBA</th>
-                                <th class="th-regu">REGU</th>
-                                <th class="th-biaya">BIAYA</th>
+                                <td class="col-no">{{ $loop->iteration }}</td>
+                                <td class="col-lomba">{{ $branchLabel }}</td>
+                                <td class="col-regu"><span class="regu-badge">{{ $teamCount }}</span></td>
+                                <td class="col-biaya">Rp {{ number_format($feePerTeam, 0, ',', '.') }}</td>
+                                <td class="col-total">Rp {{ number_format($subtotal, 0, ',', '.') }}</td>
                             </tr>
-                        </thead>
-                        <tbody>
-                            @forelse($teams as $idx => $team)
-                                @php
-                                    $teamFee = $team->category ? $team->category->getFeeForWave($registration->registration_wave ?: 1) : floatval($registration->event->registration_fee ?: 150000);
-                                @endphp
-                                <tr>
-                                    <td class="col-no">{{ $idx + 1 }}</td>
-                                    <td class="col-lomba">{{ $team->category ? $team->category->name : 'Mata Lomba' }} ({{ $team->category ? $team->category->gender_category : 'Umum' }})</td>
-                                    <td class="col-regu"><span class="regu-pill">{{ $team->team_name }}</span></td>
-                                    <td class="col-biaya">Rp {{ number_format($teamFee, 0, ',', '.') }}</td>
-                                </tr>
-                            @empty
-                                <tr>
-                                    <td colspan="4" style="text-align: center; padding: 12px; color: #64748b;">Belum ada regu lomba terdaftar.</td>
-                                </tr>
-                            @endforelse
-                        </tbody>
-                    </table>
-                @endif
+                        @empty
+                            <tr>
+                                <td colspan="5" style="text-align: center; padding: 12px; color: #64748b;">Belum ada cabang lomba terdaftar.</td>
+                            </tr>
+                        @endforelse
+                    </tbody>
+                </table>
 
                 <!-- Total Summary Bar -->
                 <div class="total-bar">
-                    <div class="summary-tag">Total Terdaftar: {{ $teamCount }} Regu Mata Lomba</div>
+                    <div class="summary-tag">TOTAL TERDAFTAR : {{ $totalRegisteredTeams }} Regu Mata Lomba</div>
                     <div>
-                        <span class="total-text">TOTAL PEMBAYARAN LUNAS :</span>
-                        <span class="total-amount">Rp {{ number_format($registration->total_payment, 0, ',', '.') }}</span>
+                        <span class="total-text">Total Pembayaran</span>
+                        <span class="total-amount">Rp {{ number_format($registration->total_payment > 0 ? $registration->total_payment : $calculatedTotalPayment, 0, ',', '.') }}</span>
                     </div>
                 </div>
             </div>
