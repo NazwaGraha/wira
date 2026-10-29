@@ -479,6 +479,14 @@ Route::get('/server-sync-update-pmr', function () {
             File::copyDirectory(storage_path('app/public/hero-slides'), public_path('storage/hero-slides'));
             File::ensureDirectoryExists(public_path('storage/popup-banners'), 0755, true);
             File::copyDirectory(storage_path('app/public/popup-banners'), public_path('storage/popup-banners'));
+            File::ensureDirectoryExists(public_path('storage/competition'), 0755, true);
+            File::copyDirectory(storage_path('app/public/competition'), public_path('storage/competition'));
+            File::ensureDirectoryExists(public_path('storage/content-images'), 0755, true);
+            File::copyDirectory(storage_path('app/public/content-images'), public_path('storage/content-images'));
+            File::ensureDirectoryExists(public_path('storage/documents'), 0755, true);
+            File::copyDirectory(storage_path('app/public/documents'), public_path('storage/documents'));
+            File::ensureDirectoryExists(public_path('storage/events'), 0755, true);
+            File::copyDirectory(storage_path('app/public/events'), public_path('storage/events'));
         }
 
         // Sinkronisasi otomatis struktur bagan kepengurusan dari Data Anggota & Pembina
@@ -515,11 +523,16 @@ Route::get('/server-sync-update-pmr', function () {
 // Route Penyajian Langsung Berkas Storage (Anti 404 jika shared hosting / cPanel memblokir symlink)
 Route::get('/storage/{path}', function ($path) {
     $cleanPath = ltrim(str_replace(['../', '..\\'], '', $path), '/');
+    if (str_contains($cleanPath, '..') || str_contains($cleanPath, "\0")) {
+        abort(404);
+    }
+
     $firstFolder = explode('/', $cleanPath)[0];
     $allowedFolders = [
         'advisors', 'members', 'competition_payments', 'competition_team_files', 'competition_evidences', 'galleries',
         'donor-banners', 'broadcast_images', 'guidelines', 'achievements',
         'hero-slides', 'popup-banners', 'media',
+        'competition', 'content-images', 'documents', 'events', 'mascots', 'articles',
     ];
     if (! in_array($firstFolder, $allowedFolders, true)) {
         abort(404);
@@ -546,10 +559,16 @@ Route::get('/storage/{path}', function ($path) {
 
     $mime = mime_content_type($resolvedPath) ?: 'application/octet-stream';
 
-    return response()->file($resolvedPath, [
+    $headers = [
         'Content-Type' => $mime,
         'Cache-Control' => 'public, max-age=86400',
-    ]);
+    ];
+
+    if ($mime === 'application/pdf') {
+        $headers['Content-Disposition'] = 'inline; filename="'.basename($resolvedPath).'"';
+    }
+
+    return response()->file($resolvedPath, $headers);
 })->where('path', '.*');
 
 // Rute Publik Lomba PMR
