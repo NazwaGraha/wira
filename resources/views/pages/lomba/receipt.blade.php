@@ -107,430 +107,483 @@
             border-radius: 4px;
         }
 
-        /* Top Browser / Print Header Meta */
-        .top-meta-info {
+        /* Top Header Elements (Dinaikkan 2 cm ke atas) */
+        .header-box {
             position: absolute;
-            top: 80px;
-            left: 54px;
-            right: 54px;
-            display: flex;
-            justify-content: space-between;
-            font-size: 9px;
-            color: #475569;
-            font-weight: 500;
-        }
-
-        /* Main Header Section */
-        .header-section {
-            position: absolute;
-            top: 118px;
-            left: 54px;
-            right: 54px;
-            display: flex;
-            align-items: flex-start;
-            justify-content: space-between;
-            gap: 8px;
-        }
-
-        .logo-box {
-            background: #ffffff;
-            border-radius: 12px;
-            padding: 7px 12px;
-            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.05);
-            border: 1px solid rgba(203, 213, 225, 0.7);
+            top: 88px;
+            left: 78px;
             display: flex;
             align-items: center;
-            justify-content: center;
-            flex-shrink: 0;
-            margin-top: 35px;
+            background: #ffffff;
+            padding: 6px 12px;
+            border-radius: 12px;
+            box-shadow: 0 4px 14px rgba(0, 0, 0, 0.06);
+            border: 1px solid rgba(203, 213, 225, 0.7);
         }
 
-        .logo-box img {
-            height: 40px;
+        .header-box img {
+            height: 38px;
             width: auto;
             object-fit: contain;
         }
 
-        .panitia-info {
-            flex: 1;
-            padding: 0 10px;
-            text-align: left;
-            margin-left: 8px;
+        .panitia-text {
+            position: absolute;
+            top: 54px;
+            left: 270px;
+            width: 160px;
+            line-height: 1.15;
         }
 
-        .panitia-title {
-            font-size: 13px;
+        .panitia-text .title {
+            font-size: 11px;
             font-weight: 900;
-            line-height: 1.3;
-            color: #0f172a;
             letter-spacing: 0.3px;
+            color: #0f172a;
             text-transform: uppercase;
         }
 
-        .panitia-sub {
-            font-size: 10.5px;
+        .panitia-text .subtitle {
+            font-size: 9px;
             font-weight: 800;
             color: #dc2626;
-            margin-top: 4px;
+            margin-top: 3px;
+            text-transform: uppercase;
+        }
+
+        .panitia-text .address {
+            font-size: 7.2px;
+            color: #475569;
+            margin-top: 3px;
             line-height: 1.25;
-            letter-spacing: 0.3px;
-            text-transform: uppercase;
-        }
-
-        .panitia-address {
-            font-size: 7.8px;
-            color: #64748b;
-            margin-top: 4px;
-            font-weight: 600;
-            line-height: 1.35;
-        }
-
-        .bukti-card {
-            background: #ffffff;
-            border: 1px solid rgba(203, 213, 225, 0.9);
-            border-radius: 14px;
-            padding: 10px 14px;
-            text-align: center;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04);
-            width: 178px;
-            flex-shrink: 0;
-        }
-
-        .bukti-label {
-            font-size: 8.5px;
-            font-weight: 800;
-            color: #475569;
-            letter-spacing: 0.5px;
-            text-transform: uppercase;
-        }
-
-        .bukti-code {
-            margin: 5px 0;
-            border: 1px solid #cbd5e1;
-            border-radius: 9999px;
-            padding: 3.5px 10px;
-            font-size: 11.5px;
-            font-weight: 800;
-            font-family: monospace;
-            color: #0f172a;
-            background: #ffffff;
-            letter-spacing: 0.5px;
-        }
-
-        .bukti-date {
-            font-size: 8.5px;
-            color: #475569;
-            font-weight: 600;
-        }
-
-        .bukti-status {
-            font-size: 8.5px;
-            font-weight: 800;
-            color: #94a3b8;
-            margin-top: 4px;
-            letter-spacing: 0.3px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 2px;
-        }
-
-        /* Double Divider Line */
-        .divider-container {
-            position: absolute;
-            top: 265px;
-            left: 54px;
-            right: 54px;
-        }
-
-        .divider-line-1 {
-            border-bottom: 1.5px solid #0f172a;
-        }
-
-        .divider-line-2 {
-            border-bottom: 0.8px solid #0f172a;
-            margin-top: 1.5px;
-        }
-
-        /* Document Title */
-        .doc-title-container {
-            position: absolute;
-            top: 288px;
-            left: 0;
-            right: 0;
-            text-align: center;
-        }
-
-        .doc-title {
-            font-size: 19px;
-            font-weight: 900;
-            color: #0f172a;
-            letter-spacing: 0.8px;
-            text-transform: uppercase;
-            display: inline-block;
-        }
-
-        .doc-title-underline {
-            width: 380px;
-            height: 1.5px;
-            background: #38bdf8;
-            margin: 3px auto 0;
-            border-radius: 2px;
-        }
-
-        /* Data Kontingen Card */
-        .data-card {
-            position: absolute;
-            top: 338px;
-            left: 54px;
-            right: 54px;
-            background: rgba(255, 255, 255, 0.90);
-            backdrop-filter: blur(8px);
-            -webkit-backdrop-filter: blur(8px);
-            border-radius: 14px;
-            padding: 13px 18px;
-            border: 1px solid rgba(255, 255, 255, 0.95);
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.03);
-            display: flex;
-            flex-direction: column;
-            gap: 6.5px;
-            font-size: 10px;
-        }
-
-        .data-row {
-            display: flex;
-            align-items: center;
-        }
-
-        .data-label {
-            width: 190px;
-            font-weight: 700;
-            color: #334155;
-            text-transform: uppercase;
-            font-size: 9.5px;
-            letter-spacing: 0.2px;
-        }
-
-        .data-sep {
-            margin-right: 10px;
-            font-weight: 700;
-            color: #0f172a;
-        }
-
-        .data-val {
-            font-weight: 700;
-            color: #0f172a;
-            flex: 1;
-        }
-
-        .val-school {
-            font-weight: 900;
-            font-size: 11px;
-            color: #0f172a;
-            text-transform: uppercase;
-        }
-
-        .val-level {
-            font-weight: 800;
-        }
-
-        .val-email {
-            font-family: monospace;
-            font-weight: 600;
-            color: #1e293b;
-        }
-
-        .badge-wave {
-            display: inline-block;
-            background: #ffffff;
-            border: 1px solid #facc15;
-            color: #854d0e;
-            font-weight: 800;
-            font-size: 9.5px;
-            padding: 2px 9px;
-            border-radius: 6px;
-        }
-
-        /* Table Section */
-        .table-card {
-            position: absolute;
-            top: 528px;
-            left: 54px;
-            right: 54px;
-            background: rgba(255, 255, 255, 0.90);
-            backdrop-filter: blur(8px);
-            -webkit-backdrop-filter: blur(8px);
-            border-radius: 12px;
-            border: 1px solid rgba(226, 232, 240, 0.85);
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.02);
-            overflow: hidden;
-        }
-
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            font-size: 10px;
-        }
-
-        th {
-            background: rgba(255, 255, 255, 0.65);
-            padding: 8px 10px;
-            font-weight: 800;
-            text-transform: uppercase;
-            letter-spacing: 0.3px;
-            color: #1e293b;
-            border-bottom: 1px solid #cbd5e1;
-            font-size: 9px;
-        }
-
-        th.col-no { width: 38px; text-align: center; border-right: 1px solid #cbd5e1; }
-        th.col-lomba { text-align: left; border-right: 1px solid #cbd5e1; }
-        th.col-regu { text-align: left; width: 190px; border-right: 1px solid #cbd5e1; }
-        th.col-biaya { text-align: right; width: 110px; }
-
-        td {
-            padding: 7px 10px;
-            color: #1e293b;
-            border-bottom: 1px solid #f1f5f9;
             font-weight: 500;
         }
 
-        td.col-no { text-align: center; font-weight: 700; color: #64748b; border-right: 1px solid #f1f5f9; }
-        td.col-lomba { font-weight: 700; color: #0f172a; border-right: 1px solid #f1f5f9; }
-        td.col-regu { color: #475569; font-weight: 600; border-right: 1px solid #f1f5f9; }
-        td.col-biaya { text-align: right; font-family: monospace; font-weight: 700; font-size: 10px; }
-
-        .total-row {
-            background: rgba(255, 255, 255, 0.95);
-            border-top: 1.8px solid #0f172a;
-        }
-
-        .total-label {
-            text-align: right;
-            padding: 9px 12px;
-            font-weight: 900;
-            text-transform: uppercase;
-            font-size: 10px;
-            letter-spacing: 0.3px;
-            color: #0f172a;
-        }
-
-        .total-amount {
-            text-align: right;
-            padding: 9px 12px;
-            font-family: monospace;
-            font-weight: 900;
-            font-size: 11.5px;
-            color: #0f172a;
-        }
-
-        /* Stempel Lunas Overlay on Maskot - Turun 2 cm di Dada & Ban Kuning Maskot */
-        .stempel-overlay {
+        .badge-bukti {
             position: absolute;
-            left: 124px;
-            top: 868px;
-            width: 132px;
-            height: 132px;
-            z-index: 20;
-            pointer-events: none;
-            filter: drop-shadow(0 4px 10px rgba(14, 165, 233, 0.25));
+            top: 62px;
+            right: 78px;
+            width: 180px;
+            background: #ffffff;
+            border-radius: 14px;
+            padding: 10px 12px;
+            text-align: center;
+            box-shadow: 0 4px 14px rgba(0, 0, 0, 0.06);
+            border: 1px solid #e2e8f0;
         }
 
-        .stempel-overlay img {
+        .badge-bukti .label {
+            font-size: 8.5px;
+            font-weight: 800;
+            letter-spacing: 1px;
+            color: #334155;
+            text-transform: uppercase;
+        }
+
+        .badge-bukti .code-pill {
+            background: #ffffff;
+            border: 1.5px solid #cbd5e1;
+            border-radius: 20px;
+            padding: 3px 12px;
+            font-size: 12px;
+            font-weight: 900;
+            letter-spacing: 1px;
+            color: #0f172a;
+            margin: 5px auto;
+            display: inline-block;
+        }
+
+        .badge-bukti .date {
+            font-size: 9px;
+            color: #475569;
+            font-weight: 500;
+        }
+
+        .badge-bukti .status {
+            font-size: 8px;
+            color: #16a34a;
+            font-weight: 800;
+            letter-spacing: 1.5px;
+            margin-top: 3px;
+        }
+
+        /* Divider Line */
+        .header-line {
+            position: absolute;
+            top: 200px;
+            left: 78px;
+            right: 78px;
+            border-bottom: 2px solid #0284c7;
+            opacity: 0.8;
+        }
+
+        /* Document Title */
+        .title-section {
+            position: absolute;
+            top: 220px;
+            left: 78px;
+            right: 78px;
+            text-align: center;
+        }
+
+        .title-section h1 {
+            font-size: 19px;
+            font-weight: 900;
+            letter-spacing: 2px;
+            color: #034f75;
+            text-transform: uppercase;
+        }
+
+        .title-section .decor-line {
+            width: 140px;
+            height: 2px;
+            background: #0284c7;
+            margin: 4px auto 0;
+            border-radius: 2px;
+            opacity: 0.5;
+        }
+
+        /* Info Card */
+        .info-card {
+            position: absolute;
+            top: 258px;
+            left: 78px;
+            right: 78px;
+            background: rgba(255, 255, 255, 0.94);
+            backdrop-filter: blur(4px);
+            border-radius: 12px;
+            padding: 8px 16px;
+            box-shadow: 0 4px 15px rgba(2, 132, 199, 0.08);
+            border: 1px solid #e0f2fe;
+        }
+
+        .info-grid {
+            display: grid;
+            grid-template-columns: 140px 12px 1fr;
+            row-gap: 3px;
+            font-size: 8.8px;
+            line-height: 1.35;
+        }
+
+        .info-label {
+            font-weight: 700;
+            color: #475569;
+            text-transform: uppercase;
+            font-size: 8.2px;
+        }
+
+        .info-sep {
+            font-weight: 700;
+            color: #0f172a;
+            text-align: center;
+        }
+
+        .info-val {
+            font-weight: 600;
+            color: #0f172a;
+        }
+
+        .info-val.highlight {
+            font-weight: 800;
+            color: #0284c7;
+        }
+
+        .gelombang-badge {
+            background: #fef3c7;
+            color: #b45309;
+            border: 1px solid #fde68a;
+            padding: 0.5px 6px;
+            border-radius: 4px;
+            font-size: 8px;
+            font-weight: 700;
+            display: inline-block;
+        }
+
+        /* Table Card Container */
+        .table-container {
+            position: absolute;
+            top: 370px;
+            left: 78px;
+            right: 78px;
+            background: #ffffff;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(2, 132, 199, 0.08);
+            border: 1px solid #e2e8f0;
+            padding: 7px 10px 5px;
+        }
+
+        /* Split 2-Columns for > 6 teams */
+        .split-columns {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+
+        .col-table, .single-table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+        }
+
+        .col-table thead th {
+            background: #f0f9ff;
+            color: #0369a1;
+            font-size: 7.2px;
+            font-weight: 800;
+            letter-spacing: 0.4px;
+            text-transform: uppercase;
+            padding: 3.5px 3px;
+            border-bottom: 1.5px solid #bae6fd;
+        }
+
+        .col-table thead th:first-child { border-top-left-radius: 4px; }
+        .col-table thead th:last-child { border-top-right-radius: 4px; }
+        .col-table thead th.th-no { width: 16px; text-align: center; }
+        .col-table thead th.th-lomba { text-align: left; padding-left: 4px; }
+        .col-table thead th.th-regu { width: 38px; text-align: center; }
+        .col-table thead th.th-biaya { width: 55px; text-align: right; padding-right: 4px; }
+
+        .col-table tbody tr:nth-child(even), .single-table tbody tr:nth-child(even) {
+            background: #f8fafc;
+        }
+
+        .col-table tbody tr:nth-child(odd), .single-table tbody tr:nth-child(odd) {
+            background: #ffffff;
+        }
+
+        .col-table td {
+            padding: 3px 2px;
+            border-bottom: 1px solid #f1f5f9;
+        }
+
+        .col-table td.col-no {
+            font-weight: 700;
+            color: #475569;
+            text-align: center;
+            font-size: 7.8px;
+        }
+
+        .col-table td.col-lomba {
+            font-weight: 600;
+            color: #0f172a;
+            font-size: 7.2px;
+            white-space: nowrap;
+            padding-left: 4px;
+        }
+
+        .col-table td.col-regu {
+            text-align: center;
+        }
+
+        .col-table td.col-biaya {
+            font-weight: 700;
+            color: #0f172a;
+            text-align: right;
+            font-size: 7.8px;
+            white-space: nowrap;
+            padding-right: 4px;
+        }
+
+        /* 1-Column Table for <= 6 teams */
+        .single-table thead th {
+            background: #f0f9ff;
+            color: #0369a1;
+            font-size: 8px;
+            font-weight: 800;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+            padding: 5px 8px;
+            border-bottom: 1.5px solid #bae6fd;
+        }
+
+        .single-table thead th:first-child { border-top-left-radius: 6px; }
+        .single-table thead th:last-child { border-top-right-radius: 6px; }
+        .single-table thead th.th-no { width: 30px; text-align: center; }
+        .single-table thead th.th-lomba { text-align: left; padding-left: 8px; }
+        .single-table thead th.th-regu { width: 100px; text-align: center; }
+        .single-table thead th.th-biaya { width: 110px; text-align: right; padding-right: 8px; }
+
+        .single-table td {
+            padding: 6.5px 4px;
+            border-bottom: 1px solid #f1f5f9;
+        }
+
+        .single-table td.col-no {
+            font-weight: 700;
+            color: #475569;
+            text-align: center;
+            font-size: 9px;
+        }
+
+        .single-table td.col-lomba {
+            font-weight: 600;
+            color: #0f172a;
+            font-size: 8.8px;
+            padding-left: 8px;
+        }
+
+        .single-table td.col-regu {
+            text-align: center;
+        }
+
+        .single-table td.col-biaya {
+            font-weight: 700;
+            color: #0f172a;
+            text-align: right;
+            font-size: 9.5px;
+            white-space: nowrap;
+            padding-right: 8px;
+        }
+
+        .regu-pill {
+            display: inline-block;
+            background: #e0f2fe;
+            color: #0369a1;
+            font-size: 7.2px;
+            font-weight: 700;
+            padding: 1.5px 5px;
+            border-radius: 4px;
+            white-space: nowrap;
+        }
+
+        .single-table .regu-pill {
+            font-size: 8px;
+            padding: 2px 7px;
+        }
+
+        /* Total Bar Full Width */
+        .total-bar {
+            margin-top: 5px;
+            padding: 4px 10px;
+            background: #f8fafc;
+            border-top: 1.5px solid #0284c7;
+            border-radius: 0 0 8px 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .total-bar .summary-tag {
+            font-size: 8.5px;
+            font-weight: 700;
+            color: #0369a1;
+            background: #e0f2fe;
+            padding: 2.5px 9px;
+            border-radius: 10px;
+            border: 1px solid #bae6fd;
+        }
+
+        .total-bar .total-text {
+            font-size: 9px;
+            font-weight: 800;
+            color: #334155;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+        }
+
+        .total-bar .total-amount {
+            font-size: 13px;
+            font-weight: 900;
+            color: #0f172a;
+            margin-left: 8px;
+        }
+
+        /* Signature Block (Diturunkan 5 cm) */
+        .sig-block {
+            position: absolute;
+            top: 855px;
+            right: 78px;
+            width: 200px;
+            text-align: center;
+        }
+
+        .sig-block .loc-date {
+            font-size: 8.5px;
+            color: #475569;
+            font-weight: 500;
+        }
+
+        .sig-block .role {
+            font-size: 8.5px;
+            color: #475569;
+            margin-top: 1px;
+            font-weight: 500;
+        }
+
+        .sig-block .inst-title {
+            margin-top: 36px;
+            font-size: 8.8px;
+            font-weight: 900;
+            color: #0f172a;
+            letter-spacing: 0.3px;
+            text-transform: uppercase;
+            border-bottom: 1px solid #64748b;
+            padding-bottom: 2px;
+            line-height: 1.25;
+            display: inline-block;
+        }
+
+        .sig-block .inst-sub {
+            font-size: 8px;
+            color: #475569;
+            margin-top: 2px;
+            font-weight: 600;
+        }
+
+        /* QR Code on Lifebuoy (Diturunkan 1 cm) */
+        .qr-wrapper {
+            position: absolute;
+            top: 848px;
+            left: 297px;
+            width: 65px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .qr-wrapper img {
+            width: 60px;
+            height: 60px;
+            display: block;
+            object-fit: contain;
+        }
+
+        .qr-wrapper span {
+            font-size: 5.5px;
+            font-weight: 800;
+            color: #1e293b;
+            letter-spacing: 0.5px;
+            margin-top: 3px;
+            text-transform: uppercase;
+        }
+
+        /* Stamp Lunas (Diturunkan 3 cm) */
+        .stamp-box {
+            position: absolute;
+            top: 845px;
+            left: 104px;
+            width: 135px;
+            height: 135px;
+            pointer-events: none;
+            transform: rotate(-10deg);
+        }
+
+        .stamp-box img {
             width: 100%;
             height: 100%;
             object-fit: contain;
         }
 
-        /* Lifebuoy QR Code Box - Pas menutupi kotak putih pelampung */
-        .lifebuoy-qr-box {
+        /* Receipt URL */
+        .receipt-url {
             position: absolute;
-            left: 278px;
-            top: 816px;
-            width: 102px;
-            height: 118px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            z-index: 15;
-            background: #ffffff;
-            border-radius: 14px;
-            padding: 6px 4px 4px 4px;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-        }
-
-        .lifebuoy-qr-box img {
-            width: 82px;
-            height: 82px;
-            object-fit: contain;
-        }
-
-        .qr-label {
-            font-size: 7.5px;
-            font-weight: 900;
-            text-transform: uppercase;
-            letter-spacing: 0.4px;
-            color: #0f172a;
-            margin-top: 3px;
-        }
-
-        /* Signature Section (Right on sand) */
-        .signature-box {
-            position: absolute;
-            right: 56px;
-            top: 730px;
-            width: 220px;
-            text-align: center;
-            z-index: 15;
-        }
-
-        .sig-date {
-            font-size: 9.5px;
+            bottom: 22px;
+            left: 78px;
+            font-size: 7.2px;
             color: #475569;
-            font-weight: 600;
-        }
-
-        .sig-role {
-            font-size: 9.5px;
-            color: #475569;
-            font-weight: 600;
-            margin-top: 1px;
-        }
-
-        .sig-space {
-            height: 52px;
-        }
-
-        .sig-name {
-            font-size: 10px;
-            font-weight: 900;
-            color: #0f172a;
-            text-transform: uppercase;
-            border-bottom: 1.5px solid #0f172a;
-            padding-bottom: 2px;
-            display: inline-block;
-            letter-spacing: 0.3px;
-            line-height: 1.35;
-        }
-
-        .sig-sub {
-            font-size: 8.5px;
-            color: #475569;
-            font-weight: 600;
-            margin-top: 3px;
-        }
-
-        /* Footer URL */
-        .footer-url {
-            position: absolute;
-            bottom: 12px;
-            left: 54px;
-            font-size: 8px;
-            color: #64748b;
             font-family: monospace;
-            font-weight: 500;
-            letter-spacing: -0.2px;
+            font-weight: 600;
         }
 
         /* Print Media Styles */
@@ -585,161 +638,201 @@
     <div class="kwitansi-wrapper">
         <div class="kwitansi-canvas">
             
-            <!-- Top Meta Info (Browser / Doc Header) -->
-            <div class="top-meta-info">
-                <span>{{ $registration->verified_at ? $registration->verified_at->format('m/d/y, h:i A') : date('m/d/y, h:i A') }}</span>
-                <span>Kwitansi Pendaftaran - {{ $registration->registration_code }}</span>
+            <!-- Header Brand -->
+            <div class="header-box">
+                <img src="{{ file_exists(public_path('images/logo_pmi_sman1ciawi.png')) ? asset('images/logo_pmi_sman1ciawi.png') : asset('images/logo.png') }}" 
+                     alt="Logo PMI & SMAN 1 Ciawi">
             </div>
 
-            <!-- Header Section -->
-            <div class="header-section">
-                
-                <!-- Left: Logo PMI & SMAN 1 Ciawi -->
-                <div class="logo-box">
-                    <img src="{{ file_exists(public_path('images/logo_pmi_sman1ciawi.png')) ? asset('images/logo_pmi_sman1ciawi.png') : asset('images/logo.png') }}" 
-                         alt="Logo PMI & SMAN 1 Ciawi">
-                </div>
-
-                <!-- Middle: Panitia Information -->
-                <div class="panitia-info">
-                    <div class="panitia-title">
-                        PANITIA SUA<br>
-                        BHAKTI<br>
-                        BERKARYA IV<br>
-                        TAHUN 2026
-                    </div>
-                    <div class="panitia-sub">
-                        PMR WIRA SMAN 1 CIAWI<br>
-                        KAB. BOGOR
-                    </div>
-                    <div class="panitia-address">
-                        Jl. Veteran III No. 01 Ciawi, Bogor •<br>
-                        Email: pmrwirasman1c@gmail.com
-                    </div>
-                </div>
-
-                <!-- Right: Bukti Pembayaran Card -->
-                <div class="bukti-card">
-                    <div class="bukti-label">BUKTI PEMBAYARAN</div>
-                    <div class="bukti-code">{{ $registration->registration_code }}</div>
-                    <div class="bukti-date">{{ $registration->verified_at ? $registration->verified_at->translatedFormat('d F Y') : ($registration->created_at ? $registration->created_at->translatedFormat('d F Y') : date('d F Y')) }}</div>
-                    <div class="bukti-status">✓ LUNAS</div>
-                </div>
-
+            <!-- Panitia Info -->
+            <div class="panitia-text">
+                <div class="title">PANITIA SUA<br>BHAKTI<br>BERKARYA IV<br>TAHUN 2026</div>
+                <div class="subtitle">PMR WIRA SMAN 1 CIAWI<br>KAB. BOGOR</div>
+                <div class="address">Jl. Veteran III No. 01 Ciawi, Bogor •<br>Email: pmrwirasman1c@gmail.com</div>
             </div>
 
-            <!-- Header Divider Double Line -->
-            <div class="divider-container">
-                <div class="divider-line-1"></div>
-                <div class="divider-line-2"></div>
+            <!-- Bukti Pembayaran Card -->
+            <div class="badge-bukti">
+                <div class="label">BUKTI PEMBAYARAN</div>
+                <div class="code-pill">{{ $registration->registration_code }}</div>
+                <div class="date">{{ $registration->verified_at ? $registration->verified_at->translatedFormat('d F Y') : ($registration->created_at ? $registration->created_at->translatedFormat('d F Y') : date('d F Y')) }}</div>
+                <div class="status">✓ LUNAS</div>
             </div>
 
-            <!-- Document Title -->
-            <div class="doc-title-container">
-                <h1 class="doc-title">KWITANSI PENDAFTARAN RESMI</h1>
-                <div class="doc-title-underline"></div>
+            <!-- Divider Line -->
+            <div class="header-line"></div>
+
+            <!-- Section Title -->
+            <div class="title-section">
+                <h1>KWITANSI PENDAFTARAN RESMI</h1>
+                <div class="decor-line"></div>
             </div>
 
             <!-- Data Kontingen Box -->
-            <div class="data-card">
-                <div class="data-row">
-                    <span class="data-label">TELAH DITERIMA DARI</span>
-                    <span class="data-sep">:</span>
-                    <span class="data-val val-school">{{ $registration->school_name }}</span>
-                </div>
-                <div class="data-row">
-                    <span class="data-label">TINGKAT KONTINGEN</span>
-                    <span class="data-sep">:</span>
-                    <span class="data-val val-level {{ $registration->level == 'Mula' ? 'text-emerald-700' : ($registration->level == 'Madya' ? 'text-blue-700' : 'text-amber-800') }}">
+            <div class="info-card">
+                <div class="info-grid">
+                    <div class="info-label">TELAH DITERIMA DARI</div>
+                    <div class="info-sep">:</div>
+                    <div class="info-val highlight">{{ $registration->school_name }}</div>
+
+                    <div class="info-label">TINGKAT KONTINGEN</div>
+                    <div class="info-sep">:</div>
+                    <div class="info-val highlight" style="color: #0369a1;">
                         PMR {{ $registration->level }} ({{ $registration->level == 'Mula' ? 'SD / MI' : ($registration->level == 'Madya' ? 'SMP / MTs' : 'SMA / SMK / MA') }})
-                    </span>
-                </div>
-                <div class="data-row">
-                    <span class="data-label">NAMA PEMBINA / PENDAMPING</span>
-                    <span class="data-sep">:</span>
-                    <span class="data-val">{{ $registration->advisor_name }} ({{ $registration->advisor_phone }})</span>
-                </div>
-                <div class="data-row">
-                    <span class="data-label">ALAMAT EMAIL</span>
-                    <span class="data-sep">:</span>
-                    <span class="data-val val-email">{{ $registration->advisor_email ?: '-' }}</span>
-                </div>
-                <div class="data-row">
-                    <span class="data-label">GELOMBANG PENDAFTARAN</span>
-                    <span class="data-sep">:</span>
-                    <span class="data-val">
-                        <span class="badge-wave">
+                    </div>
+
+                    <div class="info-label">NAMA PEMBINA / PENDAMPING</div>
+                    <div class="info-sep">:</div>
+                    <div class="info-val">{{ $registration->advisor_name }} ({{ $registration->advisor_phone }})</div>
+
+                    <div class="info-label">ALAMAT EMAIL</div>
+                    <div class="info-sep">:</div>
+                    <div class="info-val">{{ $registration->advisor_email ?: '-' }}</div>
+
+                    <div class="info-label">GELOMBANG PENDAFTARAN</div>
+                    <div class="info-sep">:</div>
+                    <div class="info-val">
+                        <span class="gelombang-badge">
                             {{ ($registration->registration_wave ?? 1) == 2 ? ($registration->event->wave2_name ?: 'Gelombang 2') : ($registration->event->wave1_name ?: 'Gelombang 1') }}
                         </span>
-                    </span>
+                    </div>
+
+                    <div class="info-label">UNTUK PEMBAYARAN</div>
+                    <div class="info-sep">:</div>
+                    <div class="info-val">Registrasi Peserta Lomba {{ $registration->event->title ?? 'SUA BHAKTI BERKARYA IV TAHUN 2026' }}</div>
                 </div>
-                <div class="data-row">
-                    <span class="data-label">UNTUK PEMBAYARAN</span>
-                    <span class="data-sep">:</span>
-                    <span class="data-val">Registrasi Peserta Lomba {{ $registration->event->title ?? 'SUA BHAKTI BERKARYA IV TAHUN 2026' }}</span>
+            </div>
+
+            <!-- Table Cabang Mata Lomba & Biaya (Adaptif Otomatis) -->
+            <div class="table-container">
+                @php
+                    $teams = $registration->teams;
+                    $teamCount = $teams->count();
+                @endphp
+
+                @if($teamCount > 6)
+                    {{-- Mode Banyak / Maksimal Regu: Split 2-Kolom Sejajar --}}
+                    @php
+                        $half = (int) ceil($teamCount / 2);
+                        $col1 = $teams->slice(0, $half);
+                        $col2 = $teams->slice($half);
+                    @endphp
+                    <div class="split-columns">
+                        <!-- Kolom Kiri -->
+                        <table class="col-table">
+                            <thead>
+                                <tr>
+                                    <th class="th-no">NO</th>
+                                    <th class="th-lomba">CABANG MATA LOMBA</th>
+                                    <th class="th-regu">REGU</th>
+                                    <th class="th-biaya">BIAYA</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach($col1 as $idx => $team)
+                                    @php
+                                        $teamFee = $team->category ? $team->category->getFeeForWave($registration->registration_wave ?: 1) : floatval($registration->event->registration_fee ?: 150000);
+                                    @endphp
+                                    <tr>
+                                        <td class="col-no">{{ $idx + 1 }}</td>
+                                        <td class="col-lomba">{{ $team->category ? $team->category->name : 'Mata Lomba' }} ({{ $team->category ? $team->category->gender_category : 'Umum' }})</td>
+                                        <td class="col-regu"><span class="regu-pill">{{ $team->team_name }}</span></td>
+                                        <td class="col-biaya">Rp {{ number_format($teamFee, 0, ',', '.') }}</td>
+                                    </tr>
+                                @endforeach
+                            </tbody>
+                        </table>
+
+                        <!-- Kolom Kanan -->
+                        <table class="col-table">
+                            <thead>
+                                <tr>
+                                    <th class="th-no">NO</th>
+                                    <th class="th-lomba">CABANG MATA LOMBA</th>
+                                    <th class="th-regu">REGU</th>
+                                    <th class="th-biaya">BIAYA</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach($col2 as $idx => $team)
+                                    @php
+                                        $teamFee = $team->category ? $team->category->getFeeForWave($registration->registration_wave ?: 1) : floatval($registration->event->registration_fee ?: 150000);
+                                    @endphp
+                                    <tr>
+                                        <td class="col-no">{{ $half + $idx + 1 }}</td>
+                                        <td class="col-lomba">{{ $team->category ? $team->category->name : 'Mata Lomba' }} ({{ $team->category ? $team->category->gender_category : 'Umum' }})</td>
+                                        <td class="col-regu"><span class="regu-pill">{{ $team->team_name }}</span></td>
+                                        <td class="col-biaya">Rp {{ number_format($teamFee, 0, ',', '.') }}</td>
+                                    </tr>
+                                @endforeach
+                            </tbody>
+                        </table>
+                    </div>
+                @else
+                    {{-- Mode Standar / Sebagian Regu (<= 6 Regu): 1 Kolom Luas & Proporsional --}}
+                    <table class="single-table">
+                        <thead>
+                            <tr>
+                                <th class="th-no">NO</th>
+                                <th class="th-lomba">CABANG MATA LOMBA</th>
+                                <th class="th-regu">REGU</th>
+                                <th class="th-biaya">BIAYA</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @forelse($teams as $idx => $team)
+                                @php
+                                    $teamFee = $team->category ? $team->category->getFeeForWave($registration->registration_wave ?: 1) : floatval($registration->event->registration_fee ?: 150000);
+                                @endphp
+                                <tr>
+                                    <td class="col-no">{{ $idx + 1 }}</td>
+                                    <td class="col-lomba">{{ $team->category ? $team->category->name : 'Mata Lomba' }} ({{ $team->category ? $team->category->gender_category : 'Umum' }})</td>
+                                    <td class="col-regu"><span class="regu-pill">{{ $team->team_name }}</span></td>
+                                    <td class="col-biaya">Rp {{ number_format($teamFee, 0, ',', '.') }}</td>
+                                </tr>
+                            @empty
+                                <tr>
+                                    <td colspan="4" style="text-align: center; padding: 12px; color: #64748b;">Belum ada regu lomba terdaftar.</td>
+                                </tr>
+                            @endforelse
+                        </tbody>
+                    </table>
+                @endif
+
+                <!-- Total Summary Bar -->
+                <div class="total-bar">
+                    <div class="summary-tag">Total Terdaftar: {{ $teamCount }} Regu Mata Lomba</div>
+                    <div>
+                        <span class="total-text">TOTAL PEMBAYARAN LUNAS :</span>
+                        <span class="total-amount">Rp {{ number_format($registration->total_payment, 0, ',', '.') }}</span>
+                    </div>
                 </div>
-            </div>
-
-            <!-- Table Cabang Mata Lomba & Biaya -->
-            <div class="table-card">
-                <table>
-                    <thead>
-                        <tr>
-                            <th class="col-no">NO</th>
-                            <th class="col-lomba">CABANG MATA LOMBA</th>
-                            <th class="col-regu">REGU / KETERANGAN</th>
-                            <th class="col-biaya">BIAYA</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @forelse($registration->teams as $index => $team)
-                            @php
-                                $teamFee = $team->category ? $team->category->getFeeForWave($registration->registration_wave ?: 1) : floatval($registration->event->registration_fee ?: 150000);
-                            @endphp
-                            <tr>
-                                <td class="col-no">{{ $index + 1 }}</td>
-                                <td class="col-lomba">{{ $team->category ? $team->category->name : 'Mata Lomba' }} ({{ $team->category ? $team->category->gender_category : 'Umum' }})</td>
-                                <td class="col-regu">{{ $team->team_name }}</td>
-                                <td class="col-biaya">Rp {{ number_format($teamFee, 0, ',', '.') }}</td>
-                            </tr>
-                        @empty
-                            <tr>
-                                <td colspan="4" style="text-align: center; padding: 12px; color: #64748b;">Belum ada regu lomba terdaftar.</td>
-                            </tr>
-                        @endforelse
-                        <tr class="total-row">
-                            <td colspan="3" class="total-label">TOTAL PEMBAYARAN LUNAS :</td>
-                            <td class="total-amount">Rp {{ number_format($registration->total_payment, 0, ',', '.') }}</td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-
-            <!-- Stempel Lunas Overlay over Maskot in bottom left - Pas di Dada & Ban Kuning Maskot -->
-            <div class="stempel-overlay">
-                <img src="{{ file_exists(public_path('images/kwitansi/stempel_lunas_transparan.png')) ? asset('images/kwitansi/stempel_lunas_transparan.png') : asset('images/kwitansi/stempel_lunas.jpg') }}" 
-                     alt="Stempel Terverifikasi Pembayaran Lunas">
-            </div>
-
-            <!-- Lifebuoy QR Code Box - Pas menutupi kotak putih pelampung -->
-            <div class="lifebuoy-qr-box">
-                <img src="https://api.qrserver.com/v1/create-qr-code/?size=160x160&data={{ urlencode(route('lomba.kwitansi', ['code' => $registration->registration_code])) }}" 
-                     alt="QR Code Validasi" 
-                     loading="lazy">
-                <div class="qr-label">SCAN VALIDASI</div>
             </div>
 
             <!-- Signature Box on the bottom right -->
-            <div class="signature-box">
-                <div class="sig-date">Bogor, {{ $registration->verified_at ? $registration->verified_at->translatedFormat('d F Y') : ($registration->created_at ? $registration->created_at->translatedFormat('d F Y') : date('d F Y')) }}</div>
-                <div class="sig-role">Bendahara Panitia Pelaksana,</div>
-                <div class="sig-space"></div>
-                <div class="sig-name">PANITIA {{ strtoupper($registration->event->title ?? 'SUA BHAKTI BERKARYA IV') }}<br>TAHUN 2026</div>
-                <div class="sig-sub">PMR Wira SMAN 1 Ciawi</div>
+            <div class="sig-block">
+                <div class="loc-date">Bogor, {{ $registration->verified_at ? $registration->verified_at->translatedFormat('d F Y') : ($registration->created_at ? $registration->created_at->translatedFormat('d F Y') : date('d F Y')) }}</div>
+                <div class="role">Bendahara Panitia Pelaksana,</div>
+                <div class="inst-title">PANITIA {{ strtoupper($registration->event->title ?? 'SUA BHAKTI BERKARYA IV') }}<br>TAHUN 2026</div>
+                <div class="inst-sub">PMR Wira SMAN 1 Ciawi</div>
+            </div>
+
+            <!-- Lifebuoy QR Code Box -->
+            <div class="qr-wrapper">
+                <img src="https://api.qrserver.com/v1/create-qr-code/?size=160x160&data={{ urlencode(route('lomba.kwitansi', ['code' => $registration->registration_code])) }}" 
+                     alt="QR Validasi" 
+                     loading="lazy">
+                <span>SCAN VALIDASI</span>
+            </div>
+
+            <!-- Stempel Lunas Overlay over Maskot -->
+            <div class="stamp-box">
+                <img src="{{ file_exists(public_path('images/kwitansi/stempel_lunas_transparan.png')) ? asset('images/kwitansi/stempel_lunas_transparan.png') : asset('images/kwitansi/stempel_lunas.jpg') }}" 
+                     alt="Stempel Lunas">
             </div>
 
             <!-- Footer Direct URL -->
-            <div class="footer-url">
+            <div class="receipt-url">
                 {{ route('lomba.kwitansi', ['code' => $registration->registration_code]) }}
             </div>
 
