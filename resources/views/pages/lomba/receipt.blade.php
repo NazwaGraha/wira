@@ -534,10 +534,15 @@
         }
 
         @media print {
-            body {
+            html, body {
                 background: #ffffff !important;
                 padding: 0 !important;
                 margin: 0 !important;
+                width: 100% !important;
+                height: 100% !important;
+                overflow: hidden !important;
+                -webkit-print-color-adjust: exact !important;
+                print-color-adjust: exact !important;
             }
 
             .no-print {
@@ -545,9 +550,14 @@
             }
 
             .kwitansi-wrapper {
+                width: 100% !important;
                 max-width: 100% !important;
                 padding: 0 !important;
-                overflow: visible !important;
+                margin: 0 !important;
+                display: flex !important;
+                justify-content: center !important;
+                align-items: flex-start !important;
+                overflow: hidden !important;
             }
 
             .kwitansi-canvas {
@@ -555,6 +565,8 @@
                 border-radius: 0 !important;
                 margin: 0 auto !important;
                 page-break-inside: avoid !important;
+                page-break-after: avoid !important;
+                page-break-before: avoid !important;
                 -webkit-print-color-adjust: exact !important;
                 print-color-adjust: exact !important;
             }
