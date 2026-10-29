@@ -243,18 +243,19 @@
             opacity: 0.5;
         }
 
-        /* Info Card */
+        /* Info Card (Glassmorphism Transparan) */
         .info-card {
             position: absolute;
             top: 258px;
             left: 78px;
             right: 78px;
-            background: rgba(255, 255, 255, 0.94);
-            backdrop-filter: blur(4px);
+            background: rgba(255, 255, 255, 0.65);
+            backdrop-filter: blur(6px);
+            -webkit-backdrop-filter: blur(6px);
             border-radius: 12px;
             padding: 8px 16px;
-            box-shadow: 0 4px 15px rgba(2, 132, 199, 0.08);
-            border: 1px solid #e0f2fe;
+            box-shadow: 0 4px 15px rgba(2, 132, 199, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.85);
         }
 
         .info-grid {
@@ -299,16 +300,18 @@
             display: inline-block;
         }
 
-        /* Grouped Table Card Container */
+        /* Grouped Table Card Container (Glassmorphism Transparan) */
         .table-container {
             position: absolute;
             top: 370px;
             left: 78px;
             right: 78px;
-            background: #ffffff;
+            background: rgba(255, 255, 255, 0.65);
+            backdrop-filter: blur(6px);
+            -webkit-backdrop-filter: blur(6px);
             border-radius: 12px;
-            box-shadow: 0 4px 20px rgba(2, 132, 199, 0.08);
-            border: 1px solid #e2e8f0;
+            box-shadow: 0 4px 20px rgba(2, 132, 199, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.85);
             padding: 7px 10px 5px;
         }
 
@@ -319,7 +322,7 @@
         }
 
         .grouped-table thead th {
-            background: #f0f9ff;
+            background: rgba(240, 249, 255, 0.75);
             color: #0369a1;
             font-size: 7.5px;
             font-weight: 800;
@@ -337,12 +340,12 @@
         .grouped-table thead th.th-biaya { width: 105px; text-align: right; padding-right: 8px; }
         .grouped-table thead th.th-total { width: 110px; text-align: right; padding-right: 8px; }
 
-        .grouped-table tbody tr:nth-child(even) { background: #f8fafc; }
-        .grouped-table tbody tr:nth-child(odd) { background: #ffffff; }
+        .grouped-table tbody tr:nth-child(even) { background: rgba(255, 255, 255, 0.40); }
+        .grouped-table tbody tr:nth-child(odd) { background: transparent; }
 
         .grouped-table td {
             padding: 5px 6px;
-            border-bottom: 1px solid #f1f5f9;
+            border-bottom: 1px solid rgba(241, 245, 249, 0.6);
         }
 
         .grouped-table td.col-no {
@@ -395,7 +398,7 @@
         .total-bar {
             margin-top: 5px;
             padding: 5px 12px;
-            background: #f8fafc;
+            background: rgba(248, 250, 252, 0.70);
             border-top: 1.5px solid #0284c7;
             border-radius: 0 0 8px 8px;
             display: flex;
