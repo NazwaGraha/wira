@@ -67,15 +67,32 @@ class CompetitionScoreController extends Controller
             ->orderBy('order_number')
             ->get();
 
-        if (! empty($category->level)) {
-            $teams = $teams->filter(function ($t) use ($category) {
-                if ($t->registration && ! empty($t->registration->level)) {
-                    return strcasecmp(trim($t->registration->level), trim($category->level)) === 0;
-                }
+        $isPutra = ($category->gender_category === 'Putra') || str_contains(strtoupper($category->code ?? ''), '-PA');
+        $isPutri = ($category->gender_category === 'Putri') || str_contains(strtoupper($category->code ?? ''), '-PI');
 
-                return true;
-            })->values();
-        }
+        // Filter collection strictly untuk memastikan hanya tingkat dan kategori gender yang sesuai
+        $teams = $teams->filter(function ($t) use ($category, $isPutra, $isPutri) {
+            // 1. Filter Tingkat (Mula / Madya / Wira)
+            if ($t->registration && ! empty($t->registration->level) && ! empty($category->level)) {
+                if (strcasecmp(trim($t->registration->level), trim($category->level)) !== 0) {
+                    return false;
+                }
+            }
+
+            // 2. Filter Kategori Gender (Putra vs Putri)
+            $combined = strtolower(($t->team_name ?? '').' '.($t->team_label ?? ''));
+            if ($isPutra) {
+                if (str_contains($combined, 'putri') || str_ends_with($combined, ' pi') || str_contains($combined, ' regu pi')) {
+                    return false;
+                }
+            } elseif ($isPutri) {
+                if (str_contains($combined, 'putra') || str_ends_with($combined, ' pa') || str_contains($combined, ' regu pa')) {
+                    return false;
+                }
+            }
+
+            return true;
+        })->values();
 
         // Get all verified registrations for this event / level
         $availableRegistrations = CompetitionRegistration::where('status', 'verified')
@@ -842,6 +859,14 @@ class CompetitionScoreController extends Controller
             }
 
             $label = trim($validated['team_label'] ?? '');
+            $isPa = ($category->gender_category === 'Putra') || str_contains(strtoupper($category->code ?? ''), '-PA');
+            $isPi = ($category->gender_category === 'Putri') || str_contains(strtoupper($category->code ?? ''), '-PI');
+            if ($isPa && stripos($label, 'putri') !== false) {
+                return redirect()->back()->with('error', 'Cabang ini khusus kategori Putra, tidak dapat menambahkan regu dengan label Putri.');
+            }
+            if ($isPi && stripos($label, 'putra') !== false) {
+                return redirect()->back()->with('error', 'Cabang ini khusus kategori Putri, tidak dapat menambahkan regu dengan label Putra.');
+            }
             $teamName = $registration->school_name.($label ? " {$label}" : '');
 
             $existingCount = CompetitionParticipantTeam::where('competition_category_id', $category->id)
@@ -900,6 +925,14 @@ class CompetitionScoreController extends Controller
             );
 
             $label = trim($validated['team_label'] ?? '');
+            $isPa = ($category->gender_category === 'Putra') || str_contains(strtoupper($category->code ?? ''), '-PA');
+            $isPi = ($category->gender_category === 'Putri') || str_contains(strtoupper($category->code ?? ''), '-PI');
+            if ($isPa && stripos($label, 'putri') !== false) {
+                return redirect()->back()->with('error', 'Cabang ini khusus kategori Putra, tidak dapat menambahkan regu dengan label Putri.');
+            }
+            if ($isPi && stripos($label, 'putra') !== false) {
+                return redirect()->back()->with('error', 'Cabang ini khusus kategori Putri, tidak dapat menambahkan regu dengan label Putra.');
+            }
             $teamName = $registration->school_name.($label ? " {$label}" : '');
 
             $slotIdx = $existingCount;
@@ -980,15 +1013,32 @@ class CompetitionScoreController extends Controller
             ->get();
 
         // Filter collection strictly untuk memastikan hanya tingkat yang sesuai
-        if (! empty($category->level)) {
-            $teams = $teams->filter(function ($t) use ($category) {
-                if ($t->registration && ! empty($t->registration->level)) {
-                    return strcasecmp(trim($t->registration->level), trim($category->level)) === 0;
-                }
+        $isPutra = ($category->gender_category === 'Putra') || str_contains(strtoupper($category->code ?? ''), '-PA');
+        $isPutri = ($category->gender_category === 'Putri') || str_contains(strtoupper($category->code ?? ''), '-PI');
 
-                return true;
-            })->values();
-        }
+        // Filter collection strictly untuk memastikan hanya tingkat dan kategori gender yang sesuai
+        $teams = $teams->filter(function ($t) use ($category, $isPutra, $isPutri) {
+            // 1. Filter Tingkat (Mula / Madya / Wira)
+            if ($t->registration && ! empty($t->registration->level) && ! empty($category->level)) {
+                if (strcasecmp(trim($t->registration->level), trim($category->level)) !== 0) {
+                    return false;
+                }
+            }
+
+            // 2. Filter Kategori Gender (Putra vs Putri)
+            $combined = strtolower(($t->team_name ?? '').' '.($t->team_label ?? ''));
+            if ($isPutra) {
+                if (str_contains($combined, 'putri') || str_ends_with($combined, ' pi') || str_contains($combined, ' regu pi')) {
+                    return false;
+                }
+            } elseif ($isPutri) {
+                if (str_contains($combined, 'putra') || str_ends_with($combined, ' pa') || str_contains($combined, ' regu pa')) {
+                    return false;
+                }
+            }
+
+            return true;
+        })->values();
 
         // Tentukan tim yang sedang dipilih/dinilai
         $selectedTeamId = $request->query('team_id');

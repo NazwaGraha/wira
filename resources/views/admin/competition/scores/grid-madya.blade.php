@@ -102,15 +102,22 @@
                     </div>
 
                     <!-- Dropdown Select Current Team -->
+                    @php
+                        $isPi = ($category->gender_category === 'Putri') || str_contains(strtoupper($category->code ?? ''), '-PI');
+                        $genderText = $isPi ? 'Putri' : 'Putra';
+                        $genderIcon = $isPi ? 'fa-venus' : 'fa-mars';
+                        $genderBadgeClass = $isPi ? 'text-rose-700 bg-rose-50 border-rose-200' : 'text-blue-700 bg-blue-50 border-blue-200';
+                        $borderColor = $isPi ? 'border-rose-500' : 'border-blue-500';
+                    @endphp
                     <div>
                         <label for="select-team-dropdown" class="block text-xs font-black text-slate-500 uppercase tracking-wider mb-1.5 flex items-center justify-between">
                             <span>Pilih Regu Peserta yang Sedang Dinilai:</span>
-                            <span class="text-blue-700 font-extrabold text-[11px] bg-blue-50 px-2 py-0.5 rounded-md border border-blue-200">
-                                Khusus PMR Madya (SMP/MTs) &bull; Total: {{ $teams->count() }} Regu
+                            <span class="{{ $genderBadgeClass }} font-extrabold text-[11px] px-2.5 py-0.5 rounded-md border flex items-center gap-1">
+                                <i class="fa-solid {{ $genderIcon }}"></i> Khusus PMR Madya {{ $genderText }} &bull; Total: {{ $teams->count() }} Regu
                             </span>
                         </label>
                         <div class="relative">
-                            <select id="select-team-dropdown" onchange="window.location.href=this.value" class="w-full bg-slate-50 hover:bg-slate-100 border-2 border-blue-500 rounded-2xl py-3 px-4 text-sm font-black text-slate-900 focus:outline-none appearance-none cursor-pointer shadow-xs transition">
+                            <select id="select-team-dropdown" onchange="window.location.href=this.value" class="w-full bg-slate-50 hover:bg-slate-100 border-2 {{ $borderColor }} rounded-2xl py-3 px-4 text-sm font-black text-slate-900 focus:outline-none appearance-none cursor-pointer shadow-xs transition">
                                 @forelse($teams as $idx => $t)
                                     @php
                                         $tScore = $scores->get($t->id);
@@ -121,10 +128,10 @@
                                         $teamNo = $t->order_number ?: ($idx + 1);
                                     @endphp
                                     <option value="{{ route('admin.competition-scores.grid', ['category' => $category->id, 'team_id' => $t->id, 'round' => $round]) }}" {{ $currentTeam?->id == $t->id ? 'selected' : '' }}>
-                                        [No. {{ $teamNo }}] {{ $schoolName }} • {{ $t->team_name }} [PMR Madya] ({{ $regCode }}) — {{ $statusLabel }}
+                                        [No. {{ $teamNo }}] {{ $schoolName }} • {{ $t->team_name }} [Madya {{ $genderText }}] ({{ $regCode }}) — {{ $statusLabel }}
                                     </option>
                                 @empty
-                                    <option value="" disabled selected>-- Belum ada regu PMR Madya (SMP/MTs) yang terdaftar di cabang ini --</option>
+                                    <option value="" disabled selected>-- Belum ada regu PMR Madya {{ $genderText }} (SMP/MTs) yang terdaftar di cabang ini --</option>
                                 @endforelse
                             </select>
                             <i class="fa-solid fa-chevron-down absolute right-4 top-1/2 -translate-y-1/2 text-slate-500 pointer-events-none"></i>
@@ -134,10 +141,10 @@
                             <div class="bg-amber-50 border border-amber-300 text-amber-900 p-3 rounded-2xl flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs font-bold shadow-2xs mt-2">
                                 <div class="flex items-center gap-2">
                                     <i class="fa-solid fa-circle-exclamation text-amber-600 text-base"></i>
-                                    <span>Belum ada regu peserta <strong>PMR Tingkat Madya (SMP/MTs)</strong> yang terdaftar di cabang ini.</span>
+                                    <span>Belum ada regu peserta <strong>PMR Tingkat Madya {{ $genderText }} (SMP/MTs)</strong> yang terdaftar di cabang ini.</span>
                                 </div>
                                 <a href="{{ route('admin.competition-scores.input', $category->id) }}" class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-amber-600 hover:bg-amber-700 text-white rounded-xl font-black text-xs transition shrink-0">
-                                    <i class="fa-solid fa-plus"></i> Tambah Regu Madya
+                                    <i class="fa-solid fa-plus"></i> Tambah Regu {{ $genderText }}
                                 </a>
                             </div>
                         @endif

@@ -102,11 +102,15 @@
                     </div>
 
                     <!-- Dropdown Select Team -->
+                    @php
+                        $isPi = ($category->gender_category === 'Putri') || str_contains(strtoupper($category->code ?? ''), '-PI');
+                        $genderText = $isPi ? 'Putri' : 'Putra';
+                    @endphp
                     <div>
                         <label for="team-selector-dropdown" class="block text-xs font-black text-slate-500 uppercase tracking-wider mb-1.5 flex items-center justify-between">
                             <span>PILIH REGU PESERTA YANG SEDANG DINILAI:</span>
                             <span class="text-emerald-700 font-extrabold text-[11px] bg-emerald-50 px-2 py-0.5 rounded-md border border-emerald-200">
-                                Khusus PMR Mula (SD/MI) &bull; Total: {{ $teams->count() }} Regu
+                                Khusus PMR Mula {{ $genderText }} (SD/MI) &bull; Total: {{ $teams->count() }} Regu
                             </span>
                         </label>
                         <div class="relative">
@@ -117,10 +121,10 @@
                                         $hasScore = $tScore && ($tScore->final_score > 0 || !empty($tScore->score_details['grid_rubric']));
                                     @endphp
                                     <option value="{{ $t->id }}" {{ $currentTeam?->id == $t->id ? 'selected' : '' }}>
-                                        [No. {{ $t->order_number ?: '-' }}] {{ $t->registration?->school_name ?: $t->team_name }} &bull; {{ $t->team_label ?: $t->team_name }} ({{ $t->registration?->registration_code ?: 'OTS' }}) {{ $hasScore ? '✓ [Skor: ' . $tScore->final_score . ' | Wkt: ' . ($tScore->time_recorded ?: '-') . ']' : '(Belum dinilai)' }}
+                                        [No. {{ $t->order_number ?: '-' }}] {{ $t->registration?->school_name ?: $t->team_name }} &bull; {{ $t->team_label ?: $t->team_name }} [Mula {{ $genderText }}] ({{ $t->registration?->registration_code ?: 'OTS' }}) {{ $hasScore ? '✓ [Skor: ' . $tScore->final_score . ' | Wkt: ' . ($tScore->time_recorded ?: '-') . ']' : '(Belum dinilai)' }}
                                     </option>
                                 @empty
-                                    <option value="">Belum ada regu peserta terdaftar</option>
+                                    <option value="" disabled selected>-- Belum ada regu PMR Mula {{ $genderText }} (SD/MI) yang terdaftar di cabang ini --</option>
                                 @endforelse
                             </select>
                             <i class="fa-solid fa-chevron-down absolute right-4 top-1/2 -translate-y-1/2 text-slate-500 pointer-events-none"></i>
