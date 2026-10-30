@@ -289,7 +289,11 @@ Route::prefix('admin')->name('admin.')->group(function () {
 
         // Penilaian Lomba (Input Nilai Juri / Panitia)
         Route::get('/competition-scores', [CompetitionScoreController::class, 'index'])->name('competition-scores.index');
+        Route::get('/competition-scores-master', [CompetitionScoreController::class, 'masterSheet'])->name('competition-scores.master-sheet');
+        Route::get('/competition-scores-master/export-excel', [CompetitionScoreController::class, 'exportMasterSheetExcel'])->name('competition-scores.master-sheet.export-excel');
         Route::get('/competition-scores/{category}/input', [CompetitionScoreController::class, 'input'])->name('competition-scores.input');
+        Route::get('/competition-scores/{category}/grid', [CompetitionScoreController::class, 'gridMula'])->name('competition-scores.grid');
+        Route::post('/competition-scores/{category}/grid-save', [CompetitionScoreController::class, 'saveGridMula'])->name('competition-scores.grid-save');
         Route::get('/competition-scores/{category}/export-excel', [CompetitionScoreController::class, 'exportExcel'])->name('competition-scores.export-excel');
         Route::post('/competition-scores/{category}/save', [CompetitionScoreController::class, 'saveScores'])->name('competition-scores.save');
         Route::post('/competition-scores/{category}/reset', [CompetitionScoreController::class, 'resetScores'])->name('competition-scores.reset');

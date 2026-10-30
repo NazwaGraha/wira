@@ -240,9 +240,16 @@
                     <span class="text-[9px] bg-amber-400/20 text-amber-300 border border-amber-400/30 px-1.5 py-0.2 rounded font-black uppercase">Juri</span>
                 </div>
             </a>
-            <a href="{{ route('admin.competition-scores.index') }}" class="flex items-center gap-3 px-3 py-2.5 rounded-xl font-medium text-sm transition {{ request()->routeIs('admin.competition-scores.*') ? 'bg-pmr-primary text-white shadow-md shadow-red-950/40' : 'hover:bg-slate-800 text-slate-300' }}">
+            <a href="{{ route('admin.competition-scores.index') }}" class="flex items-center gap-3 px-3 py-2.5 rounded-xl font-medium text-sm transition {{ (request()->routeIs('admin.competition-scores.*') && !request()->routeIs('admin.competition-scores.master-sheet*')) ? 'bg-pmr-primary text-white shadow-md shadow-red-950/40' : 'hover:bg-slate-800 text-slate-300' }}">
                 <i class="fa-solid fa-calculator w-5 text-center text-teal-400"></i>
                 <span>Input Nilai Lomba</span>
+            </a>
+            <a href="{{ route('admin.competition-scores.master-sheet') }}" class="flex items-center gap-3 px-3 py-2.5 rounded-xl font-medium text-sm transition {{ request()->routeIs('admin.competition-scores.master-sheet*') ? 'bg-pmr-primary text-white shadow-md shadow-red-950/40' : 'hover:bg-slate-800 text-slate-300' }}">
+                <i class="fa-solid fa-table-list w-5 text-center text-blue-400"></i>
+                <div class="flex items-center justify-between flex-grow">
+                    <span>Lembar Skor Utama</span>
+                    <span class="text-[9px] bg-blue-500/20 text-blue-300 border border-blue-400/30 px-1.5 py-0.2 rounded font-black uppercase">Rekap</span>
+                </div>
             </a>
             <a href="{{ route('admin.competition-mascots.index') }}" class="flex items-center gap-3 px-3 py-2.5 rounded-xl font-medium text-sm transition {{ request()->routeIs('admin.competition-mascots.*') ? 'bg-pmr-primary text-white shadow-md shadow-red-950/40' : 'hover:bg-slate-800 text-slate-300' }}">
                 <i class="fa-solid fa-cat w-5 text-center text-amber-300"></i>

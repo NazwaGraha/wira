@@ -4,6 +4,9 @@
 @section('page_title', 'Input Nilai Dewan Juri')
 
 @section('top_actions')
+    <a href="{{ route('admin.competition-scores.master-sheet', ['level' => $level]) }}" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2.5 rounded-xl font-bold text-xs shadow transition flex items-center gap-2">
+        <i class="fa-solid fa-table-list"></i> Lembar Skor Utama
+    </a>
     <a href="{{ route('admin.competition-leaderboard.index') }}" class="bg-amber-500 hover:bg-amber-600 text-white px-4 py-2.5 rounded-xl font-bold text-xs shadow transition flex items-center gap-2">
         <i class="fa-solid fa-trophy"></i> Lihat Rekap Juara Umum
     </a>
@@ -158,13 +161,26 @@
                         {{ $cat->teams_count }} Tim Terdaftar
                     </span>
 
+                    @php
+                        $isMulaPP = ($cat->level === 'Mula') && (str_contains(strtolower($cat->name), 'pertolongan pertama') || str_starts_with($cat->code ?? '', 'LPP'));
+                    @endphp
+
                     <div class="flex items-center gap-2">
                         <a href="{{ route('admin.competition-scores.export-excel', $cat->id) }}" title="Export Lembar Penilaian Excel (.xlsx)" class="bg-emerald-50 hover:bg-emerald-100 text-emerald-700 font-bold text-xs px-3 py-2 rounded-xl border border-emerald-200 transition flex items-center gap-1.5 shadow-2xs">
                             <i class="fa-solid fa-file-excel"></i> Export Excel
                         </a>
-                        <a href="{{ route('admin.competition-scores.input', $cat->id) }}" class="bg-red-600 hover:bg-red-700 text-white font-bold text-xs px-4 py-2 rounded-xl shadow-md transition flex items-center gap-1.5">
-                            <i class="fa-solid fa-pen-to-square"></i> Input Nilai Juri
-                        </a>
+                        @if($isMulaPP)
+                            <a href="{{ route('admin.competition-scores.grid', $cat->id) }}" class="bg-red-600 hover:bg-red-700 text-white font-extrabold text-xs px-4 py-2 rounded-xl shadow-md transition flex items-center gap-1.5">
+                                <i class="fa-solid fa-table-cells"></i> Input Nilai Juri
+                            </a>
+                            <a href="{{ route('admin.competition-scores.input', $cat->id) }}" title="Lembar Skor Utama" class="bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs px-3 py-2 rounded-xl border border-slate-200 transition flex items-center gap-1 shadow-2xs">
+                                <i class="fa-solid fa-table-list"></i>
+                            </a>
+                        @else
+                            <a href="{{ route('admin.competition-scores.input', $cat->id) }}" class="bg-red-600 hover:bg-red-700 text-white font-bold text-xs px-4 py-2 rounded-xl shadow-md transition flex items-center gap-1.5">
+                                <i class="fa-solid fa-pen-to-square"></i> Input Nilai Juri
+                            </a>
+                        @endif
                     </div>
                 </div>
             </div>

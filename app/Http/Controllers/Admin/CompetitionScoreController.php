@@ -936,4 +936,372 @@ class CompetitionScoreController extends Controller
             'Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
         ])->deleteFileAfterSend(true);
     }
+
+    /**
+     * Tampilkan formulir Grid Nilai Pertolongan Pertama Tingkat Mula (Putra & Putri)
+     */
+    public function gridMula(CompetitionCategory $category, Request $request)
+    {
+        $category->loadMissing(['assignedJuries', 'event']);
+
+        $round = $request->query('round', 'Utama');
+
+        // Ambil seluruh tim terverifikasi untuk kategori ini
+        $teams = CompetitionParticipantTeam::where('competition_category_id', $category->id)
+            ->where('is_active', true)
+            ->where(function ($q) {
+                $q->whereHas('registration', function ($rq) {
+                    $rq->where('status', 'verified');
+                })->orWhereNull('competition_registration_id');
+            })
+            ->with(['registration'])
+            ->orderBy('order_number')
+            ->get();
+
+        // Tentukan tim yang sedang dipilih/dinilai
+        $selectedTeamId = $request->query('team_id');
+        $currentTeam = $teams->firstWhere('id', $selectedTeamId) ?: $teams->first();
+
+        // Hitung tim sebelumnya dan berikutnya untuk navigasi cepat
+        $currentTeamIndex = $currentTeam ? $teams->search(fn ($t) => $t->id == $currentTeam->id) : false;
+        $prevTeam = ($currentTeamIndex !== false && $currentTeamIndex > 0) ? $teams[$currentTeamIndex - 1] : null;
+        $nextTeam = ($currentTeamIndex !== false && $currentTeamIndex < $teams->count() - 1) ? $teams[$currentTeamIndex + 1] : null;
+
+        // Ambil nilai yang sudah tersimpan untuk tim yang sedang dinilai
+        $score = null;
+        $existingRubric = [];
+        $existingSubtotals = [];
+        $existingTime = '05:00';
+        $existingNotes = '';
+
+        if ($currentTeam) {
+            $score = CompetitionScore::where('competition_category_id', $category->id)
+                ->where('competition_participant_team_id', $currentTeam->id)
+                ->where('round_name', $round)
+                ->first();
+
+            if ($score) {
+                $details = is_array($score->score_details) ? $score->score_details : (json_decode($score->score_details ?? '', true) ?? []);
+                $existingRubric = $details['grid_rubric'] ?? [];
+                $existingSubtotals = $details['subtotals'] ?? [];
+                $existingTime = $score->time_recorded ?? ($details['practical_time'] ?? '05:00');
+                $existingNotes = $score->notes ?? ($details['notes'] ?? '');
+            }
+        }
+
+        // Ambil seluruh skor dalam kategori ini untuk indikator status sudah/belum dinilai
+        $scores = CompetitionScore::where('competition_category_id', $category->id)
+            ->where('round_name', $round)
+            ->get()
+            ->keyBy('competition_participant_team_id');
+
+        return view('admin.competition.scores.grid-mula', compact(
+            'category',
+            'round',
+            'teams',
+            'currentTeam',
+            'prevTeam',
+            'nextTeam',
+            'score',
+            'existingRubric',
+            'existingSubtotals',
+            'existingTime',
+            'existingNotes',
+            'scores'
+        ));
+    }
+
+    /**
+     * Simpan nilai dari formulir Grid Nilai Pertolongan Pertama Tingkat Mula ke database
+     */
+    public function saveGridMula(CompetitionCategory $category, Request $request)
+    {
+        $teamId = $request->input('competition_participant_team_id');
+        $round = $request->input('round_name', 'Utama');
+        $timeRecorded = trim((string) $request->input('time_recorded', '05:00'));
+        $rubric = $request->input('rubric', []);
+        $subtotals = $request->input('subtotals', []);
+        $notes = $request->input('notes');
+        $actionAfter = $request->input('action_after', 'stay'); // 'stay', 'next', 'back'
+
+        // Hitung total skor akumulasi dari rubrik
+        $totalScore = 0;
+        foreach ($rubric as $k => $v) {
+            $totalScore += intval($v);
+        }
+
+        // Konversi waktu ke detik
+        $timeSeconds = self::parseTimeToSeconds($timeRecorded);
+
+        // Petakan Dewan Juri
+        $category->loadMissing('assignedJuries');
+        $juryUserId = auth()->id();
+        if ($category->assignedJuries->isNotEmpty()) {
+            $assignedIds = $category->assignedJuries->pluck('id')->toArray();
+            if (! in_array($juryUserId, $assignedIds)) {
+                $juryUserId = $category->assignedJuries->first()->id;
+            }
+        }
+
+        $existingScore = CompetitionScore::where('competition_category_id', $category->id)
+            ->where('competition_participant_team_id', $teamId)
+            ->where('round_name', $round)
+            ->first();
+
+        $mergedDetails = array_merge($existingScore?->score_details ?? [], [
+            'practical_score' => $totalScore,
+            'practical_time' => $timeRecorded,
+            'time_recorded' => $timeRecorded,
+            'time_seconds' => $timeSeconds,
+            'grid_rubric' => $rubric,
+            'subtotals' => $subtotals,
+            'notes' => $notes,
+        ]);
+
+        CompetitionScore::updateOrCreate(
+            [
+                'competition_category_id' => $category->id,
+                'competition_participant_team_id' => $teamId,
+                'round_name' => $round,
+            ],
+            [
+                'jury_user_id' => $juryUserId,
+                'score_details' => $mergedDetails,
+                'final_score' => $totalScore,
+                'time_recorded' => $timeRecorded,
+                'is_disqualified' => false,
+                'notes' => $notes,
+            ]
+        );
+
+        // Perbarui peringkat secara otomatis
+        $this->autoRecalculateRanks($category->id, $round);
+
+        $team = CompetitionParticipantTeam::find($teamId);
+        $teamName = $team?->team_name ?? 'Regu Peserta';
+
+        $msg = "Nilai Grid Pertolongan Pertama untuk regu '{$teamName}' berhasil disimpan (Total Skor: {$totalScore}, Waktu: {$timeRecorded}) dan otomatis terisi di Lembar Skor Utama!";
+
+        if ($actionAfter === 'next') {
+            $nextTeamId = $request->input('next_team_id');
+            if ($nextTeamId) {
+                return redirect()->route('admin.competition-scores.grid', [
+                    'category' => $category->id,
+                    'team_id' => $nextTeamId,
+                    'round' => $round,
+                ])->with('success', $msg);
+            }
+        } elseif ($actionAfter === 'back') {
+            return redirect()->route('admin.competition-scores.input', [
+                'category' => $category->id,
+                'round' => $round,
+            ])->with('success', $msg);
+        }
+
+        return redirect()->route('admin.competition-scores.grid', [
+            'category' => $category->id,
+            'team_id' => $teamId,
+            'round' => $round,
+        ])->with('success', $msg);
+    }
+
+    /**
+     * Halaman Lembar Skor Utama (Master Score Sheet) dengan filter Tingkatan dan Nama Sekolah
+     */
+    public function masterSheet(Request $request)
+    {
+        // Resolve Event
+        $allEvents = CompetitionEvent::orderByDesc('id')->get();
+        $selectedEventId = $request->query('event_id');
+        if ($selectedEventId) {
+            $event = CompetitionEvent::find($selectedEventId) ?: CompetitionEvent::where('is_active', true)->first();
+        } else {
+            $event = CompetitionEvent::where('is_active', true)->first() ?: $allEvents->first();
+        }
+
+        $level = $request->query('level', 'all');
+        $schoolName = $request->query('school_name', 'all');
+        $categoryId = $request->query('category_id', 'all');
+        $search = trim((string) $request->query('search', ''));
+
+        // Ambil daftar sekolah terdaftar untuk dropdown filter
+        $schools = CompetitionRegistration::where('status', 'verified')
+            ->when($event, fn ($q) => $q->where('competition_event_id', $event->id))
+            ->when($level && $level !== 'all', fn ($q) => $q->where('level', $level))
+            ->distinct()
+            ->orderBy('school_name')
+            ->pluck('school_name');
+
+        // Ambil daftar kategori cabang lomba untuk dropdown filter
+        $categories = CompetitionCategory::when($event, fn ($q) => $q->where('competition_event_id', $event->id))
+            ->when($level && $level !== 'all', fn ($q) => $q->where('level', $level))
+            ->where('is_active', true)
+            ->orderBy('order_position')
+            ->get();
+
+        // Query seluruh regu peserta
+        $teamsQuery = CompetitionParticipantTeam::where('is_active', true)
+            ->whereHas('category', function ($q) use ($event, $level, $categoryId) {
+                $q->where('is_active', true);
+                if ($event) {
+                    $q->where('competition_event_id', $event->id);
+                }
+                if ($level && $level !== 'all') {
+                    $q->where('level', $level);
+                }
+                if ($categoryId && $categoryId !== 'all') {
+                    $q->where('id', $categoryId);
+                }
+            })
+            ->where(function ($q) use ($event) {
+                $q->whereHas('registration', function ($rq) use ($event) {
+                    $rq->where('status', 'verified');
+                    if ($event) {
+                        $rq->where('competition_event_id', $event->id);
+                    }
+                })->orWhereNull('competition_registration_id');
+            })
+            ->with([
+                'category.assignedJuries',
+                'registration',
+                'scores' => function ($sq) {
+                    $sq->orderBy('round_name');
+                },
+                'scores.jury',
+            ]);
+
+        if ($schoolName && $schoolName !== 'all') {
+            $teamsQuery->where(function ($q) use ($schoolName) {
+                $q->whereHas('registration', fn ($rq) => $rq->where('school_name', $schoolName))
+                    ->orWhere('team_name', 'like', "%{$schoolName}%");
+            });
+        }
+
+        if ($search !== '') {
+            $teamsQuery->where(function ($q) use ($search) {
+                $q->where('team_name', 'like', "%{$search}%")
+                    ->orWhere('order_number', 'like', "%{$search}%")
+                    ->orWhereHas('registration', function ($rq) use ($search) {
+                        $rq->where('school_name', 'like', "%{$search}%")
+                            ->orWhere('registration_code', 'like', "%{$search}%");
+                    })
+                    ->orWhereHas('category', function ($cq) use ($search) {
+                        $cq->where('name', 'like', "%{$search}%")
+                            ->orWhere('code', 'like', "%{$search}%");
+                    });
+            });
+        }
+
+        $teams = $teamsQuery->orderBy('competition_category_id')
+            ->orderByRaw('CAST(order_number AS UNSIGNED) ASC, order_number ASC')
+            ->get();
+
+        // Hitung statistik ringkasan
+        $totalTeams = $teams->count();
+        $scoredTeams = $teams->filter(function ($t) {
+            return $t->scores->where('final_score', '>', 0)->isNotEmpty();
+        })->count();
+        $unscoredTeams = $totalTeams - $scoredTeams;
+
+        return view('admin.competition.scores.master-sheet', compact(
+            'event',
+            'allEvents',
+            'level',
+            'schoolName',
+            'schools',
+            'categoryId',
+            'categories',
+            'search',
+            'teams',
+            'totalTeams',
+            'scoredTeams',
+            'unscoredTeams'
+        ));
+    }
+
+    /**
+     * Export data Lembar Skor Utama ke file Excel (.xlsx)
+     */
+    public function exportMasterSheetExcel(Request $request, CompetitionSpreadsheetService $spreadsheetService)
+    {
+        // Resolve Event
+        $allEvents = CompetitionEvent::orderByDesc('id')->get();
+        $selectedEventId = $request->query('event_id');
+        if ($selectedEventId) {
+            $event = CompetitionEvent::find($selectedEventId) ?: CompetitionEvent::where('is_active', true)->first();
+        } else {
+            $event = CompetitionEvent::where('is_active', true)->first() ?: $allEvents->first();
+        }
+
+        $level = $request->query('level', 'all');
+        $schoolName = $request->query('school_name', 'all');
+        $categoryId = $request->query('category_id', 'all');
+        $search = trim((string) $request->query('search', ''));
+
+        $teamsQuery = CompetitionParticipantTeam::where('is_active', true)
+            ->whereHas('category', function ($q) use ($event, $level, $categoryId) {
+                $q->where('is_active', true);
+                if ($event) {
+                    $q->where('competition_event_id', $event->id);
+                }
+                if ($level && $level !== 'all') {
+                    $q->where('level', $level);
+                }
+                if ($categoryId && $categoryId !== 'all') {
+                    $q->where('id', $categoryId);
+                }
+            })
+            ->where(function ($q) use ($event) {
+                $q->whereHas('registration', function ($rq) use ($event) {
+                    $rq->where('status', 'verified');
+                    if ($event) {
+                        $rq->where('competition_event_id', $event->id);
+                    }
+                })->orWhereNull('competition_registration_id');
+            })
+            ->with([
+                'category.assignedJuries',
+                'registration',
+                'scores' => function ($sq) {
+                    $sq->orderBy('round_name');
+                },
+                'scores.jury',
+            ]);
+
+        if ($schoolName && $schoolName !== 'all') {
+            $teamsQuery->where(function ($q) use ($schoolName) {
+                $q->whereHas('registration', fn ($rq) => $rq->where('school_name', $schoolName))
+                    ->orWhere('team_name', 'like', "%{$schoolName}%");
+            });
+        }
+
+        if ($search !== '') {
+            $teamsQuery->where(function ($q) use ($search) {
+                $q->where('team_name', 'like', "%{$search}%")
+                    ->orWhere('order_number', 'like', "%{$search}%")
+                    ->orWhereHas('registration', function ($rq) use ($search) {
+                        $rq->where('school_name', 'like', "%{$search}%")
+                            ->orWhere('registration_code', 'like', "%{$search}%");
+                    })
+                    ->orWhereHas('category', function ($cq) use ($search) {
+                        $cq->where('name', 'like', "%{$search}%")
+                            ->orWhere('code', 'like', "%{$search}%");
+                    });
+            });
+        }
+
+        $teams = $teamsQuery->orderBy('competition_category_id')
+            ->orderByRaw('CAST(order_number AS UNSIGNED) ASC, order_number ASC')
+            ->get();
+
+        $filePath = $spreadsheetService->exportMasterScoreSheetXlsx($teams, $event);
+
+        $safeLevel = Str::slug($level ?: 'Semua', '_');
+        $safeSchool = $schoolName && $schoolName !== 'all' ? Str::slug($schoolName, '_') : 'Semua_Sekolah';
+        $fileName = "Lembar_Skor_Utama_{$safeLevel}_{$safeSchool}.xlsx";
+
+        return response()->download($filePath, $fileName, [
+            'Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        ])->deleteFileAfterSend(true);
+    }
 }

@@ -81,6 +81,25 @@ class CompetitionSpreadsheetService
     ];
 
     /**
+     * Definisi 13 kolom untuk Export Lembar Skor Utama (Rekap Seluruh Cabang & Sekolah)
+     */
+    public const MASTER_SCORE_COLUMNS = [
+        'A' => ['key' => 'no', 'label' => 'NO', 'width' => 6, 'align' => 'center'],
+        'B' => ['key' => 'order_number', 'label' => 'NO. URUT', 'width' => 12, 'align' => 'center'],
+        'C' => ['key' => 'level', 'label' => 'TINGKAT', 'width' => 14, 'align' => 'center'],
+        'D' => ['key' => 'school_name', 'label' => 'ASAL SEKOLAH / PANGKALAN', 'width' => 32, 'align' => 'left'],
+        'E' => ['key' => 'reg_code', 'label' => 'NO. PENDAFTARAN', 'width' => 18, 'align' => 'center'],
+        'F' => ['key' => 'category_name', 'label' => 'CABANG MATA LOMBA', 'width' => 30, 'align' => 'left'],
+        'G' => ['key' => 'gender_category', 'label' => 'KATEGORI', 'width' => 14, 'align' => 'center'],
+        'H' => ['key' => 'team_name', 'label' => 'NAMA REGU PESERTA', 'width' => 26, 'align' => 'left'],
+        'I' => ['key' => 'jury_name', 'label' => 'DEWAN JURI PENILAI', 'width' => 24, 'align' => 'left'],
+        'J' => ['key' => 'practical_score', 'label' => 'NILAI PRAKTIK / TEKNIS', 'width' => 22, 'align' => 'center'],
+        'K' => ['key' => 'time_recorded', 'label' => 'WAKTU PRAKTIK', 'width' => 16, 'align' => 'center'],
+        'L' => ['key' => 'final_score', 'label' => 'NILAI AKHIR (TOTAL)', 'width' => 20, 'align' => 'center'],
+        'M' => ['key' => 'rank', 'label' => 'PERINGKAT', 'width' => 16, 'align' => 'center'],
+    ];
+
+    /**
      * Contoh data template peserta
      */
     public const SAMPLE_ROWS = [
@@ -152,6 +171,67 @@ class CompetitionSpreadsheetService
         $sheetTitle = 'Peserta Lomba';
 
         return $this->createXlsxFile($rows, $sheetTitle, self::PARTICIPANT_TEAMS_COLUMNS);
+    }
+
+    /**
+     * Hasilkan file Excel (.xlsx) untuk Export Seluruh Data Lembar Skor Utama (Filter Tingkat & Sekolah)
+     */
+    public function exportMasterScoreSheetXlsx(Collection $teams, ?CompetitionEvent $event = null): string
+    {
+        $headers = array_column(self::MASTER_SCORE_COLUMNS, 'label');
+        $rows = [$headers];
+
+        foreach ($teams as $idx => $team) {
+            $reg = $team->registration;
+            $cat = $team->category;
+            $score = $team->scores->first();
+
+            $details = is_array($score?->score_details) ? $score->score_details : (json_decode($score?->score_details ?? '', true) ?? []);
+            $practicalScore = $details['practical_score'] ?? ($details['technical_score'] ?? ($details['score'] ?? ($score?->final_score !== null && $score?->final_score > 0 ? (string) $score->final_score : '-')));
+            $timeRecorded = $score?->time_recorded ?: '-';
+            $finalScore = $score?->final_score !== null ? (string) $score->final_score : '-';
+
+            $rankLabel = '-';
+            if ($score?->is_disqualified) {
+                $rankLabel = 'DISKUALIFIKASI';
+            } elseif ($score?->rank) {
+                if ($score->rank == 1) {
+                    $rankLabel = 'Juara 1';
+                } elseif ($score->rank == 2) {
+                    $rankLabel = 'Juara 2';
+                } elseif ($score->rank == 3) {
+                    $rankLabel = 'Juara 3';
+                } elseif ($score->rank == 4) {
+                    $rankLabel = 'Harapan 1';
+                } elseif ($score->rank == 5) {
+                    $rankLabel = 'Harapan 2';
+                } else {
+                    $rankLabel = 'Peringkat '.$score->rank;
+                }
+            }
+
+            $juryName = $score?->jury?->name ?: ($cat?->assignedJuries->pluck('name')->join(', ') ?: '-');
+
+            $rows[] = [
+                (string) ($idx + 1),
+                (string) ($team->order_number ?: '-'),
+                (string) ($cat?->level ?: ($reg?->level ?: '-')),
+                (string) ($reg?->school_name ?: $team->team_name),
+                (string) ($reg?->registration_code ?: '-'),
+                (string) ($cat?->name ?: '-'),
+                (string) ($cat?->gender_category ?: 'Umum'),
+                (string) ($team->team_name ?: '-'),
+                (string) $juryName,
+                (string) $practicalScore,
+                (string) $timeRecorded,
+                (string) $finalScore,
+                $rankLabel,
+            ];
+        }
+
+        $sheetTitle = 'Lembar Skor Utama';
+
+        return $this->createXlsxFile($rows, $sheetTitle, self::MASTER_SCORE_COLUMNS);
     }
 
     /**

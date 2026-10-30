@@ -7,6 +7,14 @@
     <a href="{{ route('admin.competition-scores.index', ['level' => $category->level]) }}" class="px-4 py-2 bg-slate-100 text-slate-600 font-bold text-xs rounded-xl hover:bg-slate-200 transition">
         &larr; Kembali ke Cabang
     </a>
+    @php
+        $isMulaPP = ($category->level === 'Mula') && (str_contains(strtolower($category->name), 'pertolongan pertama') || str_starts_with($category->code ?? '', 'LPP'));
+    @endphp
+    @if($isMulaPP)
+        <a href="{{ route('admin.competition-scores.grid', $category->id) }}" class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-xl font-bold text-xs transition flex items-center gap-1.5 shadow-sm">
+            <i class="fa-solid fa-table-cells"></i> Input via Grid Nilai
+        </a>
+    @endif
     <a href="{{ route('lomba.scoreboard', ['level' => $category->level, 'category_id' => $category->id]) }}" target="_blank" class="bg-slate-800 hover:bg-slate-900 text-white px-4 py-2 rounded-xl font-bold text-xs transition flex items-center gap-1.5">
         <i class="fa-solid fa-tv"></i> Papan Skor Publik
     </a>
@@ -883,6 +891,11 @@
                                 <!-- Action: Clear Row & Remove Team -->
                                 <td class="px-3 py-3 text-center border-l border-slate-100">
                                     <div class="flex items-center justify-center gap-1">
+                                        @if($isMulaPP)
+                                            <a href="{{ route('admin.competition-scores.grid', ['category' => $category->id, 'team_id' => $team->id]) }}" class="w-7 h-7 rounded-lg bg-red-50 hover:bg-red-600 text-red-600 hover:text-white border border-red-200 inline-flex items-center justify-center transition shadow-2xs" title="Buka Grid Nilai Juri untuk regu ini">
+                                                <i class="fa-solid fa-table-cells text-[11px]"></i>
+                                            </a>
+                                        @endif
                                         <button type="button" onclick="clearRowInput(this)" class="w-7 h-7 rounded-lg bg-slate-100 hover:bg-amber-50 text-slate-400 hover:text-amber-600 hover:border-amber-200 border border-slate-200 inline-flex items-center justify-center transition shadow-2xs" title="Kosongkan input nomor urut ini">
                                             <i class="fa-solid fa-rotate-left text-[11px]"></i>
                                         </button>
