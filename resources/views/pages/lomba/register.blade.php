@@ -328,17 +328,22 @@
                                     <!-- Dynamic Team Inputs Container -->
                                     <div id="teams-container-{{ $cat->id }}" class="teams-container space-y-2.5 pt-2.5 border-t border-slate-200/60 {{ $isChecked ? '' : 'hidden' }}">
                                         @php
-                                            $defaultLabel = $isPa ? 'Regu Putra' : ($isPi ? 'Regu Putri' : 'Regu A');
-                                            $oldLabels = old('team_labels.'.$cat->id, [$defaultLabel]);
-                                            if (!is_array($oldLabels)) $oldLabels = [$oldLabels];
-                                            if (empty($oldLabels)) $oldLabels = [$defaultLabel];
+                                            $oldLabels = old('team_labels.'.$cat->id);
+                                            if (!is_array($oldLabels) || empty($oldLabels)) {
+                                                $oldLabels = ['Regu A'];
+                                            }
                                             if (!$isMulti) $oldLabels = array_slice($oldLabels, 0, 1);
                                         @endphp
                                         @foreach($oldLabels as $idx => $lbl)
+                                            @php
+                                                $letter = chr(65 + $idx);
+                                                $rowLabel = $isMulti ? 'Regu ' . $letter . ':' : 'Regu A:';
+                                                $rowVal = (isset($lbl) && trim((string)$lbl) !== '' && !in_array($lbl, ['Regu Putra', 'Regu Putri'])) ? $lbl : ('Regu ' . $letter);
+                                            @endphp
                                             <div class="team-input-row bg-white border border-slate-200/90 rounded-xl p-3 shadow-2xs space-y-2.5 transition">
                                                 <div class="flex items-center gap-2">
-                                                    <span class="text-[11px] font-bold text-slate-600 w-24 shrink-0 row-index-label">{{ $isMulti ? 'Regu ' . chr(65 + $idx) . ':' : ($isPa ? 'Regu Putra:' : ($isPi ? 'Regu Putri:' : 'Nama Regu:')) }}</span>
-                                                    <input type="text" name="team_labels[{{ $cat->id }}][{{ $idx }}]" value="{{ $lbl }}" placeholder="Label Regu" class="team-label-input flex-grow text-xs bg-slate-50 border border-slate-200 px-3 py-2 rounded-xl focus:bg-white focus:outline-none focus:border-red-500 shadow-2xs font-semibold text-slate-800" oninput="calculateFee()">
+                                                    <span class="text-[11px] font-bold text-slate-600 w-24 shrink-0 row-index-label">{{ $rowLabel }}</span>
+                                                    <input type="text" name="team_labels[{{ $cat->id }}][{{ $idx }}]" value="{{ $rowVal }}" placeholder="Label Regu (cth: Regu {{ $letter }})" class="team-label-input flex-grow text-xs bg-slate-50 border border-slate-200 px-3 py-2 rounded-xl focus:bg-white focus:outline-none focus:border-red-500 shadow-2xs font-semibold text-slate-800" oninput="calculateFee()">
                                                     @if($isMulti)
                                                         <button type="button" onclick="removeTeamRow(this, {{ $cat->id }})" class="btn-remove-team {{ count($oldLabels) > 1 ? '' : 'hidden' }} text-slate-400 hover:text-rose-600 hover:bg-rose-50 p-2 rounded-lg transition" title="Hapus Regu Ini">
                                                             <i class="fa-solid fa-trash-can text-xs"></i>
@@ -1148,15 +1153,15 @@
         }
 
         const letter = String.fromCharCode(65 + count);
-        const labelText = isMulti ? `Regu ${letter}:` : 'Nama Regu:';
-        const defaultVal = isMulti ? `Regu ${letter}` : 'Regu Utama';
+        const labelText = isMulti ? `Regu ${letter}:` : 'Regu A:';
+        const defaultVal = isMulti ? `Regu ${letter}` : 'Regu A';
 
         const row = document.createElement('div');
         row.className = 'team-input-row bg-white border border-slate-200/90 rounded-xl p-3 shadow-2xs space-y-2.5 transition';
         row.innerHTML = `
             <div class="flex items-center gap-2">
                 <span class="text-[11px] font-bold text-slate-600 w-24 shrink-0 row-index-label">${labelText}</span>
-                <input type="text" name="team_labels[${catId}][${count}]" value="${defaultVal}" placeholder="Label Regu" class="team-label-input flex-grow text-xs bg-slate-50 border border-slate-200 px-3 py-2 rounded-xl focus:bg-white focus:outline-none focus:border-red-500 shadow-2xs font-semibold text-slate-800" oninput="calculateFee()">
+                <input type="text" name="team_labels[${catId}][${count}]" value="${defaultVal}" placeholder="Label Regu (cth: Regu ${letter})" class="team-label-input flex-grow text-xs bg-slate-50 border border-slate-200 px-3 py-2 rounded-xl focus:bg-white focus:outline-none focus:border-red-500 shadow-2xs font-semibold text-slate-800" oninput="calculateFee()">
                 ${isMulti ? `
                 <button type="button" onclick="removeTeamRow(this, ${catId})" class="btn-remove-team text-slate-400 hover:text-rose-600 hover:bg-rose-50 p-2 rounded-lg transition" title="Hapus Regu Ini">
                     <i class="fa-solid fa-trash-can text-xs"></i>
@@ -1219,6 +1224,7 @@
         if (!container) return;
         const rows = container.querySelectorAll('.team-input-row');
         rows.forEach((r, idx) => {
+            const letter = String.fromCharCode(65 + idx);
             const removeBtn = r.querySelector('.btn-remove-team');
             if (removeBtn) {
                 if (rows.length > 1) {
@@ -1229,10 +1235,13 @@
             }
             if (isMulti) {
                 const label = r.querySelector('.row-index-label');
-                if (label) label.textContent = `Regu ${String.fromCharCode(65 + idx)}:`;
+                if (label) label.textContent = `Regu ${letter}:`;
             }
             const labelInput = r.querySelector('.team-label-input');
-            if (labelInput) labelInput.name = `team_labels[${catId}][${idx}]`;
+            if (labelInput) {
+                labelInput.name = `team_labels[${catId}][${idx}]`;
+                labelInput.placeholder = `Label Regu (cth: Regu ${letter})`;
+            }
             const fileInput = r.querySelector('.team-file-input');
             if (fileInput) fileInput.name = `team_files[${catId}][${idx}]`;
             const membersInput = r.querySelector('.team-members-json');

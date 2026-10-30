@@ -547,7 +547,7 @@ class CompetitionController extends Controller
             if (is_array($labels)) {
                 $filtered = array_values(array_filter($labels, fn ($l) => $l !== null && trim($l) !== ''));
                 if (empty($filtered)) {
-                    $filtered = [$cat->gender_category === 'Putri' ? 'Regu Putri' : ($cat->gender_category === 'Putra' ? 'Regu Putra' : 'Regu A')];
+                    $filtered = ['Regu A'];
                 }
                 foreach ($filtered as $lbl) {
                     $teams[] = [
@@ -560,7 +560,7 @@ class CompetitionController extends Controller
                 $teams[] = [
                     'category_name' => $cat->name,
                     'gender' => $cat->gender_category ?: 'Umum',
-                    'team_label' => $cat->gender_category === 'Putri' ? 'Regu Putri' : ($cat->gender_category === 'Putra' ? 'Regu Putra' : 'Regu A'),
+                    'team_label' => 'Regu A',
                 ];
             }
         }
