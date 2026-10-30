@@ -105,7 +105,9 @@
                     <div>
                         <label for="team-selector-dropdown" class="block text-xs font-black text-slate-500 uppercase tracking-wider mb-1.5 flex items-center justify-between">
                             <span>PILIH REGU PESERTA YANG SEDANG DINILAI:</span>
-                            <span class="text-[11px] font-bold text-slate-400">Total: {{ $teams->count() }} Regu</span>
+                            <span class="text-emerald-700 font-extrabold text-[11px] bg-emerald-50 px-2 py-0.5 rounded-md border border-emerald-200">
+                                Khusus PMR Mula (SD/MI) &bull; Total: {{ $teams->count() }} Regu
+                            </span>
                         </label>
                         <div class="relative">
                             <select id="team-selector-dropdown" onchange="window.location.href='{{ route('admin.competition-scores.grid', $category->id) }}?round={{ $round }}&team_id=' + this.value" class="w-full bg-slate-50 hover:bg-slate-100 border-2 border-red-500 rounded-2xl py-3 px-4 text-sm font-black text-slate-900 focus:outline-none focus:ring-4 focus:ring-red-100 transition cursor-pointer appearance-none shadow-xs">

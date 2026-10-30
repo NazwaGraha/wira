@@ -52,17 +52,30 @@ class CompetitionScoreController extends Controller
 
         $round = $request->query('round', 'Utama');
 
-        // Fetch verified participant teams for this specific competition category
+        // Fetch verified participant teams for this specific competition category and level
         $teams = CompetitionParticipantTeam::where('competition_category_id', $category->id)
             ->where('is_active', true)
-            ->where(function ($q) {
-                $q->whereHas('registration', function ($rq) {
+            ->where(function ($q) use ($category) {
+                $q->whereHas('registration', function ($rq) use ($category) {
                     $rq->where('status', 'verified');
+                    if (! empty($category->level)) {
+                        $rq->where('level', $category->level);
+                    }
                 })->orWhereNull('competition_registration_id');
             })
             ->with('registration')
             ->orderBy('order_number')
             ->get();
+
+        if (! empty($category->level)) {
+            $teams = $teams->filter(function ($t) use ($category) {
+                if ($t->registration && ! empty($t->registration->level)) {
+                    return strcasecmp(trim($t->registration->level), trim($category->level)) === 0;
+                }
+
+                return true;
+            })->values();
+        }
 
         // Get all verified registrations for this event / level
         $availableRegistrations = CompetitionRegistration::where('status', 'verified')
@@ -823,6 +836,11 @@ class CompetitionScoreController extends Controller
 
         if (! empty($validated['registration_id'])) {
             $registration = CompetitionRegistration::findOrFail($validated['registration_id']);
+
+            if (! empty($category->level) && strcasecmp((string) $registration->level, (string) $category->level) !== 0) {
+                return redirect()->back()->with('error', "Sekolah '{$registration->school_name}' terdaftar pada tingkat PMR {$registration->level}, tidak dapat ditambahkan ke cabang tingkat PMR {$category->level}.");
+            }
+
             $label = trim($validated['team_label'] ?? '');
             $teamName = $registration->school_name.($label ? " {$label}" : '');
 
@@ -946,17 +964,31 @@ class CompetitionScoreController extends Controller
 
         $round = $request->query('round', 'Utama');
 
-        // Ambil seluruh tim terverifikasi untuk kategori ini
+        // Ambil seluruh tim terverifikasi khusus untuk tingkat PMR yang sesuai dengan kategori ini
         $teams = CompetitionParticipantTeam::where('competition_category_id', $category->id)
             ->where('is_active', true)
-            ->where(function ($q) {
-                $q->whereHas('registration', function ($rq) {
+            ->where(function ($q) use ($category) {
+                $q->whereHas('registration', function ($rq) use ($category) {
                     $rq->where('status', 'verified');
+                    if (! empty($category->level)) {
+                        $rq->where('level', $category->level);
+                    }
                 })->orWhereNull('competition_registration_id');
             })
             ->with(['registration'])
             ->orderBy('order_number')
             ->get();
+
+        // Filter collection strictly untuk memastikan hanya tingkat yang sesuai
+        if (! empty($category->level)) {
+            $teams = $teams->filter(function ($t) use ($category) {
+                if ($t->registration && ! empty($t->registration->level)) {
+                    return strcasecmp(trim($t->registration->level), trim($category->level)) === 0;
+                }
+
+                return true;
+            })->values();
+        }
 
         // Tentukan tim yang sedang dipilih/dinilai
         $selectedTeamId = $request->query('team_id');
