@@ -33,6 +33,58 @@ class MemberSpreadsheetService
     ];
 
     /**
+     * Column definition mapping for Member Registrations (Calon Anggota)
+     */
+    public const REGISTRATION_COLUMNS = [
+        'A' => ['key' => 'no', 'label' => 'No', 'width' => 8, 'align' => 'center'],
+        'B' => ['key' => 'full_name', 'label' => 'Nama Lengkap Calon Anggota', 'width' => 32, 'align' => 'left'],
+        'C' => ['key' => 'class_grade', 'label' => 'Kelas / Tingkat', 'width' => 16, 'align' => 'center'],
+        'D' => ['key' => 'nisn', 'label' => 'NISN', 'width' => 18, 'align' => 'center'],
+        'E' => ['key' => 'phone', 'label' => 'Nomor HP / WhatsApp', 'width' => 22, 'align' => 'left'],
+        'F' => ['key' => 'email', 'label' => 'Alamat Email', 'width' => 28, 'align' => 'left'],
+        'G' => ['key' => 'interest_field', 'label' => 'Bidang Peminatan', 'width' => 26, 'align' => 'left'],
+        'H' => ['key' => 'motivation', 'label' => 'Alasan & Motivasi', 'width' => 45, 'align' => 'left'],
+        'I' => ['key' => 'status', 'label' => 'Status Pendaftaran', 'width' => 20, 'align' => 'center'],
+        'J' => ['key' => 'created_at', 'label' => 'Waktu Pendaftaran', 'width' => 24, 'align' => 'center'],
+    ];
+
+    /**
+     * Generate XLSX file for Member Registrations Export
+     */
+    public function exportRegistrations(Collection $registrations): string
+    {
+        $headers = array_column(self::REGISTRATION_COLUMNS, 'label');
+        $rows = [$headers];
+
+        $statusLabels = [
+            'pending' => 'Menunggu',
+            'verified' => 'Terverifikasi',
+            'accepted' => 'Diterima',
+            'rejected' => 'Ditolak',
+        ];
+
+        foreach ($registrations as $idx => $r) {
+            $createdStr = $r->created_at ? $r->created_at->format('d/m/Y H:i') : '-';
+            $statusText = $statusLabels[$r->status] ?? ucfirst((string) $r->status);
+
+            $rows[] = [
+                (string) ($idx + 1),
+                (string) ($r->full_name ?? ''),
+                (string) ($r->class_grade ?? ''),
+                (string) ($r->nisn ?? '-'),
+                (string) ($r->phone ?? ''),
+                (string) ($r->email ?? '-'),
+                (string) ($r->interest_field ?? '-'),
+                (string) ($r->motivation ?? '-'),
+                $statusText,
+                $createdStr,
+            ];
+        }
+
+        return $this->createXlsxFile($rows, 'Pendaftar Calon Anggota', self::REGISTRATION_COLUMNS);
+    }
+
+    /**
      * Generate XLSX file for Export
      */
     public function export(Collection $members): string
@@ -561,7 +613,7 @@ class MemberSpreadsheetService
     /**
      * Helper to create a beautifully styled XLSX file via ZipArchive
      */
-    protected function createXlsxFile(array $rows, string $sheetTitle = 'Data'): string
+    protected function createXlsxFile(array $rows, string $sheetTitle = 'Data', ?array $columnDefs = null): string
     {
         $tempFile = tempnam(sys_get_temp_dir(), 'pmr_xlsx_');
         $zip = new ZipArchive;
@@ -660,9 +712,10 @@ class MemberSpreadsheetService
         $zip->addFromString('xl/styles.xml', $styles);
 
         // 6. Column Widths Definition (<cols>)
+        $cols = $columnDefs ?? self::COLUMNS;
         $colsXml = '<cols>';
         $colIdx = 1;
-        foreach (self::COLUMNS as $colMeta) {
+        foreach ($cols as $colMeta) {
             $w = $colMeta['width'] ?? 20;
             $colsXml .= '<col min="'.$colIdx.'" max="'.$colIdx.'" width="'.$w.'" customWidth="1"/>';
             $colIdx++;
@@ -670,7 +723,7 @@ class MemberSpreadsheetService
         $colsXml .= '</cols>';
 
         // 7. Sheet Data construction
-        $alignMap = array_values(array_column(self::COLUMNS, 'align'));
+        $alignMap = array_values(array_column($cols, 'align'));
 
         $sheetDataXml = '<sheetData>';
         foreach ($rows as $rowIndex => $cols) {

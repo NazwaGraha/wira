@@ -5,6 +5,11 @@
 
 @section('top_actions')
     <div class="flex flex-wrap items-center gap-2">
+        <a href="{{ route('admin.member-registrations.export', request()->all()) }}" class="bg-emerald-600 hover:bg-emerald-700 text-white px-3.5 py-2 rounded-xl font-bold text-xs shadow-xs transition flex items-center gap-1.5" title="Export data pendaftaran calon anggota ke Microsoft Excel (.xlsx)">
+            <i class="fa-solid fa-file-excel"></i>
+            <span>Export MS Excel</span>
+        </a>
+
         <a href="{{ route('kontak') }}#daftar" target="_blank" class="bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 px-3.5 py-2 rounded-xl font-bold text-xs transition flex items-center gap-1.5 shadow-2xs">
             <i class="fa-solid fa-arrow-up-right-from-square text-pmr-primary"></i>
             <span>Buka Form Publik</span>

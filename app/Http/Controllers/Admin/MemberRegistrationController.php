@@ -4,9 +4,11 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\MemberRegistration;
+use App\Services\MemberSpreadsheetService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
+use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
 class MemberRegistrationController extends Controller
 {
@@ -46,6 +48,41 @@ class MemberRegistrationController extends Controller
         ];
 
         return view('admin.member-registrations.index', compact('registrations', 'counts', 'status'));
+    }
+
+    /**
+     * Export daftar pendaftar calon anggota baru ke file MS Excel (.xlsx).
+     */
+    public function export(Request $request, MemberSpreadsheetService $spreadsheetService): BinaryFileResponse
+    {
+        $query = MemberRegistration::query();
+
+        // Filter status
+        $status = $request->input('status', 'all');
+        if ($status !== 'all' && in_array($status, ['pending', 'verified', 'accepted', 'rejected'])) {
+            $query->where('status', $status);
+        }
+
+        // Pencarian nama, NISN, telepon, email, kelas
+        if ($search = $request->input('search')) {
+            $query->where(function ($q) use ($search) {
+                $q->where('full_name', 'like', "%{$search}%")
+                    ->orWhere('nisn', 'like', "%{$search}%")
+                    ->orWhere('phone', 'like', "%{$search}%")
+                    ->orWhere('email', 'like', "%{$search}%")
+                    ->orWhere('class_grade', 'like', "%{$search}%");
+            });
+        }
+
+        $registrations = $query->latest()->get();
+        $filePath = $spreadsheetService->exportRegistrations($registrations);
+
+        $statusSuffix = ($status !== 'all') ? '_'.ucfirst($status) : '';
+        $filename = 'Pendaftar_Calon_Anggota_PMR'.$statusSuffix.'_'.date('Ymd_His').'.xlsx';
+
+        return response()->download($filePath, $filename, [
+            'Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        ])->deleteFileAfterSend(true);
     }
 
     /**

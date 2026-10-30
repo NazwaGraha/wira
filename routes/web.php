@@ -217,6 +217,7 @@ Route::prefix('admin')->name('admin.')->group(function () {
 
         // Pendaftar Calon Anggota Baru
         Route::get('/member-registrations', [MemberRegistrationController::class, 'index'])->name('member-registrations.index');
+        Route::get('/member-registrations/export', [MemberRegistrationController::class, 'export'])->name('member-registrations.export');
         Route::get('/calon-anggota', [MemberRegistrationController::class, 'index']);
         Route::patch('/member-registrations/{id}/status', [MemberRegistrationController::class, 'updateStatus'])->name('member-registrations.update-status');
         Route::delete('/member-registrations/{id}', [MemberRegistrationController::class, 'destroy'])->name('member-registrations.destroy');
