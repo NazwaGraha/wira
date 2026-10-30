@@ -162,14 +162,14 @@
                     </span>
 
                     @php
-                        $isMulaPP = ($cat->level === 'Mula') && (str_contains(strtolower($cat->name), 'pertolongan pertama') || str_starts_with($cat->code ?? '', 'LPP'));
+                        $isGridPP = in_array($cat->level, ['Mula', 'Madya']) && (str_contains(strtolower($cat->name), 'pertolongan pertama') || str_starts_with($cat->code ?? '', 'LPP'));
                     @endphp
 
                     <div class="flex items-center gap-2">
                         <a href="{{ route('admin.competition-scores.export-excel', $cat->id) }}" title="Export Lembar Penilaian Excel (.xlsx)" class="bg-emerald-50 hover:bg-emerald-100 text-emerald-700 font-bold text-xs px-3 py-2 rounded-xl border border-emerald-200 transition flex items-center gap-1.5 shadow-2xs">
                             <i class="fa-solid fa-file-excel"></i> Export Excel
                         </a>
-                        @if($isMulaPP)
+                        @if($isGridPP)
                             <a href="{{ route('admin.competition-scores.grid', $cat->id) }}" class="bg-red-600 hover:bg-red-700 text-white font-extrabold text-xs px-4 py-2 rounded-xl shadow-md transition flex items-center gap-1.5">
                                 <i class="fa-solid fa-table-cells"></i> Input Nilai Juri
                             </a>

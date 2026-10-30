@@ -8,9 +8,9 @@
         &larr; Kembali ke Cabang
     </a>
     @php
-        $isMulaPP = ($category->level === 'Mula') && (str_contains(strtolower($category->name), 'pertolongan pertama') || str_starts_with($category->code ?? '', 'LPP'));
+        $isGridPP = in_array($category->level, ['Mula', 'Madya']) && (str_contains(strtolower($category->name), 'pertolongan pertama') || str_starts_with($category->code ?? '', 'LPP'));
     @endphp
-    @if($isMulaPP)
+    @if($isGridPP)
         <a href="{{ route('admin.competition-scores.grid', $category->id) }}" class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-xl font-bold text-xs transition flex items-center gap-1.5 shadow-sm">
             <i class="fa-solid fa-table-cells"></i> Input via Grid Nilai
         </a>
@@ -891,7 +891,7 @@
                                 <!-- Action: Clear Row & Remove Team -->
                                 <td class="px-3 py-3 text-center border-l border-slate-100">
                                     <div class="flex items-center justify-center gap-1">
-                                        @if($isMulaPP)
+                                        @if($isGridPP)
                                             <a href="{{ route('admin.competition-scores.grid', ['category' => $category->id, 'team_id' => $team->id]) }}" class="w-7 h-7 rounded-lg bg-red-50 hover:bg-red-600 text-red-600 hover:text-white border border-red-200 inline-flex items-center justify-center transition shadow-2xs" title="Buka Grid Nilai Juri untuk regu ini">
                                                 <i class="fa-solid fa-table-cells text-[11px]"></i>
                                             </a>

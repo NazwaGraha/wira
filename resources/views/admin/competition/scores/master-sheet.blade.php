@@ -211,7 +211,7 @@
                             $timeRecorded = $score?->time_recorded ?: null;
                             $finalScore = $score?->final_score;
 
-                            $isPPmula = ($cat?->level === 'Mula') && (str_contains(strtolower($cat?->name ?? ''), 'pertolongan pertama') || str_starts_with($cat?->code ?? '', 'LPP'));
+                            $isGridPP = in_array($cat?->level, ['Mula', 'Madya']) && (str_contains(strtolower($cat?->name ?? ''), 'pertolongan pertama') || str_starts_with($cat?->code ?? '', 'LPP'));
 
                             // Badge color by level
                             $levelBadgeClass = match($cat?->level) {
@@ -344,8 +344,8 @@
                             <!-- Aksi Pintas -->
                             <td class="py-3.5 px-3 text-center">
                                 <div class="flex items-center justify-center gap-1.5">
-                                    @if($isPPmula)
-                                        <a href="{{ route('admin.competition-scores.grid', ['category' => $cat->id, 'team_id' => $team->id]) }}" class="px-2.5 py-1.5 rounded-xl bg-red-600 hover:bg-red-700 text-white font-bold text-[11px] shadow-2xs transition flex items-center gap-1" title="Buka Formulir Grid Nilai Mula">
+                                    @if($isGridPP)
+                                        <a href="{{ route('admin.competition-scores.grid', ['category' => $cat->id, 'team_id' => $team->id]) }}" class="px-2.5 py-1.5 rounded-xl bg-red-600 hover:bg-red-700 text-white font-bold text-[11px] shadow-2xs transition flex items-center gap-1" title="Buka Formulir Grid Nilai Pertolongan Pertama">
                                             <i class="fa-solid fa-table-cells text-[10px]"></i> Grid
                                         </a>
                                     @endif

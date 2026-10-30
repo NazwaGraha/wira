@@ -938,9 +938,9 @@ class CompetitionScoreController extends Controller
     }
 
     /**
-     * Tampilkan formulir Grid Nilai Pertolongan Pertama Tingkat Mula (Putra & Putri)
+     * Tampilkan formulir Grid Nilai Pertolongan Pertama (Mula & Madya)
      */
-    public function gridMula(CompetitionCategory $category, Request $request)
+    public function gridScore(CompetitionCategory $category, Request $request)
     {
         $category->loadMissing(['assignedJuries', 'event']);
 
@@ -995,7 +995,12 @@ class CompetitionScoreController extends Controller
             ->get()
             ->keyBy('competition_participant_team_id');
 
-        return view('admin.competition.scores.grid-mula', compact(
+        $viewName = match ($category->level) {
+            'Madya' => 'admin.competition.scores.grid-madya',
+            default => 'admin.competition.scores.grid-mula',
+        };
+
+        return view($viewName, compact(
             'category',
             'round',
             'teams',
@@ -1012,9 +1017,17 @@ class CompetitionScoreController extends Controller
     }
 
     /**
-     * Simpan nilai dari formulir Grid Nilai Pertolongan Pertama Tingkat Mula ke database
+     * Alias method untuk backwards compatibility
      */
-    public function saveGridMula(CompetitionCategory $category, Request $request)
+    public function gridMula(CompetitionCategory $category, Request $request)
+    {
+        return $this->gridScore($category, $request);
+    }
+
+    /**
+     * Simpan nilai dari formulir Grid Nilai Pertolongan Pertama ke database
+     */
+    public function saveGridScore(CompetitionCategory $category, Request $request)
     {
         $teamId = $request->input('competition_participant_team_id');
         $round = $request->input('round_name', 'Utama');
@@ -1103,6 +1116,14 @@ class CompetitionScoreController extends Controller
             'team_id' => $teamId,
             'round' => $round,
         ])->with('success', $msg);
+    }
+
+    /**
+     * Alias method untuk backwards compatibility
+     */
+    public function saveGridMula(CompetitionCategory $category, Request $request)
+    {
+        return $this->saveGridScore($category, $request);
     }
 
     /**
