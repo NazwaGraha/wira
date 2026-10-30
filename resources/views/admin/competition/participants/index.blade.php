@@ -5,6 +5,9 @@
 
 @section('top_actions')
     <div class="flex items-center gap-2">
+        <a href="{{ route('admin.competition-participants.export-excel', request()->query()) }}" class="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2.5 rounded-xl font-bold text-xs transition flex items-center gap-2 shadow-xs" title="Export data regu & peserta lomba terverifikasi ke file MS Excel (.xlsx)">
+            <i class="fa-solid fa-file-excel"></i> Export Excel
+        </a>
         <a href="{{ route('admin.competition-participants.print', request()->query()) }}" target="_blank" class="bg-slate-800 hover:bg-slate-900 text-white px-4 py-2.5 rounded-xl font-bold text-xs transition flex items-center gap-2 shadow-xs">
             <i class="fa-solid fa-print"></i> Cetak Lembar Presensi / Roster
         </a>

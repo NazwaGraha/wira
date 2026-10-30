@@ -7,7 +7,9 @@ use App\Models\CompetitionCategory;
 use App\Models\CompetitionEvent;
 use App\Models\CompetitionParticipantTeam;
 use App\Models\CompetitionRegistration;
+use App\Services\CompetitionSpreadsheetService;
 use Illuminate\Http\Request;
+use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
 class CompetitionParticipantController extends Controller
 {
@@ -333,5 +335,100 @@ class CompetitionParticipantController extends Controller
             'gender',
             'teams'
         ));
+    }
+
+    /**
+     * Export data peserta & regu lomba terverifikasi ke MS Excel (.xlsx)
+     */
+    public function exportExcel(Request $request, CompetitionSpreadsheetService $spreadsheetService): BinaryFileResponse
+    {
+        // Resolve Event
+        $selectedEventId = $request->query('event_id');
+        if ($selectedEventId) {
+            $event = CompetitionEvent::find($selectedEventId) ?: CompetitionEvent::where('is_active', true)->first();
+        } else {
+            $event = CompetitionEvent::where('is_active', true)->first() ?: CompetitionEvent::orderByDesc('id')->first();
+        }
+
+        $level = $request->query('level');
+        $categoryId = $request->query('category_id');
+        $gender = $request->query('gender');
+        $search = trim($request->query('q', ''));
+
+        $query = CompetitionParticipantTeam::where('is_active', true)
+            ->where(function ($q) use ($event) {
+                $q->whereHas('registration', function ($rq) use ($event) {
+                    $rq->where('status', 'verified');
+                    if ($event) {
+                        $rq->where('competition_event_id', $event->id);
+                    }
+                });
+                if ($event) {
+                    $q->orWhere(function ($sq) use ($event) {
+                        $sq->whereNull('competition_registration_id')
+                            ->whereHas('category', fn ($cq) => $cq->where('competition_event_id', $event->id));
+                    });
+                } else {
+                    $q->orWhereNull('competition_registration_id');
+                }
+            })
+            ->with(['registration', 'category']);
+
+        // Filter by Level
+        if ($level && in_array($level, ['Mula', 'Madya', 'Wira'])) {
+            $query->whereHas('category', function ($q) use ($level) {
+                $q->where('level', $level);
+            });
+        }
+
+        // Filter by Category
+        if ($categoryId) {
+            $query->where('competition_category_id', $categoryId);
+        }
+
+        // Filter by Gender
+        if ($gender && in_array($gender, ['Putra', 'Putri', 'Umum', 'Campuran'])) {
+            $query->whereHas('category', function ($q) use ($gender) {
+                $q->where('gender_category', $gender);
+            });
+        }
+
+        // Search by keyword
+        if ($search) {
+            $query->where(function ($q) use ($search) {
+                $q->where('team_name', 'like', "%{$search}%")
+                    ->orWhere('order_number', 'like', "%{$search}%")
+                    ->orWhere('team_label', 'like', "%{$search}%")
+                    ->orWhereHas('registration', function ($rq) use ($search) {
+                        $rq->where('school_name', 'like', "%{$search}%")
+                            ->orWhere('registration_code', 'like', "%{$search}%")
+                            ->orWhere('advisor_name', 'like', "%{$search}%");
+                    });
+            });
+        }
+
+        $teams = $query->get()->sortBy(function ($team) {
+            $catPos = $team->category ? str_pad($team->category->order_position, 3, '0', STR_PAD_LEFT) : '999';
+            $genderOrder = $team->category && $team->category->gender_category === 'Putra' ? '1' : ($team->category && $team->category->gender_category === 'Putri' ? '2' : '3');
+            $orderNum = $team->order_number ?: 'ZZZZ';
+
+            return "{$catPos}-{$genderOrder}-{$orderNum}-{$team->team_name}";
+        });
+
+        $filePath = $spreadsheetService->exportParticipantTeamsXlsx($teams, $event);
+
+        $suffixParts = [];
+        if ($level) {
+            $suffixParts[] = $level;
+        }
+        if ($gender) {
+            $suffixParts[] = $gender;
+        }
+        $suffix = ! empty($suffixParts) ? '_'.implode('_', $suffixParts) : '';
+        $filename = 'Data_Peserta_Lomba'.$suffix.'_'.date('Ymd_His').'.xlsx';
+
+        return response()->download($filePath, $filename, [
+            'Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        ])->deleteFileAfterSend(true);
     }
 }

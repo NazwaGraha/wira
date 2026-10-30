@@ -62,6 +62,25 @@ class CompetitionSpreadsheetService
     ];
 
     /**
+     * Definisi 13 kolom untuk Export Data Peserta & Regu Lomba Terverifikasi
+     */
+    public const PARTICIPANT_TEAMS_COLUMNS = [
+        'A' => ['key' => 'no', 'label' => 'NO', 'width' => 6, 'align' => 'center'],
+        'B' => ['key' => 'order_number', 'label' => 'NO. UNDIAN / URUT', 'width' => 18, 'align' => 'center'],
+        'C' => ['key' => 'reg_code', 'label' => 'KODE REGISTRASI', 'width' => 18, 'align' => 'center'],
+        'D' => ['key' => 'school_name', 'label' => 'ASAL SEKOLAH / PANGKALAN', 'width' => 32, 'align' => 'left'],
+        'E' => ['key' => 'level', 'label' => 'TINGKATAN', 'width' => 14, 'align' => 'center'],
+        'F' => ['key' => 'category_name', 'label' => 'CABANG MATA LOMBA', 'width' => 30, 'align' => 'left'],
+        'G' => ['key' => 'gender_category', 'label' => 'KATEGORI', 'width' => 14, 'align' => 'center'],
+        'H' => ['key' => 'team_name', 'label' => 'NAMA REGU / KONTINGEN', 'width' => 26, 'align' => 'left'],
+        'I' => ['key' => 'advisor_name', 'label' => 'NAMA PEMBINA', 'width' => 24, 'align' => 'left'],
+        'J' => ['key' => 'advisor_phone', 'label' => 'NO. HP / WA PEMBINA', 'width' => 20, 'align' => 'left'],
+        'K' => ['key' => 'members_count', 'label' => 'JML ANGGOTA', 'width' => 14, 'align' => 'center'],
+        'L' => ['key' => 'members_names', 'label' => 'DAFTAR NAMA ANGGOTA REGU', 'width' => 45, 'align' => 'left'],
+        'M' => ['key' => 'status', 'label' => 'STATUS', 'width' => 16, 'align' => 'center'],
+    ];
+
+    /**
      * Contoh data template peserta
      */
     public const SAMPLE_ROWS = [
@@ -86,6 +105,53 @@ class CompetitionSpreadsheetService
         }
 
         return $this->createXlsxFile($rows, 'Daftar Peserta Regu');
+    }
+
+    /**
+     * Hasilkan file Excel (.xlsx) untuk Export Seluruh Data Regu & Peserta Lomba Terverifikasi
+     */
+    public function exportParticipantTeamsXlsx(Collection $teams, ?CompetitionEvent $event = null): string
+    {
+        $headers = array_column(self::PARTICIPANT_TEAMS_COLUMNS, 'label');
+        $rows = [$headers];
+
+        foreach ($teams as $idx => $team) {
+            $reg = $team->registration;
+            $cat = $team->category;
+
+            $members = is_array($team->members_list) ? $team->members_list : [];
+            $membersTextArr = [];
+            foreach ($members as $mIdx => $m) {
+                if (is_array($m)) {
+                    $name = $m['name'] ?? ($m['nama'] ?? '-');
+                    $role = ! empty($m['role']) ? " ({$m['role']})" : '';
+                    $membersTextArr[] = ($mIdx + 1).". {$name}{$role}";
+                } else {
+                    $membersTextArr[] = ($mIdx + 1).'. '.(string) $m;
+                }
+            }
+            $membersSummary = ! empty($membersTextArr) ? implode(', ', $membersTextArr) : '-';
+
+            $rows[] = [
+                (string) ($idx + 1),
+                (string) ($team->order_number ?: '-'),
+                (string) ($reg?->registration_code ?: '-'),
+                (string) ($reg?->school_name ?: '-'),
+                (string) ($cat?->level ?: '-'),
+                (string) ($cat?->name ?: '-'),
+                (string) ($cat?->gender_category ?: '-'),
+                (string) ($team->team_name ?: '-'),
+                (string) ($reg?->advisor_name ?: '-'),
+                (string) ($reg?->advisor_phone ?: '-'),
+                (string) count($members),
+                $membersSummary,
+                'Terverifikasi',
+            ];
+        }
+
+        $sheetTitle = 'Peserta Lomba';
+
+        return $this->createXlsxFile($rows, $sheetTitle, self::PARTICIPANT_TEAMS_COLUMNS);
     }
 
     /**
@@ -382,7 +448,7 @@ class CompetitionSpreadsheetService
     /**
      * Helper membuat file XLSX dengan format cantik OpenXML
      */
-    protected function createXlsxFile(array $rows, string $sheetTitle = 'Peserta'): string
+    protected function createXlsxFile(array $rows, string $sheetTitle = 'Peserta', ?array $columnDefs = null): string
     {
         $tempFile = tempnam(sys_get_temp_dir(), 'pmr_regu_xlsx_');
         $zip = new ZipArchive;
@@ -476,9 +542,10 @@ class CompetitionSpreadsheetService
         $zip->addFromString('xl/styles.xml', $styles);
 
         // 6. Column Widths
+        $cols = $columnDefs ?? self::COLUMNS;
         $colsXml = '<cols>';
         $colIdx = 1;
-        foreach (self::COLUMNS as $colMeta) {
+        foreach ($cols as $colMeta) {
             $w = $colMeta['width'] ?? 20;
             $colsXml .= '<col min="'.$colIdx.'" max="'.$colIdx.'" width="'.$w.'" customWidth="1"/>';
             $colIdx++;
@@ -486,7 +553,7 @@ class CompetitionSpreadsheetService
         $colsXml .= '</cols>';
 
         // 7. Sheet Data
-        $alignMap = array_values(array_column(self::COLUMNS, 'align'));
+        $alignMap = array_values(array_column($cols, 'align'));
         $sheetDataXml = '<sheetData>';
 
         foreach ($rows as $rowIndex => $cols) {

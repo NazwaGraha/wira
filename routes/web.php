@@ -281,6 +281,7 @@ Route::prefix('admin')->name('admin.')->group(function () {
 
         // Daftar Peserta & Regu Lomba Terverifikasi
         Route::get('/competition-participants', [CompetitionParticipantController::class, 'index'])->name('competition-participants.index');
+        Route::get('/competition-participants/export-excel', [CompetitionParticipantController::class, 'exportExcel'])->name('competition-participants.export-excel');
         Route::post('/competition-participants/{team}', [CompetitionParticipantController::class, 'update'])->name('competition-participants.update');
         Route::post('/competition-participants-bulk-orders', [CompetitionParticipantController::class, 'bulkUpdateOrders'])->name('competition-participants.bulk-update-orders');
         Route::post('/competition-participants-auto-orders', [CompetitionParticipantController::class, 'autoAssignOrders'])->name('competition-participants.auto-assign-orders');
