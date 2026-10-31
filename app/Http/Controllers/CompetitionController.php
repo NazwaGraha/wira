@@ -711,11 +711,7 @@ class CompetitionController extends Controller
         $schoolPoints = [];
 
         foreach ($categories as $cat) {
-            $topScores = CompetitionScore::where('competition_category_id', $cat->id)
-                ->where('is_disqualified', false)
-                ->whereIn('rank', [1, 2, 3, 4, 5])
-                ->with('team.registration')
-                ->get();
+            $topScores = $cat->getWinners();
 
             foreach ($topScores as $score) {
                 $schoolName = $score->team?->registration?->school_name ?? $score->team?->team_name;
@@ -730,7 +726,8 @@ class CompetitionController extends Controller
                     ];
                 }
 
-                $points = $cat->getPointsForRank($score->rank);
+                $effectiveRank = $score->official_rank ?? $score->rank;
+                $points = $cat->getPointsForRank($effectiveRank);
 
                 $schoolPoints[$schoolNameClean]['details'][$cat->name.($cat->gender_category !== 'Umum' ? " {$cat->gender_category}" : '')] = $points;
                 $schoolPoints[$schoolNameClean]['total_points'] += $points;

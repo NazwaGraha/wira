@@ -118,42 +118,53 @@
                         </label>
                         <div class="relative">
                             <select id="select-team-dropdown" onchange="window.location.href=this.value" class="w-full bg-slate-50 hover:bg-slate-100 border-2 {{ $borderColor }} rounded-2xl py-3 px-4 text-sm font-black text-slate-900 focus:outline-none appearance-none cursor-pointer shadow-xs transition">
-                                @forelse($teams as $t)
+                                @forelse($teams as $idx => $t)
                                     @php
                                         $tScore = $scores->get($t->id);
                                         $isScored = $tScore && ($tScore->final_score !== null && $tScore->final_score > 0);
-                                        $scoreText = $isScored ? " [Nilai: {$tScore->final_score}]" : " (Belum dinilai)";
+                                        $statusLabel = $isScored ? "✓ Nilai: {$tScore->final_score} (" . ($tScore->time_recorded ?: '-') . ")" : "Belum dinilai";
+                                        $schoolName = $t->registration?->school_name ?: $t->team_name;
+                                        $regCode = $t->registration?->registration_code ?: 'REG';
+                                        $teamNo = $t->order_number ?: ($idx + 1);
                                     @endphp
                                     <option value="{{ route('admin.competition-scores.grid', ['category' => $category->id, 'team_id' => $t->id, 'round' => $round]) }}" {{ $currentTeam?->id == $t->id ? 'selected' : '' }}>
-                                        [{{ $t->order_number ?: 'No.-' }}] {{ $t->registration?->school_name ?: $t->team_name }} - {{ $t->team_name }}{{ $scoreText }}
+                                        [No. {{ $teamNo }}] {{ $schoolName }} • {{ $t->team_name }} [Wira {{ $genderText }}] ({{ $regCode }}) — {{ $statusLabel }}
                                     </option>
                                 @empty
-                                    <option value="">Belum ada regu PMR Wira {{ $genderText }} yang terdaftar</option>
+                                    <option value="" disabled selected>-- Belum ada regu PMR Wira {{ $genderText }} (SMA/SMK/MA) yang terdaftar di cabang ini --</option>
                                 @endforelse
                             </select>
-                            <i class="fa-solid fa-chevron-down absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none"></i>
+                            <i class="fa-solid fa-chevron-down absolute right-4 top-1/2 -translate-y-1/2 text-slate-500 pointer-events-none"></i>
                         </div>
+
+                        @if($teams->isEmpty())
+                            <div class="bg-amber-50 border border-amber-300 text-amber-900 p-3 rounded-2xl flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs font-bold shadow-2xs mt-2">
+                                <div class="flex items-center gap-2">
+                                    <i class="fa-solid fa-circle-exclamation text-amber-600 text-base"></i>
+                                    <span>Belum ada regu peserta <strong>PMR Tingkat Wira {{ $genderText }} (SMA/SMK/MA)</strong> yang terdaftar di cabang ini.</span>
+                                </div>
+                                <a href="{{ route('admin.competition-scores.input', $category->id) }}" class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-amber-600 hover:bg-amber-700 text-white rounded-xl font-black text-xs transition shrink-0">
+                                    <i class="fa-solid fa-plus"></i> Tambah Regu {{ $genderText }}
+                                </a>
+                            </div>
+                        @endif
                     </div>
 
-                    <!-- Selected Team Info Pills -->
-                    @if($currentTeam)
-                        <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 pt-1 text-[11px]">
-                            <div class="bg-slate-50 p-2.5 rounded-xl border border-slate-100">
-                                <span class="text-slate-400 block text-[10px] font-bold uppercase">No. Urut / Undian</span>
-                                <span class="font-mono font-black text-slate-800 text-sm">{{ $currentTeam->order_number ?: '-' }}</span>
-                            </div>
-                            <div class="bg-slate-50 p-2.5 rounded-xl border border-slate-100">
-                                <span class="text-slate-400 block text-[10px] font-bold uppercase">Kode Registrasi</span>
-                                <span class="font-mono font-black text-slate-800">{{ $currentTeam->registration?->registration_code ?: '-' }}</span>
-                            </div>
-                            <div class="bg-slate-50 p-2.5 rounded-xl border border-slate-100 col-span-2">
-                                <span class="text-slate-400 block text-[10px] font-bold uppercase">Asal Pangkalan / Sekolah</span>
-                                <span class="font-black text-slate-800 truncate block uppercase" title="{{ $currentTeam->registration?->school_name }}">
-                                    {{ $currentTeam->registration?->school_name ?: '-' }}
-                                </span>
-                            </div>
+                    <!-- Official Technical Guidelines Info Box -->
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs bg-slate-50 p-3.5 rounded-2xl border border-slate-200">
+                        <div>
+                            <span class="text-slate-400 uppercase text-[10px] font-bold block">Mekanisme kejadian:</span>
+                            <strong class="text-slate-800 font-extrabold">Di sekolah & sekitar sekolah</strong>
                         </div>
-                    @endif
+                        <div>
+                            <span class="text-slate-400 uppercase text-[10px] font-bold block">Kasus:</span>
+                            <strong class="text-amber-800 font-black"><i class="fa-solid fa-notes-medical mr-1 text-red-600"></i> Cedera jaringan lunak & pingsan</strong>
+                        </div>
+                        <div>
+                            <span class="text-slate-400 uppercase text-[10px] font-bold block">Panduan:</span>
+                            <strong class="text-slate-800 font-extrabold">Buku pedoman PP 2008 & 2009</strong>
+                        </div>
+                    </div>
 
                 </div>
 

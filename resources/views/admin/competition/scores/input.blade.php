@@ -262,6 +262,28 @@
         </div>
     @endif
 
+    @if($isPrelim && $category->has_rounds)
+        <!-- Sesi 1: Prelim Cerdas Cermat Guidance Banner -->
+        <div class="bg-gradient-to-r from-emerald-950 via-slate-900 to-emerald-950 text-white p-5 rounded-2xl shadow-sm border border-emerald-800/40 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+            <div class="space-y-1">
+                <div class="flex items-center gap-2">
+                    <span class="px-2.5 py-0.5 rounded-md text-[10px] font-black uppercase tracking-wider bg-emerald-600 text-white">
+                        <i class="fa-solid fa-filter mr-1"></i> Sesi 1 - Babak Penyisihan
+                    </span>
+                    <span class="text-xs font-bold text-emerald-300">Seleksi 9 Regu Terbaik</span>
+                </div>
+                <h3 class="text-base font-black text-white">Penyaringan 9 Regu Terbaik untuk Melaju ke Semifinal</h3>
+                <p class="text-xs text-slate-300">
+                    Pada babak ini <strong>belum ditentukan juara</strong>. Sistem akan menyaring <strong>9 regu dengan perolehan skor tertinggi</strong> untuk bertanding di <strong>Babak 2 - Semi Final</strong> (3 sesi termin).
+                </p>
+            </div>
+            <a href="{{ route('admin.competition-scores.input', ['category' => $category->id, 'round' => 'Babak 2 - Semi Final']) }}" class="px-4 py-2.5 rounded-xl bg-white/10 hover:bg-white/20 text-white font-bold text-xs border border-white/20 transition flex items-center gap-2 shrink-0">
+                <span>Ke Babak Semifinal</span>
+                <i class="fa-solid fa-arrow-right text-[10px]"></i>
+            </a>
+        </div>
+    @endif
+
     @if($isSemiFinal)
         <!-- Semifinal Management Card (Otomatis & Fleksibel Buttons) -->
         <div class="bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 text-white p-5 rounded-2xl shadow-md border border-indigo-900/50 flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4">
@@ -283,7 +305,7 @@
             <div class="flex flex-wrap items-center gap-2.5 shrink-0 w-full lg:w-auto">
                 <button type="button" onclick="confirmAutoTermin()" class="flex-1 lg:flex-initial bg-gradient-to-r from-red-600 to-rose-600 hover:from-red-500 hover:to-rose-500 text-white font-black text-xs px-4 py-3 rounded-xl shadow-lg shadow-red-950/30 transition flex items-center justify-center gap-2 cursor-pointer border border-red-400/30">
                     <i class="fa-solid fa-wand-magic-sparkles text-amber-300"></i>
-                    <span>Pembagian Termin Otomatis</span>
+                    <span>Pembagian Termin Otomatis (Anti-Bentrok)</span>
                 </button>
                 <button type="button" onclick="openFlexibleModal()" class="flex-1 lg:flex-initial bg-white/10 hover:bg-white/20 text-white font-extrabold text-xs px-4 py-3 rounded-xl shadow transition flex items-center justify-center gap-2 cursor-pointer border border-white/20 backdrop-blur-xs">
                     <i class="fa-solid fa-sliders text-indigo-300"></i>
@@ -291,6 +313,42 @@
                 </button>
             </div>
         </div>
+
+        @if(!empty($terminCollisions))
+            <!-- Warning Collision Alert -->
+            <div class="bg-amber-50 border-2 border-amber-300 text-amber-950 p-4 rounded-2xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 shadow-sm">
+                <div class="flex items-center gap-3">
+                    <div class="w-9 h-9 rounded-xl bg-amber-500 text-white flex items-center justify-center font-black shrink-0">
+                        <i class="fa-solid fa-triangle-exclamation"></i>
+                    </div>
+                    <div>
+                        <div class="text-xs font-black text-amber-950">
+                            Peringatan: Terdeteksi Regu Satu Sekolah Bertemu dalam Satu Termin!
+                        </div>
+                        <div class="text-[11px] text-amber-800 mt-0.5">
+                            @foreach($terminCollisions as $tNum => $schs)
+                                <strong>Termin {{ $tNum }}</strong>: {{ implode(', ', array_unique($schs)) }} &bull;
+                            @endforeach
+                            Untuk meminimalkan potensi keberatan peserta, gunakan pembagian otomatis agar sistem memisahkan regu tersebut.
+                        </div>
+                    </div>
+                </div>
+                <button type="button" onclick="confirmAutoTermin()" class="px-4 py-2 rounded-xl bg-amber-600 hover:bg-amber-700 text-white text-xs font-black transition shrink-0 flex items-center gap-1.5 shadow-sm">
+                    <i class="fa-solid fa-wand-magic-sparkles"></i> Pisahkan Otomatis
+                </button>
+            </div>
+        @elseif($termin1Teams->isNotEmpty() || $termin2Teams->isNotEmpty() || $termin3Teams->isNotEmpty())
+            <!-- School Protection Active Success Banner -->
+            <div class="bg-emerald-50 border border-emerald-200 text-emerald-900 px-4 py-3 rounded-2xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 shadow-xs">
+                <div class="flex items-center gap-2.5 text-xs font-bold text-emerald-800">
+                    <i class="fa-solid fa-circle-check text-emerald-600 text-sm"></i>
+                    <span>Proteksi Bentrok Sekolah Aktif: Tidak ada dua regu dari sekolah yang sama yang saling berhadapan dalam satu sesi termin.</span>
+                </div>
+                <span class="text-[10px] font-black uppercase tracking-wider bg-emerald-200/60 text-emerald-800 px-2.5 py-0.5 rounded-md shrink-0">
+                    Zero School Collision
+                </span>
+            </div>
+        @endif
 
         <!-- Hidden Form for Automatic Seeding Submission -->
         <form id="auto-termin-form" action="{{ route('admin.competition-scores.assign-termins', $category->id) }}" method="POST" class="hidden">
@@ -386,6 +444,92 @@
                         </div>
                     </div>
                 @endforeach
+            </div>
+
+            <!-- Ketetapan Resmi Juara Harapan 1 & 2 (Berdasarkan Nilai Semifinal Non-Finalis) -->
+            <div class="bg-gradient-to-r from-blue-950 via-slate-900 to-indigo-950 border border-blue-800/40 rounded-2xl p-5 text-white shadow-sm space-y-4">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-white/10 pb-3">
+                    <div>
+                        <div class="flex items-center gap-2">
+                            <span class="px-2.5 py-0.5 rounded-md text-[10px] font-black uppercase tracking-wider bg-blue-500 text-white shadow-xs">
+                                <i class="fa-solid fa-award mr-1"></i> Ketetapan Juara Harapan
+                            </span>
+                            <span class="text-xs font-bold text-blue-200">Sesuai Regulasi Resmi LCT / Cepat Tepat</span>
+                        </div>
+                        <h4 class="text-base font-black text-white mt-1">Juara Harapan 1 & Juara Harapan 2</h4>
+                        <p class="text-xs text-slate-300">
+                            Ditetapkan otomatis dari <strong>nilai tertinggi babak Semi-Final</strong> dari seluruh regu yang tidak melaju ke Final.
+                        </p>
+                    </div>
+                    <span class="text-[11px] font-extrabold text-blue-300 bg-blue-900/50 border border-blue-400/30 px-3 py-1 rounded-xl self-start sm:self-auto">
+                        Di luar 3 Finalis
+                    </span>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <!-- Harapan 1 -->
+                    <div class="bg-white/5 border border-blue-400/30 rounded-xl p-4 flex items-center justify-between gap-3 shadow-inner">
+                        <div class="space-y-1">
+                            <div class="flex items-center gap-2">
+                                <span class="px-2.5 py-0.5 rounded-md text-[10px] font-black uppercase tracking-wider bg-blue-600 text-white shadow-xs">
+                                    JUARA HARAPAN 1
+                                </span>
+                                @if($harapan1Team && $harapan1Team->semi_termin)
+                                    <span class="text-[10px] font-bold text-slate-400">Termin {{ $harapan1Team->semi_termin }} Semifinal</span>
+                                @endif
+                            </div>
+                            @if($harapan1Team)
+                                <div class="font-extrabold text-sm text-white uppercase">{{ $harapan1Team->team_name }}</div>
+                                <div class="text-xs text-slate-300">{{ $harapan1Team->registration?->school_name }}</div>
+                                <div class="text-xs font-mono font-bold text-blue-300 mt-1">
+                                    Skor Semifinal: <strong class="text-white">{{ $harapan1Team->semi_score ?? '-' }}</strong> Poin
+                                </div>
+                            @else
+                                <div class="text-xs text-slate-400 italic">Menunggu hasil skor babak semifinal...</div>
+                            @endif
+                        </div>
+                        <div class="w-12 h-12 rounded-xl bg-blue-500/20 text-blue-400 flex items-center justify-center font-black text-2xl shrink-0">
+                            <i class="fa-solid fa-medal"></i>
+                        </div>
+                    </div>
+
+                    <!-- Harapan 2 -->
+                    <div class="bg-white/5 border border-cyan-400/30 rounded-xl p-4 flex items-center justify-between gap-3 shadow-inner">
+                        <div class="space-y-1">
+                            <div class="flex items-center gap-2">
+                                <span class="px-2.5 py-0.5 rounded-md text-[10px] font-black uppercase tracking-wider bg-cyan-600 text-white shadow-xs">
+                                    JUARA HARAPAN 2
+                                </span>
+                                @if($harapan2Team && $harapan2Team->semi_termin)
+                                    <span class="text-[10px] font-bold text-slate-400">Termin {{ $harapan2Team->semi_termin }} Semifinal</span>
+                                @endif
+                            </div>
+                            @if($harapan2Team)
+                                <div class="font-extrabold text-sm text-white uppercase">{{ $harapan2Team->team_name }}</div>
+                                <div class="text-xs text-slate-300">{{ $harapan2Team->registration?->school_name }}</div>
+                                <div class="text-xs font-mono font-bold text-cyan-300 mt-1">
+                                    Skor Semifinal: <strong class="text-white">{{ $harapan2Team->semi_score ?? '-' }}</strong> Poin
+                                </div>
+                            @else
+                                <div class="text-xs text-slate-400 italic">Menunggu hasil skor babak semifinal...</div>
+                            @endif
+                        </div>
+                        <div class="w-12 h-12 rounded-xl bg-cyan-500/20 text-cyan-400 flex items-center justify-center font-black text-2xl shrink-0">
+                            <i class="fa-solid fa-medal"></i>
+                        </div>
+                    </div>
+                </div>
+
+                @if($otherSemiFinalists->isNotEmpty())
+                    <div class="pt-2 border-t border-white/10 text-[11px] text-slate-400 flex flex-wrap items-center gap-2">
+                        <span class="font-bold text-slate-300">Semifinalis Lainnya (Non-Juara):</span>
+                        @foreach($otherSemiFinalists as $oth)
+                            <span class="bg-white/5 px-2 py-0.5 rounded border border-white/10 text-slate-300">
+                                {{ $oth->team_name }} ({{ $oth->semi_score }} Poin)
+                            </span>
+                        @endforeach
+                    </div>
+                @endif
             </div>
         @else
             <!-- Semifinal Warning Alert -->
@@ -853,7 +997,17 @@
 
                                 <!-- Ranking Column -->
                                 <td class="px-4 py-3 text-center font-bold rank-cell border-l border-slate-100 bg-slate-50/50">
-                                    @if($score?->rank == 1)
+                                    @if($isPrelim && $category->has_rounds)
+                                        @if($score?->rank && $score->rank <= 9)
+                                            <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-100 text-emerald-800 font-black text-xs border border-emerald-300 shadow-2xs">
+                                                <i class="fa-solid fa-circle-check text-emerald-600"></i> Top {{ $score->rank }} (Lolos Semifinal)
+                                            </span>
+                                        @elseif($score?->rank)
+                                            <span class="inline-flex items-center justify-center w-7 h-7 rounded-full bg-slate-100 text-slate-500 font-bold text-xs border border-slate-200">{{ $score->rank }}</span>
+                                        @else
+                                            <span class="text-slate-300 font-mono">-</span>
+                                        @endif
+                                    @elseif($score?->rank == 1)
                                         @if($isFinal)
                                             <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-gradient-to-r from-amber-500 to-yellow-400 text-slate-950 font-black text-xs shadow-md border border-amber-300">
                                                 <i class="fa-solid fa-trophy text-amber-100"></i> Juara 1 (Emas)
@@ -877,9 +1031,9 @@
                                         @else
                                             <span class="inline-flex items-center justify-center w-7 h-7 rounded-full bg-orange-400 text-white font-black text-xs shadow-md" title="Juara 3">3</span>
                                         @endif
-                                    @elseif($score?->rank == 4)
+                                    @elseif($score?->rank == 4 && !$category->has_rounds)
                                         <span class="inline-flex items-center justify-center px-2 py-0.5 rounded-full bg-blue-100 text-blue-800 font-black text-[11px] border border-blue-200" title="Juara Harapan 1">Harapan 1</span>
-                                    @elseif($score?->rank == 5)
+                                    @elseif($score?->rank == 5 && !$category->has_rounds)
                                         <span class="inline-flex items-center justify-center px-2 py-0.5 rounded-full bg-cyan-100 text-cyan-800 font-black text-[11px] border border-cyan-200" title="Juara Harapan 2">Harapan 2</span>
                                     @elseif($score?->rank)
                                         <span class="inline-flex items-center justify-center w-7 h-7 rounded-full bg-slate-200 text-slate-800 font-bold text-xs border border-slate-300">{{ $score->rank }}</span>
@@ -1329,6 +1483,8 @@ window.confirmResetDatabase = function() {
 document.addEventListener('DOMContentLoaded', function() {
     const isTanduCategory = {{ $isTandu ? 'true' : 'false' }};
     const isFinalRound = {{ $isFinal ? 'true' : 'false' }};
+    const isPrelimRound = {{ ($isPrelim && $category->has_rounds) ? 'true' : 'false' }};
+    const hasRoundsCategory = {{ $category->has_rounds ? 'true' : 'false' }};
     const isPracticalCategory = {{ $isPertolonganPertama ? 'true' : 'false' }};
     const isWrittenCategory = {{ $isOlimpiade ? 'true' : 'false' }};
     const scoringType = "{{ $category->scoring_type }}";
@@ -1446,7 +1602,15 @@ document.addEventListener('DOMContentLoaded', function() {
             if (rankIndex !== -1) {
                 const rank = rankIndex + 1;
                 let badgeHtml = '';
-                if (isFinalRound) {
+                if (isPrelimRound) {
+                    if (rank <= 9) {
+                        badgeHtml = `<span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-100 text-emerald-800 font-black text-xs border border-emerald-300 shadow-2xs"><i class="fa-solid fa-circle-check text-emerald-600"></i> Top ${rank} (Lolos Semifinal)</span>`;
+                        d.row.classList.add('bg-emerald-50/40');
+                    } else {
+                        badgeHtml = `<span class="inline-flex items-center justify-center w-7 h-7 rounded-full bg-slate-100 text-slate-500 font-bold text-xs border border-slate-200">${rank}</span>`;
+                        d.row.classList.remove('bg-emerald-50/40');
+                    }
+                } else if (isFinalRound) {
                     if (rank === 1) {
                         badgeHtml = '<span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-gradient-to-r from-amber-500 to-yellow-400 text-slate-950 font-black text-xs shadow-md border border-amber-300"><i class="fa-solid fa-trophy text-amber-100"></i> Juara 1 (Emas)</span>';
                         d.row.classList.add('bg-amber-50/60');
@@ -1470,10 +1634,10 @@ document.addEventListener('DOMContentLoaded', function() {
                     } else if (rank === 3) {
                         badgeHtml = '<span class="inline-flex items-center justify-center w-7 h-7 rounded-full bg-orange-400 text-white font-black text-xs shadow-md" title="Juara 3">3</span>';
                         d.row.classList.remove('bg-purple-50/40');
-                    } else if (rank === 4) {
+                    } else if (rank === 4 && !hasRoundsCategory) {
                         badgeHtml = '<span class="inline-flex items-center justify-center px-2 py-0.5 rounded-full bg-blue-100 text-blue-800 font-black text-[11px] border border-blue-200" title="Juara Harapan 1">Harapan 1</span>';
                         d.row.classList.remove('bg-purple-50/40');
-                    } else if (rank === 5) {
+                    } else if (rank === 5 && !hasRoundsCategory) {
                         badgeHtml = '<span class="inline-flex items-center justify-center px-2 py-0.5 rounded-full bg-cyan-100 text-cyan-800 font-black text-[11px] border border-cyan-200" title="Juara Harapan 2">Harapan 2</span>';
                         d.row.classList.remove('bg-purple-50/40');
                     } else {
@@ -1484,7 +1648,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 rankCell.innerHTML = badgeHtml;
             } else {
                 rankCell.innerHTML = '<span class="text-slate-300 font-mono">-</span>';
-                d.row.classList.remove('bg-purple-50/40', 'bg-amber-50/60');
+                d.row.classList.remove('bg-purple-50/40', 'bg-amber-50/60', 'bg-emerald-50/40');
             }
         });
     };

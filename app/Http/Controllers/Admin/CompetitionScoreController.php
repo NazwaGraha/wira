@@ -290,6 +290,89 @@ class CompetitionScoreController extends Controller
             }
         }
 
+        $isPrelim = str_contains(strtolower($round), 'penyisihan') || str_contains(strtolower($round), 'babak 1');
+
+        // Deteksi apakah ada bentrokan sekolah dalam tiap termin semifinal
+        $terminCollisions = [];
+        if ($isSemiFinal) {
+            foreach ([1 => $termin1Teams, 2 => $termin2Teams, 3 => $termin3Teams] as $tNum => $tList) {
+                $seenSch = [];
+                foreach ($tList as $tm) {
+                    $schKey = $this->extractCleanSchoolKey($tm);
+                    if (isset($seenSch[$schKey])) {
+                        $schName = $tm->registration?->school_name ?? $tm->team_name;
+                        $terminCollisions[$tNum][] = $schName;
+                    }
+                    $seenSch[$schKey] = true;
+                }
+            }
+        }
+
+        // Tentukan Juara Harapan 1 & 2 dari Semifinal (dari regu yang tidak lolos ke final)
+        $harapan1Team = null;
+        $harapan2Team = null;
+        $otherSemiFinalists = collect();
+
+        if ($isFinal) {
+            $allSemiScores = CompetitionScore::where('competition_category_id', $category->id)
+                ->where(function ($q) {
+                    $q->where('round_name', 'like', '%Semi Final%')
+                        ->orWhere('round_name', 'like', '%Semifinal%')
+                        ->orWhere('round_name', 'like', '%Babak 2%');
+                })
+                ->where('is_disqualified', false)
+                ->get();
+
+            $finalistIds = $finalistTeams->pluck('id')->toArray();
+
+            $nonFinalists = $allSemiScores->filter(function ($s) use ($finalistIds) {
+                return ! in_array($s->competition_participant_team_id, $finalistIds) && ($s->final_score > 0 || ! empty($s->score_details['score']));
+            })->sort(function ($a, $b) {
+                if ($a->final_score != $b->final_score) {
+                    return $b->final_score <=> $a->final_score;
+                }
+                $secA = $a->score_details['time_seconds'] ?? self::parseTimeToSeconds($a->time_recorded) ?? 999999;
+                $secB = $b->score_details['time_seconds'] ?? self::parseTimeToSeconds($b->time_recorded) ?? 999999;
+
+                return $secA <=> $secB;
+            })->values();
+
+            $allCategoryTeams = CompetitionParticipantTeam::where('competition_category_id', $category->id)
+                ->with('registration')
+                ->get();
+
+            if ($nonFinalists->isNotEmpty()) {
+                if (isset($nonFinalists[0])) {
+                    $h1Score = $nonFinalists[0];
+                    $h1Model = $allCategoryTeams->firstWhere('id', $h1Score->competition_participant_team_id);
+                    if ($h1Model) {
+                        $harapan1Team = clone $h1Model;
+                        $harapan1Team->semi_score = $h1Score->final_score;
+                        $harapan1Team->semi_termin = $h1Score->score_details['termin'] ?? null;
+                    }
+                }
+                if (isset($nonFinalists[1])) {
+                    $h2Score = $nonFinalists[1];
+                    $h2Model = $allCategoryTeams->firstWhere('id', $h2Score->competition_participant_team_id);
+                    if ($h2Model) {
+                        $harapan2Team = clone $h2Model;
+                        $harapan2Team->semi_score = $h2Score->final_score;
+                        $harapan2Team->semi_termin = $h2Score->score_details['termin'] ?? null;
+                    }
+                }
+
+                foreach ($nonFinalists->slice(2) as $otherScore) {
+                    $othModel = $allCategoryTeams->firstWhere('id', $otherScore->competition_participant_team_id);
+                    if ($othModel) {
+                        $clone = clone $othModel;
+                        $clone->semi_score = $otherScore->final_score;
+                        $clone->semi_termin = $otherScore->score_details['termin'] ?? null;
+                        $otherSemiFinalists->push($clone);
+                    }
+                }
+            }
+        }
+
         $nextOrderNumber = $category->generateNextOrderNumber(0);
 
         return view('admin.competition.scores.input', compact(
@@ -299,6 +382,7 @@ class CompetitionScoreController extends Controller
             'scores',
             'availableRegistrations',
             'nextOrderNumber',
+            'isPrelim',
             'isSemiFinal',
             'isFinal',
             'finalMode',
@@ -311,7 +395,11 @@ class CompetitionScoreController extends Controller
             'termin1Teams',
             'termin2Teams',
             'termin3Teams',
-            'unassignedTeams'
+            'unassignedTeams',
+            'terminCollisions',
+            'harapan1Team',
+            'harapan2Team',
+            'otherSemiFinalists'
         ));
     }
 
@@ -791,50 +879,86 @@ class CompetitionScoreController extends Controller
         return $this->resolveSchoolProtection($teams, $assignments);
     }
 
+    /**
+     * Ekstrak kunci normalisasi sekolah untuk proteksi bentrokan satu sekolah dalam satu termin.
+     */
+    public function extractCleanSchoolKey($team): string
+    {
+        if ($team->registration && ! empty($team->registration->school_name)) {
+            $raw = $team->registration->school_name;
+        } else {
+            $raw = $team->team_name ?? '';
+        }
+
+        $clean = preg_replace('/\s*[-–]?\s*(\b(Regu|Tim|PMR)\b\s*)?[A-Z0-9]?\s*$/i', '', $raw);
+        $clean = preg_replace('/\s*\(.*?\)\s*$/i', '', $clean);
+        $clean = preg_replace('/\s+(Putra|Putri|PA|PI)$/i', '', $clean);
+        $clean = trim($clean);
+
+        if ($team->competition_registration_id) {
+            return 'REG_'.$team->competition_registration_id.'_'.strtoupper($clean);
+        }
+
+        return strtoupper($clean);
+    }
+
     private function resolveSchoolProtection($teams, array $assignments): array
     {
         $teamSchools = [];
         foreach ($teams as $t) {
-            $school = $t->registration?->school_name ?? $t->team_name;
-            $baseSchool = trim(preg_replace('/\s*(\((A|B|C|PUTRA|PUTRI|\d+)\)|Regu\s+[A-Z\d]+)$/i', '', $school));
-            $teamSchools[$t->id] = strtoupper($baseSchool);
+            $teamSchools[$t->id] = $this->extractCleanSchoolKey($t);
         }
 
-        for ($attempt = 0; $attempt < 10; $attempt++) {
-            $hasCollision = false;
+        $countCollisions = function (array $assigns) use ($teamSchools) {
             $termins = [1 => [], 2 => [], 3 => []];
-            foreach ($assignments as $tId => $tNum) {
-                $termins[$tNum][] = $tId;
+            foreach ($assigns as $tId => $tNum) {
+                $termins[$tNum][] = $teamSchools[$tId] ?? $tId;
+            }
+            $col = 0;
+            foreach ($termins as $list) {
+                $col += count($list) - count(array_unique($list));
             }
 
-            foreach ($termins as $tNum => $tIds) {
-                $seenSchools = [];
-                foreach ($tIds as $tId) {
-                    $sch = $teamSchools[$tId] ?? $tId;
-                    if (isset($seenSchools[$sch])) {
-                        $hasCollision = true;
-                        foreach ([1, 2, 3] as $targetTNum) {
-                            if ($targetTNum == $tNum) {
-                                continue;
-                            }
-                            foreach ($termins[$targetTNum] as $candId) {
-                                $candSch = $teamSchools[$candId] ?? $candId;
-                                $safeForCurrent = ! in_array($candSch, array_map(fn ($id) => $teamSchools[$id], array_diff($tIds, [$tId])));
-                                $safeForTarget = ! in_array($sch, array_map(fn ($id) => $teamSchools[$id], array_diff($termins[$targetTNum], [$candId])));
+            return $col;
+        };
 
-                                if ($safeForCurrent && $safeForTarget) {
-                                    $assignments[$tId] = $targetTNum;
-                                    $assignments[$candId] = $tNum;
-                                    break 3;
-                                }
-                            }
-                        }
+        $minCol = $countCollisions($assignments);
+        if ($minCol === 0) {
+            return $assignments;
+        }
+
+        $teamIds = array_keys($assignments);
+        $totalTeams = count($teamIds);
+
+        // Algoritma Swap Otomatis untuk eliminasi bentrokan satu sekolah dalam satu termin
+        for ($step = 0; $step < 100 && $minCol > 0; $step++) {
+            $improved = false;
+            for ($i = 0; $i < $totalTeams; $i++) {
+                for ($j = $i + 1; $j < $totalTeams; $j++) {
+                    $idA = $teamIds[$i];
+                    $idB = $teamIds[$j];
+
+                    if ($assignments[$idA] == $assignments[$idB]) {
+                        continue;
                     }
-                    $seenSchools[$sch] = $tId;
+
+                    // Coba swap termin regu A dan regu B
+                    $candidate = $assignments;
+                    $tmp = $candidate[$idA];
+                    $candidate[$idA] = $candidate[$idB];
+                    $candidate[$idB] = $tmp;
+
+                    $cCol = $countCollisions($candidate);
+                    if ($cCol < $minCol) {
+                        $minCol = $cCol;
+                        $assignments = $candidate;
+                        $improved = true;
+                        break 2;
+                    }
                 }
             }
 
-            if (! $hasCollision) {
+            if (! $improved) {
                 break;
             }
         }

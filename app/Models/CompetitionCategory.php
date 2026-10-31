@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Collection;
 
 class CompetitionCategory extends Model
 {
@@ -242,6 +243,96 @@ class CompetitionCategory extends Model
         }
 
         return 0;
+    }
+
+    /**
+     * Dapatkan daftar 5 besar pemenang (Juara 1 s.d. Harapan 2) untuk kategori ini.
+     * Khusus kategori berbabak (seperti Cerdas Cermat / LCT):
+     * - Juara 1, 2, 3 diambil dari Babak Final.
+     * - Juara Harapan 1 dan 2 diambil dari nilai tertinggi Semifinal dari 6 regu non-finalis.
+     */
+    public function getWinners(): Collection
+    {
+        if ($this->has_rounds) {
+            $winners = collect();
+
+            // 1. Ambil Finalis dari Babak Final
+            $finalScores = CompetitionScore::where('competition_category_id', $this->id)
+                ->where(function ($q) {
+                    $q->where('round_name', 'like', '%Final%')
+                        ->orWhere('round_name', 'like', '%Babak 3%');
+                })
+                ->where('round_name', 'not like', '%Semi%')
+                ->where('is_disqualified', false)
+                ->with('team.registration')
+                ->orderBy('final_score', 'desc')
+                ->get();
+
+            $finalistTeamIds = [];
+            foreach ($finalScores->take(3) as $fIdx => $fScore) {
+                $rank = $fIdx + 1;
+                $fScore->official_rank = $rank;
+                $fScore->award_title = match ($rank) {
+                    1 => 'Juara 1',
+                    2 => 'Juara 2',
+                    3 => 'Juara 3',
+                    default => "Peringkat {$rank}",
+                };
+                $finalistTeamIds[] = $fScore->competition_participant_team_id;
+                $winners->push($fScore);
+            }
+
+            // 2. Ambil Juara Harapan 1 & 2 dari Semifinal (dari regu yang TIDAK masuk final)
+            $semiScores = CompetitionScore::where('competition_category_id', $this->id)
+                ->where(function ($q) {
+                    $q->where('round_name', 'like', '%Semi Final%')
+                        ->orWhere('round_name', 'like', '%Semifinal%')
+                        ->orWhere('round_name', 'like', '%Babak 2%');
+                })
+                ->where('is_disqualified', false)
+                ->whereNotIn('competition_participant_team_id', $finalistTeamIds)
+                ->with('team.registration')
+                ->orderBy('final_score', 'desc')
+                ->get();
+
+            if ($semiScores->isNotEmpty()) {
+                if (isset($semiScores[0])) {
+                    $h1 = $semiScores[0];
+                    $h1->official_rank = 4;
+                    $h1->award_title = 'Juara Harapan 1';
+                    $winners->push($h1);
+                }
+                if (isset($semiScores[1])) {
+                    $h2 = $semiScores[1];
+                    $h2->official_rank = 5;
+                    $h2->award_title = 'Juara Harapan 2';
+                    $winners->push($h2);
+                }
+            }
+
+            return $winners;
+        }
+
+        // Kategori reguler (1 babak): ambil top 5 rank
+        return CompetitionScore::where('competition_category_id', $this->id)
+            ->where('is_disqualified', false)
+            ->whereIn('rank', [1, 2, 3, 4, 5])
+            ->with('team.registration')
+            ->orderBy('rank', 'asc')
+            ->get()
+            ->map(function ($s) {
+                $s->official_rank = $s->rank;
+                $s->award_title = match ($s->rank) {
+                    1 => 'Juara 1',
+                    2 => 'Juara 2',
+                    3 => 'Juara 3',
+                    4 => 'Juara Harapan 1',
+                    5 => 'Juara Harapan 2',
+                    default => "Peringkat {$s->rank}",
+                };
+
+                return $s;
+            });
     }
 
     /**

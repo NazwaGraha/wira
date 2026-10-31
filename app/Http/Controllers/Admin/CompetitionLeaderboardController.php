@@ -6,7 +6,6 @@ use App\Http\Controllers\Controller;
 use App\Models\CompetitionCategory;
 use App\Models\CompetitionEvent;
 use App\Models\CompetitionRegistration;
-use App\Models\CompetitionScore;
 use App\Services\CompetitionSpreadsheetService;
 use Illuminate\Http\Request;
 
@@ -62,17 +61,14 @@ class CompetitionLeaderboardController extends Controller
         $matrix = [];
 
         foreach ($categories as $cat) {
-            $topScores = CompetitionScore::where('competition_category_id', $cat->id)
-                ->where('is_disqualified', false)
-                ->whereIn('rank', [1, 2, 3, 4, 5])
-                ->with('team.registration')
-                ->get();
+            $topScores = $cat->getWinners();
 
             foreach ($topScores as $score) {
                 $schoolName = $score->team?->registration?->school_name ?? $score->team?->team_name;
                 $cleanSchool = preg_replace('/\s*\([A-Za-z0-9\s]+\)$/', '', $schoolName);
 
-                $points = $cat->getPointsForRank($score->rank);
+                $effectiveRank = $score->official_rank ?? $score->rank;
+                $points = $cat->getPointsForRank($effectiveRank);
 
                 if (! isset($matrix[$cleanSchool])) {
                     $matrix[$cleanSchool] = [
