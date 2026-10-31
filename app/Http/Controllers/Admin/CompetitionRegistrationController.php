@@ -249,4 +249,126 @@ class CompetitionRegistrationController extends Controller
 
         return redirect()->route('admin.competition-registrations.index')->with('success', "Data pendaftaran {$school} berhasil dihapus.");
     }
+
+    /**
+     * Hapus masal data pendaftaran kontingen terpilih
+     */
+    public function destroyMultiple(Request $request)
+    {
+        $ids = $request->input('ids');
+
+        if (is_string($ids)) {
+            $ids = array_filter(explode(',', $ids));
+        }
+
+        if (empty($ids) || ! is_array($ids)) {
+            return redirect()->route('admin.competition-registrations.index')->with('error', 'Tidak ada data pendaftaran yang dipilih untuk dihapus.');
+        }
+
+        $ids = array_map('intval', array_filter($ids));
+
+        if (empty($ids)) {
+            return redirect()->route('admin.competition-registrations.index')->with('error', 'Data pendaftaran yang dipilih tidak valid.');
+        }
+
+        try {
+            $registrations = CompetitionRegistration::with('teams.scores')->whereIn('id', $ids)->get();
+            $count = $registrations->count();
+
+            if ($count === 0) {
+                return redirect()->route('admin.competition-registrations.index')->with('error', 'Data pendaftaran terpilih tidak ditemukan.');
+            }
+
+            DB::transaction(function () use ($registrations) {
+                foreach ($registrations as $reg) {
+                    // Hapus file fisik bukti transfer
+                    if ($reg->payment_proof && Storage::disk('public')->exists($reg->payment_proof)) {
+                        Storage::disk('public')->delete($reg->payment_proof);
+                    }
+
+                    // Hapus regu dan skor penilaian terkait
+                    foreach ($reg->teams as $team) {
+                        $team->scores()->delete();
+                        $team->delete();
+                    }
+
+                    $reg->delete();
+                }
+            });
+
+            return redirect()->route('admin.competition-registrations.index')->with('success', "Berhasil menghapus {$count} data pendaftaran kontingen terpilih beserta seluruh regu dan berkasnya.");
+        } catch (\Throwable $e) {
+            Log::error('Gagal menghapus data pendaftaran masal: '.$e->getMessage());
+
+            return redirect()->route('admin.competition-registrations.index')->with('error', 'Gagal menghapus data pendaftaran terpilih: '.$e->getMessage());
+        }
+    }
+
+    /**
+     * Verifikasi masal data pendaftaran kontingen terpilih
+     */
+    public function verifyMultiple(Request $request)
+    {
+        $ids = $request->input('ids');
+
+        if (is_string($ids)) {
+            $ids = array_filter(explode(',', $ids));
+        }
+
+        if (empty($ids) || ! is_array($ids)) {
+            return redirect()->route('admin.competition-registrations.index')->with('error', 'Tidak ada data pendaftaran yang dipilih untuk diverifikasi.');
+        }
+
+        $ids = array_map('intval', array_filter($ids));
+
+        if (empty($ids)) {
+            return redirect()->route('admin.competition-registrations.index')->with('error', 'Data pendaftaran yang dipilih tidak valid.');
+        }
+
+        try {
+            $registrations = CompetitionRegistration::with(['event', 'teams.category'])
+                ->whereIn('id', $ids)
+                ->where('status', '!=', 'verified')
+                ->get();
+
+            $count = $registrations->count();
+
+            if ($count === 0) {
+                return redirect()->route('admin.competition-registrations.index')->with('info', 'Semua data pendaftaran yang dipilih sudah berstatus terverifikasi (lunas).');
+            }
+
+            $verifierName = auth()->user()->name ?? 'Admin';
+            $now = now();
+            $emailsSent = 0;
+
+            foreach ($registrations as $reg) {
+                $reg->update([
+                    'status' => 'verified',
+                    'verified_at' => $now,
+                    'verified_by' => $verifierName,
+                ]);
+
+                // Kirim notifikasi email e-Kwitansi & Kartu Peserta jika ada email valid
+                if (! empty($reg->advisor_email) && filter_var($reg->advisor_email, FILTER_VALIDATE_EMAIL)) {
+                    try {
+                        Mail::to($reg->advisor_email)->send(new RegistrationVerifiedMail($reg));
+                        $emailsSent++;
+                    } catch (\Throwable $e) {
+                        Log::error("Gagal mengirim email verifikasi masal ke {$reg->advisor_email}: ".$e->getMessage());
+                    }
+                }
+            }
+
+            $msg = "Berhasil memverifikasi {$count} data pendaftaran kontingen terpilih!";
+            if ($emailsSent > 0) {
+                $msg .= " Dokumen e-Kwitansi & Kartu Peserta telah otomatis dikirimkan ke {$emailsSent} email pembina.";
+            }
+
+            return redirect()->route('admin.competition-registrations.index')->with('success', $msg);
+        } catch (\Throwable $e) {
+            Log::error('Gagal verifikasi data pendaftaran masal: '.$e->getMessage());
+
+            return redirect()->route('admin.competition-registrations.index')->with('error', 'Gagal memverifikasi pendaftaran terpilih: '.$e->getMessage());
+        }
+    }
 }

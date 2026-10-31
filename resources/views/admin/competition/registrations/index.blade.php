@@ -12,6 +12,27 @@
 @section('content')
 <div class="space-y-6">
 
+    @if(session('success'))
+        <div class="bg-emerald-50 border border-emerald-200 text-emerald-800 px-5 py-4 rounded-xl flex items-center gap-3 shadow-xs">
+            <i class="fa-solid fa-circle-check text-emerald-500 text-xl shrink-0"></i>
+            <div class="text-sm font-semibold">{!! session('success') !!}</div>
+        </div>
+    @endif
+
+    @if(session('info'))
+        <div class="bg-blue-50 border border-blue-200 text-blue-800 px-5 py-4 rounded-xl flex items-center gap-3 shadow-xs">
+            <i class="fa-solid fa-circle-info text-blue-500 text-xl shrink-0"></i>
+            <div class="text-sm font-semibold">{!! session('info') !!}</div>
+        </div>
+    @endif
+
+    @if(session('error'))
+        <div class="bg-rose-50 border border-rose-200 text-rose-800 px-5 py-4 rounded-xl flex items-center gap-3 shadow-xs">
+            <i class="fa-solid fa-triangle-exclamation text-rose-500 text-xl shrink-0"></i>
+            <div class="text-sm font-semibold">{!! session('error') !!}</div>
+        </div>
+    @endif
+
     <!-- Event Selector & History Bar -->
     @include('admin.competition.partials.event-selector')
 
@@ -206,11 +227,53 @@
             </form>
         </div>
 
+        <!-- Bulk Action Floating Bar (Muncul saat ada data yang diceklis) -->
+        <div id="bulk-action-bar" class="hidden mb-6 bg-slate-900 border-2 border-slate-800 text-white rounded-2xl p-4 flex flex-col sm:flex-row items-center justify-between gap-4 shadow-lg animate-in fade-in slide-in-from-top-2 duration-200">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-xl bg-red-600 text-white flex items-center justify-center font-black text-lg">
+                    <i class="fa-solid fa-list-check"></i>
+                </div>
+                <div>
+                    <div class="text-sm font-extrabold text-white">
+                        <span id="selected-count" class="text-red-400 text-base font-black">0</span> Kontingen Pendaftar Terpilih
+                    </div>
+                    <p class="text-xs text-slate-400">Pilih tindakan masal untuk data pendaftaran yang telah diceklis di bawah ini.</p>
+                </div>
+            </div>
+            <div class="flex items-center gap-2 w-full sm:w-auto justify-end flex-wrap">
+                <button type="button" onclick="deselectAllRegistrations()" class="px-3.5 py-2 rounded-xl text-xs font-bold bg-slate-800 text-slate-300 hover:bg-slate-700 border border-slate-700 transition">
+                    Batal Pilih
+                </button>
+
+                <form id="bulk-verify-form" action="{{ route('admin.competition-registrations.verify-multiple') }}" method="POST" onsubmit="return confirmBulkVerify();" class="inline">
+                    @csrf
+                    <div id="bulk-verify-hidden-inputs"></div>
+                    <button type="submit" class="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-xl text-xs font-bold transition flex items-center gap-2 shadow-sm">
+                        <i class="fa-solid fa-circle-check"></i>
+                        <span>Verifikasi Terpilih</span>
+                    </button>
+                </form>
+
+                <form id="bulk-delete-form" action="{{ route('admin.competition-registrations.destroy-multiple') }}" method="POST" onsubmit="return confirmBulkDelete();" class="inline">
+                    @csrf
+                    @method('DELETE')
+                    <div id="bulk-delete-hidden-inputs"></div>
+                    <button type="submit" class="bg-rose-600 hover:bg-rose-700 text-white px-4 py-2 rounded-xl text-xs font-bold transition flex items-center gap-2 shadow-sm">
+                        <i class="fa-solid fa-trash-can"></i>
+                        <span>Hapus Terpilih</span>
+                    </button>
+                </form>
+            </div>
+        </div>
+
         <!-- Table -->
         <div class="overflow-x-auto">
             <table class="w-full text-left text-sm text-slate-600">
                 <thead class="bg-slate-50 text-slate-700 text-xs uppercase font-bold border-y border-slate-200">
                     <tr>
+                        <th class="px-4 py-4 w-12 text-center">
+                            <input type="checkbox" id="select-all-checkbox" onchange="toggleSelectAll(this)" class="w-4 h-4 rounded text-red-600 focus:ring-red-500 border-slate-300 cursor-pointer" title="Pilih Semua di Halaman Ini">
+                        </th>
                         <th class="px-6 py-4">Kode & Sekolah</th>
                         <th class="px-6 py-4">Tingkat & Cabang</th>
                         <th class="px-6 py-4">Pembina / Kontak</th>
@@ -221,7 +284,10 @@
                 </thead>
                 <tbody class="divide-y divide-slate-200">
                     @forelse($registrations as $reg)
-                        <tr class="hover:bg-slate-50 transition">
+                        <tr id="reg-row-{{ $reg->id }}" class="hover:bg-slate-50 transition">
+                            <td class="px-4 py-4 text-center">
+                                <input type="checkbox" name="registration_ids[]" value="{{ $reg->id }}" onchange="updateSelectedCount()" class="reg-checkbox w-4 h-4 rounded text-red-600 focus:ring-red-500 border-slate-300 cursor-pointer">
+                            </td>
                             <td class="px-6 py-4">
                                 <div class="flex items-center gap-1.5 flex-wrap">
                                     <span class="font-mono text-[11px] font-bold text-slate-600 bg-slate-100 px-2 py-0.5 rounded">{{ $reg->registration_code }}</span>
@@ -309,7 +375,7 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="6" class="text-center py-12 text-slate-400">
+                            <td colspan="7" class="text-center py-12 text-slate-400">
                                 <i class="fa-solid fa-folder-open text-4xl mb-2"></i>
                                 <div class="font-bold text-slate-600">Belum ada data pendaftar</div>
                             </td>
@@ -326,3 +392,121 @@
 
 </div>
 @endsection
+
+@push('scripts')
+<script>
+    function toggleSelectAll(masterCb) {
+        const checkboxes = document.querySelectorAll('.reg-checkbox');
+        checkboxes.forEach(cb => {
+            cb.checked = masterCb.checked;
+            toggleRowHighlight(cb);
+        });
+        updateSelectedCount();
+    }
+
+    function toggleRowHighlight(cb) {
+        const row = document.getElementById('reg-row-' + cb.value);
+        if (row) {
+            if (cb.checked) {
+                row.classList.add('bg-red-50/60');
+            } else {
+                row.classList.remove('bg-red-50/60');
+            }
+        }
+    }
+
+    function updateSelectedCount() {
+        const allCheckboxes = document.querySelectorAll('.reg-checkbox');
+        const checkedBoxes = document.querySelectorAll('.reg-checkbox:checked');
+        const count = checkedBoxes.length;
+        const countDisplay = document.getElementById('selected-count');
+        const barEl = document.getElementById('bulk-action-bar');
+        const masterCb = document.getElementById('select-all-checkbox');
+
+        allCheckboxes.forEach(cb => toggleRowHighlight(cb));
+
+        if (countDisplay) countDisplay.textContent = count;
+
+        if (barEl) {
+            if (count > 0) {
+                barEl.classList.remove('hidden');
+            } else {
+                barEl.classList.add('hidden');
+            }
+        }
+
+        if (masterCb && allCheckboxes.length > 0) {
+            masterCb.checked = (count === allCheckboxes.length);
+            masterCb.indeterminate = (count > 0 && count < allCheckboxes.length);
+        }
+    }
+
+    function deselectAllRegistrations() {
+        const checkboxes = document.querySelectorAll('.reg-checkbox');
+        const masterCb = document.getElementById('select-all-checkbox');
+        checkboxes.forEach(cb => {
+            cb.checked = false;
+            toggleRowHighlight(cb);
+        });
+        if (masterCb) {
+            masterCb.checked = false;
+            masterCb.indeterminate = false;
+        }
+        updateSelectedCount();
+    }
+
+    function confirmBulkDelete() {
+        const checkedBoxes = document.querySelectorAll('.reg-checkbox:checked');
+        const count = checkedBoxes.length;
+
+        if (count === 0) {
+            alert('Silakan pilih minimal 1 data kontingen pendaftar terlebih dahulu.');
+            return false;
+        }
+
+        const confirmMsg = `PERINGATAN HAPUS MASAL:\nApakah Anda yakin ingin menghapus ${count} data pendaftaran kontingen yang dipilih?\n\nSemua regu peserta, penilaian lomba, dan berkas bukti pembayaran terkait juga akan dihapus secara permanen.`;
+        if (!confirm(confirmMsg)) {
+            return false;
+        }
+
+        const container = document.getElementById('bulk-delete-hidden-inputs');
+        container.innerHTML = '';
+        checkedBoxes.forEach(cb => {
+            const input = document.createElement('input');
+            input.type = 'hidden';
+            input.name = 'ids[]';
+            input.value = cb.value;
+            container.appendChild(input);
+        });
+
+        return true;
+    }
+
+    function confirmBulkVerify() {
+        const checkedBoxes = document.querySelectorAll('.reg-checkbox:checked');
+        const count = checkedBoxes.length;
+
+        if (count === 0) {
+            alert('Silakan pilih minimal 1 data kontingen pendaftar terlebih dahulu.');
+            return false;
+        }
+
+        const confirmMsg = `VERIFIKASI MASAL:\nApakah Anda yakin ingin memverifikasi (set lunas) ${count} data pendaftaran kontingen yang dipilih?\n\nSistem akan otomatis mengirimkan e-Kwitansi & Kartu Peserta ke email pembina masing-masing sekolah yang valid.`;
+        if (!confirm(confirmMsg)) {
+            return false;
+        }
+
+        const container = document.getElementById('bulk-verify-hidden-inputs');
+        container.innerHTML = '';
+        checkedBoxes.forEach(cb => {
+            const input = document.createElement('input');
+            input.type = 'hidden';
+            input.name = 'ids[]';
+            input.value = cb.value;
+            container.appendChild(input);
+        });
+
+        return true;
+    }
+</script>
+@endpush

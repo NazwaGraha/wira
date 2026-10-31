@@ -265,6 +265,9 @@ Route::prefix('admin')->name('admin.')->group(function () {
             return redirect()->route('admin.competition-event.index');
         });
 
+        Route::delete('/competition-registrations/destroy-multiple', [CompetitionRegistrationController::class, 'destroyMultiple'])->name('competition-registrations.destroy-multiple');
+        Route::post('/competition-registrations/verify-multiple', [CompetitionRegistrationController::class, 'verifyMultiple'])->name('competition-registrations.verify-multiple');
+
         Route::resource('competition-registrations', CompetitionRegistrationController::class)->parameters([
             'competition-registrations' => 'registration',
         ]);
