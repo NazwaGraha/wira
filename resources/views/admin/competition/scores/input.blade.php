@@ -803,6 +803,80 @@
                             </button>
                         </div>
                     </div>
+
+                    <!-- Preview Penetapan Juara Harapan 1 & 2 dari Semifinal (Semua Termin) -->
+                    @if($harapan1Team || $harapan2Team)
+                        <div class="bg-gradient-to-br from-slate-900 via-slate-800 to-indigo-950 text-white rounded-2xl p-6 shadow-md border border-slate-700/80 space-y-4">
+                            <div class="flex items-center justify-between flex-wrap gap-2 pb-3 border-b border-slate-700/60">
+                                <div>
+                                    <div class="flex items-center gap-2">
+                                        <span class="px-2.5 py-0.5 rounded-md text-[10px] font-black uppercase tracking-wider bg-amber-500 text-slate-950">
+                                            <i class="fa-solid fa-trophy mr-1"></i> STATUS JUARA HARAPAN 1 & 2 (SEMIFINAL)
+                                        </span>
+                                        <span class="text-xs text-slate-300 font-semibold">Akumulasi Semua Termin</span>
+                                    </div>
+                                    <h4 class="text-sm font-black text-white mt-1">Regu Non-Finalis dengan Nilai Semifinal Tertinggi</h4>
+                                </div>
+                                <div class="text-[11px] bg-slate-800/90 text-slate-300 px-3 py-1.5 rounded-xl border border-slate-700">
+                                    <i class="fa-solid fa-circle-info text-blue-400 mr-1"></i> 3 Juara Termin lolos ke Babak Final (tidak masuk Harapan 1/2)
+                                </div>
+                            </div>
+
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <!-- Harapan 1 -->
+                                <div class="bg-white/5 border border-blue-400/30 rounded-xl p-4 flex items-center justify-between gap-3 shadow-inner">
+                                    <div class="space-y-1">
+                                        <div class="flex items-center gap-2">
+                                            <span class="px-2.5 py-0.5 rounded-md text-[10px] font-black uppercase tracking-wider bg-blue-600 text-white shadow-xs">
+                                                JUARA HARAPAN 1
+                                            </span>
+                                            @if($harapan1Team && $harapan1Team->semi_termin)
+                                                <span class="text-[10px] font-bold text-slate-400">Termin {{ $harapan1Team->semi_termin }} Semifinal</span>
+                                            @endif
+                                        </div>
+                                        @if($harapan1Team)
+                                            <div class="font-extrabold text-sm text-white uppercase">{{ $harapan1Team->team_name }}</div>
+                                            <div class="text-xs text-slate-300">{{ $harapan1Team->registration?->school_name }}</div>
+                                            <div class="text-xs font-mono font-bold text-blue-300 mt-1">
+                                                Nilai Semifinal: <strong class="text-white">{{ $harapan1Team->semi_score ?? '-' }}</strong> Poin
+                                            </div>
+                                        @else
+                                            <div class="text-xs text-slate-400 italic">Menunggu hasil nilai semifinal...</div>
+                                        @endif
+                                    </div>
+                                    <div class="w-12 h-12 rounded-xl bg-blue-500/20 text-blue-400 flex items-center justify-center font-black text-2xl shrink-0">
+                                        <i class="fa-solid fa-medal"></i>
+                                    </div>
+                                </div>
+
+                                <!-- Harapan 2 -->
+                                <div class="bg-white/5 border border-cyan-400/30 rounded-xl p-4 flex items-center justify-between gap-3 shadow-inner">
+                                    <div class="space-y-1">
+                                        <div class="flex items-center gap-2">
+                                            <span class="px-2.5 py-0.5 rounded-md text-[10px] font-black uppercase tracking-wider bg-cyan-600 text-white shadow-xs">
+                                                JUARA HARAPAN 2
+                                            </span>
+                                            @if($harapan2Team && $harapan2Team->semi_termin)
+                                                <span class="text-[10px] font-bold text-slate-400">Termin {{ $harapan2Team->semi_termin }} Semifinal</span>
+                                            @endif
+                                        </div>
+                                        @if($harapan2Team)
+                                            <div class="font-extrabold text-sm text-white uppercase">{{ $harapan2Team->team_name }}</div>
+                                            <div class="text-xs text-slate-300">{{ $harapan2Team->registration?->school_name }}</div>
+                                            <div class="text-xs font-mono font-bold text-cyan-300 mt-1">
+                                                Nilai Semifinal: <strong class="text-white">{{ $harapan2Team->semi_score ?? '-' }}</strong> Poin
+                                            </div>
+                                        @else
+                                            <div class="text-xs text-slate-400 italic">Menunggu hasil nilai semifinal...</div>
+                                        @endif
+                                    </div>
+                                    <div class="w-12 h-12 rounded-xl bg-cyan-500/20 text-cyan-400 flex items-center justify-center font-black text-2xl shrink-0">
+                                        <i class="fa-solid fa-medal"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    @endif
                 </div>
             @endif
         @else

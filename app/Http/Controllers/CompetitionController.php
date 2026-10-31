@@ -683,12 +683,36 @@ class CompetitionController extends Controller
         }
 
         if ($selectedCategory) {
-            $scores = CompetitionScore::where('competition_category_id', $selectedCategory->id)
-                ->with('team')
-                ->orderBy('is_disqualified', 'asc')
-                ->orderByRaw('`rank` IS NULL, `rank` ASC')
-                ->orderBy('final_score', 'desc')
-                ->get();
+            if ($selectedCategory->has_rounds) {
+                $round = $request->query('round');
+                if ($round) {
+                    $scores = CompetitionScore::where('competition_category_id', $selectedCategory->id)
+                        ->where('round_name', $round)
+                        ->with('team.registration')
+                        ->orderBy('is_disqualified', 'asc')
+                        ->orderByRaw('`rank` IS NULL, `rank` ASC')
+                        ->orderBy('final_score', 'desc')
+                        ->get();
+                } else {
+                    // Default untuk kategori berbabak: tampilkan pemenang resmi (Juara 1, 2, 3 Final + Harapan 1, 2 Semifinal)
+                    $scores = $selectedCategory->getWinners();
+                    if ($scores->isEmpty()) {
+                        $scores = CompetitionScore::where('competition_category_id', $selectedCategory->id)
+                            ->with('team.registration')
+                            ->orderBy('is_disqualified', 'asc')
+                            ->orderByRaw('`rank` IS NULL, `rank` ASC')
+                            ->orderBy('final_score', 'desc')
+                            ->get();
+                    }
+                }
+            } else {
+                $scores = CompetitionScore::where('competition_category_id', $selectedCategory->id)
+                    ->with('team.registration')
+                    ->orderBy('is_disqualified', 'asc')
+                    ->orderByRaw('`rank` IS NULL, `rank` ASC')
+                    ->orderBy('final_score', 'desc')
+                    ->get();
+            }
         }
 
         // Juara Umum Calculation per level

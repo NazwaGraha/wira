@@ -282,18 +282,48 @@ class CompetitionCategory extends Model
                 $winners->push($fScore);
             }
 
-            // 2. Ambil Juara Harapan 1 & 2 dari Semifinal (dari regu yang TIDAK masuk final)
-            $semiScores = CompetitionScore::where('competition_category_id', $this->id)
+            // Ambil semua skor babak Semifinal
+            $allSemiScores = CompetitionScore::where('competition_category_id', $this->id)
                 ->where(function ($q) {
                     $q->where('round_name', 'like', '%Semi Final%')
                         ->orWhere('round_name', 'like', '%Semifinal%')
                         ->orWhere('round_name', 'like', '%Babak 2%');
                 })
                 ->where('is_disqualified', false)
-                ->whereNotIn('competition_participant_team_id', $finalistTeamIds)
                 ->with('team.registration')
-                ->orderBy('final_score', 'desc')
                 ->get();
+
+            // Pemenang masing-masing termin (Termin 1, 2, 3) adalah tim yang lolos ke Final.
+            // Pastikan mereka selalu dikecualikan dari perebutan Juara Harapan 1 & 2.
+            $byTermin = $allSemiScores->groupBy(fn ($s) => $s->score_details['termin'] ?? null);
+            foreach ([1, 2, 3] as $tNum) {
+                $tGroup = $byTermin->get($tNum, collect());
+                if ($tGroup->isNotEmpty()) {
+                    $winnerScore = $tGroup->where('rank', 1)->first()
+                        ?? $tGroup->sortByDesc('final_score')->first();
+
+                    if ($winnerScore && ($winnerScore->final_score > 0 || ! empty($winnerScore->score_details['score']) || $winnerScore->rank == 1)) {
+                        $finalistTeamIds[] = $winnerScore->competition_participant_team_id;
+                    }
+                }
+            }
+            $finalistTeamIds = array_unique(array_filter($finalistTeamIds));
+
+            // 2. Juara Harapan 1 dan 2 diambil dari NILAI TERTINGGI di semi-final dari semua termin
+            // (bukan regu atau tim yang masuk ke final)
+            $semiScores = $allSemiScores
+                ->whereNotIn('competition_participant_team_id', $finalistTeamIds)
+                ->filter(fn ($s) => $s->final_score > 0 || ! empty($s->score_details['score']))
+                ->sort(function ($a, $b) {
+                    if ($a->final_score != $b->final_score) {
+                        return $b->final_score <=> $a->final_score;
+                    }
+                    $secA = $a->score_details['time_seconds'] ?? 999999;
+                    $secB = $b->score_details['time_seconds'] ?? 999999;
+
+                    return $secA <=> $secB;
+                })
+                ->values();
 
             if ($semiScores->isNotEmpty()) {
                 if (isset($semiScores[0])) {

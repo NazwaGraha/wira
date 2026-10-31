@@ -81,11 +81,11 @@ class CompetitionLeaderboardController extends Controller
                     ];
                 }
 
-                if ($score->rank == 1) {
+                if ($effectiveRank == 1) {
                     $matrix[$cleanSchool]['gold_count']++;
-                } elseif ($score->rank == 2) {
+                } elseif ($effectiveRank == 2) {
                     $matrix[$cleanSchool]['silver_count']++;
-                } elseif ($score->rank == 3) {
+                } elseif ($effectiveRank == 3) {
                     $matrix[$cleanSchool]['bronze_count']++;
                 }
 

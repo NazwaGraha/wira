@@ -313,7 +313,7 @@ class CompetitionScoreController extends Controller
         $harapan2Team = null;
         $otherSemiFinalists = collect();
 
-        if ($isFinal) {
+        if ($isFinal || $isSemiFinal) {
             $allSemiScores = CompetitionScore::where('competition_category_id', $category->id)
                 ->where(function ($q) {
                     $q->where('round_name', 'like', '%Semi Final%')
@@ -323,7 +323,23 @@ class CompetitionScoreController extends Controller
                 ->where('is_disqualified', false)
                 ->get();
 
-            $finalistIds = $finalistTeams->pluck('id')->toArray();
+            // Kumpulkan ID regu yang lolos ke Final (Juara Termin 1, 2, 3 atau regu yang bertanding di Final)
+            $finalistIds = [];
+            if (isset($finalistTeams) && $finalistTeams->isNotEmpty()) {
+                $finalistIds = $finalistTeams->pluck('id')->toArray();
+            } else {
+                $byTerminCalc = $allSemiScores->groupBy(fn ($s) => $s->score_details['termin'] ?? null);
+                foreach ([1, 2, 3] as $tNum) {
+                    $tGroup = $byTerminCalc->get($tNum, collect());
+                    if ($tGroup->isNotEmpty()) {
+                        $w = $tGroup->where('rank', 1)->first() ?? $tGroup->sortByDesc('final_score')->first();
+                        if ($w && ($w->final_score > 0 || ! empty($w->score_details['score']))) {
+                            $finalistIds[] = $w->competition_participant_team_id;
+                        }
+                    }
+                }
+            }
+            $finalistIds = array_unique(array_filter($finalistIds));
 
             $nonFinalists = $allSemiScores->filter(function ($s) use ($finalistIds) {
                 return ! in_array($s->competition_participant_team_id, $finalistIds) && ($s->final_score > 0 || ! empty($s->score_details['score']));
