@@ -150,25 +150,49 @@ class CompetitionController extends Controller
         $schoolNameClean = strtoupper(trim($validated['school_name']));
         $categoriesMap = CompetitionCategory::whereIn('id', $validated['categories'])->get()->keyBy('id');
 
-        // Validasi batasan kuota: 2 regu Putra dan 2 regu Putri per sekolah (khusus Olimpiade maks. 3 regu, Mewarnai tidak dibatasi)
+        // 1. Validasi Kuota Global Cabang Lomba & Batasan Kuota per Sekolah
         foreach ($validated['categories'] as $catId) {
             $cat = $categoriesMap->get($catId);
-            if (! $cat || $cat->isUnlimitedTeams()) {
+            if (! $cat) {
                 continue;
+            }
+
+            $genderLabel = $cat->gender_category !== 'Umum' ? " ({$cat->gender_category})" : '';
+
+            // Cek apakah kuota global sudah terpenuhi penuh
+            if ($cat->is_quota_enforced && $cat->isQuotaFull()) {
+                return redirect()->back()
+                    ->withInput()
+                    ->withErrors([
+                        'categories' => "Cabang lomba '{$cat->name}{$genderLabel}' sudah ditutup karena kuota peserta ({$cat->getMaxQuota()} regu) telah terpenuhi secara penuh.",
+                    ]);
             }
 
             $labels = $request->input("team_labels.{$catId}");
             $count = is_array($labels) ? count(array_filter($labels, fn ($l) => $l !== null && trim($l) !== '')) : 1;
-            $maxAllowed = $cat->maxTeamsPerSchool();
 
-            if ($count > $maxAllowed) {
-                $genderLabel = $cat->gender_category !== 'Umum' ? " {$cat->gender_category}" : '';
+            // Cek sisa kuota global yang tersedia
+            if ($cat->is_quota_enforced) {
+                $remainingQuota = $cat->getRemainingQuota();
+                if ($count > $remainingQuota) {
+                    return redirect()->back()
+                        ->withInput()
+                        ->withErrors([
+                            'categories' => "Cabang lomba '{$cat->name}{$genderLabel}' hanya tersisa {$remainingQuota} slot regu. Anda mencoba mendaftarkan {$count} regu. Silakan sesuaikan jumlah regu yang dikirimkan.",
+                        ]);
+                }
+            }
 
-                return redirect()->back()
-                    ->withInput()
-                    ->withErrors([
-                        'categories' => "Cabang lomba '{$cat->name}{$genderLabel}' dibatasi maksimal {$maxAllowed} regu per sekolah. Anda mencoba mendaftarkan {$count} regu.",
-                    ]);
+            // Cek kuota maksimal per sekolah
+            if (! $cat->isUnlimitedTeams()) {
+                $maxAllowed = $cat->maxTeamsPerSchool();
+                if ($count > $maxAllowed) {
+                    return redirect()->back()
+                        ->withInput()
+                        ->withErrors([
+                            'categories' => "Cabang lomba '{$cat->name}{$genderLabel}' dibatasi maksimal {$maxAllowed} regu per sekolah. Anda mencoba mendaftarkan {$count} regu.",
+                        ]);
+                }
             }
         }
 

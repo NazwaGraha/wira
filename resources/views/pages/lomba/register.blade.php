@@ -254,17 +254,28 @@
                                     $isPa = $cat->gender_category === 'Putra';
                                     $isPi = $cat->gender_category === 'Putri';
                                     $isMulti = $cat->isMultiTeamAllowed();
-                                    $maxAllowed = $cat->maxTeamsPerSchool();
-                                    $isChecked = in_array($cat->id, old('categories', []));
+                                    $baseMaxAllowed = $cat->maxTeamsPerSchool();
                                     $currentCatFee = $cat->getFeeForWave($wave ?? 1);
+
+                                    // Kalkulasi Kuota Global & Status Kritis/Penuh
+                                    $maxQuota = $cat->getMaxQuota();
+                                    $regTeams = $cat->getRegisteredTeamsCount();
+                                    $remQuota = $cat->getRemainingQuota();
+                                    $isFull = $cat->is_quota_enforced && $cat->isQuotaFull();
+                                    $isCritical = $cat->is_quota_enforced && $cat->isQuotaCritical(); // Sisa tepat 1 regu
+                                    $quotaPct = $maxQuota > 0 ? min(100, round(($regTeams / $maxQuota) * 100)) : 0;
+
+                                    // Batasan regu adaptif jika kuota kritis (sisa 1 slot)
+                                    $maxAllowed = $isCritical ? 1 : $baseMaxAllowed;
+                                    $isChecked = ! $isFull && in_array($cat->id, old('categories', []));
                                 @endphp
-                                <div class="border {{ $isPa ? 'border-blue-200 bg-blue-50/20' : ($isPi ? 'border-rose-200 bg-rose-50/20' : 'border-slate-200 bg-slate-50/40') }} rounded-2xl p-4 hover:border-red-400 hover:shadow-xs transition space-y-3" id="cat-card-{{ $cat->id }}" data-multi="{{ $isMulti ? 'true' : 'false' }}" data-max-teams="{{ $maxAllowed }}">
+                                <div class="border {{ $isFull ? 'border-slate-300 bg-slate-100/90 opacity-75' : ($isCritical ? 'border-amber-300 bg-amber-50/25' : ($isPa ? 'border-blue-200 bg-blue-50/20' : ($isPi ? 'border-rose-200 bg-rose-50/20' : 'border-slate-200 bg-slate-50/40'))) }} rounded-2xl p-4 hover:border-red-400 hover:shadow-xs transition space-y-3" id="cat-card-{{ $cat->id }}" data-multi="{{ $isMulti ? 'true' : 'false' }}" data-max-teams="{{ $maxAllowed }}" data-is-full="{{ $isFull ? 'true' : 'false' }}" data-is-critical="{{ $isCritical ? 'true' : 'false' }}" data-remaining="{{ $remQuota }}">
                                     <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                                        <label class="flex items-start sm:items-center gap-3 cursor-pointer flex-grow select-none">
-                                            <input type="checkbox" name="categories[]" value="{{ $cat->id }}" data-fee="{{ intval($currentCatFee) }}" class="cat-checkbox mt-1 sm:mt-0 w-5 h-5 text-red-600 rounded border-slate-300 focus:ring-red-500" {{ $isChecked ? 'checked' : '' }} onchange="onCategoryToggle({{ $cat->id }})">
-                                            <div>
+                                        <label class="flex items-start sm:items-center gap-3 {{ $isFull ? 'cursor-not-allowed' : 'cursor-pointer' }} flex-grow select-none">
+                                            <input type="checkbox" name="categories[]" value="{{ $cat->id }}" data-fee="{{ intval($currentCatFee) }}" class="cat-checkbox mt-1 sm:mt-0 w-5 h-5 text-red-600 rounded border-slate-300 focus:ring-red-500 disabled:opacity-40 disabled:cursor-not-allowed" {{ $isChecked ? 'checked' : '' }} {{ $isFull ? 'disabled' : '' }} onchange="onCategoryToggle({{ $cat->id }})">
+                                            <div class="flex-grow">
                                                 <div class="flex items-center flex-wrap gap-2">
-                                                    <span class="font-black text-slate-900 text-sm">{{ $cat->name }}</span>
+                                                    <span class="font-black text-slate-900 text-sm {{ $isFull ? 'line-through text-slate-500' : '' }}">{{ $cat->name }}</span>
                                                     @if($isPa)
                                                         <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-md text-[10px] font-black uppercase tracking-wider bg-blue-100 text-blue-700 border border-blue-200">
                                                             <i class="fa-solid fa-mars text-blue-600"></i> Kategori Putra
@@ -279,24 +290,40 @@
                                                         </span>
                                                     @endif
 
-                                                    @if($cat->isUnlimitedTeams())
-                                                        <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-black uppercase tracking-wider bg-purple-100 text-purple-800 border border-purple-300" title="Kuota regu tidak dibatasi">
-                                                            <i class="fa-solid fa-infinity text-purple-600"></i> Kuota: Tidak Dibatasi
+                                                    <!-- Status Badge Kuota Regu -->
+                                                    @if($isFull)
+                                                        <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-md text-[10px] font-black uppercase tracking-wider bg-rose-100 text-rose-800 border border-rose-300 shadow-2xs">
+                                                            <i class="fa-solid fa-lock text-rose-600"></i> KUOTA PENUH - DITUTUP
                                                         </span>
-                                                    @elseif($maxAllowed == 3)
-                                                        <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-black uppercase tracking-wider bg-emerald-100 text-emerald-800 border border-emerald-300" title="Khusus cabang ini dibatasi maksimum 3 regu per sekolah">
-                                                            <i class="fa-solid fa-layer-group text-emerald-600"></i> Kuota: Maks. 3 Regu
+                                                    @elseif($isCritical)
+                                                        <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-md text-[10px] font-black uppercase tracking-wider bg-amber-100 text-amber-900 border border-amber-300 shadow-2xs animate-pulse">
+                                                            <i class="fa-solid fa-triangle-exclamation text-amber-600"></i> Sisa Tinggal 1 Regu!
                                                         </span>
                                                     @else
-                                                        <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-bold uppercase tracking-wider bg-blue-100 text-blue-800 border border-blue-300" title="Dibatasi maksimal 2 regu per sekolah">
-                                                            <i class="fa-solid fa-user-group text-blue-600"></i> Kuota: Maks. 2 Regu
+                                                        <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-md text-[10px] font-black uppercase tracking-wider bg-emerald-100 text-emerald-800 border border-emerald-300 shadow-2xs">
+                                                            <i class="fa-solid fa-circle-check text-emerald-600"></i> Tersedia {{ $remQuota }} Slot
                                                         </span>
                                                     @endif
 
-                                                    <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-black uppercase tracking-wider bg-emerald-100 text-emerald-800 border border-emerald-300" title="Aturan jumlah anggota per regu">
-                                                        <i class="fa-solid fa-users text-emerald-600"></i> {{ $cat->getRequiredTeamMembers() }} Orang / Regu
+                                                    @if($cat->isUnlimitedTeams())
+                                                        <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-black uppercase tracking-wider bg-purple-100 text-purple-800 border border-purple-300" title="Kuota regu per sekolah tidak dibatasi">
+                                                            <i class="fa-solid fa-infinity text-purple-600"></i> Jatah Sekolah: Bebas
+                                                        </span>
+                                                    @elseif($isCritical)
+                                                        <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-black uppercase tracking-wider bg-amber-100 text-amber-900 border border-amber-400" title="Kuota tersisa 1 regu, dibatasi 1 regu untuk sekolah">
+                                                            <i class="fa-solid fa-user-shield text-amber-700"></i> Batas Sekolah: 1 Regu
+                                                        </span>
+                                                    @else
+                                                        <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-bold uppercase tracking-wider bg-blue-100 text-blue-800 border border-blue-300" title="Dibatasi maksimal {{ $baseMaxAllowed }} regu per sekolah">
+                                                            <i class="fa-solid fa-user-group text-blue-600"></i> Batas Sekolah: {{ $baseMaxAllowed }} Regu
+                                                        </span>
+                                                    @endif
+
+                                                    <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-black uppercase tracking-wider bg-slate-100 text-slate-700 border border-slate-300" title="Aturan jumlah anggota per regu">
+                                                        <i class="fa-solid fa-users text-slate-500"></i> {{ $cat->getRequiredTeamMembers() }} Orang / Regu
                                                     </span>
                                                 </div>
+
                                                 <div class="text-xs text-slate-500 mt-1 flex items-center gap-2 flex-wrap">
                                                     <span>Tingkat: <span class="font-bold text-slate-700">PMR {{ $cat->level }}</span></span>
                                                     <span>&bull;</span>
@@ -313,10 +340,45 @@
                                                         </span>
                                                     @endif
                                                 </div>
+
+                                                <!-- Keterisian Kuota Regu & Progress Bar -->
+                                                @if($cat->is_quota_enforced)
+                                                    <div class="mt-2.5 pt-2 border-t border-slate-200/60">
+                                                        <div class="flex items-center justify-between text-[11px] mb-1 font-semibold">
+                                                            <span class="text-slate-600 flex items-center gap-1.5">
+                                                                <i class="fa-solid fa-chart-pie text-slate-400"></i> Keterisian Kuota Cabang:
+                                                                <span class="font-bold text-slate-800">{{ $regTeams }} / {{ $maxQuota }} Regu</span>
+                                                            </span>
+                                                            <span class="font-mono font-bold {{ $isFull ? 'text-rose-700' : ($isCritical ? 'text-amber-800' : 'text-slate-700') }}">
+                                                                {{ $quotaPct }}% Terisi (Sisa {{ $remQuota }} Slot)
+                                                            </span>
+                                                        </div>
+                                                        <div class="w-full h-2 bg-slate-200/80 rounded-full overflow-hidden">
+                                                            <div class="h-full rounded-full transition-all duration-500 {{ $isFull ? 'bg-rose-500' : ($isCritical ? 'bg-amber-500' : ($quotaPct >= 80 ? 'bg-amber-400' : 'bg-emerald-500')) }}" style="width: {{ $quotaPct }}%"></div>
+                                                        </div>
+                                                    </div>
+                                                @endif
+
+                                                <!-- Callout Alert Khusus Jika Penuh atau Kritis -->
+                                                @if($isFull)
+                                                    <div class="mt-2.5 bg-rose-50 border border-rose-300 rounded-xl p-2.5 flex items-start sm:items-center gap-2.5 text-rose-900 text-xs">
+                                                        <i class="fa-solid fa-lock text-rose-600 text-sm mt-0.5 sm:mt-0 shrink-0"></i>
+                                                        <div class="font-medium">
+                                                            <strong>Cabang Lomba Ditutup:</strong> Kuota maksimal peserta ({{ $maxQuota }} regu) telah terpenuhi secara penuh. Pendaftaran untuk cabang lomba ini sudah ditutup.
+                                                        </div>
+                                                    </div>
+                                                @elseif($isCritical)
+                                                    <div class="mt-2.5 bg-amber-50 border border-amber-300 rounded-xl p-2.5 flex items-start sm:items-center gap-2.5 text-amber-950 text-xs">
+                                                        <i class="fa-solid fa-triangle-exclamation text-amber-600 text-sm mt-0.5 sm:mt-0 shrink-0 animate-bounce"></i>
+                                                        <div class="font-medium">
+                                                            <strong>PERHATIAN (Sisa 1 Slot):</strong> Kuota cabang lomba ini tersisa tinggal <strong>1 regu</strong> lagi. Pangkalan sekolah Anda hanya dapat mengirimkan <strong>maksimal 1 regu perwakilan</strong> untuk mencegah kelebihan kuota.
+                                                        </div>
+                                                    </div>
+                                                @endif
                                             </div>
                                         </label>
 
-                                        @if($isMulti)
+                                        @if($isMulti && ! $isFull && ! $isCritical)
                                             <button type="button" onclick="addTeamRow({{ $cat->id }})" id="btn-add-team-{{ $cat->id }}" class="btn-add-team {{ $isChecked ? '' : 'hidden' }} shrink-0 text-xs font-bold text-red-600 hover:text-red-700 bg-red-50 hover:bg-red-100 border border-red-200 px-3.5 py-1.5 rounded-xl transition flex items-center gap-1.5 shadow-2xs">
                                                 <i class="fa-solid fa-plus-circle"></i> + Tambah Regu
                                             </button>
@@ -805,10 +867,17 @@
         const cb = document.querySelector(`input[name="categories[]"][value="${catId}"]`);
         const container = document.getElementById('teams-container-' + catId);
         const btnAdd = document.getElementById('btn-add-team-' + catId);
+        const card = document.getElementById('cat-card-' + catId);
 
         if (cb && cb.checked) {
             container.classList.remove('hidden');
-            if (btnAdd) btnAdd.classList.remove('hidden');
+            const isCritical = card ? card.dataset.isCritical === 'true' : false;
+            const maxTeams = card ? parseInt(card.dataset.maxTeams || '3') : 3;
+            if (btnAdd && !isCritical && maxTeams > 1) {
+                btnAdd.classList.remove('hidden');
+            } else if (btnAdd) {
+                btnAdd.classList.add('hidden');
+            }
             if (container.querySelectorAll('.team-input-row').length === 0) {
                 addTeamRow(catId);
             } else {
@@ -1137,11 +1206,16 @@
         const card = document.getElementById('cat-card-' + catId);
         const isMulti = card ? card.dataset.multi === 'true' : true;
         const maxTeams = card ? parseInt(card.dataset.maxTeams || (isMulti ? '3' : '1')) : 3;
+        const isCritical = card ? card.dataset.isCritical === 'true' : false;
         const container = document.getElementById('teams-container-' + catId);
         const count = container ? container.querySelectorAll('.team-input-row').length : 0;
 
         if (count >= maxTeams) {
-            alert(`Cabang lomba ini dibatasi maksimal ${maxTeams} regu per sekolah.`);
+            if (isCritical) {
+                alert(`Cabang lomba ini hanya tersisa 1 slot kuota regu, sehingga pangkalan sekolah Anda hanya dapat mengirimkan 1 regu.`);
+            } else {
+                alert(`Cabang lomba ini dibatasi maksimal ${maxTeams} regu per sekolah.`);
+            }
             return;
         }
 

@@ -20,6 +20,7 @@ use App\Http\Controllers\Admin\CompetitionJuryController;
 use App\Http\Controllers\Admin\CompetitionLeaderboardController;
 use App\Http\Controllers\Admin\CompetitionMascotController;
 use App\Http\Controllers\Admin\CompetitionParticipantController;
+use App\Http\Controllers\Admin\CompetitionQuotaController;
 use App\Http\Controllers\Admin\CompetitionRegistrationController;
 use App\Http\Controllers\Admin\CompetitionScoreController;
 use App\Http\Controllers\Admin\ContentSetupController;
@@ -322,6 +323,12 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::post('/competition-bank-accounts', [CompetitionBankAccountController::class, 'update'])->name('competition-bank-accounts.update');
         Route::get('/competition-bank-account', fn () => redirect()->route('admin.competition-bank-accounts.index'));
         Route::get('/rekening-lomba', fn () => redirect()->route('admin.competition-bank-accounts.index'));
+
+        // Pengaturan Kuota Regu & Batasan Kontingen Sekolah
+        Route::get('/competition-quotas', [CompetitionQuotaController::class, 'index'])->name('competition-quotas.index');
+        Route::post('/competition-quotas', [CompetitionQuotaController::class, 'update'])->name('competition-quotas.update');
+        Route::post('/competition-quotas/quick-update/{category}', [CompetitionQuotaController::class, 'quickUpdate'])->name('competition-quotas.quick-update');
+        Route::post('/competition-quotas/reset-defaults', [CompetitionQuotaController::class, 'resetDefaults'])->name('competition-quotas.reset-defaults');
 
         // Rekap Juara Umum & Klasemen
         Route::get('/competition-leaderboard', [CompetitionLeaderboardController::class, 'index'])->name('competition-leaderboard.index');

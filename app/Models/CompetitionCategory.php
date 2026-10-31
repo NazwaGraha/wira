@@ -27,6 +27,11 @@ class CompetitionCategory extends Model
         'registration_fee_wave1',
         'registration_fee_wave2',
         'max_team_members',
+        'max_quota',
+        'max_teams_per_school_pa',
+        'max_teams_per_school_pi',
+        'max_teams_per_school_mix',
+        'is_quota_enforced',
         'has_rounds',
         'order_position',
         'is_active',
@@ -39,6 +44,11 @@ class CompetitionCategory extends Model
         'registration_fee_wave1' => 'decimal:2',
         'registration_fee_wave2' => 'decimal:2',
         'max_team_members' => 'integer',
+        'max_quota' => 'integer',
+        'max_teams_per_school_pa' => 'integer',
+        'max_teams_per_school_pi' => 'integer',
+        'max_teams_per_school_mix' => 'integer',
+        'is_quota_enforced' => 'boolean',
         'has_rounds' => 'boolean',
         'order_position' => 'integer',
         'is_active' => 'boolean',
@@ -161,13 +171,25 @@ class CompetitionCategory extends Model
     /**
      * Dapatkan kuota maksimum regu per sekolah untuk cabang lomba ini:
      * - Mewarnai: Tidak dibatasi (unlimited).
-     * - Olimpiade Kepalangmerahan: Maksimal 3 regu.
-     * - Cabang lomba umum: Maksimal 2 regu (2 regu putra / 2 regu putri).
+     * - Menggunakan konfigurasi dinamis (Putra / Putri / Campuran) jika diatur panitia.
      */
     public function maxTeamsPerSchool(): int
     {
         if ($this->isUnlimitedTeams()) {
             return 999;
+        }
+
+        if ($this->gender_category === 'Putra') {
+            return (int) ($this->max_teams_per_school_pa ?? 2);
+        }
+
+        if ($this->gender_category === 'Putri') {
+            return (int) ($this->max_teams_per_school_pi ?? 2);
+        }
+
+        // Kategori Umum / Campuran
+        if ($this->max_teams_per_school_mix !== null) {
+            return (int) $this->max_teams_per_school_mix;
         }
 
         $name = strtolower($this->name ?? '');
@@ -176,6 +198,63 @@ class CompetitionCategory extends Model
         }
 
         return 2;
+    }
+
+    /**
+     * Hitung jumlah regu yang saat ini telah terdaftar (tidak termasuk status rejected).
+     */
+    public function getRegisteredTeamsCount(): int
+    {
+        return $this->teams()
+            ->whereHas('registration', fn ($q) => $q->where('status', '!=', 'rejected'))
+            ->count();
+    }
+
+    /**
+     * Dapatkan kuota maksimal kategori lomba (default: 50).
+     */
+    public function getMaxQuota(): int
+    {
+        return $this->max_quota !== null ? (int) $this->max_quota : 50;
+    }
+
+    /**
+     * Hitung sisa kuota regu yang masih tersedia.
+     */
+    public function getRemainingQuota(): int
+    {
+        $max = $this->getMaxQuota();
+        if ($max <= 0) {
+            return 999; // Unlimited
+        }
+
+        $registered = $this->getRegisteredTeamsCount();
+
+        return max(0, $max - $registered);
+    }
+
+    /**
+     * Periksa apakah kuota lomba sudah penuh.
+     */
+    public function isQuotaFull(): bool
+    {
+        if ($this->getMaxQuota() <= 0) {
+            return false;
+        }
+
+        return $this->getRemainingQuota() <= 0;
+    }
+
+    /**
+     * Periksa apakah kuota dalam kondisi kritis (sisa tinggal 1 regu).
+     */
+    public function isQuotaCritical(): bool
+    {
+        if ($this->getMaxQuota() <= 0) {
+            return false;
+        }
+
+        return $this->getRemainingQuota() === 1;
     }
 
     /**
