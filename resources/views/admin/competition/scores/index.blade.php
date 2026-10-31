@@ -162,7 +162,7 @@
                     </span>
 
                     @php
-                        $isGridPP = in_array($cat->level, ['Mula', 'Madya']) && (str_contains(strtolower($cat->name), 'pertolongan pertama') || str_starts_with($cat->code ?? '', 'LPP'));
+                        $isGridPP = in_array($cat->level, ['Mula', 'Madya', 'Wira']) && (str_contains(strtolower($cat->name), 'pertolongan pertama') || str_starts_with($cat->code ?? '', 'LPP'));
                     @endphp
 
                     <div class="flex items-center gap-2">

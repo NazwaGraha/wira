@@ -1079,6 +1079,7 @@ class CompetitionScoreController extends Controller
 
         $viewName = match ($category->level) {
             'Madya' => 'admin.competition.scores.grid-madya',
+            'Wira' => 'admin.competition.scores.grid-wira',
             default => 'admin.competition.scores.grid-mula',
         };
 

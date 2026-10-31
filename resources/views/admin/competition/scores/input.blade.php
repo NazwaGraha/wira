@@ -8,7 +8,7 @@
         &larr; Kembali ke Cabang
     </a>
     @php
-        $isGridPP = in_array($category->level, ['Mula', 'Madya']) && (str_contains(strtolower($category->name), 'pertolongan pertama') || str_starts_with($category->code ?? '', 'LPP'));
+        $isGridPP = in_array($category->level, ['Mula', 'Madya', 'Wira']) && (str_contains(strtolower($category->name), 'pertolongan pertama') || str_starts_with($category->code ?? '', 'LPP'));
     @endphp
     @if($isGridPP)
         <a href="{{ route('admin.competition-scores.grid', $category->id) }}" class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-xl font-bold text-xs transition flex items-center gap-1.5 shadow-sm">

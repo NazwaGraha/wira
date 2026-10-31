@@ -211,7 +211,7 @@
                             $timeRecorded = $score?->time_recorded ?: null;
                             $finalScore = $score?->final_score;
 
-                            $isGridPP = in_array($cat?->level, ['Mula', 'Madya']) && (str_contains(strtolower($cat?->name ?? ''), 'pertolongan pertama') || str_starts_with($cat?->code ?? '', 'LPP'));
+                            $isGridPP = in_array($cat?->level, ['Mula', 'Madya', 'Wira']) && (str_contains(strtolower($cat?->name ?? ''), 'pertolongan pertama') || str_starts_with($cat?->code ?? '', 'LPP'));
 
                             // Badge color by level
                             $levelBadgeClass = match($cat?->level) {
