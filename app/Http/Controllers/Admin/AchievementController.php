@@ -339,13 +339,36 @@ class AchievementController extends Controller
             'order_position' => (int) ($validated['order_position'] ?? 1),
         ];
 
+        // Hapus foto utama piala jika dicentang atau diminta
+        if ($request->boolean('delete_trophy_image')) {
+            $this->deleteStoredFile($prestasi->trophy_image);
+            $dataToUpdate['trophy_image'] = null;
+        }
+
         // Upload foto utama piala baru jika diunggah
         if ($request->hasFile('trophy_image')) {
+            if (! empty($prestasi->trophy_image)) {
+                $this->deleteStoredFile($prestasi->trophy_image);
+            }
             $dataToUpdate['trophy_image'] = $this->uploadFile($request->file('trophy_image'), 'trophies');
         }
 
-        // Tambah foto galeri baru
+        // Hapus foto galeri yang dipilih untuk dihapus
         $existingGallery = is_array($prestasi->gallery_images) ? $prestasi->gallery_images : [];
+        $deletedGallery = $request->input('delete_gallery', []);
+        if (! empty($deletedGallery) && is_array($deletedGallery)) {
+            $remainingGallery = [];
+            foreach ($existingGallery as $idx => $path) {
+                if (in_array((string) $idx, array_map('strval', $deletedGallery), true) || in_array($path, $deletedGallery, true)) {
+                    $this->deleteStoredFile($path);
+                } else {
+                    $remainingGallery[] = $path;
+                }
+            }
+            $existingGallery = array_values($remainingGallery);
+        }
+
+        // Tambah foto galeri baru
         if ($request->hasFile('gallery_images')) {
             foreach ($request->file('gallery_images') as $file) {
                 if ($file->isValid()) {
@@ -353,10 +376,13 @@ class AchievementController extends Controller
                 }
             }
         }
-        $dataToUpdate['gallery_images'] = $existingGallery;
+        $dataToUpdate['gallery_images'] = array_values($existingGallery);
 
         // Upload sertifikat baru
         if ($request->hasFile('certificate_file')) {
+            if (! empty($prestasi->certificate_file)) {
+                $this->deleteStoredFile($prestasi->certificate_file);
+            }
             $dataToUpdate['certificate_file'] = $this->uploadFile($request->file('certificate_file'), 'certificates');
         }
 
@@ -376,11 +402,92 @@ class AchievementController extends Controller
     }
 
     /**
+     * Hapus satu foto dari galeri penyerahan prestasi (via AJAX)
+     */
+    public function deleteGalleryImage(Request $request, Achievement $prestasi, $index)
+    {
+        $gallery = is_array($prestasi->gallery_images) ? $prestasi->gallery_images : [];
+        $idx = (int) $index;
+
+        if (! isset($gallery[$idx])) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Foto galeri pada indeks tersebut tidak ditemukan.',
+            ], 404);
+        }
+
+        $removedPath = $gallery[$idx];
+        $this->deleteStoredFile($removedPath);
+
+        unset($gallery[$idx]);
+        $prestasi->gallery_images = array_values($gallery);
+        $prestasi->save();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Foto galeri berhasil dihapus.',
+            'remaining_count' => count($prestasi->gallery_images),
+        ]);
+    }
+
+    /**
+     * Hapus foto utama piala prestasi (via AJAX)
+     */
+    public function deleteTrophyImage(Request $request, Achievement $prestasi)
+    {
+        if (! empty($prestasi->trophy_image)) {
+            $this->deleteStoredFile($prestasi->trophy_image);
+            $prestasi->trophy_image = null;
+            $prestasi->save();
+        }
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Foto utama piala berhasil dihapus.',
+        ]);
+    }
+
+    /**
+     * Helper hapus file tersimpan di storage dan public/storage
+     */
+    protected function deleteStoredFile(?string $path): void
+    {
+        if (empty($path) || str_starts_with($path, 'http://') || str_starts_with($path, 'https://')) {
+            return;
+        }
+
+        try {
+            if (Storage::disk('public')->exists($path)) {
+                Storage::disk('public')->delete($path);
+            }
+            $pubPath = public_path('storage/'.$path);
+            if (file_exists($pubPath) && ! is_dir($pubPath)) {
+                @unlink($pubPath);
+            }
+        } catch (\Throwable $e) {
+            // Abaikan kesalahan penghapusan file
+        }
+    }
+
+    /**
      * Hapus data prestasi
      */
     public function destroy(Achievement $prestasi)
     {
         $title = $prestasi->title;
+
+        if (! empty($prestasi->trophy_image)) {
+            $this->deleteStoredFile($prestasi->trophy_image);
+        }
+        if (is_array($prestasi->gallery_images)) {
+            foreach ($prestasi->gallery_images as $gImg) {
+                $this->deleteStoredFile($gImg);
+            }
+        }
+        if (! empty($prestasi->certificate_file)) {
+            $this->deleteStoredFile($prestasi->certificate_file);
+        }
+
         $prestasi->delete();
 
         return redirect()->route('admin.prestasi.index')->with('success', "Data prestasi '{$title}' berhasil dihapus.");

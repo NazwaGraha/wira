@@ -215,6 +215,8 @@ Route::prefix('admin')->name('admin.')->group(function () {
         // Prestasi & Penghargaan Organisasi
         Route::resource('prestasi', AchievementController::class)->names('prestasi');
         Route::post('/prestasi/{id}/toggle-featured', [AchievementController::class, 'toggleFeatured'])->name('prestasi.toggle-featured');
+        Route::delete('/prestasi/{prestasi}/gallery/{index}', [AchievementController::class, 'deleteGalleryImage'])->name('prestasi.delete-gallery-image');
+        Route::delete('/prestasi/{prestasi}/trophy-image', [AchievementController::class, 'deleteTrophyImage'])->name('prestasi.delete-trophy-image');
 
         // Pendaftar Calon Anggota Baru
         Route::get('/member-registrations', [MemberRegistrationController::class, 'index'])->name('member-registrations.index');
