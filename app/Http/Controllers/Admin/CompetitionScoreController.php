@@ -1222,11 +1222,17 @@ class CompetitionScoreController extends Controller
             ->get()
             ->keyBy('competition_participant_team_id');
 
-        $viewName = match ($category->level) {
-            'Madya' => 'admin.competition.scores.grid-madya',
-            'Wira' => 'admin.competition.scores.grid-wira',
-            default => 'admin.competition.scores.grid-mula',
-        };
+        $isPRS = str_contains(strtolower($category->name), 'pendidikan remaja sebaya') || str_contains(strtolower($category->name), 'prs') || str_starts_with($category->code ?? '', 'PRS');
+
+        if ($isPRS) {
+            $viewName = 'admin.competition.scores.grid-prs';
+        } else {
+            $viewName = match ($category->level) {
+                'Madya' => 'admin.competition.scores.grid-madya',
+                'Wira' => 'admin.competition.scores.grid-wira',
+                default => 'admin.competition.scores.grid-mula',
+            };
+        }
 
         return view($viewName, compact(
             'category',
@@ -1321,7 +1327,10 @@ class CompetitionScoreController extends Controller
         $team = CompetitionParticipantTeam::find($teamId);
         $teamName = $team?->team_name ?? 'Regu Peserta';
 
-        $msg = "Nilai Grid Pertolongan Pertama untuk regu '{$teamName}' berhasil disimpan (Total Skor: {$totalScore}, Waktu: {$timeRecorded}) dan otomatis terisi di Lembar Skor Utama!";
+        $isPRS = str_contains(strtolower($category->name), 'pendidikan remaja sebaya') || str_contains(strtolower($category->name), 'prs') || str_starts_with($category->code ?? '', 'PRS');
+        $labelLomba = $isPRS ? 'Pendidikan Remaja Sebaya' : 'Pertolongan Pertama';
+        $waktuSuffix = $isPRS ? '' : ", Waktu: {$timeRecorded}";
+        $msg = "Nilai Grid {$labelLomba} untuk regu '{$teamName}' berhasil disimpan (Total Skor: {$totalScore}{$waktuSuffix}) dan otomatis terisi di Lembar Skor Utama!";
 
         if ($actionAfter === 'next') {
             $nextTeamId = $request->input('next_team_id');

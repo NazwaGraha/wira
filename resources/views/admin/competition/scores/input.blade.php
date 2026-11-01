@@ -9,10 +9,15 @@
     </a>
     @php
         $isGridPP = in_array($category->level, ['Mula', 'Madya', 'Wira']) && (str_contains(strtolower($category->name), 'pertolongan pertama') || str_starts_with($category->code ?? '', 'LPP'));
+        $isGridPRS = str_contains(strtolower($category->name), 'pendidikan remaja sebaya') || str_contains(strtolower($category->name), 'prs') || str_starts_with($category->code ?? '', 'PRS');
     @endphp
     @if($isGridPP)
         <a href="{{ route('admin.competition-scores.grid', $category->id) }}" class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-xl font-bold text-xs transition flex items-center gap-1.5 shadow-sm">
             <i class="fa-solid fa-table-cells"></i> Input via Grid Nilai
+        </a>
+    @elseif($isGridPRS)
+        <a href="{{ route('admin.competition-scores.grid', $category->id) }}" class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-xl font-bold text-xs transition flex items-center gap-1.5 shadow-sm">
+            <i class="fa-solid fa-heart-pulse"></i> Input via Grid Nilai PRS
         </a>
     @endif
     <a href="{{ route('lomba.scoreboard', ['level' => $category->level, 'category_id' => $category->id]) }}" target="_blank" class="bg-slate-800 hover:bg-slate-900 text-white px-4 py-2 rounded-xl font-bold text-xs transition flex items-center gap-1.5">
@@ -236,6 +241,7 @@
         $isTandu = str_contains(strtolower($category->name), 'tandu') || str_starts_with($category->code ?? '', 'LKTR') || $category->scoring_type === 'tandu_standard_time';
         $isPertolonganPertama = $category->scoring_type === 'practical_time' || str_contains(strtolower($category->name), 'pertolongan pertama') || str_starts_with($category->code ?? '', 'LPP');
         $isOlimpiade = $category->scoring_type === 'written_time' || str_contains(strtolower($category->name), 'olimpiade') || str_starts_with($category->code ?? '', 'OLIM');
+        $isPRS = str_contains(strtolower($category->name), 'pendidikan remaja sebaya') || str_contains(strtolower($category->name), 'prs') || str_starts_with($category->code ?? '', 'PRS');
     @endphp
 
     @if($isTandu)
@@ -901,6 +907,10 @@
                                 <!-- Pertolongan Pertama (Mula, Madya, Wira) - Hanya Nilai Praktik & Waktu Praktik -->
                                 <th class="px-4 py-3 w-32 text-center">Nilai Praktik</th>
                                 <th class="px-4 py-3 w-32 text-center">Waktu Praktik</th>
+                            @elseif($isPRS)
+                                <!-- Pendidikan Remaja Sebaya (PRS) - Akumulasi Grid Nilai -->
+                                <th class="px-4 py-3 w-48 text-center">Total Skor Grid (Maks 1000)</th>
+                                <th class="px-4 py-3 min-w-[200px] text-left">Pesan Dewan Juri</th>
                             @elseif($isOlimpiade)
                                 <!-- Olimpiade Kepalangmerahan - Hanya Nilai Tertulis & Waktu Tertulis -->
                                 <th class="px-4 py-3 w-32 text-center">Nilai Tertulis</th>
@@ -990,6 +1000,18 @@
                                     </td>
                                     <td class="px-4 py-3">
                                         <input type="text" name="scores[{{ $team->id }}][practical_time]" value="{{ $details['practical_time'] ?? ($score?->time_recorded ?? '') }}" placeholder="06:30" class="input-practical-time w-full p-2 bg-slate-50 border border-slate-200 rounded-lg text-xs focus:bg-white focus:outline-none focus:border-red-500 font-mono text-center">
+                                    </td>
+                                @elseif($isPRS)
+                                    <td class="px-4 py-3 text-center">
+                                        <div class="flex items-center justify-center gap-1.5">
+                                            <input type="number" step="1" name="scores[{{ $team->id }}][score]" value="{{ $score?->final_score ?? ($details['score'] ?? '') }}" placeholder="0 - 1000" class="input-prs-score w-28 p-2 bg-slate-50 border border-slate-200 rounded-lg text-xs focus:bg-white focus:outline-none focus:border-red-500 font-mono font-bold text-center">
+                                            <a href="{{ route('admin.competition-scores.grid', ['category' => $category->id, 'team_id' => $team->id]) }}" class="px-2 py-1.5 rounded-lg bg-sky-50 hover:bg-sky-600 text-sky-700 hover:text-white border border-sky-200 transition font-extrabold text-[11px] flex items-center gap-1" title="Buka Grid Nilai Touch untuk regu ini">
+                                                <i class="fa-solid fa-touch-screen"></i> Grid
+                                            </a>
+                                        </div>
+                                    </td>
+                                    <td class="px-4 py-3">
+                                        <input type="text" name="scores[{{ $team->id }}][notes]" value="{{ $score?->notes ?? ($details['notes'] ?? '') }}" placeholder="Pesan dewan juri..." class="w-full p-2 bg-slate-50 border border-slate-200 rounded-lg text-xs focus:bg-white focus:outline-none focus:border-red-500">
                                     </td>
                                 @elseif($isOlimpiade)
                                     <td class="px-4 py-3">
@@ -1119,9 +1141,9 @@
                                 <!-- Action: Clear Row & Remove Team -->
                                 <td class="px-3 py-3 text-center border-l border-slate-100">
                                     <div class="flex items-center justify-center gap-1">
-                                        @if($isGridPP)
+                                        @if($isGridPP || $isPRS)
                                             <a href="{{ route('admin.competition-scores.grid', ['category' => $category->id, 'team_id' => $team->id]) }}" class="w-7 h-7 rounded-lg bg-red-50 hover:bg-red-600 text-red-600 hover:text-white border border-red-200 inline-flex items-center justify-center transition shadow-2xs" title="Buka Grid Nilai Juri untuk regu ini">
-                                                <i class="fa-solid fa-table-cells text-[11px]"></i>
+                                                <i class="fa-solid {{ $isPRS ? 'fa-heart-pulse' : 'fa-table-cells' }} text-[11px]"></i>
                                             </a>
                                         @endif
                                         <button type="button" onclick="clearRowInput(this)" class="w-7 h-7 rounded-lg bg-slate-100 hover:bg-amber-50 text-slate-400 hover:text-amber-600 hover:border-amber-200 border border-slate-200 inline-flex items-center justify-center transition shadow-2xs" title="Kosongkan input nomor urut ini">
@@ -1846,6 +1868,13 @@ document.addEventListener('DOMContentLoaded', function() {
 
             if (likesInput) likesInput.addEventListener('input', updateSocialRow);
             if (stickersInput) stickersInput.addEventListener('input', updateSocialRow);
+        } else if (row.querySelector('.input-prs-score')) {
+            const prsScore = row.querySelector('.input-prs-score');
+            function updatePrsRow() {
+                if (finalInput && prsScore) finalInput.value = prsScore.value;
+                window.recalculateAllRanks();
+            }
+            if (prsScore) prsScore.addEventListener('input', updatePrsRow);
         } else {
             const genericScore = row.querySelector('.input-generic-score');
             function updateGenericRow() {
