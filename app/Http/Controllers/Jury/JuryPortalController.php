@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Jury;
 
+use App\Http\Controllers\Admin\CompetitionScoreController;
 use App\Http\Controllers\Controller;
 use App\Models\CompetitionCategory;
 use App\Models\CompetitionEvent;
@@ -368,10 +369,20 @@ class JuryPortalController extends Controller
 
         // Ambil skor aktif regu terpilih
         $activeScore = null;
+        $existingRubric = [];
+        $existingSubtotals = [];
         if ($activeTeam) {
             $activeScore = CompetitionScore::where('competition_category_id', $category->id)
                 ->where('competition_participant_team_id', $activeTeam->id)
                 ->first();
+
+            if ($activeScore) {
+                $details = is_array($activeScore->score_details)
+                    ? $activeScore->score_details
+                    : (json_decode($activeScore->score_details ?? '', true) ?? []);
+                $existingRubric = $details['grid_rubric'] ?? [];
+                $existingSubtotals = $details['subtotals'] ?? [];
+            }
         }
 
         // Ambil foto dokumentasi aktif untuk regu terpilih
@@ -396,6 +407,8 @@ class JuryPortalController extends Controller
             'activeTeam',
             'activeScore',
             'activePhotos',
+            'existingRubric',
+            'existingSubtotals',
             'recordedMinutes',
             'recordedSeconds'
         ));
@@ -409,10 +422,12 @@ class JuryPortalController extends Controller
         self::ensureTablesExist();
 
         $request->validate([
-            'final_score' => ['required', 'numeric', 'min:0', 'max:100'],
+            'final_score' => ['required', 'numeric', 'min:0', 'max:2500'],
             'minutes' => ['nullable', 'integer', 'min:0', 'max:180'],
             'seconds' => ['nullable', 'integer', 'min:0', 'max:59'],
             'notes' => ['nullable', 'string', 'max:1000'],
+            'rubric' => ['nullable', 'array'],
+            'subtotals' => ['nullable', 'array'],
         ]);
 
         // Cek jika kategori mewajibkan foto dokumentasi
@@ -433,6 +448,51 @@ class JuryPortalController extends Controller
         $minutes = (int) $request->input('minutes', 0);
         $seconds = (int) $request->input('seconds', 0);
         $timeRecorded = sprintf('%02d:%02d', $minutes, $seconds);
+        $rubric = $request->input('rubric', []);
+        $subtotals = $request->input('subtotals', []);
+        $notes = $request->input('notes');
+
+        $isLKTR = str_contains(strtolower($category->name), 'tandu') || str_contains(strtolower($category->code ?? ''), 'LKTR');
+        $isPRS = str_contains(strtolower($category->name), 'pendidikan remaja sebaya') || str_contains(strtolower($category->code ?? ''), 'PRS');
+        $isMewarnai = str_contains(strtolower($category->name), 'mewarnai') || str_contains(strtolower($category->code ?? ''), 'MEWARNAI');
+
+        $finalScore = (float) $request->input('final_score');
+
+        $existingScore = CompetitionScore::where('competition_category_id', $category->id)
+            ->where('competition_participant_team_id', $team->id)
+            ->where('round_name', 'Utama')
+            ->first();
+
+        $scoreDetails = is_array($existingScore?->score_details)
+            ? $existingScore->score_details
+            : (json_decode($existingScore?->score_details ?? '', true) ?? []);
+
+        if (! empty($rubric)) {
+            $scoreDetails['grid_rubric'] = $rubric;
+            $scoreDetails['subtotals'] = $subtotals;
+            $scoreDetails['practical_time'] = $timeRecorded;
+            $scoreDetails['time_recorded'] = $timeRecorded;
+            $scoreDetails['notes'] = $notes;
+
+            if ($isLKTR) {
+                $techScore = 0;
+                foreach ($rubric as $v) {
+                    $techScore += (float) $v;
+                }
+                $timeScore = CompetitionScoreController::calculateLktrTimeScore($category->level ?? 'Madya', $timeRecorded);
+                $scoreDetails['technical_score'] = $techScore;
+                $scoreDetails['time_score'] = $timeScore;
+                $scoreDetails['practical_score'] = $techScore;
+                $finalScore = $techScore + $timeScore;
+            } else {
+                $sumScore = 0;
+                foreach ($rubric as $v) {
+                    $sumScore += (float) $v;
+                }
+                $scoreDetails['practical_score'] = $sumScore;
+                $finalScore = $sumScore;
+            }
+        }
 
         $score = CompetitionScore::updateOrCreate(
             [
@@ -442,9 +502,10 @@ class JuryPortalController extends Controller
             ],
             [
                 'jury_user_id' => Auth::id(),
-                'final_score' => $request->input('final_score'),
+                'final_score' => $finalScore,
                 'time_recorded' => $timeRecorded,
-                'notes' => $request->input('notes'),
+                'score_details' => $scoreDetails,
+                'notes' => $notes,
             ]
         );
 
