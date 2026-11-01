@@ -165,6 +165,7 @@
                         $isGridPP = in_array($cat->level, ['Mula', 'Madya', 'Wira']) && (str_contains(strtolower($cat->name), 'pertolongan pertama') || str_starts_with($cat->code ?? '', 'LPP'));
                         $isLct = str_contains(strtolower($cat->name), 'cepat tepat') || str_contains(strtolower($cat->name), 'cerdas cermat') || str_starts_with($cat->code ?? '', 'LCT');
                         $isGridPRS = (str_contains(strtolower($cat->name), 'pendidikan remaja sebaya') || str_contains(strtolower($cat->name), 'prs') || str_starts_with($cat->code ?? '', 'PRS'));
+                        $isGridMewarnai = (str_contains(strtolower($cat->name), 'mewarnai') || str_starts_with($cat->code ?? '', 'MEWARNAI'));
                     @endphp
 
                     <div class="flex items-center gap-2">
@@ -174,6 +175,13 @@
                         @if($isGridPP)
                             <a href="{{ route('admin.competition-scores.grid', $cat->id) }}" class="bg-red-600 hover:bg-red-700 text-white font-extrabold text-xs px-4 py-2 rounded-xl shadow-md transition flex items-center gap-1.5">
                                 <i class="fa-solid fa-table-cells"></i> Input Nilai Juri
+                            </a>
+                            <a href="{{ route('admin.competition-scores.input', $cat->id) }}" title="Lembar Skor Utama" class="bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs px-3 py-2 rounded-xl border border-slate-200 transition flex items-center gap-1 shadow-2xs">
+                                <i class="fa-solid fa-table-list"></i>
+                            </a>
+                        @elseif($isGridMewarnai)
+                            <a href="{{ route('admin.competition-scores.grid', $cat->id) }}" class="bg-red-600 hover:bg-red-700 text-white font-extrabold text-xs px-4 py-2 rounded-xl shadow-md transition flex items-center gap-1.5">
+                                <i class="fa-solid fa-palette"></i> Input Nilai Juri
                             </a>
                             <a href="{{ route('admin.competition-scores.input', $cat->id) }}" title="Lembar Skor Utama" class="bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs px-3 py-2 rounded-xl border border-slate-200 transition flex items-center gap-1 shadow-2xs">
                                 <i class="fa-solid fa-table-list"></i>

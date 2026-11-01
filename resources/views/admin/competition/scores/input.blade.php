@@ -10,6 +10,7 @@
     @php
         $isGridPP = in_array($category->level, ['Mula', 'Madya', 'Wira']) && (str_contains(strtolower($category->name), 'pertolongan pertama') || str_starts_with($category->code ?? '', 'LPP'));
         $isGridPRS = str_contains(strtolower($category->name), 'pendidikan remaja sebaya') || str_contains(strtolower($category->name), 'prs') || str_starts_with($category->code ?? '', 'PRS');
+        $isGridMewarnai = str_contains(strtolower($category->name), 'mewarnai') || str_starts_with($category->code ?? '', 'MEWARNAI');
     @endphp
     @if($isGridPP)
         <a href="{{ route('admin.competition-scores.grid', $category->id) }}" class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-xl font-bold text-xs transition flex items-center gap-1.5 shadow-sm">
@@ -18,6 +19,10 @@
     @elseif($isGridPRS)
         <a href="{{ route('admin.competition-scores.grid', $category->id) }}" class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-xl font-bold text-xs transition flex items-center gap-1.5 shadow-sm">
             <i class="fa-solid fa-heart-pulse"></i> Input via Grid Nilai PRS
+        </a>
+    @elseif($isGridMewarnai)
+        <a href="{{ route('admin.competition-scores.grid', $category->id) }}" class="bg-pink-600 hover:bg-pink-700 text-white px-4 py-2 rounded-xl font-bold text-xs transition flex items-center gap-1.5 shadow-sm">
+            <i class="fa-solid fa-palette"></i> Input via Grid Nilai Mewarnai
         </a>
     @endif
     <a href="{{ route('lomba.scoreboard', ['level' => $category->level, 'category_id' => $category->id]) }}" target="_blank" class="bg-slate-800 hover:bg-slate-900 text-white px-4 py-2 rounded-xl font-bold text-xs transition flex items-center gap-1.5">
@@ -1141,9 +1146,9 @@
                                 <!-- Action: Clear Row & Remove Team -->
                                 <td class="px-3 py-3 text-center border-l border-slate-100">
                                     <div class="flex items-center justify-center gap-1">
-                                        @if($isGridPP || $isPRS)
-                                            <a href="{{ route('admin.competition-scores.grid', ['category' => $category->id, 'team_id' => $team->id]) }}" class="w-7 h-7 rounded-lg bg-red-50 hover:bg-red-600 text-red-600 hover:text-white border border-red-200 inline-flex items-center justify-center transition shadow-2xs" title="Buka Grid Nilai Juri untuk regu ini">
-                                                <i class="fa-solid {{ $isPRS ? 'fa-heart-pulse' : 'fa-table-cells' }} text-[11px]"></i>
+                                        @if($isGridPP || $isPRS || $isGridMewarnai)
+                                            <a href="{{ route('admin.competition-scores.grid', ['category' => $category->id, 'team_id' => $team->id]) }}" class="w-7 h-7 rounded-lg bg-pink-50 hover:bg-pink-600 text-pink-600 hover:text-white border border-pink-200 inline-flex items-center justify-center transition shadow-2xs" title="Buka Grid Nilai Juri untuk regu ini">
+                                                <i class="fa-solid {{ $isGridMewarnai ? 'fa-palette' : ($isPRS ? 'fa-heart-pulse' : 'fa-table-cells') }} text-[11px]"></i>
                                             </a>
                                         @endif
                                         <button type="button" onclick="clearRowInput(this)" class="w-7 h-7 rounded-lg bg-slate-100 hover:bg-amber-50 text-slate-400 hover:text-amber-600 hover:border-amber-200 border border-slate-200 inline-flex items-center justify-center transition shadow-2xs" title="Kosongkan input nomor urut ini">

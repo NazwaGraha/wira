@@ -594,6 +594,12 @@ class CompetitionScoreController extends Controller
         // Auto-recalculate ranks for this category and round!
         $this->autoRecalculateRanks($category->id, $round);
 
+        if ($request->input('redirect_to') === 'input') {
+            return redirect()->route('admin.competition-scores.input', $category->id)->with('success', "Nilai untuk mata lomba '{$category->display_name}' ({$round}) berhasil disimpan dan peringkat telah diperbarui secara otomatis!");
+        } elseif ($request->input('redirect_to') === 'grid') {
+            return redirect()->route('admin.competition-scores.grid', $category->id)->with('success', 'Seluruh nilai Grid Lomba Mewarnai berhasil disimpan dan peringkat telah diperbarui secara otomatis!');
+        }
+
         return redirect()->back()->with('success', "Nilai untuk mata lomba '{$category->display_name}' ({$round}) berhasil disimpan dan peringkat telah diperbarui secara otomatis!");
     }
 
@@ -1223,9 +1229,12 @@ class CompetitionScoreController extends Controller
             ->keyBy('competition_participant_team_id');
 
         $isPRS = str_contains(strtolower($category->name), 'pendidikan remaja sebaya') || str_contains(strtolower($category->name), 'prs') || str_starts_with($category->code ?? '', 'PRS');
+        $isMewarnai = str_contains(strtolower($category->name), 'mewarnai') || str_starts_with($category->code ?? '', 'MEWARNAI');
 
         if ($isPRS) {
             $viewName = 'admin.competition.scores.grid-prs';
+        } elseif ($isMewarnai) {
+            $viewName = 'admin.competition.scores.grid-mewarnai';
         } else {
             $viewName = match ($category->level) {
                 'Madya' => 'admin.competition.scores.grid-madya',
