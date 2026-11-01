@@ -1039,6 +1039,20 @@ class CompetitionScoreController extends Controller
             $slotIdx = $existingCount;
             $orderNumber = ! empty($validated['order_number']) ? trim($validated['order_number']) : $category->generateNextOrderNumber($slotIdx, $label);
 
+            if (preg_match('/^([a-z])[-]?(\d+)$/i', $orderNumber, $m)) {
+                $orderNumber = strtoupper($m[1]) . '-' . sprintf('%03d', intval($m[2]));
+            }
+
+            // Validasi keunikan no urut di cabang lomba ini
+            $duplicateOrder = CompetitionParticipantTeam::where('competition_category_id', $category->id)
+                ->where('order_number', $orderNumber)
+                ->first();
+
+            if ($duplicateOrder) {
+                $usedBy = $duplicateOrder->registration?->school_name ?: $duplicateOrder->team_name;
+                return redirect()->back()->with('error', "No. Urut Peserta '{$orderNumber}' sudah digunakan oleh regu {$duplicateOrder->team_name} ({$usedBy}) pada cabang lomba ini!");
+            }
+
             CompetitionParticipantTeam::create([
                 'competition_registration_id' => $registration->id,
                 'competition_category_id' => $category->id,
@@ -1048,7 +1062,7 @@ class CompetitionScoreController extends Controller
                 'is_active' => true,
             ]);
 
-            return redirect()->back()->with('success', "Regu '{$teamName}' ({$registration->school_name}) berhasil ditambahkan ke Lembar Penilaian Juri!");
+            return redirect()->back()->with('success', "Regu '{$teamName}' ({$registration->school_name}) berhasil ditambahkan ke Lembar Penilaian Juri dengan No. Urut {$orderNumber}!");
         } else {
             // Walk-in OTS
             $schoolName = strtoupper(trim($validated['school_name'] ?? ''));
@@ -1081,8 +1095,25 @@ class CompetitionScoreController extends Controller
             }
             $teamName = $registration->school_name.($label ? " {$label}" : '');
 
+            $existingCount = CompetitionParticipantTeam::where('competition_category_id', $category->id)
+                ->where('competition_registration_id', $registration->id)
+                ->count();
             $slotIdx = $existingCount;
             $orderNumber = ! empty($validated['order_number']) ? trim($validated['order_number']) : $category->generateNextOrderNumber($slotIdx, $label);
+
+            if (preg_match('/^([a-z])[-]?(\d+)$/i', $orderNumber, $m)) {
+                $orderNumber = strtoupper($m[1]) . '-' . sprintf('%03d', intval($m[2]));
+            }
+
+            // Validasi keunikan no urut di cabang lomba ini
+            $duplicateOrder = CompetitionParticipantTeam::where('competition_category_id', $category->id)
+                ->where('order_number', $orderNumber)
+                ->first();
+
+            if ($duplicateOrder) {
+                $usedBy = $duplicateOrder->registration?->school_name ?: $duplicateOrder->team_name;
+                return redirect()->back()->with('error', "No. Urut Peserta '{$orderNumber}' sudah digunakan oleh regu {$duplicateOrder->team_name} ({$usedBy}) pada cabang lomba ini!");
+            }
 
             CompetitionParticipantTeam::create([
                 'competition_registration_id' => $registration->id,

@@ -497,6 +497,6 @@ class CompetitionCategory extends Model
 
         $nextNum = $maxNum + 1;
 
-        return sprintf('%s-%02d', $prefix, $nextNum);
+        return sprintf('%s-%03d', $prefix, $nextNum);
     }
 }

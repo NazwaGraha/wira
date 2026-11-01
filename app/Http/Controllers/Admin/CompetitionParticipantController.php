@@ -168,6 +168,27 @@ class CompetitionParticipantController extends Controller
             'members_raw' => 'nullable|string',
         ]);
 
+        $orderNumber = $validated['order_number'] ? trim($validated['order_number']) : null;
+        if ($orderNumber) {
+            // Normalisasi otomatis format A-001 jika polanya huruf dan angka
+            if (preg_match('/^([a-z])[-]?(\d+)$/i', $orderNumber, $m)) {
+                $orderNumber = strtoupper($m[1]) . '-' . sprintf('%03d', intval($m[2]));
+            }
+
+            // Validasi keunikan no. urut peserta di cabang lomba yang sama
+            $duplicate = CompetitionParticipantTeam::where('competition_category_id', $team->competition_category_id)
+                ->where('id', '!=', $team->id)
+                ->where('order_number', $orderNumber)
+                ->first();
+
+            if ($duplicate) {
+                $usedBy = $duplicate->registration?->school_name ?: $duplicate->team_name;
+                return redirect()->back()
+                    ->withInput()
+                    ->with('error', "No. Urut Peserta '{$orderNumber}' sudah digunakan oleh regu {$duplicate->team_name} ({$usedBy}) pada cabang lomba ini!");
+            }
+        }
+
         $members = [];
         if ($request->filled('members_raw')) {
             $lines = explode("\n", str_replace("\r", '', $request->input('members_raw')));
@@ -182,7 +203,7 @@ class CompetitionParticipantController extends Controller
         }
 
         $team->update([
-            'order_number' => $validated['order_number'] ?? null,
+            'order_number' => $orderNumber,
             'team_name' => $validated['team_name'],
             'team_label' => $validated['team_label'] ?? null,
             'members_list' => $members,
@@ -198,22 +219,69 @@ class CompetitionParticipantController extends Controller
             'orders.*' => 'nullable|string|max:20',
         ]);
 
+        $teamsToUpdate = CompetitionParticipantTeam::whereIn('id', array_keys($validated['orders']))->get()->keyBy('id');
+        $categorizedOrders = [];
+
+        // Validasi anti-duplikasi nomor urut per cabang lomba
+        foreach ($validated['orders'] as $teamId => $rawOrder) {
+            $orderNum = trim((string) $rawOrder);
+            if ($orderNum === '') {
+                continue;
+            }
+
+            if (preg_match('/^([a-z])[-]?(\d+)$/i', $orderNum, $m)) {
+                $orderNum = strtoupper($m[1]) . '-' . sprintf('%03d', intval($m[2]));
+            }
+
+            $team = $teamsToUpdate->get($teamId);
+            if (! $team) {
+                continue;
+            }
+
+            $catId = $team->competition_category_id;
+            if (isset($categorizedOrders[$catId][$orderNum])) {
+                return redirect()->back()->with('error', "Terdapat nomor urut kembar '{$orderNum}' pada cabang lomba yang sama. Setiap regu harus memiliki nomor urut yang berbeda!");
+            }
+
+            // Cek juga terhadap database untuk tim yang tidak ikut di-submit saat ini
+            $dbDuplicate = CompetitionParticipantTeam::where('competition_category_id', $catId)
+                ->whereNotIn('id', array_keys($validated['orders']))
+                ->where('order_number', $orderNum)
+                ->first();
+
+            if ($dbDuplicate) {
+                $usedBy = $dbDuplicate->registration?->school_name ?: $dbDuplicate->team_name;
+                return redirect()->back()->with('error', "No. Urut Peserta '{$orderNum}' sudah digunakan oleh regu {$dbDuplicate->team_name} ({$usedBy}) pada cabang lomba ini!");
+            }
+
+            $categorizedOrders[$catId][$orderNum] = $teamId;
+        }
+
         $count = 0;
-        foreach ($validated['orders'] as $teamId => $orderNum) {
-            $team = CompetitionParticipantTeam::find($teamId);
+        foreach ($validated['orders'] as $teamId => $rawOrder) {
+            $team = $teamsToUpdate->get($teamId);
             if ($team) {
-                $team->update(['order_number' => trim($orderNum) ?: null]);
+                $orderNum = trim((string) $rawOrder);
+                if ($orderNum !== '') {
+                    if (preg_match('/^([a-z])[-]?(\d+)$/i', $orderNum, $m)) {
+                        $orderNum = strtoupper($m[1]) . '-' . sprintf('%03d', intval($m[2]));
+                    }
+                    $team->update(['order_number' => $orderNum]);
+                } else {
+                    $team->update(['order_number' => null]);
+                }
                 $count++;
             }
         }
 
-        return redirect()->back()->with('success', "Nomor urut tampil untuk {$count} regu berhasil diperbarui!");
+        return redirect()->back()->with('success', "No. Urut Peserta untuk {$count} regu berhasil diperbarui!");
     }
 
     public function autoAssignOrders(Request $request)
     {
         $categoryId = $request->input('category_id');
         $level = $request->input('level');
+        $shuffle = (bool) $request->input('shuffle', false);
 
         $query = CompetitionParticipantTeam::where('is_active', true)
             ->where(function ($q) {
@@ -255,13 +323,19 @@ class CompetitionParticipantController extends Controller
                 }
             }
 
-            // Tetapkan nomor urut per slot: Regu A (A-01, A-02...), Regu B (B-01, B-02...), dst
+            // Tetapkan nomor urut per slot: Regu A (A-001, A-002...), Regu B (B-001, B-002...), dst
             ksort($slots);
             foreach ($slots as $slotIdx => $teamsInSlot) {
                 $prefix = chr(65 + $slotIdx);
+
+                // Jika mode undian / acak aktif
+                if ($shuffle) {
+                    shuffle($teamsInSlot);
+                }
+
                 $num = 1;
                 foreach ($teamsInSlot as $team) {
-                    $formattedNum = sprintf('%s-%02d', $prefix, $num);
+                    $formattedNum = sprintf('%s-%03d', $prefix, $num);
                     $team->update(['order_number' => $formattedNum]);
                     $num++;
                     $totalAssigned++;
@@ -269,7 +343,8 @@ class CompetitionParticipantController extends Controller
             }
         }
 
-        return redirect()->back()->with('success', "Nomor urut Skema 1 (Regu A lalu Regu B) berhasil di-generate secara otomatis untuk {$totalAssigned} regu peserta!");
+        $modeText = $shuffle ? 'Undian TM (Acak)' : 'Berurutan';
+        return redirect()->back()->with('success', "No. Urut Peserta skema {$modeText} (Regu A: A-001.. Regu B: B-001..) berhasil di-generate secara otomatis untuk {$totalAssigned} regu peserta!");
     }
 
     public function printSheet(Request $request)

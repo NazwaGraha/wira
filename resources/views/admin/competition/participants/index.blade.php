@@ -141,13 +141,24 @@
             </div>
 
             <!-- Auto-Number & Tools -->
-            <div class="flex items-center gap-2 w-full md:w-auto justify-end">
-                <form action="{{ route('admin.competition-participants.auto-assign-orders') }}" method="POST" onsubmit="return confirm('Generate nomor urut otomatis Skema 1 (Regu A: A-01.. lalu Regu B: B-01..) untuk regu yang terfilter saat ini?');">
+            <div class="flex items-center gap-2 w-full md:w-auto justify-end flex-wrap">
+                <form action="{{ route('admin.competition-participants.auto-assign-orders') }}" method="POST" onsubmit="return confirm('Generate No. Urut Peserta format A-001.. lalu B-001.. secara berurutan untuk regu yang terfilter saat ini?');">
                     @csrf
                     @if($categoryId) <input type="hidden" name="category_id" value="{{ $categoryId }}"> @endif
                     @if($level) <input type="hidden" name="level" value="{{ $level }}"> @endif
+                    <input type="hidden" name="shuffle" value="0">
                     <button type="submit" class="bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200 px-3.5 py-2 rounded-xl text-xs font-bold transition flex items-center gap-1.5 shadow-2xs">
-                        <i class="fa-solid fa-shuffle text-indigo-600"></i> Auto No. Urut (Skema 1: A-01.. B-01..)
+                        <i class="fa-solid fa-list-ol text-indigo-600"></i> Auto No. Urut (A-001, B-001)
+                    </button>
+                </form>
+
+                <form action="{{ route('admin.competition-participants.auto-assign-orders') }}" method="POST" onsubmit="return confirm('Acak / Undi No. Urut Peserta format A-001.. lalu B-001.. (Undian TM Digital) untuk regu yang terfilter saat ini?');">
+                    @csrf
+                    @if($categoryId) <input type="hidden" name="category_id" value="{{ $categoryId }}"> @endif
+                    @if($level) <input type="hidden" name="level" value="{{ $level }}"> @endif
+                    <input type="hidden" name="shuffle" value="1">
+                    <button type="submit" class="bg-amber-50 hover:bg-amber-100 text-amber-800 border border-amber-200 px-3.5 py-2 rounded-xl text-xs font-bold transition flex items-center gap-1.5 shadow-2xs">
+                        <i class="fa-solid fa-shuffle text-amber-600"></i> Acak Undian TM (A-001, B-001)
                     </button>
                 </form>
             </div>
@@ -236,7 +247,7 @@
                                     <tr class="hover:bg-slate-50/80 transition">
                                         <!-- Order Number Input -->
                                         <td class="px-5 py-4 text-center">
-                                            <input type="text" name="orders[{{ $team->id }}]" value="{{ $team->order_number ?? '' }}" placeholder="{{ str_pad($idx + 1, 2, '0', STR_PAD_LEFT) }}" class="w-20 px-2.5 py-2 bg-slate-50 border border-slate-300 rounded-xl text-center font-black font-mono text-slate-900 text-xs focus:bg-white focus:outline-none focus:border-red-500 shadow-2xs">
+                                            <input type="text" name="orders[{{ $team->id }}]" value="{{ $team->order_number ?? '' }}" placeholder="cth: A-001" class="w-24 px-2.5 py-2 bg-slate-50 border border-slate-300 rounded-xl text-center font-black font-mono text-slate-900 text-xs focus:bg-white focus:outline-none focus:border-red-500 shadow-2xs">
                                         </td>
 
                                         <!-- Team & School Name -->
@@ -366,7 +377,7 @@
             <div class="space-y-4 text-xs">
                 <div>
                     <label class="font-bold text-slate-700 block mb-1">No. Urut Peserta</label>
-                    <input type="text" id="modalOrderNumber" name="order_number" class="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-xl font-mono font-bold focus:bg-white focus:outline-none focus:border-red-500">
+                    <input type="text" id="modalOrderNumber" name="order_number" placeholder="Contoh: A-001 / B-001" class="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-xl font-mono font-bold focus:bg-white focus:outline-none focus:border-red-500">
                 </div>
 
                 <div>

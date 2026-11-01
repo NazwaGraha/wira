@@ -282,6 +282,10 @@
 
                 $roleStr = $card['role'];
                 $isLeader = strcasecmp($roleStr, 'Ketua') === 0 || strcasecmp($roleStr, 'Ketua Regu') === 0;
+
+                $orderStr = (string) ($card['order_number'] ?? '-');
+                $orderLen = strlen($orderStr);
+                $orderSize = $orderLen > 4 ? 'text-[24px] sm:text-[26px]' : ($orderLen > 2 ? 'text-[28px] sm:text-[30px]' : 'text-[34px]');
             @endphp
 
             <div class="card-wrapper flex flex-col items-center">
@@ -314,10 +318,10 @@
                         </span>
                     </div>
 
-                    <!-- Kotak 3: NO. URUT -->
+                    <!-- Kotak 3: NO. URUT PESERTA -->
                     <div class="box-overlay box-nourut">
-                        <span class="clean-card-text text-[34px] font-black tracking-wider font-mono">
-                            {{ $card['order_number'] }}
+                        <span class="clean-card-text {{ $orderSize }} font-black tracking-wider font-mono">
+                            {{ $orderStr }}
                         </span>
                     </div>
 
