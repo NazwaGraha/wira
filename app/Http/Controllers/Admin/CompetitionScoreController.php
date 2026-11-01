@@ -1230,11 +1230,14 @@ class CompetitionScoreController extends Controller
 
         $isPRS = str_contains(strtolower($category->name), 'pendidikan remaja sebaya') || str_contains(strtolower($category->name), 'prs') || str_starts_with($category->code ?? '', 'PRS');
         $isMewarnai = str_contains(strtolower($category->name), 'mewarnai') || str_starts_with($category->code ?? '', 'MEWARNAI');
+        $isLKTR = str_contains(strtolower($category->name), 'tandu') || str_contains(strtolower($category->name), 'lktr') || str_starts_with($category->code ?? '', 'LKTR');
 
         if ($isPRS) {
             $viewName = 'admin.competition.scores.grid-prs';
         } elseif ($isMewarnai) {
             $viewName = 'admin.competition.scores.grid-mewarnai';
+        } elseif ($isLKTR) {
+            $viewName = 'admin.competition.scores.grid-lktr';
         } else {
             $viewName = match ($category->level) {
                 'Madya' => 'admin.competition.scores.grid-madya',
@@ -1280,12 +1283,6 @@ class CompetitionScoreController extends Controller
         $notes = $request->input('notes');
         $actionAfter = $request->input('action_after', 'stay'); // 'stay', 'next', 'back'
 
-        // Hitung total skor akumulasi dari rubrik
-        $totalScore = 0;
-        foreach ($rubric as $k => $v) {
-            $totalScore += intval($v);
-        }
-
         // Konversi waktu ke detik
         $timeSeconds = self::parseTimeToSeconds($timeRecorded);
 
@@ -1304,15 +1301,54 @@ class CompetitionScoreController extends Controller
             ->where('round_name', $round)
             ->first();
 
-        $mergedDetails = array_merge($existingScore?->score_details ?? [], [
-            'practical_score' => $totalScore,
-            'practical_time' => $timeRecorded,
-            'time_recorded' => $timeRecorded,
-            'time_seconds' => $timeSeconds,
-            'grid_rubric' => $rubric,
-            'subtotals' => $subtotals,
-            'notes' => $notes,
-        ]);
+        $team = CompetitionParticipantTeam::find($teamId);
+        $teamName = $team?->team_name ?? 'Regu Peserta';
+
+        $isPRS = str_contains(strtolower($category->name), 'pendidikan remaja sebaya') || str_contains(strtolower($category->name), 'prs') || str_starts_with($category->code ?? '', 'PRS');
+        $isLKTR = str_contains(strtolower($category->name), 'tandu') || str_contains(strtolower($category->name), 'lktr') || str_starts_with($category->code ?? '', 'LKTR');
+
+        if ($isLKTR) {
+            $technicalScore = 0;
+            foreach ($rubric as $k => $v) {
+                $technicalScore += intval($v);
+            }
+            $timeScore = self::calculateLktrTimeScore($category->level ?? 'Madya', $timeRecorded);
+            $totalScore = $technicalScore + $timeScore;
+
+            $mergedDetails = array_merge($existingScore?->score_details ?? [], [
+                'technical_score' => $technicalScore,
+                'time_score' => $timeScore,
+                'practical_score' => $technicalScore,
+                'practical_time' => $timeRecorded,
+                'time_recorded' => $timeRecorded,
+                'time_seconds' => $timeSeconds,
+                'grid_rubric' => $rubric,
+                'subtotals' => $subtotals,
+                'notes' => $notes,
+            ]);
+
+            $labelLomba = 'Ketangkasan Tandu Reguler (LKTR)';
+            $msg = "Nilai Grid {$labelLomba} untuk regu '{$teamName}' berhasil disimpan (Teknis: {$technicalScore} + Waktu {$timeRecorded}: {$timeScore} = Total: {$totalScore}) dan otomatis terisi di Lembar Skor Utama!";
+        } else {
+            $totalScore = 0;
+            foreach ($rubric as $k => $v) {
+                $totalScore += intval($v);
+            }
+
+            $mergedDetails = array_merge($existingScore?->score_details ?? [], [
+                'practical_score' => $totalScore,
+                'practical_time' => $timeRecorded,
+                'time_recorded' => $timeRecorded,
+                'time_seconds' => $timeSeconds,
+                'grid_rubric' => $rubric,
+                'subtotals' => $subtotals,
+                'notes' => $notes,
+            ]);
+
+            $labelLomba = $isPRS ? 'Pendidikan Remaja Sebaya' : 'Pertolongan Pertama';
+            $waktuSuffix = $isPRS ? '' : ", Waktu: {$timeRecorded}";
+            $msg = "Nilai Grid {$labelLomba} untuk regu '{$teamName}' berhasil disimpan (Total Skor: {$totalScore}{$waktuSuffix}) dan otomatis terisi di Lembar Skor Utama!";
+        }
 
         CompetitionScore::updateOrCreate(
             [
@@ -1332,14 +1368,6 @@ class CompetitionScoreController extends Controller
 
         // Perbarui peringkat secara otomatis
         $this->autoRecalculateRanks($category->id, $round);
-
-        $team = CompetitionParticipantTeam::find($teamId);
-        $teamName = $team?->team_name ?? 'Regu Peserta';
-
-        $isPRS = str_contains(strtolower($category->name), 'pendidikan remaja sebaya') || str_contains(strtolower($category->name), 'prs') || str_starts_with($category->code ?? '', 'PRS');
-        $labelLomba = $isPRS ? 'Pendidikan Remaja Sebaya' : 'Pertolongan Pertama';
-        $waktuSuffix = $isPRS ? '' : ", Waktu: {$timeRecorded}";
-        $msg = "Nilai Grid {$labelLomba} untuk regu '{$teamName}' berhasil disimpan (Total Skor: {$totalScore}{$waktuSuffix}) dan otomatis terisi di Lembar Skor Utama!";
 
         if ($actionAfter === 'next') {
             $nextTeamId = $request->input('next_team_id');
@@ -1370,6 +1398,53 @@ class CompetitionScoreController extends Controller
     public function saveGridMula(CompetitionCategory $category, Request $request)
     {
         return $this->saveGridScore($category, $request);
+    }
+
+    /**
+     * Konversi waktu tempuh ke nilai skor LKTR sesuai tingkatan (Mula vs Madya/Wira)
+     */
+    public static function calculateLktrTimeScore(string $level, string $timeRecorded): int
+    {
+        $seconds = self::parseTimeToSeconds($timeRecorded);
+        if ($seconds === null || $seconds <= 0) {
+            return 0;
+        }
+
+        if (strcasecmp(trim($level), 'Mula') === 0) {
+            // Mula:
+            // <= 03:00 (180s) => 300
+            // 03:01 - 03:15 (181 - 195s) => 290
+            // Interval 15 detik, berkurang 10 poin per interval
+            // 09:46 - 10:00 (586 - 600s) => 20
+            // > 10:00 (> 600s) => 0
+            if ($seconds <= 180) {
+                return 300;
+            }
+            if ($seconds > 600) {
+                return 0;
+            }
+            $step = (int) ceil(($seconds - 180) / 15);
+            $score = 300 - ($step * 10);
+
+            return max($score, 20);
+        } else {
+            // Madya & Wira:
+            // <= 02:40 (160s) => 300
+            // 02:41 - 02:50 (161 - 170s) => 285
+            // Interval 10 detik, berkurang 15 poin per interval
+            // 05:21 - 05:30 (321 - 330s) => 45
+            // > 05:30 (> 330s) => 0
+            if ($seconds <= 160) {
+                return 300;
+            }
+            if ($seconds > 330) {
+                return 0;
+            }
+            $step = (int) ceil(($seconds - 160) / 10);
+            $score = 300 - ($step * 15);
+
+            return max($score, 45);
+        }
     }
 
     /**
