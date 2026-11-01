@@ -16,6 +16,9 @@
 @endsection
 
 @section('content')
+@php
+    $isLevelMula = strcasecmp(trim($category->level ?? ''), 'Mula') === 0;
+@endphp
 <div class="space-y-6">
 
     <style>
@@ -164,7 +167,6 @@
                     $teamCode = 'No. Urut ' . str_pad($currentTeam->order_number ?? '1', 2, '0', STR_PAD_LEFT);
                     $rubricData = is_array($existingRubric) ? $existingRubric : [];
 
-                    $isLevelMula = strcasecmp(trim($category->level), 'Mula') === 0;
                     $formatTitle = $isLevelMula ? 'FORMAT PENILAIAN LOMBA TANDU (MULA)' : 'FORMAT PENILAIAN LOMBA TANDU (MADYA & WIRA)';
                     
                     // Initial values from DB or defaults
@@ -718,6 +720,9 @@
     }
 
     function recalculateAll() {
+        if (!document.getElementById('display_subtotal_kekuatan')) {
+            return;
+        }
         // 1. Kekuatan
         const kekuatanKeys = ['kekuatan_1', 'kekuatan_2', 'kekuatan_3a', 'kekuatan_3b', 'kekuatan_4'];
         let subtotalKekuatan = 0;
