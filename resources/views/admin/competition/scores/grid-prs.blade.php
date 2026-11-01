@@ -1,7 +1,11 @@
 @extends('layouts.admin')
 
+@php
+    $isWira = strcasecmp(trim($category->level ?? ''), 'Wira') === 0;
+@endphp
+
 @section('title', 'Grid Penilaian: ' . $category->name . ' (' . $category->level . ')')
-@section('page_title', 'Grid Penilaian Lomba Pendidikan Remaja Sebaya (PRS)')
+@section('page_title', 'Grid Penilaian Lomba Pendidikan Remaja Sebaya (PRS) Tingkat ' . ($category->level ?? 'Madya'))
 
 @section('top_actions')
     <a href="{{ route('admin.competition-scores.input', $category->id) }}" class="bg-slate-100 hover:bg-slate-200 text-slate-700 px-4 py-2 rounded-xl font-bold text-xs transition flex items-center gap-1.5 shadow-2xs">
@@ -20,11 +24,17 @@
 
     <style>
         .selected-cell {
+            @if($isWira)
+            background: linear-gradient(135deg, #e11d48 0%, #be123c 100%) !important;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.2), 0 4px 10px rgba(225, 29, 72, 0.4);
+            border-color: #fda4af !important;
+            @else
             background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%) !important;
-            color: #ffffff !important;
-            font-weight: 800 !important;
             box-shadow: inset 0 2px 4px rgba(0,0,0,0.2), 0 4px 10px rgba(2, 132, 199, 0.4);
             border-color: #38bdf8 !important;
+            @endif
+            color: #ffffff !important;
+            font-weight: 800 !important;
             transform: scale(1.02);
         }
     </style>
@@ -43,9 +53,9 @@
     @endif
 
     {{-- Header Info Card --}}
-    <div class="bg-gradient-to-r from-slate-900 via-slate-800 to-sky-950 p-6 rounded-3xl shadow-xl text-white flex flex-col md:flex-row justify-between md:items-center gap-4 border border-slate-700">
+    <div class="bg-gradient-to-r from-slate-900 via-slate-800 {{ $isWira ? 'to-rose-950' : 'to-sky-950' }} p-6 rounded-3xl shadow-xl text-white flex flex-col md:flex-row justify-between md:items-center gap-4 border border-slate-700">
         <div class="flex items-center gap-4">
-            <div class="w-14 h-14 rounded-2xl bg-gradient-to-tr from-rose-500 to-amber-400 p-0.5 shadow-lg flex items-center justify-center">
+            <div class="w-14 h-14 rounded-2xl bg-gradient-to-tr from-rose-500 {{ $isWira ? 'to-pink-500' : 'to-amber-400' }} p-0.5 shadow-lg flex items-center justify-center">
                 <div class="w-full h-full bg-slate-950 rounded-[14px] flex items-center justify-center">
                     <i class="fa-solid fa-heart-pulse text-rose-500 text-2xl"></i>
                 </div>
@@ -53,7 +63,7 @@
             <div>
                 <div class="flex items-center gap-2 mb-1">
                     <span class="px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-rose-500/20 text-rose-300 border border-rose-500/30">
-                        {{ $category->code ?? 'PRS-MADYA' }}
+                        {{ $category->code ?? ($isWira ? 'PRS-WIRA' : 'PRS-MADYA') }}
                     </span>
                     <span class="text-xs text-slate-300 font-bold">PMR {{ $category->level }} &bull; Kategori {{ $category->gender_category }}</span>
                 </div>
@@ -67,7 +77,7 @@
         </div>
 
         <div class="flex items-center gap-3">
-            <a href="{{ route('admin.competition-scores.input', $category->id) }}" class="px-4 py-2.5 rounded-2xl bg-sky-600 hover:bg-sky-500 text-white font-bold text-xs transition flex items-center gap-2 shadow-md">
+            <a href="{{ route('admin.competition-scores.input', $category->id) }}" class="px-4 py-2.5 rounded-2xl {{ $isWira ? 'bg-rose-600 hover:bg-rose-500' : 'bg-sky-600 hover:bg-sky-500' }} text-white font-bold text-xs transition flex items-center gap-2 shadow-md">
                 <i class="fa-solid fa-table-list"></i> Buka Lembar Skor Utama
             </a>
         </div>
@@ -80,7 +90,7 @@
         <div class="lg:col-span-4 xl:col-span-3 bg-white rounded-3xl p-4 shadow-sm border border-slate-200">
             <div class="flex items-center justify-between border-b border-slate-100 pb-3 mb-3">
                 <h3 class="font-extrabold text-sm text-slate-800 flex items-center gap-2">
-                    <i class="fa-solid fa-users-line text-sky-600"></i>
+                    <i class="fa-solid fa-users-line {{ $isWira ? 'text-rose-600' : 'text-sky-600' }}"></i>
                     Daftar Regu Peserta
                 </h3>
                 <span class="text-[11px] font-bold bg-slate-100 text-slate-600 px-2 py-0.5 rounded-full">
@@ -98,10 +108,10 @@
                         $reg = $t->registration;
                     @endphp
                     <a href="{{ route('admin.competition-scores.grid', ['category' => $category->id, 'team_id' => $t->id, 'round' => $round]) }}"
-                       class="block p-3 rounded-2xl border transition relative {{ $isActive ? 'bg-sky-50/90 border-sky-400 shadow-sm ring-2 ring-sky-400/20' : 'bg-slate-50 hover:bg-white border-slate-200' }}">
+                       class="block p-3 rounded-2xl border transition relative {{ $isActive ? ($isWira ? 'bg-rose-50/90 border-rose-400 shadow-sm ring-2 ring-rose-400/20' : 'bg-sky-50/90 border-sky-400 shadow-sm ring-2 ring-sky-400/20') : 'bg-slate-50 hover:bg-white border-slate-200' }}">
                         
                         <div class="flex items-center justify-between gap-2">
-                            <span class="w-6 h-6 rounded-full text-[11px] font-black flex items-center justify-center {{ $isActive ? 'bg-sky-600 text-white' : 'bg-slate-200 text-slate-700' }}">
+                            <span class="w-6 h-6 rounded-full text-[11px] font-black flex items-center justify-center {{ $isActive ? ($isWira ? 'bg-rose-600 text-white' : 'bg-sky-600 text-white') : 'bg-slate-200 text-slate-700' }}">
                                 {{ $t->order_number ?? ($idx + 1) }}
                             </span>
                             
@@ -140,8 +150,8 @@
             @if($currentTeam)
                 @php
                     $reg = $currentTeam->registration;
-                    $schoolName = $reg->school_name ?? ($currentTeam->team_label ?? 'SMPN 1 Ciawi (Bogor)');
-                    $teamCode = $currentTeam->team_code ?? ('PRS-MDY-0'.($currentTeam->order_number ?? $currentTeam->id));
+                    $schoolName = $reg->school_name ?? ($currentTeam->team_label ?? ($isWira ? 'SMAN 1 Ciawi (Bogor)' : 'SMPN 1 Ciawi (Bogor)'));
+                    $teamCode = $currentTeam->team_code ?? (($isWira ? 'PRS-WIR-0' : 'PRS-MDY-0').($currentTeam->order_number ?? $currentTeam->id));
                     $rubricData = $existingRubric ?? [];
                     
                     // Ambil nilai per kriteria yang sudah tersimpan
@@ -168,7 +178,7 @@
                             GRID PENILAIAN LOMBA PENDIDIKAN REMAJA SEBAYA
                         </h2>
                         <div class="text-xs sm:text-sm font-bold text-slate-700 uppercase tracking-widest mt-0.5">
-                            TINGKAT MADYA
+                            TINGKAT {{ strtoupper($category->level ?? 'MADYA') }}
                         </div>
                     </div>
 
@@ -417,7 +427,7 @@
                                         <td colspan="10" class="py-3 px-4 text-right tracking-wider uppercase text-slate-300 text-xs">
                                             TOTAL NILAI AKUMULASI GRID:
                                         </td>
-                                        <td class="py-3 px-2 bg-gradient-to-r from-emerald-600 to-teal-600 text-white font-mono text-xl tracking-tight" id="badge_total_score">
+                                        <td class="py-3 px-2 bg-gradient-to-r {{ $isWira ? 'from-rose-600 to-red-600' : 'from-emerald-600 to-teal-600' }} text-white font-mono text-xl tracking-tight" id="badge_total_score">
                                             {{ number_format((float)($score->final_score ?? 0), 0, ',', '.') }}
                                         </td>
                                     </tr>
@@ -432,7 +442,7 @@
                             <label class="text-[11px] font-black uppercase tracking-wider text-slate-700 mb-1.5 flex items-center gap-1.5">
                                 <i class="fa-solid fa-comment-dots text-slate-500"></i> PESAN DARI DEWAN JURI :
                             </label>
-                            <textarea name="notes" class="w-full bg-white border border-slate-200 rounded-xl p-3 text-xs text-slate-800 leading-relaxed focus:outline-none focus:ring-2 focus:ring-sky-500" rows="3" placeholder="Tuliskan catatan, evaluasi materi, atau masukan untuk regu peserta ini...">{{ $existingNotes }}</textarea>
+                            <textarea name="notes" class="w-full bg-white border border-slate-200 rounded-xl p-3 text-xs text-slate-800 leading-relaxed focus:outline-none focus:ring-2 {{ $isWira ? 'focus:ring-rose-500' : 'focus:ring-sky-500' }}" rows="3" placeholder="Tuliskan catatan, evaluasi materi, atau masukan untuk regu peserta ini...">{{ $existingNotes }}</textarea>
                         </div>
 
                         <div class="border border-slate-300 rounded-2xl p-4 bg-slate-50 flex flex-col justify-between">
@@ -449,7 +459,7 @@
                                 </div>
                                 <div class="bg-white p-2.5 rounded-xl border border-dashed border-slate-300">
                                     <i class="fa-solid fa-user-check text-slate-400 text-xl"></i>
-                                    <div class="font-bold text-slate-800 mt-1">Peserta</div>
+                                    <div class="font-bold text-slate-800 mt-1 truncate">{{ $schoolName }}</div>
                                     <span class="text-[10px] text-slate-500 font-medium inline-block mt-0.5">
                                         {{ $currentTeam->team_name }}
                                     </span>
@@ -465,12 +475,12 @@
                         </div>
 
                         <div class="flex flex-wrap items-center gap-2">
-                            <button type="submit" onclick="setActionAfter('stay')" class="px-5 py-2.5 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-black text-xs uppercase tracking-wider shadow-md shadow-emerald-600/30 flex items-center gap-2 transition">
+                            <button type="submit" onclick="setActionAfter('stay')" class="px-5 py-2.5 rounded-xl bg-gradient-to-r {{ $isWira ? 'from-rose-600 to-red-600 hover:from-rose-500 hover:to-red-500 shadow-rose-600/30' : 'from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 shadow-emerald-600/30' }} text-white font-black text-xs uppercase tracking-wider shadow-md flex items-center gap-2 transition">
                                 <i class="fa-solid fa-floppy-disk"></i> Simpan Nilai Grid
                             </button>
 
                             @if($nextTeam)
-                                <button type="submit" onclick="setActionAfter('next')" class="px-5 py-2.5 rounded-xl bg-sky-600 hover:bg-sky-500 text-white font-black text-xs uppercase tracking-wider shadow-md shadow-sky-600/30 flex items-center gap-2 transition">
+                                <button type="submit" onclick="setActionAfter('next')" class="px-5 py-2.5 rounded-xl {{ $isWira ? 'bg-slate-800 hover:bg-slate-700' : 'bg-sky-600 hover:bg-sky-500 shadow-sky-600/30' }} text-white font-black text-xs uppercase tracking-wider shadow-md flex items-center gap-2 transition">
                                     <span>Simpan & Regu Berikutnya</span> <i class="fa-solid fa-arrow-right"></i>
                                 </button>
                             @endif
