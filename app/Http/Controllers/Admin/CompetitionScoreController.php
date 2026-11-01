@@ -1133,6 +1133,11 @@ class CompetitionScoreController extends Controller
      */
     public function gridScore(CompetitionCategory $category, Request $request)
     {
+        // Jika kategori adalah Cepat Tepat / Cerdas Cermat (LCT), arahkan ke sistem penilaian LCT khusus 3 tahap
+        if (str_contains(strtolower($category->name), 'cepat tepat') || str_contains(strtolower($category->name), 'cerdas cermat') || str_starts_with($category->code ?? '', 'LCT')) {
+            return redirect()->route('admin.competition-scores.lct', $category->id);
+        }
+
         $category->loadMissing(['assignedJuries', 'event']);
 
         $round = $request->query('round', 'Utama');
@@ -1547,5 +1552,723 @@ class CompetitionScoreController extends Controller
         return response()->download($filePath, $fileName, [
             'Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
         ])->deleteFileAfterSend(true);
+    }
+
+    // =========================================================================
+    // MODUL KHUSUS: SISTEM PENILAIAN LCT (LOMBA CEPAT TEPAT) 3 TAHAP
+    // =========================================================================
+
+    /**
+     * Tampilan Utama Sistem Penilaian LCT 3 Tahap
+     */
+    public function lctView(CompetitionCategory $category, Request $request)
+    {
+        $category->loadMissing(['assignedJuries', 'event']);
+
+        $activeStage = (int) $request->query('stage', 1);
+
+        // Ambil semua tim peserta yang terdaftar pada kategori LCT ini
+        $allTeams = CompetitionParticipantTeam::where('competition_category_id', $category->id)
+            ->where('is_active', true)
+            ->with('registration')
+            ->orderBy('order_number')
+            ->get();
+
+        // 1. DATA SESI 1: TAHAP PENYISIHAN
+        $prelimScores = CompetitionScore::where('competition_category_id', $category->id)
+            ->where(function ($q) {
+                $q->where('round_name', 'Penyisihan')
+                    ->orWhere('round_name', 'like', '%Penyisihan%')
+                    ->orWhere('round_name', 'like', '%Babak 1%');
+            })
+            ->get()
+            ->keyBy('competition_participant_team_id');
+
+        // Petakan tim penyisihan dengan skor dan kalkulasi rank
+        $prelimTeams = $allTeams->map(function ($team) use ($prelimScores) {
+            $sc = $prelimScores->get($team->id);
+            $teamCopy = clone $team;
+            $teamCopy->prelim_score = $sc?->final_score !== null ? (float) $sc->final_score : null;
+            $teamCopy->prelim_time = $sc?->time_recorded ?? null;
+            $teamCopy->time_seconds = $sc ? ($sc->score_details['time_seconds'] ?? self::parseTimeToSeconds($sc->time_recorded) ?? 999999) : 999999;
+            $teamCopy->prelim_rank = $sc?->rank ?? null;
+
+            return $teamCopy;
+        });
+
+        // Urutkan klasemen penyisihan: Skor tertinggi -> Waktu tercepat (tie-breaker)
+        $sortedPrelim = $prelimTeams->sort(function ($a, $b) {
+            $scoreA = $a->prelim_score ?? -1;
+            $scoreB = $b->prelim_score ?? -1;
+            if ($scoreA != $scoreB) {
+                return $scoreB <=> $scoreA;
+            }
+
+            return $a->time_seconds <=> $b->time_seconds;
+        })->values();
+
+        // Tetapkan rank 1 s/d N dan flag lolos 9 besar
+        $sortedPrelim->each(function ($t, $idx) {
+            $t->prelim_rank = $idx + 1;
+            $t->is_top_9 = ($idx < 9 && $t->prelim_score !== null);
+        });
+
+        $top9Teams = $sortedPrelim->filter(fn ($t) => $t->is_top_9)->values();
+
+        // 2. DATA SESI 2: TAHAP SEMI-FINAL (3 TERMIN)
+        $semiScores = CompetitionScore::where('competition_category_id', $category->id)
+            ->where(function ($q) {
+                $q->where('round_name', 'Semi Final')
+                    ->orWhere('round_name', 'like', '%Semi Final%')
+                    ->orWhere('round_name', 'like', '%Semifinal%')
+                    ->orWhere('round_name', 'like', '%Babak 2%');
+            })
+            ->get()
+            ->keyBy('competition_participant_team_id');
+
+        $termin1Teams = collect();
+        $termin2Teams = collect();
+        $termin3Teams = collect();
+
+        // Jika data semifinal sudah ada di database, gunakan pembagian termin yang tersimpan
+        foreach ($allTeams as $team) {
+            $sc = $semiScores->get($team->id);
+            if ($sc) {
+                $details = is_array($sc->score_details) ? $sc->score_details : (json_decode($sc->score_details ?? '', true) ?? []);
+                $termin = $details['termin'] ?? null;
+                $tObj = clone $team;
+                $tObj->soal_amplop = $details['soal_amplop'] ?? 0;
+                $tObj->rebutan = $details['rebutan'] ?? 0;
+                $tObj->balon = $details['balon'] ?? 0;
+                $tObj->total_score = (float) $sc->final_score;
+                $tObj->termin_rank = $sc->rank ?? null;
+                $tObj->termin = $termin;
+
+                if ($termin == 1) {
+                    $termin1Teams->push($tObj);
+                } elseif ($termin == 2) {
+                    $termin2Teams->push($tObj);
+                } elseif ($termin == 3) {
+                    $termin3Teams->push($tObj);
+                }
+            }
+        }
+
+        // Hitung ranking per termin
+        foreach ([1 => $termin1Teams, 2 => $termin2Teams, 3 => $termin3Teams] as $tNum => $tCol) {
+            $tCol->sort(fn ($a, $b) => $b->total_score <=> $a->total_score)->values()->each(function ($t, $idx) {
+                $t->termin_rank = $idx + 1;
+            });
+        }
+
+        // Identifikasi 3 Finalis (Juara 1 masing-masing termin)
+        $finalist1 = $termin1Teams->sortBy('termin_rank')->first();
+        $finalist2 = $termin2Teams->sortBy('termin_rank')->first();
+        $finalist3 = $termin3Teams->sortBy('termin_rank')->first();
+
+        $finalistsList = collect([$finalist1, $finalist2, $finalist3])->filter()->values();
+
+        // 6 Tim Non-Finalis diurutkan untuk Juara Harapan 1 & 2
+        $nonFinalists = collect();
+        foreach ([$termin1Teams, $termin2Teams, $termin3Teams] as $tCol) {
+            foreach ($tCol as $t) {
+                if ($t->termin_rank > 1) {
+                    $nonFinalists->push($t);
+                }
+            }
+        }
+
+        $sortedNonFinalists = $nonFinalists->sortByDesc('total_score')->values();
+        $sortedNonFinalists->each(function ($t, $idx) {
+            $t->harapan_rank = $idx + 1;
+            $t->overall_rank = $idx + 4; // Juara 1-3 untuk finalis, maka 4, 5, 6, 7, 8, 9
+            $t->is_harapan_1 = ($idx === 0);
+            $t->is_harapan_2 = ($idx === 1);
+        });
+
+        $harapan1Team = $sortedNonFinalists->firstWhere('is_harapan_1', true);
+        $harapan2Team = $sortedNonFinalists->firstWhere('is_harapan_2', true);
+
+        // 3. DATA SESI 3: GRAND FINAL
+        $finalScores = CompetitionScore::where('competition_category_id', $category->id)
+            ->where(function ($q) {
+                $q->where('round_name', 'Final')
+                    ->orWhere('round_name', 'like', '%Babak 3%')
+                    ->orWhere('round_name', 'like', '%Grand Final%');
+            })
+            ->get()
+            ->keyBy('competition_participant_team_id');
+
+        $finalGrandTeams = collect();
+        if ($finalistsList->isNotEmpty()) {
+            foreach ($finalistsList as $fTeam) {
+                $sc = $finalScores->get($fTeam->id);
+                $details = is_array($sc?->score_details) ? $sc->score_details : (json_decode($sc?->score_details ?? '', true) ?? []);
+                $fObj = clone $fTeam;
+                $fObj->soal_amplop = $details['soal_amplop'] ?? 0;
+                $fObj->rebutan_bertingkat = $details['rebutan_bertingkat'] ?? 0;
+                $fObj->taruh_nilai = $details['taruh_nilai'] ?? 0;
+                $fObj->total_score = (float) ($sc?->final_score ?? 0);
+                $fObj->grand_rank = $sc?->rank ?? null;
+                $finalGrandTeams->push($fObj);
+            }
+
+            // Urutkan grand final: Skor tertinggi -> Juara 1, 2, 3
+            $finalGrandTeams = $finalGrandTeams->sortByDesc('total_score')->values();
+            $finalGrandTeams->each(function ($t, $idx) {
+                $t->grand_rank = $idx + 1;
+            });
+        }
+
+        $hasSemiResults = $termin1Teams->isNotEmpty() || $termin2Teams->isNotEmpty() || $termin3Teams->isNotEmpty();
+        $hasFinalResults = $finalGrandTeams->isNotEmpty() && $finalGrandTeams->where('total_score', '>', 0)->isNotEmpty();
+
+        return view('admin.competition.scores.grid-lct', compact(
+            'category',
+            'activeStage',
+            'allTeams',
+            'sortedPrelim',
+            'top9Teams',
+            'termin1Teams',
+            'termin2Teams',
+            'termin3Teams',
+            'sortedNonFinalists',
+            'harapan1Team',
+            'harapan2Team',
+            'finalGrandTeams',
+            'hasSemiResults',
+            'hasFinalResults'
+        ));
+    }
+
+    /**
+     * Simpan Nilai Sesi 1: Babak Penyisihan LCT
+     */
+    public function lctSavePrelim(CompetitionCategory $category, Request $request)
+    {
+        $inputScores = $request->input('prelim_scores', []);
+        $inputTimes = $request->input('prelim_times', []);
+
+        $juryUserId = auth()->id() ?: 1;
+
+        foreach ($inputScores as $teamId => $scoreVal) {
+            if ($scoreVal === null || $scoreVal === '') {
+                continue;
+            }
+
+            $timeStr = trim((string) ($inputTimes[$teamId] ?? ''));
+            $timeSeconds = self::parseTimeToSeconds($timeStr) ?? 999999;
+            $scoreFloat = floatval($scoreVal);
+
+            CompetitionScore::updateOrCreate(
+                [
+                    'competition_category_id' => $category->id,
+                    'competition_participant_team_id' => $teamId,
+                    'round_name' => 'Penyisihan',
+                ],
+                [
+                    'jury_user_id' => $juryUserId,
+                    'final_score' => $scoreFloat,
+                    'time_recorded' => $timeStr ?: null,
+                    'score_details' => [
+                        'score' => $scoreFloat,
+                        'time_seconds' => $timeSeconds,
+                    ],
+                ]
+            );
+        }
+
+        // Kalkulasi ulang ranking penyisihan
+        $allPrelim = CompetitionScore::where('competition_category_id', $category->id)
+            ->where('round_name', 'Penyisihan')
+            ->get();
+
+        $sorted = $allPrelim->sort(function ($a, $b) {
+            if ($a->final_score != $b->final_score) {
+                return $b->final_score <=> $a->final_score;
+            }
+            $secA = $a->score_details['time_seconds'] ?? self::parseTimeToSeconds($a->time_recorded) ?? 999999;
+            $secB = $b->score_details['time_seconds'] ?? self::parseTimeToSeconds($b->time_recorded) ?? 999999;
+
+            return $secA <=> $secB;
+        })->values();
+
+        foreach ($sorted as $idx => $sc) {
+            $sc->rank = $idx + 1;
+            $sc->save();
+        }
+
+        return redirect()->route('admin.competition-scores.lct', ['category' => $category->id, 'stage' => 1])
+            ->with('success', 'Nilai & Waktu Tempuh Babak Penyisihan berhasil disimpan! Ranking otomatis diperbarui.');
+    }
+
+    /**
+     * Generate Bagan Semifinal Otomatis (Algoritma Pemisahan Satu Pangkalan Sekolah)
+     */
+    public function lctGenerateSemifinal(CompetitionCategory $category, Request $request)
+    {
+        // Ambil 9 besar dari Penyisihan
+        $prelimScores = CompetitionScore::where('competition_category_id', $category->id)
+            ->where('round_name', 'Penyisihan')
+            ->orderByRaw('`rank` IS NULL, `rank` ASC')
+            ->take(9)
+            ->get();
+
+        if ($prelimScores->count() < 3) {
+            return redirect()->back()->with('error', 'Peserta Babak Penyisihan yang dinilai belum mencukupi (minimal 3 regu).');
+        }
+
+        $teamIds = $prelimScores->pluck('competition_participant_team_id');
+        $topTeams = CompetitionParticipantTeam::whereIn('id', $teamIds)
+            ->with('registration')
+            ->get();
+
+        // Urutkan sesuai rank penyisihan
+        $topTeams = $topTeams->sortBy(function ($t) use ($prelimScores) {
+            return $prelimScores->firstWhere('competition_participant_team_id', $t->id)?->rank ?? 99;
+        })->values();
+
+        // Jalankan Algoritma Smart Bracket
+        $distributed = self::distributeTeamsToTermins($topTeams);
+
+        $juryUserId = auth()->id() ?: 1;
+
+        // Simpan penugasan termin ke database
+        foreach ($distributed as $terminNum => $teamsInTermin) {
+            foreach ($teamsInTermin as $team) {
+                $existingSemi = CompetitionScore::where('competition_category_id', $category->id)
+                    ->where('competition_participant_team_id', $team->id)
+                    ->where('round_name', 'Semi Final')
+                    ->first();
+
+                $details = is_array($existingSemi?->score_details) ? $existingSemi->score_details : [];
+                $details['termin'] = $terminNum;
+                $details['soal_amplop'] = $details['soal_amplop'] ?? 0;
+                $details['rebutan'] = $details['rebutan'] ?? 0;
+                $details['balon'] = $details['balon'] ?? 0;
+
+                CompetitionScore::updateOrCreate(
+                    [
+                        'competition_category_id' => $category->id,
+                        'competition_participant_team_id' => $team->id,
+                        'round_name' => 'Semi Final',
+                    ],
+                    [
+                        'jury_user_id' => $juryUserId,
+                        'final_score' => $existingSemi?->final_score ?? 0,
+                        'score_details' => $details,
+                    ]
+                );
+            }
+        }
+
+        return redirect()->route('admin.competition-scores.lct', ['category' => $category->id, 'stage' => 2])
+            ->with('success', 'Bagan Semifinal Berhasil Dibuat! 9 Tim terbaik telah didistribusikan ke 3 Termin dengan pemisahan satu pangkalan.');
+    }
+
+    /**
+     * Simpan Nilai Sesi 2: Semi-Final (3 Termin)
+     */
+    public function lctSaveSemifinal(CompetitionCategory $category, Request $request)
+    {
+        $amplop = $request->input('semi_amplop', []);
+        $rebutan = $request->input('semi_rebutan', []);
+        $balon = $request->input('semi_balon', []);
+        $termins = $request->input('semi_termin', []);
+
+        $juryUserId = auth()->id() ?: 1;
+
+        $savedScores = [];
+
+        foreach ($termins as $teamId => $terminNum) {
+            $sAmplop = floatval($amplop[$teamId] ?? 0);
+            $sRebutan = floatval($rebutan[$teamId] ?? 0);
+            $sBalon = floatval($balon[$teamId] ?? 0);
+            $total = $sAmplop + $sRebutan + $sBalon;
+
+            $details = [
+                'termin' => (int) $terminNum,
+                'soal_amplop' => $sAmplop,
+                'rebutan' => $sRebutan,
+                'balon' => $sBalon,
+                'total' => $total,
+            ];
+
+            $sc = CompetitionScore::updateOrCreate(
+                [
+                    'competition_category_id' => $category->id,
+                    'competition_participant_team_id' => $teamId,
+                    'round_name' => 'Semi Final',
+                ],
+                [
+                    'jury_user_id' => $juryUserId,
+                    'final_score' => $total,
+                    'score_details' => $details,
+                ]
+            );
+
+            $savedScores[(int) $terminNum][] = $sc;
+        }
+
+        // Hitung rank per termin & siapkan finalis
+        $finalistTeamIds = [];
+
+        foreach ([1, 2, 3] as $tNum) {
+            if (isset($savedScores[$tNum])) {
+                usort($savedScores[$tNum], fn ($a, $b) => $b->final_score <=> $a->final_score);
+                foreach ($savedScores[$tNum] as $idx => $sc) {
+                    $sc->rank = $idx + 1;
+                    $sc->save();
+                    if ($idx === 0) {
+                        $finalistTeamIds[] = $sc->competition_participant_team_id;
+                    }
+                }
+            }
+        }
+
+        // Otomatis daftarkan 3 pemenang termin ke Babak Final jika belum ada
+        foreach ($finalistTeamIds as $fId) {
+            CompetitionScore::firstOrCreate(
+                [
+                    'competition_category_id' => $category->id,
+                    'competition_participant_team_id' => $fId,
+                    'round_name' => 'Final',
+                ],
+                [
+                    'jury_user_id' => $juryUserId,
+                    'final_score' => 0,
+                    'score_details' => [
+                        'soal_amplop' => 0,
+                        'rebutan_bertingkat' => 0,
+                        'taruh_nilai' => 0,
+                    ],
+                ]
+            );
+        }
+
+        return redirect()->route('admin.competition-scores.lct', ['category' => $category->id, 'stage' => 2])
+            ->with('success', 'Nilai Semifinal untuk seluruh termin berhasil disimpan! Juara tiap termin otomatis melaju ke Grand Final.');
+    }
+
+    /**
+     * Simpan Nilai Sesi 3: Grand Final
+     */
+    public function lctSaveFinal(CompetitionCategory $category, Request $request)
+    {
+        $amplop = $request->input('final_amplop', []);
+        $rebutan = $request->input('final_rebutan', []);
+        $taruh = $request->input('final_taruh', []);
+
+        $juryUserId = auth()->id() ?: 1;
+        $finalScores = [];
+
+        foreach ($amplop as $teamId => $val) {
+            $sAmplop = floatval($val ?? 0);
+            $sRebutan = floatval($rebutan[$teamId] ?? 0);
+            $sTaruh = floatval($taruh[$teamId] ?? 0);
+            $total = $sAmplop + $sRebutan + $sTaruh;
+
+            $details = [
+                'soal_amplop' => $sAmplop,
+                'rebutan_bertingkat' => $sRebutan,
+                'taruh_nilai' => $sTaruh,
+                'total' => $total,
+            ];
+
+            $sc = CompetitionScore::updateOrCreate(
+                [
+                    'competition_category_id' => $category->id,
+                    'competition_participant_team_id' => $teamId,
+                    'round_name' => 'Final',
+                ],
+                [
+                    'jury_user_id' => $juryUserId,
+                    'final_score' => $total,
+                    'score_details' => $details,
+                ]
+            );
+
+            $finalScores[] = $sc;
+        }
+
+        // Tentukan Juara 1, Juara 2, Juara 3
+        usort($finalScores, fn ($a, $b) => $b->final_score <=> $a->final_score);
+        foreach ($finalScores as $idx => $sc) {
+            $sc->rank = $idx + 1;
+            $sc->save();
+        }
+
+        return redirect()->route('admin.competition-scores.lct', ['category' => $category->id, 'stage' => 3])
+            ->with('success', 'Nilai Grand Final Berhasil Disimpan! Juara 1, Juara 2, dan Juara 3 telah resmi ditetapkan.');
+    }
+
+    /**
+     * Muat Data Simulasi LCT Sesuai Gambar / Sheet Panitia
+     */
+    public function lctSeedSimulation(CompetitionCategory $category, Request $request)
+    {
+        $simulationData = [
+            ['name' => 'SMAN 5 Bandung A', 'order' => 13, 'score' => 100, 'time' => '07:54', 'termin' => 1, 'amplop' => 110, 'rebutan' => 190, 'balon' => 0],
+            ['name' => 'SMAN 1 Cianjur', 'order' => 20, 'score' => 100, 'time' => '10:33', 'termin' => 2, 'amplop' => 150, 'rebutan' => 150, 'balon' => 70],
+            ['name' => 'SMAN 1 Karawang', 'order' => 7, 'score' => 98, 'time' => '11:16', 'termin' => 3, 'amplop' => 280, 'rebutan' => 200, 'balon' => 0, 'f_amplop' => 210, 'f_rebutan' => 250, 'f_taruh' => 190],
+            ['name' => 'SMAN 1 Cikarang Utara B', 'order' => 1, 'score' => 92, 'time' => '07:45', 'termin' => 2, 'amplop' => 130, 'rebutan' => 120, 'balon' => 20],
+            ['name' => 'SMAN 3 Bekasi', 'order' => 6, 'score' => 80, 'time' => '14:18', 'termin' => 1, 'amplop' => 240, 'rebutan' => 140, 'balon' => 20],
+            ['name' => 'SMAN 5 Bandung B', 'order' => 11, 'score' => 76, 'time' => '07:00', 'termin' => 3, 'amplop' => 130, 'rebutan' => 40, 'balon' => 80],
+            ['name' => 'SMAN 1 Subang', 'order' => 10, 'score' => 76, 'time' => '10:22', 'termin' => 2, 'amplop' => 270, 'rebutan' => 150, 'balon' => 70, 'f_amplop' => 200, 'f_rebutan' => 160, 'f_taruh' => 60],
+            ['name' => 'SMAN 1 Garut', 'order' => 18, 'score' => 71, 'time' => '09:34', 'termin' => 3, 'amplop' => 140, 'rebutan' => 180, 'balon' => 70],
+            ['name' => 'SMAN 1 Cikarang Utara A', 'order' => 2, 'score' => 70, 'time' => '07:28', 'termin' => 1, 'amplop' => 200, 'rebutan' => 200, 'balon' => 70, 'f_amplop' => 200, 'f_rebutan' => 300, 'f_taruh' => 140],
+            ['name' => 'SMAN 1 Bogor', 'order' => 14, 'score' => 66, 'time' => '15:00'],
+            ['name' => 'SMAN 1 Depok', 'order' => 16, 'score' => 65, 'time' => '13:43'],
+            ['name' => 'SMAN 3 Bogor', 'order' => 15, 'score' => 60, 'time' => '08:34'],
+            ['name' => 'SMAN 1 Tasikmalaya', 'order' => 19, 'score' => 60, 'time' => '11:00'],
+            ['name' => 'SMAN 2 Bekasi', 'order' => 4, 'score' => 59, 'time' => '09:22'],
+            ['name' => 'SMAN 2 Bandung', 'order' => 12, 'score' => 56, 'time' => '13:00'],
+            ['name' => 'SMAN 1 Sukabumi', 'order' => 17, 'score' => 55, 'time' => '13:42'],
+            ['name' => 'SMAN 1 Bekasi', 'order' => 5, 'score' => 53, 'time' => '08:12'],
+            ['name' => 'SMAN 1 Cikampek', 'order' => 8, 'score' => 53, 'time' => '14:59'],
+            ['name' => 'SMAN 1 Tambun Selatan', 'order' => 3, 'score' => 47, 'time' => '07:23'],
+            ['name' => 'SMAN 1 Purwakarta', 'order' => 9, 'score' => 45, 'time' => '10:04'],
+        ];
+
+        $juryUserId = auth()->id() ?: 1;
+
+        // Buat registrasi dan tim peserta jika belum ada
+        foreach ($simulationData as $idx => $sim) {
+            $regCode = 'SIM-'.str_pad((string) ($sim['order']), 3, '0', STR_PAD_LEFT);
+            $reg = CompetitionRegistration::firstOrCreate(
+                [
+                    'competition_event_id' => $category->competition_event_id,
+                    'school_name' => $sim['name'],
+                ],
+                [
+                    'registration_code' => $regCode,
+                    'level' => $category->level ?: 'Wira',
+                    'advisor_name' => 'Pembina '.$sim['name'],
+                    'advisor_phone' => '081234567890',
+                    'advisor_email' => 'pembina@'.Str::slug($sim['name']).'.sch.id',
+                    'status' => 'verified',
+                    'total_fee' => 150000,
+                ]
+            );
+
+            $team = CompetitionParticipantTeam::firstOrCreate(
+                [
+                    'competition_category_id' => $category->id,
+                    'competition_registration_id' => $reg->id,
+                ],
+                [
+                    'team_name' => $sim['name'],
+                    'team_label' => 'Regu '.chr(65 + ($idx % 3)),
+                    'order_number' => $sim['order'],
+                    'is_active' => true,
+                ]
+            );
+
+            // Sesi 1: Penyisihan Score
+            $timeSec = self::parseTimeToSeconds($sim['time']);
+            CompetitionScore::updateOrCreate(
+                [
+                    'competition_category_id' => $category->id,
+                    'competition_participant_team_id' => $team->id,
+                    'round_name' => 'Penyisihan',
+                ],
+                [
+                    'jury_user_id' => $juryUserId,
+                    'final_score' => $sim['score'],
+                    'time_recorded' => $sim['time'],
+                    'rank' => $idx + 1,
+                    'score_details' => [
+                        'score' => $sim['score'],
+                        'time_seconds' => $timeSec,
+                    ],
+                ]
+            );
+
+            // Sesi 2: Semi-Final (Khusus 9 tim teratas)
+            if (isset($sim['termin'])) {
+                $semiTotal = $sim['amplop'] + $sim['rebutan'] + $sim['balon'];
+                CompetitionScore::updateOrCreate(
+                    [
+                        'competition_category_id' => $category->id,
+                        'competition_participant_team_id' => $team->id,
+                        'round_name' => 'Semi Final',
+                    ],
+                    [
+                        'jury_user_id' => $juryUserId,
+                        'final_score' => $semiTotal,
+                        'score_details' => [
+                            'termin' => $sim['termin'],
+                            'soal_amplop' => $sim['amplop'],
+                            'rebutan' => $sim['rebutan'],
+                            'balon' => $sim['balon'],
+                            'total' => $semiTotal,
+                        ],
+                    ]
+                );
+            }
+
+            // Sesi 3: Grand Final (Khusus 3 finalis)
+            if (isset($sim['f_amplop'])) {
+                $finalTotal = $sim['f_amplop'] + $sim['f_rebutan'] + $sim['f_taruh'];
+                CompetitionScore::updateOrCreate(
+                    [
+                        'competition_category_id' => $category->id,
+                        'competition_participant_team_id' => $team->id,
+                        'round_name' => 'Final',
+                    ],
+                    [
+                        'jury_user_id' => $juryUserId,
+                        'final_score' => $finalTotal,
+                        'score_details' => [
+                            'soal_amplop' => $sim['f_amplop'],
+                            'rebutan_bertingkat' => $sim['f_rebutan'],
+                            'taruh_nilai' => $sim['f_taruh'],
+                            'total' => $finalTotal,
+                        ],
+                    ]
+                );
+            }
+        }
+
+        return redirect()->route('admin.competition-scores.lct', ['category' => $category->id, 'stage' => 1])
+            ->with('success', 'Data simulasi 20 regu LCT sesuai contoh Excel panitia berhasil dimuat ke sistem!');
+    }
+
+    /**
+     * Reset Nilai Berdasarkan Tahap LCT
+     */
+    public function lctResetStage(CompetitionCategory $category, Request $request)
+    {
+        $stage = $request->input('stage');
+
+        if ($stage === 'prelim') {
+            CompetitionScore::where('competition_category_id', $category->id)
+                ->where('round_name', 'Penyisihan')
+                ->delete();
+            $msg = 'Seluruh data Babak Penyisihan berhasil direset.';
+            $targetStage = 1;
+        } elseif ($stage === 'semifinal') {
+            CompetitionScore::where('competition_category_id', $category->id)
+                ->where('round_name', 'Semi Final')
+                ->delete();
+            $msg = 'Seluruh data Babak Semi-Final (3 Termin) berhasil direset.';
+            $targetStage = 2;
+        } elseif ($stage === 'final') {
+            CompetitionScore::where('competition_category_id', $category->id)
+                ->where('round_name', 'Final')
+                ->delete();
+            $msg = 'Seluruh data Babak Grand Final berhasil direset.';
+            $targetStage = 3;
+        } else {
+            CompetitionScore::where('competition_category_id', $category->id)->delete();
+            $msg = 'Seluruh data nilai LCT berhasil direset total.';
+            $targetStage = 1;
+        }
+
+        return redirect()->route('admin.competition-scores.lct', ['category' => $category->id, 'stage' => $targetStage])
+            ->with('success', $msg);
+    }
+
+    /**
+     * Layar Proyektor / Panggung Live View LCT
+     */
+    public function lctLiveScreen(CompetitionCategory $category, Request $request)
+    {
+        $category->loadMissing(['event']);
+        $stage = (int) $request->query('stage', 2);
+        $termin = (int) $request->query('termin', 1);
+
+        // Ambil data skor live
+        $semiScores = CompetitionScore::where('competition_category_id', $category->id)
+            ->where(function ($q) {
+                $q->where('round_name', 'Semi Final')
+                    ->orWhere('round_name', 'like', '%Semi Final%');
+            })
+            ->with('team.registration')
+            ->get();
+
+        $terminTeams = $semiScores->filter(function ($s) use ($termin) {
+            return ($s->score_details['termin'] ?? null) == $termin;
+        })->sortByDesc('final_score')->values();
+
+        $finalScores = CompetitionScore::where('competition_category_id', $category->id)
+            ->where(function ($q) {
+                $q->where('round_name', 'Final')
+                    ->orWhere('round_name', 'like', '%Final%');
+            })
+            ->with('team.registration')
+            ->get()
+            ->sortByDesc('final_score')
+            ->values();
+
+        return view('admin.competition.scores.lct-live', compact(
+            'category',
+            'stage',
+            'termin',
+            'terminTeams',
+            'finalScores'
+        ));
+    }
+
+    /**
+     * Export Excel Lembar Penilaian LCT 3 Tahap
+     */
+    public function lctExportExcel(CompetitionCategory $category, Request $request, CompetitionSpreadsheetService $spreadsheetService)
+    {
+        return $this->exportExcel($category, $spreadsheetService);
+    }
+
+    /**
+     * Algoritma Smart Bracket Distribution (Pemisahan Sekolah yang Sama di Semifinal)
+     */
+    public static function distributeTeamsToTermins($top9Teams): array
+    {
+        // Kelompokkan tim berdasarkan nama sekolah
+        $bySchool = [];
+        foreach ($top9Teams as $team) {
+            $schoolKey = strtoupper(trim($team->registration?->school_name ?? $team->school_name ?? $team->team_name));
+            $bySchool[$schoolKey][] = $team;
+        }
+
+        // Urutkan grup sekolah berdasarkan jumlah tim terbanyak (sekolah dengan 2 tim diproses lebih dulu)
+        uasort($bySchool, fn ($a, $b) => count($b) <=> count($a));
+
+        $termins = [
+            1 => collect(),
+            2 => collect(),
+            3 => collect(),
+        ];
+
+        // 1. Distribusikan sekolah dengan multiple tim (misal meloloskan 2 regu)
+        foreach ($bySchool as $schoolName => $schoolTeams) {
+            if (count($schoolTeams) > 1) {
+                $availableTerminKeys = [1, 2, 3];
+                // Urutkan termin berdasarkan jumlah tim yang paling sedikit
+                usort($availableTerminKeys, fn ($a, $b) => $termins[$a]->count() <=> $termins[$b]->count());
+
+                foreach ($schoolTeams as $idx => $team) {
+                    $targetTermin = $availableTerminKeys[$idx % count($availableTerminKeys)];
+                    $termins[$targetTermin]->push($team);
+                }
+            } else {
+                // 2. Sekolah dengan 1 regu: tempatkan di termin yang belum ada sekolah ini dan kuota masih < 3
+                $team = $schoolTeams[0];
+                $availableTerminKeys = [1, 2, 3];
+                usort($availableTerminKeys, function ($a, $b) use ($termins, $schoolName) {
+                    $hasA = $termins[$a]->contains(fn ($t) => strtoupper(trim($t->registration?->school_name ?? '')) === $schoolName);
+                    $hasB = $termins[$b]->contains(fn ($t) => strtoupper(trim($t->registration?->school_name ?? '')) === $schoolName);
+                    if ($hasA !== $hasB) {
+                        return $hasA ? 1 : -1;
+                    }
+
+                    return $termins[$a]->count() <=> $termins[$b]->count();
+                });
+
+                $targetTermin = $availableTerminKeys[0];
+                $termins[$targetTermin]->push($team);
+            }
+        }
+
+        return $termins;
     }
 }

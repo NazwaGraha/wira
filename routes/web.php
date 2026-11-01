@@ -300,6 +300,15 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::get('/competition-scores/{category}/input', [CompetitionScoreController::class, 'input'])->name('competition-scores.input');
         Route::get('/competition-scores/{category}/grid', [CompetitionScoreController::class, 'gridScore'])->name('competition-scores.grid');
         Route::post('/competition-scores/{category}/grid-save', [CompetitionScoreController::class, 'saveGridScore'])->name('competition-scores.grid-save');
+        Route::get('/competition-scores/{category}/lct', [CompetitionScoreController::class, 'lctView'])->name('competition-scores.lct');
+        Route::post('/competition-scores/{category}/lct-save-prelim', [CompetitionScoreController::class, 'lctSavePrelim'])->name('competition-scores.lct-save-prelim');
+        Route::post('/competition-scores/{category}/lct-generate-semifinal', [CompetitionScoreController::class, 'lctGenerateSemifinal'])->name('competition-scores.lct-generate-semifinal');
+        Route::post('/competition-scores/{category}/lct-save-semifinal', [CompetitionScoreController::class, 'lctSaveSemifinal'])->name('competition-scores.lct-save-semifinal');
+        Route::post('/competition-scores/{category}/lct-save-final', [CompetitionScoreController::class, 'lctSaveFinal'])->name('competition-scores.lct-save-final');
+        Route::post('/competition-scores/{category}/lct-reset-stage', [CompetitionScoreController::class, 'lctResetStage'])->name('competition-scores.lct-reset-stage');
+        Route::post('/competition-scores/{category}/lct-seed-simulation', [CompetitionScoreController::class, 'lctSeedSimulation'])->name('competition-scores.lct-seed-simulation');
+        Route::get('/competition-scores/{category}/lct-live', [CompetitionScoreController::class, 'lctLiveScreen'])->name('competition-scores.lct-live');
+        Route::get('/competition-scores/{category}/lct-export-excel', [CompetitionScoreController::class, 'lctExportExcel'])->name('competition-scores.lct-export-excel');
         Route::get('/competition-scores/{category}/export-excel', [CompetitionScoreController::class, 'exportExcel'])->name('competition-scores.export-excel');
         Route::post('/competition-scores/{category}/save', [CompetitionScoreController::class, 'saveScores'])->name('competition-scores.save');
         Route::post('/competition-scores/{category}/reset', [CompetitionScoreController::class, 'resetScores'])->name('competition-scores.reset');
