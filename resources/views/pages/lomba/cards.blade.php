@@ -44,14 +44,14 @@
 
         .box-overlay {
             position: absolute;
-            border-radius: 14px;
-            border: 2.5px solid #ffffff;
+            background: transparent !important;
+            border: none !important;
+            box-shadow: none !important;
             display: flex;
             align-items: center;
             justify-content: center;
             text-align: center;
             z-index: 10;
-            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.2), inset 0 2px 4px rgba(255, 255, 255, 0.35);
         }
 
         /* Posisi Koordinat Presisi Kotak Data */
@@ -83,33 +83,14 @@
             padding: 0 6px;
         }
 
-        /* TEMA WARNA SESUAI TINGKATAN: MULA = HIJAU, MADYA = BIRU, WIRA = KUNING */
-        .theme-mula {
-            background: linear-gradient(180deg, #10b981 0%, #059669 50%, #047857 100%) !important;
-        }
-        .text-mula {
-            font-family: 'Fredoka', sans-serif;
+        /* TIPOGRAFI TEKS KARTU BERSIH (HANYA TEKS, TANPA BACKGROUND OVERLAY) */
+        .clean-card-text {
+            font-family: 'Fredoka', 'Plus Jakarta Sans', sans-serif;
             color: #ffffff !important;
-            text-shadow: 0 2px 4px rgba(6, 78, 59, 0.95), 0 0 8px rgba(16, 185, 129, 0.6) !important;
-        }
-
-        .theme-madya {
-            background: linear-gradient(180deg, #0284c7 0%, #0369a1 50%, #075985 100%) !important;
-        }
-        .text-madya {
-            font-family: 'Fredoka', sans-serif;
-            color: #ffffff !important;
-            text-shadow: 0 2px 4px rgba(12, 74, 110, 0.95), 0 0 8px rgba(14, 165, 233, 0.6) !important;
-        }
-
-        .theme-wira {
-            background: linear-gradient(180deg, #facc15 0%, #eab308 50%, #ca8a04 100%) !important;
-            border-color: #ffffff !important;
-        }
-        .text-wira {
-            font-family: 'Fredoka', sans-serif;
-            color: #ffffff !important;
-            text-shadow: 0 2px 4px rgba(113, 63, 18, 0.95), 0 0 10px rgba(161, 98, 7, 0.8), 0 1px 2px #78350f !important;
+            text-shadow: 0 2px 5px rgba(2, 44, 80, 0.95), 0 0 10px rgba(14, 165, 233, 0.7), 0 1px 1px #033a61 !important;
+            letter-spacing: 0.5px;
+            -webkit-print-color-adjust: exact !important;
+            print-color-adjust: exact !important;
         }
 
         /* PRINT STYLES */
@@ -142,6 +123,20 @@
                 box-shadow: none !important;
                 border-radius: 0 !important;
                 margin: 0 !important;
+            }
+
+            .box-overlay {
+                background: transparent !important;
+                border: none !important;
+                box-shadow: none !important;
+                border-radius: 0 !important;
+            }
+
+            .clean-card-text {
+                color: #ffffff !important;
+                text-shadow: 0 2px 5px rgba(2, 44, 80, 0.95), 0 0 10px rgba(14, 165, 233, 0.7), 0 1px 1px #033a61 !important;
+                -webkit-print-color-adjust: exact !important;
+                print-color-adjust: exact !important;
             }
 
             /* Rescaling Koordinat Cetak untuk Ukuran Nyata 100mm x 150mm (100mm = 378px, scale factor = 378/682 = 0.5542) */
@@ -179,22 +174,16 @@
         $individualCards = [];
         $levelStr = strtolower(trim($registration->level ?? ''));
 
-        // Tetapkan tema warna berdasarkan tingkatan (Mula = Hijau, Madya = Biru, Wira = Kuning)
+        // Badge info tingkatan untuk status bar atas
         if ($levelStr === 'mula') {
-            $themeClass = 'theme-mula';
-            $textClass = 'text-mula';
             $levelBadgeLabel = 'PMR Mula (SD) &bull; Hijau';
             $levelBadgeStyle = 'bg-emerald-100 text-emerald-800 border-emerald-300';
             $badgeColor = '#10b981';
         } elseif ($levelStr === 'madya') {
-            $themeClass = 'theme-madya';
-            $textClass = 'text-madya';
             $levelBadgeLabel = 'PMR Madya (SMP) &bull; Biru';
             $levelBadgeStyle = 'bg-sky-100 text-sky-800 border-sky-300';
             $badgeColor = '#0284c7';
         } else {
-            $themeClass = 'theme-wira';
-            $textClass = 'text-wira';
             $levelBadgeLabel = 'PMR Wira (SMA) &bull; Kuning';
             $levelBadgeStyle = 'bg-amber-100 text-amber-900 border-amber-300';
             $badgeColor = '#facc15';
@@ -285,7 +274,7 @@
             @php
                 $nameStr = $card['participant_name'];
                 $nameLen = strlen($nameStr);
-                $nameSize = $nameLen > 24 ? 'text-[16px]' : ($nameLen > 18 ? 'text-[18px]' : 'text-[20px]');
+                $nameSize = $nameLen > 24 ? 'text-[16px]' : ($nameLen > 18 ? 'text-[18px]' : 'text-[21px]');
 
                 $schoolStr = $card['school_name'];
                 $schoolLen = strlen($schoolStr);
@@ -312,29 +301,29 @@
                     <div class="lanyard-hole"></div>
 
                     <!-- Kotak 1: NAMA PESERTA -->
-                    <div class="box-overlay box-nama {{ $themeClass }}">
-                        <span class="{{ $textClass }} {{ $nameSize }} font-black uppercase tracking-wide truncate">
+                    <div class="box-overlay box-nama">
+                        <span class="clean-card-text {{ $nameSize }} font-black uppercase tracking-wide truncate">
                             {{ $nameStr }}
                         </span>
                     </div>
 
                     <!-- Kotak 2: SEKOLAH -->
-                    <div class="box-overlay box-sekolah {{ $themeClass }}">
-                        <span class="{{ $textClass }} {{ $schoolSize }} font-black uppercase tracking-wide truncate">
+                    <div class="box-overlay box-sekolah">
+                        <span class="clean-card-text {{ $schoolSize }} font-black uppercase tracking-wide truncate">
                             {{ $schoolStr }}
                         </span>
                     </div>
 
                     <!-- Kotak 3: NO. URUT -->
-                    <div class="box-overlay box-nourut {{ $themeClass }}">
-                        <span class="{{ $textClass }} text-[30px] font-black tracking-wider font-mono">
+                    <div class="box-overlay box-nourut">
+                        <span class="clean-card-text text-[34px] font-black tracking-wider font-mono">
                             {{ $card['order_number'] }}
                         </span>
                     </div>
 
                     <!-- Kotak 4: MATA LOMBA -->
-                    <div class="box-overlay box-matalomba {{ $themeClass }}">
-                        <span class="{{ $textClass }} text-[14px] font-black uppercase tracking-tight">
+                    <div class="box-overlay box-matalomba">
+                        <span class="clean-card-text text-[16px] font-black uppercase tracking-tight">
                             {{ $card['category_code'] }}
                         </span>
                     </div>
