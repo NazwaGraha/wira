@@ -248,7 +248,7 @@
                             {{-- Metadata Peserta --}}
                             <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 bg-slate-50 p-3.5 rounded-2xl border border-slate-200 mb-4">
                                 <div>
-                                    <span class="text-[10px] font-black text-slate-400 uppercase tracking-wider block">NOMOR URUT :</span>
+                                    <span class="text-[10px] font-black text-slate-400 uppercase tracking-wider block">NO. URUT PESERTA :</span>
                                     <span class="text-sm font-black text-slate-900 flex items-center gap-1.5 mt-0.5">
                                         <i class="fa-solid fa-hashtag text-rose-600"></i> {{ $teamCode }} &bull; {{ $currentTeam->team_label ?? $currentTeam->team_name }}
                                     </span>

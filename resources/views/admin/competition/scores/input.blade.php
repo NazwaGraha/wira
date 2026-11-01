@@ -188,7 +188,7 @@
                                 </div>
                             </div>
                             <div>
-                                <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Nomor Urut Tampil</label>
+                                <label class="block text-xs font-bold text-slate-700 uppercase mb-1">No. Urut Peserta</label>
                                 <input type="text" name="order_number" value="{{ $nextOrderNumber }}" placeholder="{{ $nextOrderNumber }}" class="w-full text-xs p-2.5 bg-slate-50 border border-slate-300 rounded-xl font-mono font-bold focus:bg-white focus:outline-none focus:border-red-500">
                                 <p class="text-[10px] text-slate-400 mt-1">Otomatis urutan berikutnya.</p>
                             </div>
@@ -217,7 +217,7 @@
                                 <input type="text" name="team_label" placeholder="Contoh: Regu A" class="w-full text-xs p-2.5 bg-slate-50 border border-slate-300 rounded-xl focus:bg-white focus:outline-none focus:border-red-500">
                             </div>
                             <div>
-                                <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Nomor Urut Tampil</label>
+                                <label class="block text-xs font-bold text-slate-700 uppercase mb-1">No. Urut Peserta</label>
                                 <input type="text" name="order_number" value="{{ $nextOrderNumber }}" class="w-full text-xs p-2.5 bg-slate-50 border border-slate-300 rounded-xl font-mono font-bold focus:bg-white focus:outline-none focus:border-red-500">
                             </div>
                         </div>

@@ -191,7 +191,7 @@
                             </span>
                         </div>
                         <div>
-                            <span class="text-[10px] font-black text-slate-400 uppercase tracking-wider block">NOMOR PESERTA / REGU :</span>
+                            <span class="text-[10px] font-black text-slate-400 uppercase tracking-wider block">NO. URUT PESERTA :</span>
                             <span class="text-sm sm:text-base font-black text-slate-900 flex items-center gap-2 mt-0.5">
                                 <i class="fa-solid fa-id-card-clip text-rose-600"></i> {{ $teamCode }} &bull; {{ $currentTeam->team_name }}
                             </span>

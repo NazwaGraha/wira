@@ -114,7 +114,7 @@
                     <table class="w-full text-center border-collapse min-w-[800px]" id="gridMewarnaiTable">
                         <thead>
                             <tr class="bg-slate-900 text-white text-xs uppercase font-black tracking-wider">
-                                <th rowspan="2" class="py-3 px-3 w-20 border-r border-slate-700">No. Peserta</th>
+                                <th rowspan="2" class="py-3 px-3 w-20 border-r border-slate-700">No. Urut Peserta</th>
                                 <th rowspan="2" class="py-3 px-4 text-left min-w-[240px] border-r border-slate-700">Nama Sekolah & Peserta</th>
                                 <th colspan="3" class="py-2.5 px-3 bg-slate-800 border-r border-slate-700">KRITERIA PENILAIAN</th>
                                 <th rowspan="2" class="py-3 px-4 w-32 bg-pink-600 text-white font-black border-r border-pink-700">

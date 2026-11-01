@@ -160,7 +160,7 @@
                                                 <div class="font-bold text-slate-800 text-sm">{{ $team->category->name }} ({{ $team->category->gender_category }})</div>
                                                 @if($team->order_number)
                                                     <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-black font-mono bg-amber-100 text-amber-900 border border-amber-300">
-                                                        <i class="fa-solid fa-flag-checkered text-[9px] text-amber-600"></i> No. Urut: {{ $team->order_number }}
+                                                        <i class="fa-solid fa-flag-checkered text-[9px] text-amber-600"></i> No. Urut Peserta: {{ $team->order_number }}
                                                     </span>
                                                 @endif
                                             </div>

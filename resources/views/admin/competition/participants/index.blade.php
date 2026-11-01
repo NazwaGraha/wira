@@ -219,7 +219,7 @@
                         <table class="w-full text-left text-xs text-slate-700">
                             <thead class="bg-slate-50 text-slate-700 uppercase font-black border-b border-slate-200">
                                 <tr>
-                                    <th class="px-5 py-3.5 w-28 text-center">No. Urut / Undian</th>
+                                    <th class="px-5 py-3.5 w-28 text-center">No. Urut Peserta</th>
                                     <th class="px-5 py-3.5 min-w-[220px]">Nama Regu & Asal Sekolah</th>
                                     <th class="px-5 py-3.5 min-w-[200px]">Anggota Regu</th>
                                     <th class="px-5 py-3.5 w-48">Pembina & Kontak</th>
@@ -365,7 +365,7 @@
             @csrf
             <div class="space-y-4 text-xs">
                 <div>
-                    <label class="font-bold text-slate-700 block mb-1">Nomor Urut / No. Undian Tampil</label>
+                    <label class="font-bold text-slate-700 block mb-1">No. Urut Peserta</label>
                     <input type="text" id="modalOrderNumber" name="order_number" class="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-xl font-mono font-bold focus:bg-white focus:outline-none focus:border-red-500">
                 </div>
 

@@ -543,7 +543,7 @@
                             <span class="text-slate-900 font-extrabold">Buku pedoman PP tahun 2008 dan 2009</span>
                         </div>
                         <div class="pt-1">
-                            <span class="text-slate-500 uppercase text-[10px]">No Peserta :</span>
+                            <span class="text-slate-500 uppercase text-[10px]">No. Urut Peserta :</span>
                             <span class="font-mono text-slate-900 font-extrabold">{{ $currentTeam?->order_number ?: '-' }} / {{ $currentTeam?->team_name ?: '-' }}</span>
                         </div>
                         <div>
