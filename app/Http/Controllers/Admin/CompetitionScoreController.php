@@ -13,6 +13,7 @@ use App\Services\CompetitionSpreadsheetService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Str;
 
 class CompetitionScoreController extends Controller
@@ -682,6 +683,10 @@ class CompetitionScoreController extends Controller
      */
     private function resolveSafeJuryUserId(?CompetitionCategory $category = null): ?int
     {
+        if (! Schema::hasColumn('competition_scores', 'jury_user_id')) {
+            return null;
+        }
+
         $id = auth()->id();
         if ($id && User::where('id', $id)->exists()) {
             return $id;
@@ -690,7 +695,10 @@ class CompetitionScoreController extends Controller
         if ($category) {
             $category->loadMissing('assignedJuries');
             if ($category->assignedJuries->isNotEmpty()) {
-                return $category->assignedJuries->first()->id;
+                $juryId = $category->assignedJuries->first()->id;
+                if (User::where('id', $juryId)->exists()) {
+                    return $juryId;
+                }
             }
         }
 
@@ -1936,21 +1944,25 @@ class CompetitionScoreController extends Controller
                 $timeSeconds = self::parseTimeToSeconds($timeStr) ?? 999999;
                 $scoreFloat = floatval($scoreVal);
 
+                $scoreData = [
+                    'final_score' => $scoreFloat,
+                    'time_recorded' => $timeStr ?: null,
+                    'score_details' => [
+                        'score' => $scoreFloat,
+                        'time_seconds' => $timeSeconds,
+                    ],
+                ];
+                if (Schema::hasColumn('competition_scores', 'jury_user_id')) {
+                    $scoreData['jury_user_id'] = $juryUserId;
+                }
+
                 CompetitionScore::updateOrCreate(
                     [
                         'competition_category_id' => $category->id,
                         'competition_participant_team_id' => $teamId,
                         'round_name' => 'Penyisihan',
                     ],
-                    [
-                        'jury_user_id' => $juryUserId,
-                        'final_score' => $scoreFloat,
-                        'time_recorded' => $timeStr ?: null,
-                        'score_details' => [
-                            'score' => $scoreFloat,
-                            'time_seconds' => $timeSeconds,
-                        ],
-                    ]
+                    $scoreData
                 );
             }
 
@@ -2040,17 +2052,21 @@ class CompetitionScoreController extends Controller
                     $details['rebutan'] = $details['rebutan'] ?? 0;
                     $details['balon'] = $details['balon'] ?? 0;
 
+                    $semiScoreData = [
+                        'final_score' => $existingSemi?->final_score ?? 0,
+                        'score_details' => $details,
+                    ];
+                    if (Schema::hasColumn('competition_scores', 'jury_user_id')) {
+                        $semiScoreData['jury_user_id'] = $juryUserId;
+                    }
+
                     CompetitionScore::updateOrCreate(
                         [
                             'competition_category_id' => $category->id,
                             'competition_participant_team_id' => $team->id,
                             'round_name' => 'Semi Final',
                         ],
-                        [
-                            'jury_user_id' => $juryUserId,
-                            'final_score' => $existingSemi?->final_score ?? 0,
-                            'score_details' => $details,
-                        ]
+                        $semiScoreData
                     );
                 }
             }
@@ -2099,17 +2115,21 @@ class CompetitionScoreController extends Controller
                     'total' => $total,
                 ];
 
+                $semiData = [
+                    'final_score' => $total,
+                    'score_details' => $details,
+                ];
+                if (Schema::hasColumn('competition_scores', 'jury_user_id')) {
+                    $semiData['jury_user_id'] = $juryUserId;
+                }
+
                 $sc = CompetitionScore::updateOrCreate(
                     [
                         'competition_category_id' => $category->id,
                         'competition_participant_team_id' => $teamId,
                         'round_name' => 'Semi Final',
                     ],
-                    [
-                        'jury_user_id' => $juryUserId,
-                        'final_score' => $total,
-                        'score_details' => $details,
-                    ]
+                    $semiData
                 );
 
                 $savedScores[(int) $terminNum][] = $sc;
@@ -2193,17 +2213,21 @@ class CompetitionScoreController extends Controller
                     'total' => $total,
                 ];
 
+                $finalData = [
+                    'final_score' => $total,
+                    'score_details' => $details,
+                ];
+                if (Schema::hasColumn('competition_scores', 'jury_user_id')) {
+                    $finalData['jury_user_id'] = $juryUserId;
+                }
+
                 $sc = CompetitionScore::updateOrCreate(
                     [
                         'competition_category_id' => $category->id,
                         'competition_participant_team_id' => $teamId,
                         'round_name' => 'Final',
                     ],
-                    [
-                        'jury_user_id' => $juryUserId,
-                        'final_score' => $total,
-                        'score_details' => $details,
-                    ]
+                    $finalData
                 );
 
                 $finalScores[] = $sc;
@@ -2297,66 +2321,78 @@ class CompetitionScoreController extends Controller
 
                 // Sesi 1: Penyisihan Score
                 $timeSec = self::parseTimeToSeconds($sim['time']);
+                $simPrelimData = [
+                    'final_score' => $sim['score'],
+                    'time_recorded' => $sim['time'],
+                    'rank' => $idx + 1,
+                    'score_details' => [
+                        'score' => $sim['score'],
+                        'time_seconds' => $timeSec,
+                    ],
+                ];
+                if (Schema::hasColumn('competition_scores', 'jury_user_id')) {
+                    $simPrelimData['jury_user_id'] = $juryUserId;
+                }
+
                 CompetitionScore::updateOrCreate(
                     [
                         'competition_category_id' => $category->id,
                         'competition_participant_team_id' => $team->id,
                         'round_name' => 'Penyisihan',
                     ],
-                    [
-                        'jury_user_id' => $juryUserId,
-                        'final_score' => $sim['score'],
-                        'time_recorded' => $sim['time'],
-                        'rank' => $idx + 1,
-                        'score_details' => [
-                            'score' => $sim['score'],
-                            'time_seconds' => $timeSec,
-                        ],
-                    ]
+                    $simPrelimData
                 );
 
                 // Sesi 2: Semi-Final (Khusus 9 tim teratas)
                 if (isset($sim['termin'])) {
                     $semiTotal = $sim['amplop'] + $sim['rebutan'] + $sim['balon'];
+                    $simSemiData = [
+                        'final_score' => $semiTotal,
+                        'score_details' => [
+                            'termin' => $sim['termin'],
+                            'soal_amplop' => $sim['amplop'],
+                            'rebutan' => $sim['rebutan'],
+                            'balon' => $sim['balon'],
+                            'total' => $semiTotal,
+                        ],
+                    ];
+                    if (Schema::hasColumn('competition_scores', 'jury_user_id')) {
+                        $simSemiData['jury_user_id'] = $juryUserId;
+                    }
+
                     CompetitionScore::updateOrCreate(
                         [
                             'competition_category_id' => $category->id,
                             'competition_participant_team_id' => $team->id,
                             'round_name' => 'Semi Final',
                         ],
-                        [
-                            'jury_user_id' => $juryUserId,
-                            'final_score' => $semiTotal,
-                            'score_details' => [
-                                'termin' => $sim['termin'],
-                                'soal_amplop' => $sim['amplop'],
-                                'rebutan' => $sim['rebutan'],
-                                'balon' => $sim['balon'],
-                                'total' => $semiTotal,
-                            ],
-                        ]
+                        $simSemiData
                     );
                 }
 
                 // Sesi 3: Grand Final (Khusus 3 finalis)
                 if (isset($sim['f_amplop'])) {
                     $finalTotal = $sim['f_amplop'] + $sim['f_rebutan'] + $sim['f_taruh'];
+                    $simFinalData = [
+                        'final_score' => $finalTotal,
+                        'score_details' => [
+                            'soal_amplop' => $sim['f_amplop'],
+                            'rebutan_bertingkat' => $sim['f_rebutan'],
+                            'taruh_nilai' => $sim['f_taruh'],
+                            'total' => $finalTotal,
+                        ],
+                    ];
+                    if (Schema::hasColumn('competition_scores', 'jury_user_id')) {
+                        $simFinalData['jury_user_id'] = $juryUserId;
+                    }
+
                     CompetitionScore::updateOrCreate(
                         [
                             'competition_category_id' => $category->id,
                             'competition_participant_team_id' => $team->id,
                             'round_name' => 'Final',
                         ],
-                        [
-                            'jury_user_id' => $juryUserId,
-                            'final_score' => $finalTotal,
-                            'score_details' => [
-                                'soal_amplop' => $sim['f_amplop'],
-                                'rebutan_bertingkat' => $sim['f_rebutan'],
-                                'taruh_nilai' => $sim['f_taruh'],
-                                'total' => $finalTotal,
-                            ],
-                        ]
+                        $simFinalData
                     );
                 }
             }
