@@ -525,4 +525,104 @@ class AllGridScoringNo500ErrorTest extends TestCase
         $this->assertEquals(77, (float) $sortedTeams[4]->prelim_score, 'Urutan baris kelima harus tim dengan skor 77');
         $this->assertEquals(68, (float) $sortedTeams[5]->prelim_score, 'Urutan baris keenam harus tim dengan skor 68');
     }
+
+    /**
+     * Test Semifinal: Total Nilai Soal Amplop + Rebutan + Balon, ranking tertinggi lolos ke final
+     */
+    public function test_lct_semifinal_ranking_and_headers(): void
+    {
+        $this->actingAs($this->admin);
+
+        [$catLct, $t1] = $this->createCategoryAndTeam('LCT-SEMI-TEST', 'Lomba Cepat Tepat', 'Madya');
+        $t1->update(['team_name' => 'SMAN 2 TAMBUN SELATAN Regu A']);
+
+        $reg2 = CompetitionRegistration::create([
+            'competition_event_id' => $this->event->id,
+            'school_name' => 'SMAN 1 CIAWI',
+            'registration_code' => 'REG-'.Str::random(6),
+            'level' => 'Madya',
+            'status' => 'verified',
+            'advisor_name' => 'Pembina Test',
+            'advisor_phone' => '08123456789',
+        ]);
+        $t2 = CompetitionParticipantTeam::create([
+            'competition_registration_id' => $reg2->id,
+            'competition_category_id' => $catLct->id,
+            'team_name' => 'SMAN 1 CIAWI Regu A',
+            'team_label' => 'Regu A',
+            'order_number' => 2,
+            'is_active' => true,
+        ]);
+
+        $reg3 = CompetitionRegistration::create([
+            'competition_event_id' => $this->event->id,
+            'school_name' => 'SMAN 1 GARUT',
+            'registration_code' => 'REG-'.Str::random(6),
+            'level' => 'Madya',
+            'status' => 'verified',
+            'advisor_name' => 'Pembina Test',
+            'advisor_phone' => '08123456789',
+        ]);
+        $t3 = CompetitionParticipantTeam::create([
+            'competition_registration_id' => $reg3->id,
+            'competition_category_id' => $catLct->id,
+            'team_name' => 'SMAN 1 GARUT Regu A',
+            'team_label' => 'Regu A',
+            'order_number' => 3,
+            'is_active' => true,
+        ]);
+
+        // Simpan nilai Semifinal Termin 1 persis seperti data screenshot user
+        $response = $this->post("/admin/competition-scores/{$catLct->id}/lct-save-semifinal", [
+            'semi_termin' => [
+                $t1->id => 1,
+                $t2->id => 1,
+                $t3->id => 1,
+            ],
+            'semi_amplop' => [
+                $t1->id => 45,
+                $t2->id => 56,
+                $t3->id => 0,
+            ],
+            'semi_rebutan' => [
+                $t1->id => 800,
+                $t2->id => 700,
+                $t3->id => 0,
+            ],
+            'semi_balon' => [
+                $t1->id => 4,
+                $t2->id => 2,
+                $t3->id => 0,
+            ],
+        ]);
+        $this->assertNotEquals(500, $response->getStatusCode());
+        $response->assertRedirect();
+
+        // Verifikasi di database: T1 (849) harus Rank 1, T2 (758) Rank 2, T3 (0) Rank 3
+        $scoreT1 = CompetitionScore::where('competition_category_id', $catLct->id)
+            ->where('competition_participant_team_id', $t1->id)
+            ->where('round_name', 'Semi Final')
+            ->first();
+        $this->assertEquals(849, (float) $scoreT1->final_score);
+        $this->assertEquals(1, $scoreT1->rank, 'SMAN 2 TAMBUN SELATAN (849) harus Rank 1');
+
+        $scoreT2 = CompetitionScore::where('competition_category_id', $catLct->id)
+            ->where('competition_participant_team_id', $t2->id)
+            ->where('round_name', 'Semi Final')
+            ->first();
+        $this->assertEquals(758, (float) $scoreT2->final_score);
+        $this->assertEquals(2, $scoreT2->rank, 'SMAN 1 CIAWI (758) harus Rank 2');
+
+        // Verifikasi tampilan view Stage 2
+        $resView = $this->get("/admin/competition-scores/{$catLct->id}/lct?stage=2");
+        $resView->assertOk();
+        $resView->assertSee('TOTAL NILAI SOAL AMPLOP');
+        $resView->assertSee('TOTAL NILAI SOAL REBUTAN');
+        $resView->assertSee('TOTAL NILAI BALON');
+
+        // Cek bahwa T1 terurut sebagai urutan pertama di termin 1 dan berstatus lolos final
+        $termin1Teams = $resView->viewData('termin1Teams');
+        $this->assertEquals($t1->id, $termin1Teams[0]->id, 'Tim pertama di Termin 1 harus SMAN 2 TAMBUN SELATAN');
+        $this->assertEquals(1, $termin1Teams[0]->termin_rank);
+    }
 }

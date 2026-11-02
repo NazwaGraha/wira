@@ -439,20 +439,20 @@
                                             <tr class="bg-slate-900 text-white uppercase text-[11px] tracking-wider font-black">
                                                 <th class="py-3 px-4 w-16 text-center border-r border-slate-800">NO</th>
                                                 <th class="py-3 px-5 border-r border-slate-800">NAMA SEKOLAH / REGU</th>
-                                                <th class="py-3 px-4 text-center border-r border-slate-800 w-36">SOAL AMPLOP</th>
-                                                <th class="py-3 px-4 text-center border-r border-slate-800 w-44">REBUTAN</th>
-                                                <th class="py-3 px-4 text-center border-r border-slate-800 w-36">BALON</th>
+                                                <th class="py-3 px-4 text-center border-r border-slate-800 w-44">TOTAL NILAI SOAL AMPLOP</th>
+                                                <th class="py-3 px-4 text-center border-r border-slate-800 w-48">TOTAL NILAI SOAL REBUTAN</th>
+                                                <th class="py-3 px-4 text-center border-r border-slate-800 w-40">TOTAL NILAI BALON</th>
                                                 <th class="py-3 px-4 text-center border-r border-slate-800 w-36 bg-slate-950">POIN TOTAL</th>
-                                                <th class="py-3 px-4 text-center w-40 bg-black">RANKING / STATUS</th>
+                                                <th class="py-3 px-4 text-center w-44 bg-black">RANKING / STATUS</th>
                                             </tr>
                                         </thead>
                                         <tbody class="divide-y divide-slate-200 font-medium">
                                             @forelse($conf['teams'] as $tIdx => $t)
                                                 @php
                                                     $isWinner = ($t->termin_rank == 1);
-                                                    $rowBg = $isWinner ? 'bg-emerald-50/70 font-bold' : '';
+                                                    $rowBg = $isWinner ? 'bg-emerald-50/70 font-bold border-l-4 border-l-emerald-500' : 'hover:bg-slate-50 border-l-4 border-l-transparent';
                                                 @endphp
-                                                <tr class="{{ $rowBg }}">
+                                                <tr class="{{ $rowBg }} transition" id="row-semi-{{ $t->id }}" data-termin="{{ $tNum }}">
                                                     <td class="py-3.5 px-4 text-center font-mono font-bold text-slate-800">
                                                         <input type="hidden" name="semi_termin[{{ $t->id }}]" value="{{ $tNum }}">
                                                         {{ $tIdx + 1 }}
@@ -466,31 +466,31 @@
                                                         </div>
                                                     </td>
                                                     <td class="py-3.5 px-4 text-center">
-                                                        <input type="number" step="any" name="semi_amplop[{{ $t->id }}]" id="inp-amplop-{{ $t->id }}" value="{{ $t->soal_amplop ?? 0 }}" oninput="calcSemiRow({{ $t->id }})" class="w-24 text-center font-mono font-bold text-sm bg-white border border-slate-300 rounded-xl py-1.5 px-2 focus:ring-2 focus:ring-indigo-500">
+                                                        <input type="number" step="any" name="semi_amplop[{{ $t->id }}]" id="inp-amplop-{{ $t->id }}" value="{{ $t->soal_amplop ?? 0 }}" oninput="calcSemiRow({{ $t->id }}, {{ $tNum }})" class="w-24 text-center font-mono font-bold text-sm bg-white border border-slate-300 rounded-xl py-1.5 px-2 focus:ring-2 focus:ring-indigo-500" data-termin="{{ $tNum }}">
                                                     </td>
                                                     <td class="py-3.5 px-4 text-center">
                                                         <div class="flex items-center justify-center gap-1">
-                                                            <input type="number" step="any" name="semi_rebutan[{{ $t->id }}]" id="inp-rebutan-{{ $t->id }}" value="{{ $t->rebutan ?? 0 }}" oninput="calcSemiRow({{ $t->id }})" class="w-24 text-center font-mono font-bold text-sm bg-white border border-slate-300 rounded-xl py-1.5 px-2 focus:ring-2 focus:ring-indigo-500">
+                                                            <input type="number" step="any" name="semi_rebutan[{{ $t->id }}]" id="inp-rebutan-{{ $t->id }}" value="{{ $t->rebutan ?? 0 }}" oninput="calcSemiRow({{ $t->id }}, {{ $tNum }})" class="w-24 text-center font-mono font-bold text-sm bg-white border border-slate-300 rounded-xl py-1.5 px-2 focus:ring-2 focus:ring-indigo-500" data-termin="{{ $tNum }}">
                                                             <!-- Quick Add Buttons -->
                                                             <div class="flex flex-col gap-0.5">
-                                                                <button type="button" onclick="adjustInput('inp-rebutan-{{ $t->id }}', 100, {{ $t->id }})" class="px-1.5 py-0.5 text-[9px] font-black rounded bg-emerald-100 text-emerald-800 hover:bg-emerald-200 shadow-2xs cursor-pointer">+100</button>
-                                                                <button type="button" onclick="adjustInput('inp-rebutan-{{ $t->id }}', -50, {{ $t->id }})" class="px-1.5 py-0.5 text-[9px] font-black rounded bg-rose-100 text-rose-800 hover:bg-rose-200 shadow-2xs cursor-pointer">-50</button>
+                                                                <button type="button" onclick="adjustInput('inp-rebutan-{{ $t->id }}', 100, {{ $t->id }}, {{ $tNum }})" class="px-1.5 py-0.5 text-[9px] font-black rounded bg-emerald-100 text-emerald-800 hover:bg-emerald-200 shadow-2xs cursor-pointer">+100</button>
+                                                                <button type="button" onclick="adjustInput('inp-rebutan-{{ $t->id }}', -50, {{ $t->id }}, {{ $tNum }})" class="px-1.5 py-0.5 text-[9px] font-black rounded bg-rose-100 text-rose-800 hover:bg-rose-200 shadow-2xs cursor-pointer">-50</button>
                                                             </div>
                                                         </div>
                                                     </td>
                                                     <td class="py-3.5 px-4 text-center">
-                                                        <input type="number" step="any" name="semi_balon[{{ $t->id }}]" id="inp-balon-{{ $t->id }}" value="{{ $t->balon ?? 0 }}" oninput="calcSemiRow({{ $t->id }})" class="w-24 text-center font-mono font-bold text-sm bg-white border border-slate-300 rounded-xl py-1.5 px-2 focus:ring-2 focus:ring-indigo-500">
+                                                        <input type="number" step="any" name="semi_balon[{{ $t->id }}]" id="inp-balon-{{ $t->id }}" value="{{ $t->balon ?? 0 }}" oninput="calcSemiRow({{ $t->id }}, {{ $tNum }})" class="w-24 text-center font-mono font-bold text-sm bg-white border border-slate-300 rounded-xl py-1.5 px-2 focus:ring-2 focus:ring-indigo-500" data-termin="{{ $tNum }}">
                                                     </td>
                                                     <td class="py-3.5 px-4 text-center font-mono font-black text-base text-indigo-900 bg-indigo-50/50">
                                                         <span id="display-total-{{ $t->id }}">{{ number_format($t->total_score ?? 0, 0, ',', '.') }}</span>
                                                     </td>
-                                                    <td class="py-3.5 px-4 text-center">
+                                                    <td class="py-3.5 px-4 text-center font-bold" id="display-status-{{ $t->id }}">
                                                         @if($isWinner)
-                                                            <span class="inline-flex items-center gap-1 px-3 py-1 rounded-xl bg-emerald-100 text-emerald-800 border border-emerald-300 text-[10px] font-black uppercase tracking-wider shadow-2xs">
+                                                            <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-xl bg-emerald-100 text-emerald-800 border border-emerald-300 text-[10px] font-black uppercase tracking-wider shadow-2xs">
                                                                 <i class="fa-solid fa-ticket text-emerald-600"></i> Lolos Final
                                                             </span>
                                                         @else
-                                                            <span class="text-xs font-bold text-slate-600">
+                                                            <span class="inline-flex items-center justify-center px-2.5 py-1 rounded-xl bg-slate-100 text-slate-700 text-xs font-bold border border-slate-200">
                                                                 Peringkat {{ $t->termin_rank ?? ($tIdx + 1) }}
                                                             </span>
                                                         @endif
@@ -966,16 +966,21 @@
     });
 
     // Quick Add Score Adjuster
-    function adjustInput(inputId, delta, teamId) {
+    function adjustInput(inputId, delta, teamId, terminNum) {
         const inp = document.getElementById(inputId);
         if (!inp) return;
         let current = parseFloat(inp.value) || 0;
         inp.value = current + delta;
-        calcSemiRow(teamId);
+        calcSemiRow(teamId, terminNum);
     }
 
-    // Hitung Live Total Skor Semifinal
-    function calcSemiRow(teamId) {
+    // Hitung Live Total Skor Semifinal & Evaluasi Ranking / Kelolosan Otomatis
+    function calcSemiRow(teamId, terminNum) {
+        if (!terminNum) {
+            const input = document.getElementById('inp-amplop-' + teamId);
+            terminNum = input?.dataset?.termin || 1;
+        }
+
         const amplop = parseFloat(document.getElementById('inp-amplop-' + teamId)?.value) || 0;
         const rebutan = parseFloat(document.getElementById('inp-rebutan-' + teamId)?.value) || 0;
         const balon = parseFloat(document.getElementById('inp-balon-' + teamId)?.value) || 0;
@@ -985,7 +990,64 @@
         if (display) {
             display.textContent = total.toLocaleString('id-ID');
         }
+
+        recalculateTerminRanks(terminNum);
     }
+
+    // Evaluasi Ranking per Termin: Nilai Tertinggi -> Ranking 1 (Lolos Final)
+    function recalculateTerminRanks(terminNum) {
+        const rows = [];
+        document.querySelectorAll(`tr[data-termin="${terminNum}"]`).forEach(tr => {
+            const teamIdMatch = tr.id.match(/row-semi-(\d+)/);
+            if (!teamIdMatch) return;
+            const teamId = teamIdMatch[1];
+            const amplop = parseFloat(document.getElementById('inp-amplop-' + teamId)?.value) || 0;
+            const rebutan = parseFloat(document.getElementById('inp-rebutan-' + teamId)?.value) || 0;
+            const balon = parseFloat(document.getElementById('inp-balon-' + teamId)?.value) || 0;
+            const total = amplop + rebutan + balon;
+
+            rows.push({
+                teamId: teamId,
+                total: total,
+                trElement: tr
+            });
+        });
+
+        // Urutkan nilai tertinggi ke terendah (descending)
+        rows.sort((a, b) => b.total - a.total);
+
+        // Update Ranking dan Status Lolos Final secara LIVE!
+        rows.forEach((r, idx) => {
+            const rank = idx + 1;
+            const statusEl = document.getElementById('display-status-' + r.teamId);
+
+            if (rank === 1) {
+                // Rank 1: Lolos Final!
+                if (statusEl) {
+                    statusEl.innerHTML = `<span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-xl bg-emerald-100 text-emerald-800 border border-emerald-300 text-[10px] font-black uppercase tracking-wider shadow-2xs">
+                        <i class="fa-solid fa-ticket text-emerald-600"></i> Lolos Final
+                    </span>`;
+                }
+                r.trElement.className = 'bg-emerald-50/70 font-bold border-l-4 border-l-emerald-500 transition';
+            } else {
+                // Rank 2, 3: Peringkat 2, Peringkat 3
+                if (statusEl) {
+                    statusEl.innerHTML = `<span class="inline-flex items-center justify-center px-2.5 py-1 rounded-xl bg-slate-100 text-slate-700 text-xs font-bold border border-slate-200">
+                        Peringkat ${rank}
+                    </span>`;
+                }
+                r.trElement.className = 'hover:bg-slate-50 border-l-4 border-l-transparent transition';
+            }
+        });
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+        [1, 2, 3].forEach(tNum => {
+            if (document.querySelector(`tr[data-termin="${tNum}"]`)) {
+                recalculateTerminRanks(tNum);
+            }
+        });
+    });
 
     // Quick Add Final Score Adjuster
     function adjustFinalInput(inputId, delta, teamId) {

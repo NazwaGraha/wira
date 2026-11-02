@@ -1856,12 +1856,21 @@ class CompetitionScoreController extends Controller
             }
         }
 
-        // Hitung ranking per termin
-        foreach ([1 => $termin1Teams, 2 => $termin2Teams, 3 => $termin3Teams] as $tNum => $tCol) {
-            $tCol->sort(fn ($a, $b) => $b->total_score <=> $a->total_score)->values()->each(function ($t, $idx) {
-                $t->termin_rank = $idx + 1;
-            });
-        }
+        // Hitung ranking per termin dan urutkan dari nilai tertinggi ke terendah
+        $termin1Teams = $termin1Teams->sort(fn ($a, $b) => $b->total_score <=> $a->total_score)->values();
+        $termin1Teams->each(function ($t, $idx) {
+            $t->termin_rank = $idx + 1;
+        });
+
+        $termin2Teams = $termin2Teams->sort(fn ($a, $b) => $b->total_score <=> $a->total_score)->values();
+        $termin2Teams->each(function ($t, $idx) {
+            $t->termin_rank = $idx + 1;
+        });
+
+        $termin3Teams = $termin3Teams->sort(fn ($a, $b) => $b->total_score <=> $a->total_score)->values();
+        $termin3Teams->each(function ($t, $idx) {
+            $t->termin_rank = $idx + 1;
+        });
 
         // Identifikasi 3 Finalis (Juara 1 masing-masing termin)
         $finalist1 = $termin1Teams->sortBy('termin_rank')->first();
