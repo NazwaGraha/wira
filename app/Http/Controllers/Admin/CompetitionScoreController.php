@@ -1923,12 +1923,34 @@ class CompetitionScoreController extends Controller
                 $fObj->grand_rank = $sc?->rank ?? null;
                 $finalGrandTeams->push($fObj);
             }
+        } elseif ($finalScores->isNotEmpty()) {
+            // Fallback robust: Muat tim dari skor babak Final yang sudah tersimpan
+            $finalTeamModels = CompetitionParticipantTeam::whereIn('id', $finalScores->keys())->with('registration')->get();
+            foreach ($finalTeamModels as $fTeam) {
+                $sc = $finalScores->get($fTeam->id);
+                $details = is_array($sc?->score_details) ? $sc->score_details : (json_decode($sc?->score_details ?? '', true) ?? []);
+                $fObj = clone $fTeam;
+                $fObj->soal_amplop = $details['soal_amplop'] ?? 0;
+                $fObj->rebutan_bertingkat = $details['rebutan_bertingkat'] ?? 0;
+                $fObj->taruh_nilai = $details['taruh_nilai'] ?? 0;
+                $fObj->total_score = (float) ($sc?->final_score ?? 0);
+                $fObj->grand_rank = $sc?->rank ?? null;
+                $finalGrandTeams->push($fObj);
+            }
+        }
 
+        if ($finalGrandTeams->isNotEmpty()) {
             // Urutkan grand final: Skor tertinggi -> Juara 1, 2, 3
-            $finalGrandTeams = $finalGrandTeams->sortByDesc('total_score')->values();
-            $finalGrandTeams->each(function ($t, $idx) {
-                $t->grand_rank = $idx + 1;
-            });
+            if ($finalGrandTeams->where('total_score', '>', 0)->isNotEmpty()) {
+                $finalGrandTeams = $finalGrandTeams->sortByDesc('total_score')->values();
+                $finalGrandTeams->each(function ($t, $idx) {
+                    $t->grand_rank = $idx + 1;
+                });
+            } else {
+                $finalGrandTeams->each(function ($t) {
+                    $t->grand_rank = null;
+                });
+            }
         }
 
         $hasSemiResults = $termin1Teams->isNotEmpty() || $termin2Teams->isNotEmpty() || $termin3Teams->isNotEmpty();
@@ -2264,8 +2286,8 @@ class CompetitionScoreController extends Controller
                 $finalScores[] = $sc;
             }
 
-            // Tentukan Juara 1, Juara 2, Juara 3
-            usort($finalScores, fn ($a, $b) => $b->final_score <=> $a->final_score);
+            // Tentukan Juara 1, Juara 2, Juara 3 (Berdasarkan Skor Tertinggi)
+            usort($finalScores, fn ($a, $b) => floatval($b->final_score) <=> floatval($a->final_score));
             foreach ($finalScores as $idx => $sc) {
                 $sc->rank = $idx + 1;
                 $sc->save();

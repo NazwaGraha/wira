@@ -625,4 +625,128 @@ class AllGridScoringNo500ErrorTest extends TestCase
         $this->assertEquals($t1->id, $termin1Teams[0]->id, 'Tim pertama di Termin 1 harus SMAN 2 TAMBUN SELATAN');
         $this->assertEquals(1, $termin1Teams[0]->termin_rank);
     }
+
+    /**
+     * Test Grand Final: Penentuan Peringkat Juara 1, 2, 3 murni dari total skor tertinggi
+     * Sesuai data input user:
+     * - SMAN 2 TAMBUN SELATAN: 700 + 700 + 600 = 2.000 -> Juara 1
+     * - SMAN 1 CIAWI: 602 + 703 + 600 = 1.905 -> Juara 2
+     * - SMAN 1 GARUT: 600 + 700 + 600 = 1.900 -> Juara 3
+     */
+    public function test_lct_grand_final_ranking_and_champion_determination_strictly_by_highest_score(): void
+    {
+        $this->actingAs($this->admin);
+
+        [$catLct, $t1] = $this->createCategoryAndTeam('LCT-FINAL-TEST', 'Lomba Cepat Tepat', 'Wira');
+        $t1->update(['team_name' => 'SMAN 1 GARUT Regu A']);
+
+        $reg2 = CompetitionRegistration::create([
+            'competition_event_id' => $this->event->id,
+            'school_name' => 'SMAN 1 CIAWI',
+            'registration_code' => 'REG-'.Str::random(6),
+            'level' => 'Wira',
+            'status' => 'verified',
+            'advisor_name' => 'Pembina Test',
+            'advisor_phone' => '08123456789',
+        ]);
+        $t2 = CompetitionParticipantTeam::create([
+            'competition_registration_id' => $reg2->id,
+            'competition_category_id' => $catLct->id,
+            'team_name' => 'SMAN 1 CIAWI Regu A',
+            'team_label' => 'Regu A',
+            'order_number' => 2,
+            'is_active' => true,
+        ]);
+
+        $reg3 = CompetitionRegistration::create([
+            'competition_event_id' => $this->event->id,
+            'school_name' => 'SMAN 2 TAMBUN SELATAN',
+            'registration_code' => 'REG-'.Str::random(6),
+            'level' => 'Wira',
+            'status' => 'verified',
+            'advisor_name' => 'Pembina Test',
+            'advisor_phone' => '08123456789',
+        ]);
+        $t3 = CompetitionParticipantTeam::create([
+            'competition_registration_id' => $reg3->id,
+            'competition_category_id' => $catLct->id,
+            'team_name' => 'SMAN 2 TAMBUN SELATAN Regu A',
+            'team_label' => 'Regu A',
+            'order_number' => 3,
+            'is_active' => true,
+        ]);
+
+        // Simpan nilai Grand Final
+        $response = $this->post("/admin/competition-scores/{$catLct->id}/lct-save-final", [
+            'final_amplop' => [
+                $t1->id => 600,
+                $t2->id => 602,
+                $t3->id => 700,
+            ],
+            'final_rebutan' => [
+                $t1->id => 700,
+                $t2->id => 703,
+                $t3->id => 700,
+            ],
+            'final_taruh' => [
+                $t1->id => 600,
+                $t2->id => 600,
+                $t3->id => 600,
+            ],
+        ]);
+
+        $this->assertNotEquals(500, $response->getStatusCode());
+        $response->assertRedirect();
+
+        // 1. Verifikasi Database: T3 (2.000) adalah Juara 1
+        $scoreT3 = CompetitionScore::where('competition_category_id', $catLct->id)
+            ->where('competition_participant_team_id', $t3->id)
+            ->where('round_name', 'Final')
+            ->first();
+        $this->assertNotNull($scoreT3);
+        $this->assertEquals(2000, (float) $scoreT3->final_score);
+        $this->assertEquals(1, $scoreT3->rank, 'SMAN 2 TAMBUN SELATAN (2.000) harus Juara 1');
+
+        // 2. Verifikasi Database: T2 (1.905) adalah Juara 2
+        $scoreT2 = CompetitionScore::where('competition_category_id', $catLct->id)
+            ->where('competition_participant_team_id', $t2->id)
+            ->where('round_name', 'Final')
+            ->first();
+        $this->assertNotNull($scoreT2);
+        $this->assertEquals(1905, (float) $scoreT2->final_score);
+        $this->assertEquals(2, $scoreT2->rank, 'SMAN 1 CIAWI (1.905) harus Juara 2');
+
+        // 3. Verifikasi Database: T1 (1.900) adalah Juara 3
+        $scoreT1 = CompetitionScore::where('competition_category_id', $catLct->id)
+            ->where('competition_participant_team_id', $t1->id)
+            ->where('round_name', 'Final')
+            ->first();
+        $this->assertNotNull($scoreT1);
+        $this->assertEquals(1900, (float) $scoreT1->final_score);
+        $this->assertEquals(3, $scoreT1->rank, 'SMAN 1 GARUT (1.900) harus Juara 3');
+
+        // 4. Verifikasi Tampilan View Stage 3
+        $resView = $this->get("/admin/competition-scores/{$catLct->id}/lct?stage=3");
+        $resView->assertOk();
+        $resView->assertSee('TOTAL NILAI SOAL AMPLOP');
+        $resView->assertSee('TOTAL NILAI REBUTAN BERTINGKAT');
+        $resView->assertSee('TOTAL NILAI TARUH NILAI');
+        $resView->assertSee('🥇 Juara 1');
+        $resView->assertSee('🥈 Juara 2');
+        $resView->assertSee('🥉 Juara 3');
+
+        $finalGrandTeams = $resView->viewData('finalGrandTeams');
+        $this->assertCount(3, $finalGrandTeams);
+        $this->assertEquals($t3->id, $finalGrandTeams[0]->id, 'Regu baris pertama harus SMAN 2 TAMBUN SELATAN');
+        $this->assertEquals(2000, (float) $finalGrandTeams[0]->total_score);
+        $this->assertEquals(1, $finalGrandTeams[0]->grand_rank);
+
+        $this->assertEquals($t2->id, $finalGrandTeams[1]->id, 'Regu baris kedua harus SMAN 1 CIAWI');
+        $this->assertEquals(1905, (float) $finalGrandTeams[1]->total_score);
+        $this->assertEquals(2, $finalGrandTeams[1]->grand_rank);
+
+        $this->assertEquals($t1->id, $finalGrandTeams[2]->id, 'Regu baris ketiga harus SMAN 1 GARUT');
+        $this->assertEquals(1900, (float) $finalGrandTeams[2]->total_score);
+        $this->assertEquals(3, $finalGrandTeams[2]->grand_rank);
+    }
 }

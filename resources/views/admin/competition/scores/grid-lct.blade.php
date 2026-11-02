@@ -662,39 +662,41 @@
                                 <tr class="bg-slate-900 text-white uppercase text-[11px] tracking-wider font-black">
                                     <th class="py-3.5 px-4 w-16 text-center border-r border-slate-800">NO</th>
                                     <th class="py-3.5 px-5 border-r border-slate-800">NAMA SEKOLAH / REGU FINALIS</th>
-                                    <th class="py-3.5 px-4 text-center border-r border-slate-800 w-40">SOAL AMPLOP</th>
-                                    <th class="py-3.5 px-4 text-center border-r border-slate-800 w-52">REBUTAN BERTINGKAT</th>
-                                    <th class="py-3.5 px-4 text-center border-r border-slate-800 w-48">TARUH NILAI</th>
+                                    <th class="py-3.5 px-4 text-center border-r border-slate-800 w-44">TOTAL NILAI SOAL AMPLOP</th>
+                                    <th class="py-3.5 px-4 text-center border-r border-slate-800 w-52">TOTAL NILAI REBUTAN BERTINGKAT</th>
+                                    <th class="py-3.5 px-4 text-center border-r border-slate-800 w-44">TOTAL NILAI TARUH NILAI</th>
                                     <th class="py-3.5 px-4 text-center border-r border-slate-800 w-40 bg-slate-950">POIN TOTAL</th>
-                                    <th class="py-3.5 px-4 text-center w-44 bg-black">PERINGKAT JUARA</th>
+                                    <th class="py-3.5 px-4 text-center w-48 bg-black">PERINGKAT JUARA</th>
                                 </tr>
                             </thead>
                             <tbody class="divide-y divide-slate-200 font-medium">
                                 @forelse($finalGrandTeams as $fIdx => $ft)
                                     @php
-                                        $fRank = $ft->grand_rank ?? ($fIdx + 1);
-                                        $isJuara1 = ($fRank == 1 && $ft->total_score > 0);
-                                        $isJuara2 = ($fRank == 2 && $ft->total_score > 0);
-                                        $isJuara3 = ($fRank == 3 && $ft->total_score > 0);
+                                        $fRank = $ft->grand_rank;
+                                        $hasScore = ($ft->total_score > 0);
+                                        $isJuara1 = ($fRank === 1 && $hasScore);
+                                        $isJuara2 = ($fRank === 2 && $hasScore);
+                                        $isJuara3 = ($fRank === 3 && $hasScore);
+                                        $teamName = $ft->team_name ?? ($ft->registration?->school_name ?? 'Finalis ' . ($fIdx + 1));
                                     @endphp
-                                    <tr class="{{ $isJuara1 ? 'bg-amber-50/70 font-bold' : '' }}">
-                                        <td class="py-3.5 px-4 text-center font-mono font-bold text-slate-800">
+                                    <tr class="{{ $isJuara1 ? 'bg-amber-50/70 font-bold border-l-4 border-l-amber-500' : ($isJuara2 ? 'bg-slate-100/60 font-bold border-l-4 border-l-slate-400' : ($isJuara3 ? 'bg-amber-50/40 font-bold border-l-4 border-l-amber-700' : 'hover:bg-slate-50 border-l-4 border-l-transparent')) }} transition" id="row-final-{{ $ft->id }}" data-team-id="{{ $ft->id }}" data-team-name="{{ $teamName }}">
+                                        <td class="py-3.5 px-4 text-center font-mono font-bold text-slate-800" id="final-no-{{ $ft->id }}">
                                             {{ $fIdx + 1 }}
                                         </td>
                                         <td class="py-3.5 px-5">
                                             <div class="font-black text-slate-900 text-sm">
-                                                {{ $ft->team_name ?? ($ft->registration?->school_name ?? 'Finalis ' . ($fIdx + 1)) }}
+                                                {{ $teamName }}
                                             </div>
                                             <div class="text-[11px] text-slate-500 font-medium">
                                                 Pangkalan: {{ $ft->registration?->school_name ?? '-' }}
                                             </div>
                                         </td>
                                         <td class="py-3.5 px-4 text-center">
-                                            <input type="number" step="any" name="final_amplop[{{ $ft->id }}]" id="inp-final-amplop-{{ $ft->id }}" value="{{ $ft->soal_amplop ?? 0 }}" oninput="calcFinalRow({{ $ft->id }})" class="w-28 text-center font-mono font-bold text-sm bg-white border border-slate-300 rounded-xl py-1.5 px-2 focus:ring-2 focus:ring-amber-500">
+                                            <input type="number" step="any" name="final_amplop[{{ $ft->id }}]" id="inp-final-amplop-{{ $ft->id }}" value="{{ $ft->soal_amplop ?? 0 }}" oninput="calcFinalRow({{ $ft->id }})" class="w-28 text-center font-mono font-bold text-sm bg-white border border-slate-300 rounded-xl py-1.5 px-2 focus:ring-2 focus:ring-amber-500 final-score-input" data-team-id="{{ $ft->id }}">
                                         </td>
                                         <td class="py-3.5 px-4 text-center">
                                             <div class="flex items-center justify-center gap-1">
-                                                <input type="number" step="any" name="final_rebutan[{{ $ft->id }}]" id="inp-final-rebutan-{{ $ft->id }}" value="{{ $ft->rebutan_bertingkat ?? 0 }}" oninput="calcFinalRow({{ $ft->id }})" class="w-28 text-center font-mono font-bold text-sm bg-white border border-slate-300 rounded-xl py-1.5 px-2 focus:ring-2 focus:ring-amber-500">
+                                                <input type="number" step="any" name="final_rebutan[{{ $ft->id }}]" id="inp-final-rebutan-{{ $ft->id }}" value="{{ $ft->rebutan_bertingkat ?? 0 }}" oninput="calcFinalRow({{ $ft->id }})" class="w-28 text-center font-mono font-bold text-sm bg-white border border-slate-300 rounded-xl py-1.5 px-2 focus:ring-2 focus:ring-amber-500 final-score-input" data-team-id="{{ $ft->id }}">
                                                 <div class="flex flex-col gap-0.5">
                                                     <button type="button" onclick="adjustFinalInput('inp-final-rebutan-{{ $ft->id }}', 100, {{ $ft->id }})" class="px-1.5 py-0.5 text-[9px] font-black rounded bg-emerald-100 text-emerald-800 hover:bg-emerald-200 shadow-2xs cursor-pointer">+100</button>
                                                     <button type="button" onclick="adjustFinalInput('inp-final-rebutan-{{ $ft->id }}', -50, {{ $ft->id }})" class="px-1.5 py-0.5 text-[9px] font-black rounded bg-rose-100 text-rose-800 hover:bg-rose-200 shadow-2xs cursor-pointer">-50</button>
@@ -702,12 +704,12 @@
                                             </div>
                                         </td>
                                         <td class="py-3.5 px-4 text-center">
-                                            <input type="number" step="any" name="final_taruh[{{ $ft->id }}]" id="inp-final-taruh-{{ $ft->id }}" value="{{ $ft->taruh_nilai ?? 0 }}" oninput="calcFinalRow({{ $ft->id }})" class="w-28 text-center font-mono font-bold text-sm bg-white border border-slate-300 rounded-xl py-1.5 px-2 focus:ring-2 focus:ring-amber-500">
+                                            <input type="number" step="any" name="final_taruh[{{ $ft->id }}]" id="inp-final-taruh-{{ $ft->id }}" value="{{ $ft->taruh_nilai ?? 0 }}" oninput="calcFinalRow({{ $ft->id }})" class="w-28 text-center font-mono font-bold text-sm bg-white border border-slate-300 rounded-xl py-1.5 px-2 focus:ring-2 focus:ring-amber-500 final-score-input" data-team-id="{{ $ft->id }}">
                                         </td>
                                         <td class="py-3.5 px-4 text-center font-mono font-black text-lg text-amber-950 bg-amber-50/50">
                                             <span id="display-final-total-{{ $ft->id }}">{{ number_format($ft->total_score ?? 0, 0, ',', '.') }}</span>
                                         </td>
-                                        <td class="py-3.5 px-4 text-center">
+                                        <td class="py-3.5 px-4 text-center font-bold" id="display-final-status-{{ $ft->id }}">
                                             @if($isJuara1)
                                                 <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-xl bg-gradient-to-r from-amber-400 to-yellow-500 text-stone-950 font-black text-xs shadow-2xs border border-yellow-300">
                                                     🥇 Juara 1
@@ -721,8 +723,8 @@
                                                     🥉 Juara 3
                                                 </span>
                                             @else
-                                                <span class="text-xs font-bold text-slate-600">
-                                                    Peringkat {{ $fRank }}
+                                                <span class="inline-flex items-center justify-center px-2.5 py-1 rounded-xl bg-slate-100 text-slate-500 text-xs font-semibold border border-slate-200">
+                                                    Belum Dinilai
                                                 </span>
                                             @endif
                                         </td>
@@ -765,40 +767,40 @@
                 <div class="grid grid-cols-1 sm:grid-cols-3 lg:grid-cols-5 gap-4">
                     <!-- Juara 1 -->
                     @php $j1 = $finalGrandTeams->firstWhere('grand_rank', 1); @endphp
-                    <div class="bg-gradient-to-b from-amber-100 via-amber-50 to-white border-2 border-amber-400 rounded-2xl p-4 text-center space-y-2 shadow-xs">
+                    <div class="bg-gradient-to-b from-amber-100 via-amber-50 to-white border-2 border-amber-400 rounded-2xl p-4 text-center space-y-2 shadow-xs transition" id="podium-card-j1">
                         <div class="text-3xl">🥇</div>
                         <div class="text-xs font-black uppercase tracking-wider text-amber-900">JUARA 1 (EMAS)</div>
-                        <div class="font-black text-slate-900 text-sm truncate" title="{{ $j1?->team_name ?? '-' }}">
+                        <div class="font-black text-slate-900 text-sm truncate" id="podium-j1-name" title="{{ $j1?->team_name ?? '-' }}">
                             {{ $j1?->team_name ?? '-' }}
                         </div>
-                        <div class="text-xs font-mono font-black text-amber-800">
-                            {{ $j1 ? number_format($j1->total_score, 0, ',', '.') . ' Poin' : '-' }}
+                        <div class="text-xs font-mono font-black text-amber-800" id="podium-j1-score">
+                            {{ $j1 && $j1->total_score > 0 ? number_format($j1->total_score, 0, ',', '.') . ' Poin' : '-' }}
                         </div>
                     </div>
 
                     <!-- Juara 2 -->
                     @php $j2 = $finalGrandTeams->firstWhere('grand_rank', 2); @endphp
-                    <div class="bg-gradient-to-b from-slate-100 via-slate-50 to-white border-2 border-slate-300 rounded-2xl p-4 text-center space-y-2 shadow-xs">
+                    <div class="bg-gradient-to-b from-slate-100 via-slate-50 to-white border-2 border-slate-300 rounded-2xl p-4 text-center space-y-2 shadow-xs transition" id="podium-card-j2">
                         <div class="text-3xl">🥈</div>
                         <div class="text-xs font-black uppercase tracking-wider text-slate-800">JUARA 2 (PERAK)</div>
-                        <div class="font-black text-slate-900 text-sm truncate" title="{{ $j2?->team_name ?? '-' }}">
+                        <div class="font-black text-slate-900 text-sm truncate" id="podium-j2-name" title="{{ $j2?->team_name ?? '-' }}">
                             {{ $j2?->team_name ?? '-' }}
                         </div>
-                        <div class="text-xs font-mono font-black text-slate-700">
-                            {{ $j2 ? number_format($j2->total_score, 0, ',', '.') . ' Poin' : '-' }}
+                        <div class="text-xs font-mono font-black text-slate-700" id="podium-j2-score">
+                            {{ $j2 && $j2->total_score > 0 ? number_format($j2->total_score, 0, ',', '.') . ' Poin' : '-' }}
                         </div>
                     </div>
 
                     <!-- Juara 3 -->
                     @php $j3 = $finalGrandTeams->firstWhere('grand_rank', 3); @endphp
-                    <div class="bg-gradient-to-b from-amber-900/10 via-amber-50 to-white border-2 border-amber-600 rounded-2xl p-4 text-center space-y-2 shadow-xs">
+                    <div class="bg-gradient-to-b from-amber-900/10 via-amber-50 to-white border-2 border-amber-600 rounded-2xl p-4 text-center space-y-2 shadow-xs transition" id="podium-card-j3">
                         <div class="text-3xl">🥉</div>
                         <div class="text-xs font-black uppercase tracking-wider text-amber-950">JUARA 3 (PERUNGGU)</div>
-                        <div class="font-black text-slate-900 text-sm truncate" title="{{ $j3?->team_name ?? '-' }}">
+                        <div class="font-black text-slate-900 text-sm truncate" id="podium-j3-name" title="{{ $j3?->team_name ?? '-' }}">
                             {{ $j3?->team_name ?? '-' }}
                         </div>
-                        <div class="text-xs font-mono font-black text-amber-900">
-                            {{ $j3 ? number_format($j3->total_score, 0, ',', '.') . ' Poin' : '-' }}
+                        <div class="text-xs font-mono font-black text-amber-900" id="podium-j3-score">
+                            {{ $j3 && $j3->total_score > 0 ? number_format($j3->total_score, 0, ',', '.') . ' Poin' : '-' }}
                         </div>
                     </div>
 
@@ -1069,6 +1071,114 @@
         if (display) {
             display.textContent = total.toLocaleString('id-ID');
         }
+
+        recalculateFinalRanks();
     }
+
+    // Evaluasi Peringkat Juara Babak Grand Final Secara Real-time (Nilai Tertinggi -> Juara 1)
+    function recalculateFinalRanks() {
+        const finalRows = document.querySelectorAll('tr[id^="row-final-"]');
+        if (finalRows.length === 0) return;
+
+        const teams = [];
+        finalRows.forEach(tr => {
+            const teamId = tr.dataset.teamId;
+            const teamName = tr.dataset.teamName || 'Regu Finalis';
+            const amplop = parseFloat(document.getElementById('inp-final-amplop-' + teamId)?.value) || 0;
+            const rebutan = parseFloat(document.getElementById('inp-final-rebutan-' + teamId)?.value) || 0;
+            const taruh = parseFloat(document.getElementById('inp-final-taruh-' + teamId)?.value) || 0;
+            const total = amplop + rebutan + taruh;
+
+            teams.push({
+                teamId: teamId,
+                teamName: teamName,
+                total: total,
+                trElement: tr
+            });
+        });
+
+        // Cek apakah sudah ada regu yang bernilai > 0
+        const hasScores = teams.some(t => t.total > 0);
+
+        if (!hasScores) {
+            // Belum ada input skor
+            teams.forEach(t => {
+                const statusEl = document.getElementById('display-final-status-' + t.teamId);
+                if (statusEl) {
+                    statusEl.innerHTML = '<span class="inline-flex items-center justify-center px-2.5 py-1 rounded-xl bg-slate-100 text-slate-500 text-xs font-semibold border border-slate-200">Belum Dinilai</span>';
+                }
+                t.trElement.className = 'hover:bg-slate-50 border-l-4 border-l-transparent transition';
+            });
+            return;
+        }
+
+        // Urutkan nilai total tertinggi ke terendah (descending)
+        teams.sort((a, b) => b.total - a.total);
+
+        // Update Peringkat Juara di tabel
+        teams.forEach((t, idx) => {
+            const rank = idx + 1;
+            const statusEl = document.getElementById('display-final-status-' + t.teamId);
+
+            if (rank === 1) {
+                // Juara 1 (Emas)
+                if (statusEl) {
+                    statusEl.innerHTML = `<span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-xl bg-gradient-to-r from-amber-400 to-yellow-500 text-stone-950 font-black text-xs shadow-2xs border border-yellow-300">
+                        🥇 Juara 1
+                    </span>`;
+                }
+                t.trElement.className = 'bg-amber-50/70 font-bold border-l-4 border-l-amber-500 transition';
+            } else if (rank === 2) {
+                // Juara 2 (Perak)
+                if (statusEl) {
+                    statusEl.innerHTML = `<span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-xl bg-gradient-to-r from-slate-200 to-slate-300 text-slate-800 font-black text-xs shadow-2xs border border-slate-400">
+                        🥈 Juara 2
+                    </span>`;
+                }
+                t.trElement.className = 'hover:bg-slate-50 border-l-4 border-l-slate-400 transition';
+            } else if (rank === 3) {
+                // Juara 3 (Perunggu)
+                if (statusEl) {
+                    statusEl.innerHTML = `<span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-xl bg-gradient-to-r from-amber-700 to-yellow-800 text-amber-100 font-black text-xs shadow-2xs border border-amber-600">
+                        🥉 Juara 3
+                    </span>`;
+                }
+                t.trElement.className = 'hover:bg-slate-50 border-l-4 border-l-amber-700 transition';
+            }
+        });
+
+        // Update Podium Kejuaraan Resmi di bawah secara Live
+        if (teams.length >= 1) {
+            const j1 = teams[0];
+            const p1Name = document.getElementById('podium-j1-name');
+            const p1Score = document.getElementById('podium-j1-score');
+            if (p1Name) p1Name.textContent = j1.teamName;
+            if (p1Score) p1Score.textContent = j1.total > 0 ? (j1.total.toLocaleString('id-ID') + ' Poin') : '-';
+        }
+        if (teams.length >= 2) {
+            const j2 = teams[1];
+            const p2Name = document.getElementById('podium-j2-name');
+            const p2Score = document.getElementById('podium-j2-score');
+            if (p2Name) p2Name.textContent = j2.teamName;
+            if (p2Score) p2Score.textContent = j2.total > 0 ? (j2.total.toLocaleString('id-ID') + ' Poin') : '-';
+        }
+        if (teams.length >= 3) {
+            const j3 = teams[2];
+            const p3Name = document.getElementById('podium-j3-name');
+            const p3Score = document.getElementById('podium-j3-score');
+            if (p3Name) p3Name.textContent = j3.teamName;
+            if (p3Score) p3Score.textContent = j3.total > 0 ? (j3.total.toLocaleString('id-ID') + ' Poin') : '-';
+        }
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+        if (document.querySelector('tr[id^="row-final-"]')) {
+            recalculateFinalRanks();
+            document.querySelectorAll('.final-score-input').forEach(inp => {
+                inp.addEventListener('input', () => calcFinalRow(inp.dataset.teamId));
+                inp.addEventListener('change', () => calcFinalRow(inp.dataset.teamId));
+            });
+        }
+    });
 </script>
 @endpush
