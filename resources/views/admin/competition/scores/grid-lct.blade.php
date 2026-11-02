@@ -246,7 +246,23 @@
                                 @forelse($sortedPrelim as $idx => $t)
                                     @php
                                         $isQualified = $t->is_top_9 ?? false;
-                                        $rowBg = $isQualified ? 'bg-emerald-50/50 hover:bg-emerald-50' : 'hover:bg-slate-50';
+                                        $rank = $t->prelim_rank;
+                                        if ($rank === 1) {
+                                            $rowBg = 'border-l-4 border-l-amber-500 bg-amber-50/50 hover:bg-amber-50';
+                                            $badgeClass = 'bg-gradient-to-tr from-amber-500 via-amber-400 to-yellow-300 text-slate-950 ring-2 ring-amber-300 shadow-sm font-black';
+                                        } elseif ($rank === 2) {
+                                            $rowBg = 'border-l-4 border-l-slate-400 bg-slate-100/70 hover:bg-slate-100';
+                                            $badgeClass = 'bg-gradient-to-tr from-slate-400 via-slate-300 to-slate-200 text-slate-900 ring-2 ring-slate-300 shadow-sm font-black';
+                                        } elseif ($rank === 3) {
+                                            $rowBg = 'border-l-4 border-l-amber-700 bg-amber-50/40 hover:bg-amber-50';
+                                            $badgeClass = 'bg-gradient-to-tr from-amber-700 via-amber-600 to-amber-500 text-white ring-2 ring-amber-600 shadow-sm font-black';
+                                        } elseif ($isQualified) {
+                                            $rowBg = 'border-l-4 border-l-emerald-500 bg-emerald-50/40 hover:bg-emerald-50';
+                                            $badgeClass = 'bg-gradient-to-tr from-emerald-600 to-teal-500 text-white ring-1 ring-emerald-400 shadow-2xs font-bold';
+                                        } else {
+                                            $rowBg = 'border-l-4 border-l-transparent hover:bg-slate-50';
+                                            $badgeClass = 'bg-slate-200 text-slate-700 font-bold';
+                                        }
                                     @endphp
                                     <tr class="{{ $rowBg }} transition" id="row-team-{{ $t->id }}">
                                         <td class="py-3 px-4 text-center font-mono font-black text-slate-800">
@@ -271,9 +287,12 @@
                                         <td class="py-3 px-4 text-center font-mono font-black text-sm text-slate-900" id="display-prelim-score-{{ $t->id }}">
                                             {{ $t->prelim_score !== null ? number_format($t->prelim_score, 0, ',', '.') : '-' }}
                                         </td>
-                                        <td class="py-3 px-4 text-center font-mono font-black text-sm" id="display-prelim-rank-{{ $t->id }}">
+                                        <td class="py-3 px-4 text-center font-mono text-sm" id="display-prelim-rank-{{ $t->id }}">
                                             @if($t->prelim_score !== null)
-                                                <span class="inline-block w-8 h-8 rounded-full leading-8 text-center font-bold {{ $isQualified ? 'bg-emerald-600 text-white' : 'bg-slate-200 text-slate-700' }}">
+                                                <span class="inline-flex items-center justify-center w-8 h-8 rounded-full leading-8 text-center {{ $badgeClass }}">
+                                                    @if($rank === 1)
+                                                        <i class="fa-solid fa-crown text-[9px] mr-0.5"></i>
+                                                    @endif
                                                     {{ $t->prelim_rank }}
                                                 </span>
                                             @else
@@ -307,11 +326,31 @@
                         </table>
                     </div>
 
-                    <div class="p-4 bg-slate-50 border-t border-slate-200 flex items-center justify-between gap-3 flex-wrap">
-                        <div class="text-xs text-slate-500 font-medium">
-                            * Waktu tempuh otomatis memecahkan nilai seri (tie-breaker) sesuai standar lomba PMI.
+                    <div class="p-4 bg-slate-50 border-t border-slate-200 flex flex-col md:flex-row items-center justify-between gap-4">
+                        <div class="flex items-center gap-2.5 flex-wrap text-xs">
+                            <span class="text-slate-500 font-extrabold uppercase text-[10px] tracking-wider">Keterangan Warna Ranking:</span>
+                            <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-xl bg-amber-100 text-amber-950 border border-amber-300 font-extrabold text-[11px] shadow-2xs">
+                                <span class="w-3.5 h-3.5 rounded-full bg-gradient-to-tr from-amber-500 to-yellow-300 ring-1 ring-amber-400 inline-flex items-center justify-center text-[8px]">👑</span>
+                                Peringkat 1 (Emas)
+                            </span>
+                            <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-xl bg-slate-200 text-slate-800 border border-slate-300 font-extrabold text-[11px] shadow-2xs">
+                                <span class="w-3.5 h-3.5 rounded-full bg-gradient-to-tr from-slate-400 to-slate-200 ring-1 ring-slate-300 inline-block"></span>
+                                Peringkat 2 (Perak)
+                            </span>
+                            <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-xl bg-amber-900/10 text-amber-800 border border-amber-800/30 font-extrabold text-[11px] shadow-2xs">
+                                <span class="w-3.5 h-3.5 rounded-full bg-gradient-to-tr from-amber-700 to-amber-600 ring-1 ring-amber-500 inline-block"></span>
+                                Peringkat 3 (Perunggu)
+                            </span>
+                            <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-xl bg-emerald-100 text-emerald-800 border border-emerald-300 font-extrabold text-[11px] shadow-2xs">
+                                <span class="w-3.5 h-3.5 rounded-full bg-emerald-600 ring-1 ring-emerald-400 inline-block"></span>
+                                Peringkat 4 - 9 (Lolos Semi-Final)
+                            </span>
+                            <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-xl bg-slate-100 text-slate-600 border border-slate-300 font-semibold text-[11px]">
+                                <span class="w-3.5 h-3.5 rounded-full bg-slate-400 inline-block"></span>
+                                Peringkat 10+ (Gugur)
+                            </span>
                         </div>
-                        <button type="submit" class="px-5 py-2.5 rounded-xl bg-red-600 hover:bg-red-700 text-white font-bold text-xs shadow-md transition flex items-center gap-2 cursor-pointer">
+                        <button type="submit" class="px-5 py-2.5 rounded-xl bg-red-600 hover:bg-red-700 text-white font-bold text-xs shadow-md transition flex items-center gap-2 cursor-pointer shrink-0">
                             <i class="fa-solid fa-floppy-disk"></i>
                             <span>Simpan Nilai Penyisihan</span>
                         </button>
@@ -879,14 +918,31 @@
                 if (rankEl) rankEl.innerHTML = '<span class="text-slate-300 font-mono font-bold">-</span>';
                 if (statusEl) statusEl.innerHTML = '<span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-xl bg-slate-100 text-slate-400 text-[10px] font-semibold"><i class="fa-regular fa-clock"></i> Belum Dinilai</span>';
                 if (rowEl) {
-                    rowEl.classList.remove('bg-emerald-50/50', 'hover:bg-emerald-50');
-                    rowEl.classList.add('hover:bg-slate-50');
+                    rowEl.className = 'border-l-4 border-l-transparent hover:bg-slate-50 transition';
                 }
             } else {
                 const isQual = r.isTop9;
+                let badgeClass = 'bg-slate-200 text-slate-700 font-bold';
+                let rowBgClass = 'border-l-4 border-l-transparent hover:bg-slate-50';
+                let iconHtml = '';
+
+                if (r.rank === 1) {
+                    badgeClass = 'bg-gradient-to-tr from-amber-500 via-amber-400 to-yellow-300 text-slate-950 ring-2 ring-amber-300 shadow-sm font-black';
+                    rowBgClass = 'border-l-4 border-l-amber-500 bg-amber-50/50 hover:bg-amber-50';
+                    iconHtml = '<i class="fa-solid fa-crown text-[9px] mr-0.5"></i>';
+                } else if (r.rank === 2) {
+                    badgeClass = 'bg-gradient-to-tr from-slate-400 via-slate-300 to-slate-200 text-slate-900 ring-2 ring-slate-300 shadow-sm font-black';
+                    rowBgClass = 'border-l-4 border-l-slate-400 bg-slate-100/70 hover:bg-slate-100';
+                } else if (r.rank === 3) {
+                    badgeClass = 'bg-gradient-to-tr from-amber-700 via-amber-600 to-amber-500 text-white ring-2 ring-amber-600 shadow-sm font-black';
+                    rowBgClass = 'border-l-4 border-l-amber-700 bg-amber-50/40 hover:bg-amber-50';
+                } else if (isQual) {
+                    badgeClass = 'bg-gradient-to-tr from-emerald-600 to-teal-500 text-white ring-1 ring-emerald-400 shadow-2xs font-bold';
+                    rowBgClass = 'border-l-4 border-l-emerald-500 bg-emerald-50/40 hover:bg-emerald-50';
+                }
+
                 if (rankEl) {
-                    const badgeClass = isQual ? 'bg-emerald-600 text-white' : 'bg-slate-200 text-slate-700';
-                    rankEl.innerHTML = `<span class="inline-block w-8 h-8 rounded-full leading-8 text-center font-bold ${badgeClass}">${r.rank}</span>`;
+                    rankEl.innerHTML = `<span class="inline-flex items-center justify-center w-8 h-8 rounded-full leading-8 text-center text-xs ${badgeClass}">${iconHtml}${r.rank}</span>`;
                 }
                 if (statusEl) {
                     if (isQual) {
@@ -896,13 +952,7 @@
                     }
                 }
                 if (rowEl) {
-                    if (isQual) {
-                        rowEl.classList.add('bg-emerald-50/50', 'hover:bg-emerald-50');
-                        rowEl.classList.remove('hover:bg-slate-50');
-                    } else {
-                        rowEl.classList.remove('bg-emerald-50/50', 'hover:bg-emerald-50');
-                        rowEl.classList.add('hover:bg-slate-50');
-                    }
+                    rowEl.className = `${rowBgClass} transition`;
                 }
             }
         });
