@@ -430,4 +430,99 @@ class AllGridScoringNo500ErrorTest extends TestCase
         $this->assertNotEquals(500, $genResponse->getStatusCode(), 'Generate semifinal returned 500');
         $genResponse->assertRedirect();
     }
+
+    /**
+     * Test ranking diurutkan dari nilai tertinggi dan waktu tercepat (tie-breaker)
+     */
+    public function test_lct_ranking_sorted_strictly_by_highest_score_and_fastest_time(): void
+    {
+        $this->actingAs($this->admin);
+
+        [$catLct, $t1] = $this->createCategoryAndTeam('LCT-RANK-TEST', 'Lomba Cepat Tepat', 'Madya');
+        $t1->update(['team_name' => 'SMPN 1 BEKASI Regu A', 'order_number' => 'A-002']);
+
+        $dataset = [
+            ['name' => 'SMPN 1 DEPOK Regu A', 'order' => 'A-003', 'score' => 89, 'time' => '05:40'],
+            ['name' => 'SMPN 2 BOGOR Regu A', 'order' => 'A-004', 'score' => 90, 'time' => '60:32'],
+            ['name' => 'SMPN 2 BOGOR Regu B', 'order' => 'A-005', 'score' => 89, 'time' => '05:21'], // Sama-sama 89, tapi 05:21 lebih cepat dari 05:40
+            ['name' => 'SMP OGAH BANGUN Regu A', 'order' => 'A-01', 'score' => 99, 'time' => '05.22'],
+            ['name' => 'SMP OGAH BANGUN Regu B', 'order' => 'B-01', 'score' => 77, 'time' => '06.23'],
+        ];
+
+        $payloadScores = [$t1->id => 68];
+        $payloadTimes = [$t1->id => '06:45'];
+        $teamsMap = [$t1->id => $t1];
+
+        foreach ($dataset as $d) {
+            $reg = CompetitionRegistration::create([
+                'competition_event_id' => $this->event->id,
+                'school_name' => $d['name'],
+                'registration_code' => 'REG-'.Str::random(6),
+                'level' => 'Madya',
+                'status' => 'verified',
+                'advisor_name' => 'Pembina Test',
+                'advisor_phone' => '08123456789',
+            ]);
+            $t = CompetitionParticipantTeam::create([
+                'competition_registration_id' => $reg->id,
+                'competition_category_id' => $catLct->id,
+                'team_name' => $d['name'],
+                'team_label' => 'Regu',
+                'order_number' => $d['order'],
+                'is_active' => true,
+            ]);
+            $payloadScores[$t->id] = $d['score'];
+            $payloadTimes[$t->id] = $d['time'];
+            $teamsMap[$t->id] = $t;
+        }
+
+        $resSave = $this->post("/admin/competition-scores/{$catLct->id}/lct-save-prelim", [
+            'prelim_scores' => $payloadScores,
+            'prelim_times' => $payloadTimes,
+        ]);
+        $this->assertNotEquals(500, $resSave->getStatusCode());
+        $resSave->assertRedirect();
+
+        // 1. Verifikasi Rank 1: SMP OGAH BANGUN Regu A (Nilai 99)
+        $rank1 = CompetitionScore::where('competition_category_id', $catLct->id)->where('rank', 1)->first();
+        $this->assertEquals(99, (float) $rank1->final_score);
+        $this->assertEquals('SMP OGAH BANGUN Regu A', $rank1->team->team_name);
+
+        // 2. Verifikasi Rank 2: SMPN 2 BOGOR Regu A (Nilai 90)
+        $rank2 = CompetitionScore::where('competition_category_id', $catLct->id)->where('rank', 2)->first();
+        $this->assertEquals(90, (float) $rank2->final_score);
+        $this->assertEquals('SMPN 2 BOGOR Regu A', $rank2->team->team_name);
+
+        // 3. Verifikasi Tie-Breaker Nilai 89:
+        // SMPN 2 BOGOR Regu B (05:21 = 321 detik) HARUS Rank 3 karena lebih cepat dari SMPN 1 DEPOK (05:40 = 340 detik) yang Rank 4
+        $rank3 = CompetitionScore::where('competition_category_id', $catLct->id)->where('rank', 3)->first();
+        $rank4 = CompetitionScore::where('competition_category_id', $catLct->id)->where('rank', 4)->first();
+
+        $this->assertEquals(89, (float) $rank3->final_score);
+        $this->assertEquals('SMPN 2 BOGOR Regu B', $rank3->team->team_name, 'Waktu 05:21 harus Rank 3 karena lebih cepat');
+
+        $this->assertEquals(89, (float) $rank4->final_score);
+        $this->assertEquals('SMPN 1 DEPOK Regu A', $rank4->team->team_name, 'Waktu 05:40 harus Rank 4 karena lebih lambat');
+
+        // 4. Verifikasi Rank 5: SMP OGAH BANGUN Regu B (Nilai 77)
+        $rank5 = CompetitionScore::where('competition_category_id', $catLct->id)->where('rank', 5)->first();
+        $this->assertEquals(77, (float) $rank5->final_score);
+
+        // 5. Verifikasi Rank 6: SMPN 1 BEKASI Regu A (Nilai 68)
+        $rank6 = CompetitionScore::where('competition_category_id', $catLct->id)->where('rank', 6)->first();
+        $this->assertEquals(68, (float) $rank6->final_score);
+
+        // 6. Verifikasi di tampilan view bahwa sortedPrelim terurut dari Rank 1 ke Rank 6
+        $resView = $this->get("/admin/competition-scores/{$catLct->id}/lct");
+        $resView->assertOk();
+        $sortedTeams = $resView->viewData('sortedPrelim');
+        $this->assertEquals(99, (float) $sortedTeams[0]->prelim_score, 'Urutan baris pertama harus tim dengan skor 99');
+        $this->assertEquals(90, (float) $sortedTeams[1]->prelim_score, 'Urutan baris kedua harus tim dengan skor 90');
+        $this->assertEquals(89, (float) $sortedTeams[2]->prelim_score, 'Urutan baris ketiga harus tim skor 89 (waktu 05:21)');
+        $this->assertEquals('05:21', $sortedTeams[2]->prelim_time);
+        $this->assertEquals(89, (float) $sortedTeams[3]->prelim_score, 'Urutan baris keempat harus tim skor 89 (waktu 05:40)');
+        $this->assertEquals('05:40', $sortedTeams[3]->prelim_time);
+        $this->assertEquals(77, (float) $sortedTeams[4]->prelim_score, 'Urutan baris kelima harus tim dengan skor 77');
+        $this->assertEquals(68, (float) $sortedTeams[5]->prelim_score, 'Urutan baris keenam harus tim dengan skor 68');
+    }
 }
