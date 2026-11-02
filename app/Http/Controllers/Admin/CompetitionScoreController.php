@@ -1778,19 +1778,41 @@ class CompetitionScoreController extends Controller
 
         // Urutkan klasemen penyisihan: Skor tertinggi -> Waktu tercepat (tie-breaker)
         $sortedPrelim = $prelimTeams->sort(function ($a, $b) {
-            $scoreA = $a->prelim_score ?? -1;
-            $scoreB = $b->prelim_score ?? -1;
+            $scoreA = $a->prelim_score;
+            $scoreB = $b->prelim_score;
+
+            // Jika keduanya belum dinilai, urutkan berdasarkan order_number
+            if ($scoreA === null && $scoreB === null) {
+                return strnatcasecmp((string) ($a->order_number ?? ''), (string) ($b->order_number ?? ''));
+            }
+            // Jika salah satu belum dinilai, yang sudah dinilai diprioritaskan di atas
+            if ($scoreA === null) {
+                return 1;
+            }
+            if ($scoreB === null) {
+                return -1;
+            }
+
+            // Keduanya sudah dinilai: Skor tertinggi di posisi teratas (descending)
             if ($scoreA != $scoreB) {
                 return $scoreB <=> $scoreA;
             }
 
+            // Jika nilai sama, waktu tempuh tercepat (ascending)
             return $a->time_seconds <=> $b->time_seconds;
         })->values();
 
-        // Tetapkan rank 1 s/d N dan flag lolos 9 besar
-        $sortedPrelim->each(function ($t, $idx) {
-            $t->prelim_rank = $t->prelim_score !== null ? ($idx + 1) : null;
-            $t->is_top_9 = ($idx < 9 && $t->prelim_score !== null);
+        // Tetapkan ranking 1 s/d N dari skor tertinggi ke terendah dan flag lolos 9 besar
+        $rankCounter = 1;
+        $sortedPrelim->each(function ($t) use (&$rankCounter) {
+            if ($t->prelim_score !== null) {
+                $t->prelim_rank = $rankCounter;
+                $t->is_top_9 = ($rankCounter <= 9);
+                $rankCounter++;
+            } else {
+                $t->prelim_rank = null;
+                $t->is_top_9 = false;
+            }
         });
 
         $top9Teams = $sortedPrelim->filter(fn ($t) => $t->is_top_9)->values();

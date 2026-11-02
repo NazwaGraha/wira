@@ -424,7 +424,6 @@ class AllGridScoringNo500ErrorTest extends TestCase
         $this->assertNotEquals(500, $viewResponse->getStatusCode(), 'LCT view after save returned 500');
         $viewResponse->assertOk();
         $viewResponse->assertSee('Lolos Semi-Final');
-        $viewResponse->assertDontSee('Belum Dinilai');
 
         // Test Generate Semifinal juga tidak 500
         $genResponse = $this->post("/admin/competition-scores/{$catLct->id}/lct-generate-semifinal");

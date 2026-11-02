@@ -248,7 +248,7 @@
                                         $isQualified = $t->is_top_9 ?? false;
                                         $rowBg = $isQualified ? 'bg-emerald-50/50 hover:bg-emerald-50' : 'hover:bg-slate-50';
                                     @endphp
-                                    <tr class="{{ $rowBg }} transition">
+                                    <tr class="{{ $rowBg }} transition" id="row-team-{{ $t->id }}">
                                         <td class="py-3 px-4 text-center font-mono font-black text-slate-800">
                                             {{ $t->order_number ?? ($idx + 1) }}
                                         </td>
@@ -263,24 +263,24 @@
                                             @endif
                                         </td>
                                         <td class="py-3 px-4 text-center">
-                                            <input type="number" step="any" name="prelim_scores[{{ $t->id }}]" value="{{ $t->prelim_score }}" placeholder="0" class="w-28 text-center font-mono font-bold text-sm bg-white border border-slate-300 rounded-xl py-1.5 px-2 focus:ring-2 focus:ring-red-500 focus:outline-none">
+                                            <input type="number" step="any" name="prelim_scores[{{ $t->id }}]" value="{{ $t->prelim_score }}" placeholder="0" class="prelim-score-input w-28 text-center font-mono font-bold text-sm bg-white border border-slate-300 rounded-xl py-1.5 px-2 focus:ring-2 focus:ring-red-500 focus:outline-none" data-team-id="{{ $t->id }}">
                                         </td>
                                         <td class="py-3 px-4 text-center">
-                                            <input type="text" name="prelim_times[{{ $t->id }}]" value="{{ $t->prelim_time }}" placeholder="07:54" class="w-28 text-center font-mono font-bold text-sm bg-white border border-slate-300 rounded-xl py-1.5 px-2 focus:ring-2 focus:ring-red-500 focus:outline-none" title="Format [MM]:SS atau MM:SS">
+                                            <input type="text" name="prelim_times[{{ $t->id }}]" value="{{ $t->prelim_time }}" placeholder="07:54" class="prelim-time-input w-28 text-center font-mono font-bold text-sm bg-white border border-slate-300 rounded-xl py-1.5 px-2 focus:ring-2 focus:ring-red-500 focus:outline-none" title="Format [MM]:SS atau MM:SS" data-team-id="{{ $t->id }}">
                                         </td>
                                         <td class="py-3 px-4 text-center font-mono font-black text-sm text-slate-900" id="display-prelim-score-{{ $t->id }}">
                                             {{ $t->prelim_score !== null ? number_format($t->prelim_score, 0, ',', '.') : '-' }}
                                         </td>
-                                        <td class="py-3 px-4 text-center font-mono font-black text-sm">
+                                        <td class="py-3 px-4 text-center font-mono font-black text-sm" id="display-prelim-rank-{{ $t->id }}">
                                             @if($t->prelim_score !== null)
                                                 <span class="inline-block w-8 h-8 rounded-full leading-8 text-center font-bold {{ $isQualified ? 'bg-emerald-600 text-white' : 'bg-slate-200 text-slate-700' }}">
-                                                    {{ $t->prelim_rank ?? ($idx + 1) }}
+                                                    {{ $t->prelim_rank }}
                                                 </span>
                                             @else
                                                 <span class="text-slate-300 font-mono font-bold">-</span>
                                             @endif
                                         </td>
-                                        <td class="py-3 px-4 text-center font-bold">
+                                        <td class="py-3 px-4 text-center font-bold" id="display-prelim-status-{{ $t->id }}">
                                             @if($t->prelim_score === null)
                                                 <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-xl bg-slate-100 text-slate-400 text-[10px] font-semibold">
                                                     <i class="fa-regular fa-clock"></i> Belum Dinilai
@@ -796,25 +796,122 @@
 
 @push('scripts')
 <script>
-    // Live update cell Nilai Akhir saat input nilai penyisihan diisi
-    document.addEventListener('DOMContentLoaded', function() {
-        document.querySelectorAll('input[name^="prelim_scores["]').forEach(inp => {
-            inp.addEventListener('input', function() {
-                const match = this.name.match(/\[(\d+)\]/);
-                if (match) {
-                    const teamId = match[1];
-                    const display = document.getElementById('display-prelim-score-' + teamId);
-                    if (display) {
-                        const val = this.value.trim();
-                        if (val === '') {
-                            display.textContent = '-';
-                        } else {
-                            const num = parseFloat(val);
-                            display.textContent = isNaN(num) ? '-' : num.toLocaleString('id-ID');
-                        }
+    // Live helper: konversi waktu string ke detik untuk client-side tie-breaker
+    function parseTimeToSecondsJs(timeStr) {
+        if (!timeStr) return 999999;
+        timeStr = timeStr.trim();
+        if (!timeStr) return 999999;
+
+        const cleanStr = timeStr.replace(/[^\d:.]/g, '');
+        if (cleanStr.length >= 3 && cleanStr.length <= 4 && /^\d{1,2}[0-5]\d$/.test(cleanStr) && !cleanStr.includes(':') && !cleanStr.includes('.')) {
+            const min = parseInt(cleanStr.slice(0, cleanStr.length - 2), 10);
+            const sec = parseInt(cleanStr.slice(-2), 10);
+            return (min * 60) + sec;
+        }
+
+        if (cleanStr.includes(':')) {
+            const parts = cleanStr.split(':');
+            if (parts.length === 2) {
+                return (parseInt(parts[0], 10) * 60) + parseInt(parts[1], 10);
+            } else if (parts.length === 3) {
+                return (parseInt(parts[0], 10) * 3600) + (parseInt(parts[1], 10) * 60) + parseInt(parts[2], 10);
+            }
+        } else if (cleanStr.includes('.')) {
+            const parts = cleanStr.split('.');
+            if (parts.length === 2) {
+                return (parseInt(parts[0], 10) * 60) + parseInt(parts[1], 10);
+            }
+        }
+
+        const num = parseFloat(cleanStr);
+        return isNaN(num) ? 999999 : num;
+    }
+
+    // Live update ranking & kelolosan Babak Penyisihan (Skor Tertinggi -> Rank 1)
+    function recalculateLivePrelimRanks() {
+        const rows = [];
+        document.querySelectorAll('.prelim-score-input').forEach(inp => {
+            const teamId = inp.dataset.teamId;
+            const valStr = inp.value.trim();
+            const score = valStr === '' ? null : parseFloat(valStr);
+
+            const timeInp = document.querySelector(`.prelim-time-input[data-team-id="${teamId}"]`);
+            const timeStr = timeInp ? timeInp.value.trim() : '';
+            const timeSeconds = parseTimeToSecondsJs(timeStr);
+
+            rows.push({
+                teamId: teamId,
+                score: (score !== null && !isNaN(score)) ? score : null,
+                timeSeconds: timeSeconds
+            });
+
+            // Update display Nilai Akhir
+            const displayScore = document.getElementById('display-prelim-score-' + teamId);
+            if (displayScore) {
+                displayScore.textContent = (score !== null && !isNaN(score)) ? score.toLocaleString('id-ID') : '-';
+            }
+        });
+
+        // Filter tim yang sudah diberi nilai
+        const scoredRows = rows.filter(r => r.score !== null);
+
+        // Sorting ketat: Nilai Tertinggi di atas (descending). Jika nilai sama, waktu tercepat di atas (ascending)
+        scoredRows.sort((a, b) => {
+            if (b.score !== a.score) {
+                return b.score - a.score;
+            }
+            return a.timeSeconds - b.timeSeconds;
+        });
+
+        // Beri ranking 1 s/d N untuk yang sudah dinilai
+        scoredRows.forEach((r, idx) => {
+            r.rank = idx + 1;
+            r.isTop9 = (idx < 9);
+        });
+
+        // Update tampilan DOM
+        rows.forEach(r => {
+            const rankEl = document.getElementById('display-prelim-rank-' + r.teamId);
+            const statusEl = document.getElementById('display-prelim-status-' + r.teamId);
+            const rowEl = document.getElementById('row-team-' + r.teamId);
+
+            if (r.score === null) {
+                if (rankEl) rankEl.innerHTML = '<span class="text-slate-300 font-mono font-bold">-</span>';
+                if (statusEl) statusEl.innerHTML = '<span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-xl bg-slate-100 text-slate-400 text-[10px] font-semibold"><i class="fa-regular fa-clock"></i> Belum Dinilai</span>';
+                if (rowEl) {
+                    rowEl.classList.remove('bg-emerald-50/50', 'hover:bg-emerald-50');
+                    rowEl.classList.add('hover:bg-slate-50');
+                }
+            } else {
+                const isQual = r.isTop9;
+                if (rankEl) {
+                    const badgeClass = isQual ? 'bg-emerald-600 text-white' : 'bg-slate-200 text-slate-700';
+                    rankEl.innerHTML = `<span class="inline-block w-8 h-8 rounded-full leading-8 text-center font-bold ${badgeClass}">${r.rank}</span>`;
+                }
+                if (statusEl) {
+                    if (isQual) {
+                        statusEl.innerHTML = '<span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-xl bg-emerald-100 text-emerald-800 border border-emerald-300 text-[10px] font-black uppercase tracking-wider shadow-2xs"><i class="fa-solid fa-circle-check text-emerald-600"></i> Lolos Semi-Final</span>';
+                    } else {
+                        statusEl.innerHTML = '<span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-xl bg-rose-50 text-rose-600 border border-rose-200 text-[10px] font-bold"><i class="fa-solid fa-circle-xmark text-rose-500"></i> Gugur</span>';
                     }
                 }
-            });
+                if (rowEl) {
+                    if (isQual) {
+                        rowEl.classList.add('bg-emerald-50/50', 'hover:bg-emerald-50');
+                        rowEl.classList.remove('hover:bg-slate-50');
+                    } else {
+                        rowEl.classList.remove('bg-emerald-50/50', 'hover:bg-emerald-50');
+                        rowEl.classList.add('hover:bg-slate-50');
+                    }
+                }
+            }
+        });
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+        document.querySelectorAll('.prelim-score-input, .prelim-time-input').forEach(inp => {
+            inp.addEventListener('input', recalculateLivePrelimRanks);
+            inp.addEventListener('change', recalculateLivePrelimRanks);
         });
     });
 
