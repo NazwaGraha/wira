@@ -246,66 +246,68 @@
                     </div>
                 </div>
 
-                <!-- Bagian I: Kekuatan Tandu (5 Item x 50 = 250) -->
+                <!-- Bagian I: Kekuatan Tandu (Maksimal: 400 Poin) -->
                 <div class="bg-slate-900 rounded-2xl p-3 border border-slate-800 space-y-2">
                     <div class="flex items-center justify-between">
                         <span class="text-[11px] font-black text-slate-200 uppercase tracking-wide">BAGIAN I: KEKUATAN TANDU</span>
                         <span id="subtotal-kekuatan" class="text-[10px] font-mono font-bold text-sky-400 bg-slate-800 px-2 py-0.5 rounded">
-                            0 / 250
+                            0 / 400
                         </span>
                     </div>
 
                     @php
                         $kekuatanItems = [
-                            'kekuatan_1' => '1. Rebahan Tandu (50 Poin)',
-                            'kekuatan_2' => '2. Angkat Beban Korban (50 Poin)',
-                            'kekuatan_3a' => '3. Guncangan Tandu (50 Poin)',
-                            'kekuatan_3b' => '4. Tarikan Tali Jaring (50 Poin)',
-                            'kekuatan_4' => '5. Ikatan Palang Kokoh (50 Poin)',
+                            'kekuatan_1' => ['1. Kekencangan mitela', [20, 40, 60, 80], 80],
+                            'kekuatan_2' => ['2. Kekuatan jaring', [20, 40, 60, 80], 80],
+                            'kekuatan_3a' => ['3a. Diputar bambu kecil', [15, 30, 45, 60], 60],
+                            'kekuatan_3b' => ['3b. Diinjak 4 sisi', [25, 50, 75, 100], 100],
+                            'kekuatan_4' => ['4. Kekuatan tali pengaman', [20, 40, 60, 80], 80],
                         ];
                     @endphp
 
-                    @foreach ($kekuatanItems as $key => $label)
+                    @foreach ($kekuatanItems as $key => [$label, $options, $def])
                         @php
-                            $currVal = intval($existingRubric[$key] ?? 50);
+                            $currVal = intval($existingRubric[$key] ?? $def);
                         @endphp
                         <input type="hidden" name="rubric[{{ $key }}]" id="rubric_{{ $key }}" value="{{ $currVal }}" class="rubric-lktr-kekuatan">
-                        <div class="flex items-center justify-between p-2 rounded-xl bg-slate-950/60 border border-slate-800/80 text-[10px]">
-                            <span class="text-slate-200 font-medium">{{ $label }}</span>
-                            <div class="flex items-center gap-1">
-                                <button type="button" onclick="setLktrKekuatan('{{ $key }}', 50, this)" class="btn-opt-{{ $key }} px-2.5 py-1 rounded-lg text-[9px] font-bold transition {{ $currVal == 50 ? 'bg-blue-600 text-white shadow' : 'bg-slate-800 text-slate-400' }}">
-                                    Kuat
-                                </button>
-                                <button type="button" onclick="setLktrKekuatan('{{ $key }}', 0, this)" class="btn-opt-{{ $key }} px-2.5 py-1 rounded-lg text-[9px] font-bold transition {{ $currVal == 0 ? 'bg-rose-600 text-white shadow' : 'bg-slate-800 text-slate-400' }}">
-                                    Gagal
-                                </button>
+                        <div class="p-2 rounded-xl bg-slate-950/60 border border-slate-800/80">
+                            <div class="flex items-center justify-between text-[10px] mb-1.5">
+                                <span class="text-slate-200 font-medium">{{ $label }}</span>
+                                <span id="display_{{ $key }}" class="font-mono font-bold text-sky-400">{{ $currVal }}</span>
+                            </div>
+                            <div class="grid grid-cols-4 gap-1">
+                                @foreach ($options as $opt)
+                                    <button type="button" onclick="setLktrKekuatan('{{ $key }}', {{ $opt }}, this)" class="btn-opt-{{ $key }} py-1 rounded text-[8.5px] font-bold transition {{ $currVal == $opt ? 'bg-blue-600 text-white shadow' : 'bg-slate-800 text-slate-400' }}">
+                                        {{ $opt }}
+                                    </button>
+                                @endforeach
                             </div>
                         </div>
                     @endforeach
                 </div>
 
-                <!-- Bagian II: Kerapihan & Ketepatan (11 Item) -->
+                <!-- Bagian II: Kerapihan & Ketepatan (Maksimal: 300 Poin) -->
                 <div class="bg-slate-900 rounded-2xl p-3 border border-slate-800 space-y-2">
                     <div class="flex items-center justify-between">
-                        <span class="text-[11px] font-black text-slate-200 uppercase tracking-wide">BAGIAN II: KERAPIHAN & IKATAN</span>
+                        <span class="text-[11px] font-black text-slate-200 uppercase tracking-wide">BAGIAN II: KERAPIHAN & KETEPATAN</span>
                         <span id="subtotal-kerapihan" class="text-[10px] font-mono font-bold text-sky-400 bg-slate-800 px-2 py-0.5 rounded">
-                            0 / 500
+                            0 / 300
                         </span>
                     </div>
 
                     @php
                         $kerapihanItems = [
-                            'kerapihan_1' => ['Simpul Pangkal (Awal & Akhir)', [50, 40, 30, 0], 50],
-                            'kerapihan_2' => ['Palang Tandu & Kuncian', [50, 40, 30, 0], 50],
-                            'kerapihan_3' => ['Jarak Ruas Anyaman', [45, 35, 25, 0], 45],
-                            'kerapihan_4' => ['Simpul Jangkar Tandu', [45, 35, 25, 0], 45],
-                            'kerapihan_5' => ['Kerapihan Ujung Tali', [45, 35, 25, 0], 45],
-                            'kerapihan_6' => ['Ketegangan Tali Anyaman', [45, 35, 25, 0], 45],
-                            'kerapihan_7' => ['Simpul Mati Pengunci', [45, 35, 25, 0], 45],
-                            'kerapihan_8' => ['Kesejajaran Pegangan Bambu', [45, 35, 25, 0], 45],
-                            'kerapihan_9' => ['Kerapihan Lipatan Selimut', [45, 35, 25, 0], 45],
-                            'kerapihan_10' => ['Kesesuaian Ukuran Standar', [45, 35, 25, 0], 45],
-                            'kerapihan_11' => ['Kekompakan & Ketertiban', [40, 30, 20, 0], 40],
+                            'kerapihan_1' => ['1. Garis tengah jaring', [5, 10, 15, 20], 20],
+                            'kerapihan_2' => ['2. Sisa bambu panjang', [5, 10, 15, 20], 20],
+                            'kerapihan_3' => ['3. Sisa bambu kecil', [5, 10, 15, 20], 20],
+                            'kerapihan_4' => ['4. Jumlah lilitan pangkal & cincin', [20, 25, 30, 45], 45],
+                            'kerapihan_5' => ['5. Jumlah silangan', [10, 15, 20, 25], 25],
+                            'kerapihan_6' => ['6. Diameter tali 5mm', [10, 15, 20, 25], 25],
+                            'kerapihan_7' => ['7. Jarak antar jangkar', [15, 20, 25, 30], 30],
+                            'kerapihan_8' => ['8. Bentuk tandu', [10, 15, 20, 40], 40],
+                            'kerapihan_9' => ['9. Sisa tali', [10, 15, 20, 25], 25],
+                            'kerapihan_10' => ['10. Sunan tali', [10, 15, 20, 25], 25],
+                            'kerapihan_11' => ['11. Pemasangan mitela', [10, 15, 20, 25], 25],
                         ];
                     @endphp
 
@@ -316,7 +318,7 @@
                         <input type="hidden" name="rubric[{{ $key }}]" id="rubric_{{ $key }}" value="{{ $currVal }}" class="rubric-lktr-kerapihan">
                         <div class="p-2 rounded-xl bg-slate-950/60 border border-slate-800/80">
                             <div class="flex items-center justify-between text-[10px] mb-1.5">
-                                <span class="text-slate-200 font-medium">{{ $loop->iteration }}. {{ $label }}</span>
+                                <span class="text-slate-200 font-medium">{{ $label }}</span>
                                 <span id="display_{{ $key }}" class="font-mono font-bold text-sky-400">{{ $currVal }}</span>
                             </div>
                             <div class="grid grid-cols-4 gap-1">
@@ -693,10 +695,11 @@
     // 1. LKTR
     function setLktrKekuatan(key, val, btn) {
         document.getElementById('rubric_' + key).value = val;
+        document.getElementById('display_' + key).innerText = val;
         document.querySelectorAll('.btn-opt-' + key).forEach(b => {
-            b.className = 'btn-opt-' + key + ' px-2.5 py-1 rounded-lg text-[9px] font-bold transition bg-slate-800 text-slate-400';
+            b.className = 'btn-opt-' + key + ' py-1 rounded text-[8.5px] font-bold transition bg-slate-800 text-slate-400';
         });
-        btn.className = 'btn-opt-' + key + ' px-2.5 py-1 rounded-lg text-[9px] font-bold transition ' + (val > 0 ? 'bg-blue-600 text-white shadow' : 'bg-rose-600 text-white shadow');
+        btn.className = 'btn-opt-' + key + ' py-1 rounded text-[8.5px] font-bold transition bg-blue-600 text-white shadow';
         recalculateLktr();
     }
 
@@ -730,13 +733,13 @@
         document.querySelectorAll('.rubric-lktr-kekuatan').forEach(el => {
             subKekuatan += parseFloat(el.value) || 0;
         });
-        document.getElementById('subtotal-kekuatan').innerText = subKekuatan + ' / 250';
+        document.getElementById('subtotal-kekuatan').innerText = subKekuatan + ' / 400';
 
         let subKerapihan = 0;
         document.querySelectorAll('.rubric-lktr-kerapihan').forEach(el => {
             subKerapihan += parseFloat(el.value) || 0;
         });
-        document.getElementById('subtotal-kerapihan').innerText = subKerapihan + ' / 500';
+        document.getElementById('subtotal-kerapihan').innerText = subKerapihan + ' / 300';
 
         const mins = parseInt(document.getElementById('input-minutes').value) || 0;
         const secs = parseInt(document.getElementById('input-seconds').value) || 0;

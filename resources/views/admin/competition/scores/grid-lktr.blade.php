@@ -359,7 +359,7 @@
                                         <tr class="bg-amber-100 text-amber-950 font-black text-xs text-left">
                                             <td class="py-2 px-2 text-center border-r border-amber-200 font-mono">II.</td>
                                             <td colspan="5" class="py-2 px-3 tracking-wider uppercase border-r border-amber-200">
-                                                KETEPATAN & KERAPIHAN <span class="text-[10px] text-amber-700 font-bold ml-2">(Maksimal: 280 Poin)</span>
+                                                KETEPATAN & KERAPIHAN <span class="text-[10px] text-amber-700 font-bold ml-2">(Maksimal: 300 Poin)</span>
                                             </td>
                                             <td class="py-2 px-2 text-center font-mono text-amber-900 font-black bg-amber-200/80" id="display_subtotal_kerapihan">0</td>
                                         </tr>
@@ -372,11 +372,11 @@
                                                 ['num' => 4, 'key' => 'kerapihan_4', 'label' => 'Jumlah lilitan pangkal dan cincin', 'opts' => [20, 25, 30, 45], 'val' => $vKerapihan4],
                                                 ['num' => 5, 'key' => 'kerapihan_5', 'label' => 'Jumlah silangan', 'opts' => [10, 15, 20, 25], 'val' => $vKerapihan5],
                                                 ['num' => 6, 'key' => 'kerapihan_6', 'label' => 'Diameter tali 5mm', 'opts' => [10, 15, 20, 25], 'val' => $vKerapihan6],
-                                                ['num' => 7, 'key' => 'kerapihan_7', 'label' => 'Jarak antar jangkar', 'opts' => [10, 15, 20, 25], 'val' => $vKerapihan7],
+                                                ['num' => 7, 'key' => 'kerapihan_7', 'label' => 'Jarak antar jangkar', 'opts' => [15, 20, 25, 30], 'val' => $vKerapihan7],
                                                 ['num' => 8, 'key' => 'kerapihan_8', 'label' => 'Bentuk tandu', 'opts' => [10, 15, 20, 40], 'val' => $vKerapihan8],
-                                                ['num' => 9, 'key' => 'kerapihan_9', 'label' => 'Sisa tali', 'opts' => [5, 10, 15, 20], 'val' => $vKerapihan9],
-                                                ['num' => 10, 'key' => 'kerapihan_10', 'label' => 'Sunan tali', 'opts' => [5, 10, 15, 20], 'val' => $vKerapihan10],
-                                                ['num' => 11, 'key' => 'kerapihan_11', 'label' => 'Pemasangan mitela', 'opts' => [5, 10, 15, 20], 'val' => $vKerapihan11],
+                                                ['num' => 9, 'key' => 'kerapihan_9', 'label' => 'Sisa tali', 'opts' => [10, 15, 20, 25], 'val' => $vKerapihan9],
+                                                ['num' => 10, 'key' => 'kerapihan_10', 'label' => 'Sunan tali', 'opts' => [10, 15, 20, 25], 'val' => $vKerapihan10],
+                                                ['num' => 11, 'key' => 'kerapihan_11', 'label' => 'Pemasangan mitela', 'opts' => [10, 15, 20, 25], 'val' => $vKerapihan11],
                                             ];
                                         @endphp
 

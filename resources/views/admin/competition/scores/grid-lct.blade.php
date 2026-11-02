@@ -176,7 +176,7 @@
                         Klasemen Nilai & Waktu Tempuh Babak Penyisihan
                     </h2>
                     <p class="text-xs text-slate-300 max-w-3xl leading-relaxed">
-                        Pada babak ini <strong>belum ditentukan juara</strong>. Sistem secara otomatis menyaring <strong>9 regu dengan skor tertinggi</strong>. Jika terdapat nilai yang sama, <strong>Waktu Tempuh ([MM]:SS)</strong> menjadi penentu peringkat secara instan.
+                        Pada babak ini <strong>belum ditentukan juara</strong>. Sistem secara otomatis menyaring <strong>hingga 9 regu terbaik</strong> (atau seluruh peserta jika &le; 9 regu). Jika terdapat nilai yang sama, <strong>Waktu Tempuh ([MM]:SS)</strong> menjadi penentu peringkat secara instan.
                     </p>
                 </div>
 
@@ -268,22 +268,30 @@
                                         <td class="py-3 px-4 text-center">
                                             <input type="text" name="prelim_times[{{ $t->id }}]" value="{{ $t->prelim_time }}" placeholder="07:54" class="w-28 text-center font-mono font-bold text-sm bg-white border border-slate-300 rounded-xl py-1.5 px-2 focus:ring-2 focus:ring-red-500 focus:outline-none" title="Format [MM]:SS atau MM:SS">
                                         </td>
-                                        <td class="py-3 px-4 text-center font-mono font-black text-sm text-slate-900">
+                                        <td class="py-3 px-4 text-center font-mono font-black text-sm text-slate-900" id="display-prelim-score-{{ $t->id }}">
                                             {{ $t->prelim_score !== null ? number_format($t->prelim_score, 0, ',', '.') : '-' }}
                                         </td>
                                         <td class="py-3 px-4 text-center font-mono font-black text-sm">
-                                            <span class="inline-block w-8 h-8 rounded-full leading-8 text-center font-bold {{ $isQualified ? 'bg-emerald-600 text-white' : 'bg-slate-200 text-slate-700' }}">
-                                                {{ $t->prelim_rank ?? ($idx + 1) }}
-                                            </span>
+                                            @if($t->prelim_score !== null)
+                                                <span class="inline-block w-8 h-8 rounded-full leading-8 text-center font-bold {{ $isQualified ? 'bg-emerald-600 text-white' : 'bg-slate-200 text-slate-700' }}">
+                                                    {{ $t->prelim_rank ?? ($idx + 1) }}
+                                                </span>
+                                            @else
+                                                <span class="text-slate-300 font-mono font-bold">-</span>
+                                            @endif
                                         </td>
                                         <td class="py-3 px-4 text-center font-bold">
-                                            @if($isQualified)
+                                            @if($t->prelim_score === null)
+                                                <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-xl bg-slate-100 text-slate-400 text-[10px] font-semibold">
+                                                    <i class="fa-regular fa-clock"></i> Belum Dinilai
+                                                </span>
+                                            @elseif($isQualified)
                                                 <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-xl bg-emerald-100 text-emerald-800 border border-emerald-300 text-[10px] font-black uppercase tracking-wider shadow-2xs">
                                                     <i class="fa-solid fa-circle-check text-emerald-600"></i> Lolos Semi-Final
                                                 </span>
                                             @else
-                                                <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-xl bg-slate-100 text-slate-500 text-[10px] font-bold">
-                                                    Gugur
+                                                <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-xl bg-rose-50 text-rose-600 border border-rose-200 text-[10px] font-bold">
+                                                    <i class="fa-solid fa-circle-xmark text-rose-500"></i> Gugur
                                                 </span>
                                             @endif
                                         </td>
@@ -788,6 +796,28 @@
 
 @push('scripts')
 <script>
+    // Live update cell Nilai Akhir saat input nilai penyisihan diisi
+    document.addEventListener('DOMContentLoaded', function() {
+        document.querySelectorAll('input[name^="prelim_scores["]').forEach(inp => {
+            inp.addEventListener('input', function() {
+                const match = this.name.match(/\[(\d+)\]/);
+                if (match) {
+                    const teamId = match[1];
+                    const display = document.getElementById('display-prelim-score-' + teamId);
+                    if (display) {
+                        const val = this.value.trim();
+                        if (val === '') {
+                            display.textContent = '-';
+                        } else {
+                            const num = parseFloat(val);
+                            display.textContent = isNaN(num) ? '-' : num.toLocaleString('id-ID');
+                        }
+                    }
+                }
+            });
+        });
+    });
+
     // Quick Add Score Adjuster
     function adjustInput(inputId, delta, teamId) {
         const inp = document.getElementById(inputId);

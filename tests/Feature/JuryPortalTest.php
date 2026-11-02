@@ -320,10 +320,10 @@ class JuryPortalTest extends TestCase
         $response->assertOk();
         $response->assertSee('SMPN 1 CIAWI');
         $response->assertSee('A-01');
-        $response->assertSee('Buka Kamera HP');
+        $response->assertSee('Buka Kamera');
         $response->assertSee('Pilih Galeri');
-        $response->assertSee('Nilai Praktik (0 - 100)');
-        $response->assertSee('Waktu Tempuh / Durasi');
+        $response->assertSee('BAGIAN I: KEKUATAN TANDU');
+        $response->assertSee('BAGIAN II: KERAPIHAN');
     }
 
     public function test_jury_can_upload_photo_via_base64_from_camera(): void
