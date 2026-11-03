@@ -50,14 +50,19 @@
                 <a href="{{ route('jury.dashboard') }}" class="w-8 h-8 rounded-xl bg-slate-900/80 hover:bg-slate-800 flex items-center justify-center text-slate-200 text-xs border border-slate-700/60 transition active:scale-95">
                     <i class="fa-solid fa-chevron-left"></i>
                 </a>
-                <div>
-                    <div class="text-[9.5px] font-bold {{ $subText }} flex items-center gap-1">
-                        <span class="w-1.5 h-1.5 rounded-full {{ $activeDot }} animate-ping"></span>
-                        PORTAL JURI • LIVE
+                <div class="flex items-center gap-2">
+                    <div class="bg-white p-1 rounded-lg shrink-0 shadow-xs border border-slate-700/60 flex items-center justify-center">
+                        <img src="{{ asset('images/logo_pmi_sman1ciawi_official.png') }}" alt="Logo PMI SMAN 1 Ciawi" class="h-6 w-auto object-contain">
                     </div>
-                    <h2 class="text-xs sm:text-sm font-black text-white leading-tight truncate max-w-[210px]">
-                        {{ $category->name }}
-                    </h2>
+                    <div>
+                        <div class="text-[9px] font-bold {{ $subText }} flex items-center gap-1">
+                            <span class="w-1.5 h-1.5 rounded-full {{ $activeDot }} animate-ping"></span>
+                            PORTAL JURI • LIVE
+                        </div>
+                        <h2 class="text-xs sm:text-sm font-black text-white leading-tight truncate max-w-[170px]">
+                            {{ $category->name }}
+                        </h2>
+                    </div>
                 </div>
             </div>
             <!-- Pill Badge Tingkatan (Mula=Hijau, Madya=Biru, Wira=Kuning) -->
@@ -468,84 +473,413 @@
 
             @elseif ($isPP)
                 <!-- ========================================================================= -->
-                <!-- 4. RUBRIK PERTOLONGAN PERTAMA (PP) -->
+                <!-- 4. RUBRIK PERTOLONGAN PERTAMA (PP) RESMI SUA BHAKTI BERKARYA (MOBILE-FIRST) -->
                 <!-- ========================================================================= -->
                 
-                <!-- Stopwatch Praktik PP -->
-                <div class="bg-slate-900 rounded-2xl p-2.5 border border-slate-800">
-                    <div class="flex items-center justify-between mb-1.5">
-                        <div class="flex items-center gap-1 text-slate-300 text-[10px] font-black uppercase">
-                            <i class="fa-solid fa-stopwatch text-sky-400"></i> TIMER TINDAKAN PRAKTIK
-                        </div>
-                        <span class="text-[9px] font-bold px-2 py-0.5 rounded bg-slate-800 text-slate-400">
-                            Target: {{ $catLevel === 'Mula' ? '8 Menit' : ($catLevel === 'Wira' ? '12 Menit' : '10 Menit') }}
-                        </span>
-                    </div>
-                    
-                    <div class="flex items-center justify-between bg-black/40 rounded-xl p-2 border border-slate-800">
-                        <div>
-                            <div id="stopwatch-display" class="text-2xl font-black font-mono text-white">
-                                {{ sprintf('%02d:%02d', $recordedMinutes, $recordedSeconds) }}
-                            </div>
-                            <div class="text-[8px] text-slate-400 mt-0.5 font-bold">Durasi Pelaksanaan Tindakan</div>
-                        </div>
-                        <div class="flex items-center gap-1">
-                            <button type="button" onclick="toggleStopwatch()" class="p-2 rounded-lg bg-blue-600 text-white text-xs active:scale-95 transition">
-                                <i id="icon-timer-btn" class="fa-solid fa-play"></i>
-                            </button>
-                            <button type="button" onclick="resetStopwatch()" class="p-2 rounded-lg bg-slate-800 text-slate-300 text-xs active:scale-95 transition">
-                                <i class="fa-solid fa-rotate-right"></i>
-                            </button>
-                        </div>
-                    </div>
-                </div>
-
                 @php
+                    $scenarioTitle = match ($catLevel) {
+                        'Mula' => '1. Sayat • 2. Mimisan',
+                        'Wira' => '1. Patah Tulang • 2. Syok / Perdarahan',
+                        default => '1. Pingsan • 2. Robek',
+                    };
+
+                    $targetTimeLabel = match ($catLevel) {
+                        'Mula' => 'Target: 7 Menit (1m Kasus + 6m Tindakan)',
+                        'Wira' => 'Target: 10 Menit',
+                        default => 'Target: 8 Menit (1m Kasus + 7m Tindakan)',
+                    };
+
                     if ($catLevel === 'Mula') {
-                        $ppItems = [
-                            'pp_1' => ['1. Keamanan Diri & APD Dasar', 'Sarung tangan lateks dan masker terpasang sebelum menangani korban.', [15, 8, 0], 15],
-                            'pp_2' => ['2. Cek Respon & Kesadaran', 'Tepuk pundak korban, panggil dengan lantang dan periksa pernapasan.', [15, 8, 0], 15],
-                            'pp_3' => ['3. Hubungi Bantuan Guru / UKS', 'Minta tolong teman atau orang dewasa untuk memanggil guru/pihak medis.', [10, 5, 0], 10],
-                            'pp_4' => ['4. Penanganan Luka Ringan / Lecet', 'Bersihkan luka, beri antiseptik, tutup kassa steril & balut mitella.', [30, 20, 0], 30],
-                            'pp_5' => ['5. Penenangan & Posisi Nyaman', 'Berikan rasa tenang pada korban dan posisikan tubuh senyaman mungkin.', [15, 8, 0], 15],
-                            'pp_6' => ['6. Pelaporan Hasil Tindakan', 'Laporkan kondisi korban dan penanganan yang telah diberikan.', [15, 8, 0], 15],
+                        $ppSections = [
+                            1 => [
+                                'title' => '1. APD (ALAT PELINDUNG DIRI)',
+                                'max' => 20,
+                                'items' => [
+                                    '1_a' => ['label' => 'Terpasang sarung tangan lateks', 'options' => [0, 5, 10]],
+                                    '1_b' => ['label' => 'Terpasang masker', 'options' => [0, 5, 10]],
+                                ]
+                            ],
+                            2 => [
+                                'title' => '2. PENILAIAN KEADAAN',
+                                'max' => 30,
+                                'items' => [
+                                    '2_a' => ['label' => 'Menjelaskan mekanisme kejadian', 'options' => [0, 5, 10]],
+                                    '2_b' => ['label' => 'Memperkenalkan diri dan tim', 'options' => [0, 5, 10]],
+                                    '2_c' => ['label' => 'Meminta izin dan saksi', 'options' => [0, 5, 10]],
+                                ]
+                            ],
+                            3 => [
+                                'title' => '3. PENILAIAN KEAMANAN',
+                                'max' => 10,
+                                'items' => [
+                                    '3_a' => ['label' => 'Menyimpulkan keadaan lokasi kejadian', 'options' => [0, 5, 10]],
+                                ]
+                            ],
+                            4 => [
+                                'title' => '4. PENILAIAN DINI',
+                                'max' => 160,
+                                'items' => [
+                                    '4_a' => ['label' => 'Menyimpulkan kesan umum kasus medis', 'options' => [0, 30]],
+                                    '4_b' => ['label' => 'Cek respon suara dan nyeri', 'options' => [0, 10, 20]],
+                                    '4_c' => ['label' => 'Meminta bantuan Guru / UKS', 'options' => [0, 10]],
+                                    '4_d' => ['label' => 'Menstabilkan korban ke posisi terlentang', 'options' => [0, 5, 10]],
+                                    '4_e' => ['label' => 'Cek nafas (LDR 3-5 detik) & menyimpulkan', 'options' => [0, 15, 30]],
+                                    '4_f' => ['label' => 'Cek nadi radialis (5-10 detik) & menyimpulkan', 'options' => [0, 15, 30]],
+                                    '4_g' => ['label' => 'Kontrol perdarahan 5 bagian & menyimpulkan', 'options' => [0, 15, 30]],
+                                ]
+                            ],
+                            5 => [
+                                'title' => '5. PEMERIKSAAN TANDA VITAL',
+                                'max' => 80,
+                                'items' => [
+                                    '5_a' => ['label' => 'Nadi 1 menit (diukur & diperiksa tepat)', 'options' => [5, 10, 20]],
+                                    '5_b' => ['label' => 'Nafas 1 menit (diukur & diperiksa tepat)', 'options' => [5, 10, 20]],
+                                    '5_c' => ['label' => 'Suhu (menyimpulkan hasil dari korban)', 'options' => [5, 10, 20]],
+                                    '5_d' => ['label' => 'Kondisi, keadaan, dan warna kulit', 'options' => [5, 10, 20]],
+                                ]
+                            ],
+                            6 => [
+                                'title' => '6. PENANGANAN SAYAT (KASUS 1)',
+                                'max' => 110,
+                                'items' => [
+                                    '6_a' => ['label' => 'Tepat menentukan posisi luka (kanan/kiri/atas/bawah)', 'options' => [0, 10]],
+                                    '6_b' => ['label' => 'Bersihkan sekitar luka & antiseptik', 'options' => [10, 25, 50]],
+                                    '6_c' => ['label' => 'Balut luka dengan tepat & istirahatkan', 'options' => [10, 25, 50]],
+                                ]
+                            ],
+                            7 => [
+                                'title' => '7. CEK FISIK (PLNB)',
+                                'max' => 25,
+                                'items' => [
+                                    '7_a' => ['label' => 'Kepala', 'options' => [0, 3, 5]],
+                                    '7_b' => ['label' => 'Leher', 'options' => [0, 3, 5]],
+                                    '7_c' => ['label' => 'Badan termasuk perut & punggung', 'options' => [0, 3, 5]],
+                                    '7_d' => ['label' => 'Alat gerak atas & GSS', 'options' => [0, 3, 5]],
+                                    '7_e' => ['label' => 'Alat gerak bawah & GSS', 'options' => [0, 3, 5]],
+                                ]
+                            ],
+                            8 => [
+                                'title' => '8. RIWAYAT PENDERITA',
+                                'max' => 10,
+                                'items' => [
+                                    '8_a' => ['label' => 'Wawancara KOMPAK', 'options' => [0, 5, 10]],
+                                ]
+                            ],
+                            9 => [
+                                'title' => '9. PELAPORAN & KERJASAMA',
+                                'max' => 20,
+                                'items' => [
+                                    '9_a' => ['label' => 'Kartu pelaporan diisi tepat & lengkap', 'options' => [0, 5, 10]],
+                                    '9_b' => ['label' => 'Kerjasama tim kompak & dinamis', 'options' => [0, 5, 10]],
+                                ]
+                            ],
                         ];
-                    } else {
-                        $ppItems = [
-                            'pp_1' => ['1. Keamanan & APD Lengkap', 'Aman diri (sarung tangan lateks, masker), aman lokasi dan aman korban.', [100, 60, 0], 100],
-                            'pp_2' => ['2. Penilaian Dini (ASNT, CAB)', 'Kesan umum trauma/medis, respon ASNT, sirkulasi, nafas & jalan nafas.', [120, 70, 0], 120],
-                            'pp_3' => ['3. Pemeriksaan Fisik Terarah', 'Pemeriksaan kepala hingga kaki, mencari tanda PLNB secara sistematis.', [120, 70, 0], 120],
-                            'pp_4' => ['4. Tanda Vital & Riwayat KOMPAK', 'Cek frekuensi nadi, pernapasan, suhu/kulit, dan riwayat KOMPAK detail.', [140, 80, 0], 140],
-                            'pp_5' => ['5. Penanganan Fraktur / Balut Bidai', 'Fiksasi 2 sendi, cek GSS sebelum & sesudah pembidaian, balut rapi.', [250, 200, 0], 250],
-                            'pp_6' => ['6. Pencegahan Syok & Evakuasi', 'Selimuti korban, posisi pemulihan/tandu darurat LSB secara aman.', [100, 60, 0], 100],
-                            'pp_7' => ['7. Pelaporan Tindakan ke Posko', 'Serah terima laporan medis: kondisi awal, tindakan dan kondisi akhir.', [70, 40, 0], 70],
+                    } elseif ($catLevel === 'Wira') {
+                        $ppSections = [
+                            1 => [
+                                'title' => '1. APD (ALAT PELINDUNG DIRI)',
+                                'max' => 20,
+                                'items' => [
+                                    '1_a' => ['label' => 'Terpasang sarung tangan lateks', 'options' => [0, 5, 10]],
+                                    '1_b' => ['label' => 'Terpasang masker', 'options' => [0, 5, 10]],
+                                ]
+                            ],
+                            2 => [
+                                'title' => '2. PENILAIAN KEADAAN',
+                                'max' => 30,
+                                'items' => [
+                                    '2_a' => ['label' => 'Menjelaskan mekanisme kejadian', 'options' => [0, 5, 10]],
+                                    '2_b' => ['label' => 'Memperkenalkan diri dan tim', 'options' => [0, 5, 10]],
+                                    '2_c' => ['label' => 'Meminta izin dan saksi', 'options' => [0, 5, 10]],
+                                ]
+                            ],
+                            3 => [
+                                'title' => '3. PENILAIAN KEAMANAN',
+                                'max' => 10,
+                                'items' => [
+                                    '3_a' => ['label' => 'Menyimpulkan keadaan lokasi kejadian', 'options' => [0, 5, 10]],
+                                ]
+                            ],
+                            4 => [
+                                'title' => '4. PENILAIAN DINI',
+                                'max' => 175,
+                                'items' => [
+                                    '4_a' => ['label' => 'Menyimpulkan kesan umum kasus medis', 'options' => [0, 30]],
+                                    '4_b' => ['label' => 'Cek respon suara dan nyeri', 'options' => [0, 10, 20]],
+                                    '4_c' => ['label' => 'Meminta bantuan Guru / UKS', 'options' => [0, 10]],
+                                    '4_d' => ['label' => 'Menstabilkan korban ke posisi terlentang', 'options' => [0, 5, 10]],
+                                    '4_e' => ['label' => 'Buka jalan nafas (ADTD)', 'options' => [0, 10, 25]],
+                                    '4_f' => ['label' => 'Cek nafas (LDR 3-5 detik) & menyimpulkan', 'options' => [0, 15, 25]],
+                                    '4_g' => ['label' => 'Cek nadi radialis (5-10 detik) & menyimpulkan', 'options' => [0, 15, 30]],
+                                    '4_h' => ['label' => 'Kontrol perdarahan 5 bagian & menyimpulkan', 'options' => [5, 15, 25]],
+                                ]
+                            ],
+                            5 => [
+                                'title' => '5. PEMERIKSAAN TANDA VITAL',
+                                'max' => 100,
+                                'items' => [
+                                    '5_a' => ['label' => 'Nadi 1 menit (diukur & diperiksa tepat)', 'options' => [5, 10, 20]],
+                                    '5_b' => ['label' => 'Nafas 1 menit (diukur & diperiksa tepat)', 'options' => [5, 10, 20]],
+                                    '5_c' => ['label' => 'Suhu (menyimpulkan hasil dari korban)', 'options' => [5, 10, 20]],
+                                    '5_d' => ['label' => 'Kondisi, keadaan, dan warna kulit', 'options' => [5, 10, 20]],
+                                    '5_e' => ['label' => 'Menyimpulkan adanya gangguan medis (syok)', 'options' => [5, 10, 20]],
+                                ]
+                            ],
+                            6 => [
+                                'title' => '6. PENANGANAN SYOK (KASUS 1)',
+                                'max' => 160,
+                                'items' => [
+                                    '6_a' => ['label' => 'Cek respon dan membuka jalan nafas', 'options' => [10, 25, 40]],
+                                    '6_b' => ['label' => 'Tinggikan tungkai & longgarkan pakaian', 'options' => [10, 25, 40]],
+                                    '6_c' => ['label' => 'Selimuti korban seluruh bagian tubuh', 'options' => [10, 25, 40]],
+                                    '6_d' => ['label' => 'Memberi oksigen', 'options' => [10, 25, 40]],
+                                ]
+                            ],
+                            7 => [
+                                'title' => '7. PENANGANAN PATAH TULANG (KASUS 2)',
+                                'max' => 200,
+                                'items' => [
+                                    '7_a' => ['label' => 'Tepat menentukan posisi fraktur/patah tulang', 'options' => [0, 10]],
+                                    '7_b' => ['label' => 'GSS sebelum pembidaian', 'options' => [10, 25, 50]],
+                                    '7_c' => ['label' => 'Pemasangan bidai melewati 2 sendi', 'options' => [15, 35, 70]],
+                                    '7_d' => ['label' => 'GSS setelah pembidaian & fiksasi', 'options' => [15, 35, 70]],
+                                ]
+                            ],
+                            8 => [
+                                'title' => '8. CEK FISIK (PLNB)',
+                                'max' => 25,
+                                'items' => [
+                                    '8_a' => ['label' => 'Kepala', 'options' => [0, 3, 5]],
+                                    '8_b' => ['label' => 'Leher', 'options' => [0, 3, 5]],
+                                    '8_c' => ['label' => 'Badan termasuk perut & punggung', 'options' => [0, 3, 5]],
+                                    '8_d' => ['label' => 'Alat gerak atas & GSS', 'options' => [0, 3, 5]],
+                                    '8_e' => ['label' => 'Alat gerak bawah & GSS', 'options' => [0, 3, 5]],
+                                ]
+                            ],
+                            9 => [
+                                'title' => '9. RIWAYAT PENDERITA',
+                                'max' => 10,
+                                'items' => [
+                                    '9_a' => ['label' => 'Wawancara KOMPAK', 'options' => [0, 5, 10]],
+                                ]
+                            ],
+                            10 => [
+                                'title' => '10. PELAPORAN & KERJASAMA',
+                                'max' => 30,
+                                'items' => [
+                                    '10_a' => ['label' => 'Kartu pelaporan diisi tepat & lengkap', 'options' => [0, 5, 15]],
+                                    '10_b' => ['label' => 'Kerjasama tim kompak & dinamis', 'options' => [0, 5, 15]],
+                                ]
+                            ],
+                        ];
+                    } else { // Madya (Standar Kategori 164)
+                        $ppSections = [
+                            1 => [
+                                'title' => '1. APD (ALAT PELINDUNG DIRI)',
+                                'max' => 20,
+                                'items' => [
+                                    '1_a' => ['label' => 'Terpasang sarung tangan lateks', 'options' => [0, 5, 10]],
+                                    '1_b' => ['label' => 'Terpasang masker', 'options' => [0, 5, 10]],
+                                ]
+                            ],
+                            2 => [
+                                'title' => '2. PENILAIAN KEADAAN',
+                                'max' => 30,
+                                'items' => [
+                                    '2_a' => ['label' => 'Menjelaskan mekanisme kejadian', 'options' => [0, 5, 10]],
+                                    '2_b' => ['label' => 'Memperkenalkan diri dan tim', 'options' => [0, 5, 10]],
+                                    '2_c' => ['label' => 'Meminta izin dan saksi', 'options' => [0, 5, 10]],
+                                ]
+                            ],
+                            3 => [
+                                'title' => '3. PENILAIAN KEAMANAN',
+                                'max' => 10,
+                                'items' => [
+                                    '3_a' => ['label' => 'Menyimpulkan keadaan lokasi kejadian', 'options' => [0, 5, 10]],
+                                ]
+                            ],
+                            4 => [
+                                'title' => '4. PENILAIAN DINI',
+                                'max' => 185,
+                                'items' => [
+                                    '4_a' => ['label' => 'Menyimpulkan kesan umum kasus medis', 'options' => [0, 30]],
+                                    '4_b' => ['label' => 'Cek respon suara dan nyeri', 'options' => [0, 10, 20]],
+                                    '4_c' => ['label' => 'Meminta bantuan Guru / UKS', 'options' => [0, 10]],
+                                    '4_d' => ['label' => 'Menstabilkan korban ke posisi terlentang', 'options' => [0, 5, 10]],
+                                    '4_e' => ['label' => 'Buka jalan nafas (ADTD)', 'options' => [0, 10, 25]],
+                                    '4_f' => ['label' => 'Cek nafas (LDR 3-5 detik) & menyimpulkan', 'options' => [0, 15, 30]],
+                                    '4_g' => ['label' => 'Cek nadi karotis (5-10 detik) & menyimpulkan', 'options' => [0, 15, 30]],
+                                    '4_h' => ['label' => 'Kontrol perdarahan 5 bagian & menyimpulkan', 'options' => [0, 15, 30]],
+                                ]
+                            ],
+                            5 => [
+                                'title' => '5. PEMERIKSAAN TANDA VITAL',
+                                'max' => 100,
+                                'items' => [
+                                    '5_a' => ['label' => 'Nadi 1 menit (diukur & diperiksa tepat)', 'options' => [5, 10, 20]],
+                                    '5_b' => ['label' => 'Nafas 1 menit (diukur & diperiksa tepat)', 'options' => [5, 10, 20]],
+                                    '5_c' => ['label' => 'Suhu (menyimpulkan hasil dari korban)', 'options' => [5, 10, 20]],
+                                    '5_d' => ['label' => 'Kondisi, keadaan, dan warna kulit', 'options' => [5, 10, 20]],
+                                    '5_e' => ['label' => 'Menyimpulkan adanya gangguan medis (pingsan)', 'options' => [5, 10, 20]],
+                                ]
+                            ],
+                            6 => [
+                                'title' => '6. PENANGANAN PINGSAN (KASUS 1)',
+                                'max' => 200,
+                                'items' => [
+                                    '6_a' => ['label' => 'Cek respon dan membuka jalan nafas', 'options' => [10, 25, 50]],
+                                    '6_b' => ['label' => 'Tinggikan tungkai & longgarkan pakaian', 'options' => [10, 25, 50]],
+                                    '6_c' => ['label' => 'Selimuti korban seluruh bagian tubuh', 'options' => [10, 25, 50]],
+                                    '6_d' => ['label' => 'Memberi oksigen', 'options' => [10, 25, 50]],
+                                ]
+                            ],
+                            7 => [
+                                'title' => '7. PENANGANAN ROBEK (KASUS 2)',
+                                'max' => 160,
+                                'items' => [
+                                    '7_a' => ['label' => 'Tepat menentukan posisi luka (kanan/kiri/atas/bawah)', 'options' => [0, 10]],
+                                    '7_b' => ['label' => 'Kendalikan perdarahan (TET)', 'options' => [10, 25, 50]],
+                                    '7_c' => ['label' => 'Bersihkan sekitar luka & antiseptik', 'options' => [10, 25, 50]],
+                                    '7_d' => ['label' => 'Balut luka dengan tepat & istirahatkan', 'options' => [10, 25, 50]],
+                                ]
+                            ],
+                            8 => [
+                                'title' => '8. CEK FISIK (PLNB)',
+                                'max' => 25,
+                                'items' => [
+                                    '8_a' => ['label' => 'Kepala', 'options' => [0, 3, 5]],
+                                    '8_b' => ['label' => 'Leher', 'options' => [0, 3, 5]],
+                                    '8_c' => ['label' => 'Badan termasuk perut & punggung', 'options' => [0, 3, 5]],
+                                    '8_d' => ['label' => 'Alat gerak atas & GSS', 'options' => [0, 3, 5]],
+                                    '8_e' => ['label' => 'Alat gerak bawah & GSS', 'options' => [0, 3, 5]],
+                                ]
+                            ],
+                            9 => [
+                                'title' => '9. RIWAYAT PENDERITA',
+                                'max' => 10,
+                                'items' => [
+                                    '9_a' => ['label' => 'Wawancara KOMPAK', 'options' => [0, 5, 10]],
+                                ]
+                            ],
+                            10 => [
+                                'title' => '10. PELAPORAN & KERJASAMA',
+                                'max' => 20,
+                                'items' => [
+                                    '10_a' => ['label' => 'Kartu pelaporan diisi tepat & lengkap', 'options' => [0, 5, 10]],
+                                    '10_b' => ['label' => 'Kerjasama tim kompak & dinamis', 'options' => [0, 5, 10]],
+                                ]
+                            ],
                         ];
                     }
                 @endphp
 
-                <div class="space-y-2">
-                    @foreach ($ppItems as $key => [$label, $desc, $opts, $def])
+                <!-- Banner Skenario Kasus Korban Lapangan -->
+                <div class="bg-gradient-to-r from-blue-950/90 to-slate-900 rounded-2xl p-2.5 border border-blue-600/30 flex items-center justify-between shadow-xs">
+                    <div class="flex items-center gap-2.5">
+                        <div class="w-8 h-8 rounded-xl bg-blue-600/30 border border-blue-500/40 text-blue-400 flex items-center justify-center text-sm shrink-0">
+                            <i class="fa-solid fa-kit-medical"></i>
+                        </div>
+                        <div>
+                            <span class="text-[8.5px] font-black uppercase text-blue-300 block tracking-wider">KORBAN 1 • SKENARIO KASUS LAPANGAN:</span>
+                            <div class="text-xs font-black text-white flex items-center gap-1.5 mt-0.5">
+                                <span class="px-2 py-0.5 rounded bg-blue-600/30 border border-blue-400/40 text-white text-[10px]">{{ $scenarioTitle }}</span>
+                            </div>
+                        </div>
+                    </div>
+                    <span class="text-[8px] font-bold text-slate-400 bg-slate-900 px-2 py-1 rounded-lg border border-slate-800 shrink-0">
+                        Kasus 1
+                    </span>
+                </div>
+
+                <!-- Stopwatch & Input Koreksi Waktu (Mobile PP) -->
+                <div class="bg-slate-900 rounded-2xl p-3 border border-slate-800 space-y-2.5 shadow-sm">
+                    <div class="flex items-center justify-between">
+                        <span class="text-[10px] font-black uppercase text-slate-300 flex items-center gap-1.5">
+                            <i class="fa-solid fa-stopwatch text-sky-400"></i> TIMER TINDAKAN PRAKTIK
+                        </span>
+                        <span class="text-[8.5px] font-mono text-slate-400 bg-slate-950 px-2 py-0.5 rounded border border-slate-800">
+                            {{ $targetTimeLabel }}
+                        </span>
+                    </div>
+                    
+                    <div class="flex items-center justify-between bg-black/60 rounded-xl p-2.5 border border-slate-800">
+                        <div>
+                            <div id="stopwatch-display" class="text-2xl font-black font-mono-num text-emerald-400 tracking-wider">
+                                {{ sprintf('%02d:%02d', $recordedMinutes, $recordedSeconds) }}
+                            </div>
+                            <div class="text-[8px] text-slate-400 mt-0.5 font-bold">Waktu Pelaksanaan Lapangan</div>
+                        </div>
+                        <div class="flex items-center gap-1.5">
+                            <button type="button" onclick="toggleStopwatch()" class="px-3 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs active:scale-95 transition flex items-center gap-1 shadow">
+                                <i id="icon-timer-btn" class="fa-solid fa-play text-[9px]"></i>
+                                <span id="label-timer-btn">Mulai</span>
+                            </button>
+                            <button type="button" onclick="resetStopwatch()" class="p-1.5 px-2.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs border border-slate-700 active:scale-95 transition" title="Reset">
+                                <i class="fa-solid fa-rotate-right"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Koreksi Waktu Manual Fleksibel -->
+                    <div class="bg-slate-950/70 rounded-xl p-2 border border-slate-800/80 flex items-center justify-between gap-2">
+                        <span class="text-[9.5px] font-bold text-slate-400 shrink-0">Koreksi Manual:</span>
+                        <div class="flex items-center gap-1.5">
+                            <div class="flex items-center gap-1">
+                                <input type="number" id="input-minutes-box" value="{{ $recordedMinutes }}" min="0" max="180" oninput="syncManualTime()" class="w-12 bg-black/60 border border-slate-700 rounded-lg py-1 text-center font-mono font-bold text-xs text-white">
+                                <span class="text-[9px] text-slate-500">m</span>
+                            </div>
+                            <span class="text-slate-600">:</span>
+                            <div class="flex items-center gap-1">
+                                <input type="number" id="input-seconds-box" value="{{ $recordedSeconds }}" min="0" max="59" oninput="syncManualTime()" class="w-12 bg-black/60 border border-slate-700 rounded-lg py-1 text-center font-mono font-bold text-xs text-white">
+                                <span class="text-[9px] text-slate-500">s</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- DAFTAR BAGIAN PENILAIAN RESMI PERTOLONGAN PERTAMA (TOUCH-FRIENDLY PILLS) -->
+                <div class="space-y-3">
+                    @foreach ($ppSections as $secNum => $sec)
                         @php
-                            $currVal = intval($existingRubric[$key] ?? $def);
+                            $secSubtotal = intval($existingSubtotals[$secNum] ?? 0);
                         @endphp
-                        <input type="hidden" name="rubric[{{ $key }}]" id="rubric_{{ $key }}" value="{{ $currVal }}" class="rubric-pp-item">
-                        <div class="bg-slate-900 rounded-xl p-2.5 border border-slate-800">
-                            <div class="flex items-center justify-between mb-1">
-                                <span class="text-[10.5px] font-bold text-slate-200">{{ $label }}</span>
-                                <span id="display_{{ $key }}" class="font-mono font-bold text-xs text-sky-400">{{ $currVal }}</span>
+                        <input type="hidden" name="subtotals[{{ $secNum }}]" id="subtotal-input-{{ $secNum }}" value="{{ $secSubtotal }}">
+                        
+                        <div class="bg-slate-900 rounded-2xl p-3 border border-slate-800 space-y-2.5 shadow-sm">
+                            <div class="flex items-center justify-between border-b border-slate-800/80 pb-2">
+                                <span class="text-[11px] font-black text-slate-100 uppercase tracking-wide">
+                                    {{ $sec['title'] }}
+                                </span>
+                                <span class="text-[9.5px] font-mono-num font-bold text-sky-400 bg-blue-950/70 px-2 py-0.5 rounded-lg border border-blue-800/40">
+                                    Subtotal: <span id="subtotal-display-{{ $secNum }}">{{ $secSubtotal }}</span> / {{ $sec['max'] }}
+                                </span>
                             </div>
-                            <p class="text-[8px] text-slate-400 mb-1.5 leading-relaxed">{{ $desc }}</p>
-                            <div class="grid grid-cols-3 gap-1">
-                                <button type="button" onclick="setPpScore('{{ $key }}', {{ $opts[0] }}, this)" class="btn-pp-{{ $key }} py-1 rounded text-[8.5px] font-bold transition {{ $currVal == $opts[0] ? 'bg-blue-600 text-white shadow' : 'bg-slate-800 text-slate-400' }}">
-                                    Sempurna ({{ $opts[0] }})
-                                </button>
-                                <button type="button" onclick="setPpScore('{{ $key }}', {{ $opts[1] }}, this)" class="btn-pp-{{ $key }} py-1 rounded text-[8.5px] font-bold transition {{ $currVal == $opts[1] ? 'bg-blue-600 text-white shadow' : 'bg-slate-800 text-slate-400' }}">
-                                    Cukup ({{ $opts[1] }})
-                                </button>
-                                <button type="button" onclick="setPpScore('{{ $key }}', {{ $opts[2] }}, this)" class="btn-pp-{{ $key }} py-1 rounded text-[8.5px] font-bold transition {{ $currVal == $opts[2] ? 'bg-blue-600 text-white shadow' : 'bg-slate-800 text-slate-400' }}">
-                                    Kurang ({{ $opts[2] }})
-                                </button>
-                            </div>
+
+                            @foreach ($sec['items'] as $itemKey => $item)
+                                @php
+                                    $currVal = isset($existingRubric[$itemKey]) ? intval($existingRubric[$itemKey]) : null;
+                                @endphp
+                                <input type="hidden" name="rubric[{{ $itemKey }}]" id="rubric_{{ $itemKey }}" value="{{ $currVal !== null ? $currVal : $item['options'][0] }}" class="rubric-pp-item" data-section="{{ $secNum }}">
+                                
+                                <div class="p-2.5 rounded-xl bg-slate-950/60 border border-slate-800/80">
+                                    <div class="flex items-center justify-between text-[10.5px] mb-2">
+                                        <span class="text-slate-200 font-semibold leading-snug">&bull; {{ $item['label'] }}</span>
+                                        <span id="display_{{ $itemKey }}" class="font-mono-num font-black text-xs text-sky-400 shrink-0 ml-2">
+                                            {{ $currVal !== null ? $currVal : $item['options'][0] }}
+                                        </span>
+                                    </div>
+                                    <div class="grid grid-cols-{{ count($item['options']) }} gap-1.5">
+                                        @foreach ($item['options'] as $opt)
+                                            @php
+                                                $isSelected = ($currVal !== null) ? ($currVal == $opt) : ($loop->first);
+                                            @endphp
+                                            <button type="button" onclick="setPpScore('{{ $itemKey }}', {{ $opt }}, {{ $secNum }}, this)" class="btn-pp-{{ $itemKey }} py-2.5 rounded-xl font-mono text-xs font-bold transition flex items-center justify-center gap-1 active:scale-95 {{ $isSelected ? 'bg-blue-600 text-white shadow-md shadow-blue-500/30 border border-blue-400' : 'bg-slate-800 text-slate-400 border border-slate-700/80' }}">
+                                                {{ $opt }}
+                                            </button>
+                                        @endforeach
+                                    </div>
+                                </div>
+                            @endforeach
                         </div>
                     @endforeach
                 </div>
@@ -800,14 +1134,33 @@
     }
 
     // 4. PP
-    function setPpScore(key, val, btn) {
-        document.getElementById('rubric_' + key).value = val;
-        document.getElementById('display_' + key).innerText = val;
-        document.querySelectorAll('.btn-pp-' + key).forEach(b => {
-            b.className = 'btn-pp-' + key + ' py-1 rounded text-[8.5px] font-bold transition bg-slate-800 text-slate-400';
-        });
-        btn.className = 'btn-pp-' + key + ' py-1 rounded text-[8.5px] font-bold transition bg-blue-600 text-white shadow';
+    function setPpScore(key, val, secNum, btn) {
+        const inputEl = document.getElementById('rubric_' + key);
+        if (inputEl) inputEl.value = val;
+        const displayEl = document.getElementById('display_' + key);
+        if (displayEl) displayEl.innerText = val;
+
+        const parent = btn.parentElement;
+        if (parent) {
+            parent.querySelectorAll('.btn-pp-' + key).forEach(b => {
+                b.className = 'btn-pp-' + key + ' py-2.5 rounded-xl font-mono text-xs font-bold transition flex items-center justify-center gap-1 active:scale-95 bg-slate-800 text-slate-400 border border-slate-700/80';
+            });
+            btn.className = 'btn-pp-' + key + ' py-2.5 rounded-xl font-mono text-xs font-bold transition flex items-center justify-center gap-1 active:scale-95 bg-blue-600 text-white shadow-md shadow-blue-500/30 border border-blue-400';
+        }
+
+        recalculateSectionPp(secNum);
         recalculatePp();
+    }
+
+    function recalculateSectionPp(secNum) {
+        let secTotal = 0;
+        document.querySelectorAll(`.rubric-pp-item[data-section="${secNum}"]`).forEach(el => {
+            secTotal += parseFloat(el.value) || 0;
+        });
+        const subDisplay = document.getElementById(`subtotal-display-${secNum}`);
+        if (subDisplay) subDisplay.innerText = secTotal;
+        const subInput = document.getElementById(`subtotal-input-${secNum}`);
+        if (subInput) subInput.value = secTotal;
     }
 
     function recalculatePp() {
@@ -815,11 +1168,20 @@
         document.querySelectorAll('.rubric-pp-item').forEach(el => {
             total += parseFloat(el.value) || 0;
         });
-        const maxScore = (CAT_LEVEL === 'Mula') ? 100 : 900;
+        const maxScore = (CAT_LEVEL === 'Mula') ? 465 : 760;
         document.getElementById('input-final-score').value = total;
-        document.getElementById('bottom-bar-subtitle').innerText = 'TOTAL SKOR PP';
+        document.getElementById('bottom-bar-subtitle').innerText = 'TOTAL SKOR PP (' + CAT_LEVEL.toUpperCase() + ')';
         document.getElementById('bottom-bar-score').innerText = total;
         document.getElementById('bottom-bar-max').innerText = '/ ' + maxScore;
+    }
+
+    function syncManualTime() {
+        const mBox = document.getElementById('input-minutes-box');
+        const sBox = document.getElementById('input-seconds-box');
+        const m = mBox ? parseInt(mBox.value) || 0 : 0;
+        const s = sBox ? parseInt(sBox.value) || 0 : 0;
+        stopwatchSeconds = (m * 60) + s;
+        updateStopwatchUI();
     }
 
     // 5. FALLBACK
@@ -849,8 +1211,14 @@
     function updateStopwatchUI() {
         const el = document.getElementById('stopwatch-display');
         if (el) el.innerText = formatTime(stopwatchSeconds);
-        document.getElementById('input-minutes').value = Math.floor(stopwatchSeconds / 60);
-        document.getElementById('input-seconds').value = stopwatchSeconds % 60;
+        const m = Math.floor(stopwatchSeconds / 60);
+        const s = stopwatchSeconds % 60;
+        document.getElementById('input-minutes').value = m;
+        document.getElementById('input-seconds').value = s;
+        const mBox = document.getElementById('input-minutes-box');
+        if (mBox && document.activeElement !== mBox) mBox.value = (m < 10 ? '0' : '') + m;
+        const sBox = document.getElementById('input-seconds-box');
+        if (sBox && document.activeElement !== sBox) sBox.value = (s < 10 ? '0' : '') + s;
         if (IS_LKTR) recalculateLktr();
     }
 
@@ -890,7 +1258,13 @@
         if (IS_LKTR) recalculateLktr();
         else if (IS_PRS) recalculatePrs();
         else if (IS_MEWARNAI) recalculateMewarnai();
-        else if (IS_PP) recalculatePp();
+        else if (IS_PP) {
+            document.querySelectorAll('[id^="subtotal-input-"]').forEach(subInp => {
+                const secNum = subInp.id.replace('subtotal-input-', '');
+                recalculateSectionPp(secNum);
+            });
+            recalculatePp();
+        }
         else {
             const gen = document.getElementById('input-general-score');
             if (gen) updateGeneralScore(gen.value);
