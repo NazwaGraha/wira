@@ -200,45 +200,74 @@
                 <!-- Right: Stopwatch & Live Score Preview -->
                 <div class="lg:col-span-5 space-y-4">
                     
-                    <!-- Stopwatch Box (8 Menit: 1 Menit Baca Kasus + 7 Menit Tindakan) -->
-                    <div class="bg-slate-900 text-white p-5 rounded-2xl shadow-md border border-slate-800">
-                        <div class="flex items-center justify-between mb-2">
-                            <div class="flex items-center gap-2">
+                    <!-- Stopwatch & Input Koreksi Waktu Box (Compact Stopwatch + Big Manual Time Input) -->
+                    <div class="bg-slate-900 text-white p-5 rounded-3xl shadow-xl border-2 border-slate-700 space-y-4">
+                        
+                        <!-- 1. Baris Atas: Stopwatch Ringkas (Tidak Terlalu Besar) -->
+                        <div class="flex flex-wrap items-center justify-between gap-3 pb-3.5 border-b border-slate-800">
+                            <div class="flex items-center gap-2.5">
                                 <span class="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse"></span>
-                                <span class="text-xs font-black tracking-wider uppercase text-slate-300">STOPWATCH WAKTU PELAKSANAAN</span>
-                            </div>
-                            <span class="text-[10px] bg-slate-800 text-blue-300 px-2 py-0.5 rounded font-mono font-bold">Total: 08:00 (1m Baca + 7m Tindakan)</span>
-                        </div>
-
-                        <div class="flex items-center justify-between gap-4">
-                            <!-- Digital Time Display -->
-                            <div id="stopwatch-display" class="font-mono-num font-black text-4xl tracking-tight text-white select-none">
-                                {{ $score?->time_recorded ?: '00:00' }}
+                                <span class="text-xs font-bold text-slate-400">Stopwatch:</span>
+                                <span id="stopwatch-display" class="font-mono-num font-black text-xl text-white tracking-wider bg-slate-950 px-3 py-1 rounded-lg border border-slate-800 select-none shadow-inner">
+                                    {{ $score?->time_recorded ?: '00:00' }}
+                                </span>
                             </div>
 
-                            <!-- Stopwatch Controls -->
+                            <!-- Tombol Kontrol Timer Ringkas -->
                             <div class="flex items-center gap-1.5">
-                                <button type="button" onclick="startTimer()" id="btn-timer-start" class="bg-emerald-600 hover:bg-emerald-500 text-white font-extrabold text-xs px-3.5 py-2 rounded-xl transition flex items-center gap-1 shadow-sm">
-                                    <i class="fa-solid fa-play text-[10px]"></i> Mulai
+                                <button type="button" id="btn-timer-start" onclick="startTimer()" class="bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs px-3 py-1.5 rounded-lg transition flex items-center gap-1 active:scale-95 shadow-sm">
+                                    <i class="fa-solid fa-play text-[9px]"></i> Mulai
                                 </button>
-                                <button type="button" onclick="pauseTimer()" id="btn-timer-pause" class="bg-amber-500 hover:bg-amber-400 text-slate-950 font-extrabold text-xs px-3.5 py-2 rounded-xl transition flex items-center gap-1 shadow-sm">
-                                    <i class="fa-solid fa-pause text-[10px]"></i> Jeda
+                                <button type="button" id="btn-timer-pause" onclick="pauseTimer()" class="bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs px-3 py-1.5 rounded-lg transition flex items-center gap-1 active:scale-95 shadow-sm">
+                                    <i class="fa-solid fa-pause text-[9px]"></i> Jeda
                                 </button>
-                                <button type="button" onclick="resetTimer()" id="btn-timer-reset" class="bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold text-xs p-2 rounded-xl transition">
-                                    <i class="fa-solid fa-rotate-right text-[10px]"></i>
+                                <button type="button" id="btn-timer-reset" onclick="resetTimer()" class="bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold text-xs p-1.5 rounded-lg border border-slate-700 transition active:scale-95" title="Reset Stopwatch">
+                                    <i class="fa-solid fa-rotate-right text-xs"></i>
                                 </button>
+                            </div>
+
+                            <!-- Info Batas & Fase Waktu Ringkas -->
+                            <div class="flex items-center gap-2 text-[11px] font-medium text-slate-400">
+                                <span class="bg-slate-800 text-blue-300 px-2 py-0.5 rounded text-[10px] font-mono font-bold border border-slate-700">Max 08:00</span>
+                                <span class="hidden sm:inline text-slate-600">•</span>
+                                <span class="hidden sm:inline text-[11px] text-slate-400">1m Kasus + 7m Tindakan</span>
                             </div>
                         </div>
 
-                        <div class="mt-2.5 pt-2 border-t border-slate-700/80 text-[11px] text-slate-400 flex items-center justify-between gap-2">
-                            <span id="timer-warning-text" class="text-rose-400 font-bold flex items-center gap-1">
-                                <i class="fa-solid fa-triangle-exclamation"></i> Lewat 08:00 penanganan wajib diberhentikan
-                            </span>
-                            <div class="flex items-center gap-1.5">
-                                <span class="text-[10px]">Input Manual:</span>
-                                <input type="text" name="time_recorded" id="time-recorded-input" value="{{ $score?->time_recorded ?: '00:00' }}" onchange="syncTimerInput(this.value)" class="w-16 bg-slate-950 text-center font-mono font-black text-xs border border-slate-600 rounded px-1.5 py-0.5 text-blue-300 focus:outline-none focus:border-blue-400">
+                        <!-- 2. Baris Utama: Kotak Input Koreksi Manual Besar & Dominan -->
+                        <div class="bg-gradient-to-r from-slate-950 via-slate-900 to-slate-950 border-2 border-blue-400 rounded-2xl p-4 shadow-lg space-y-3">
+                            <div class="flex flex-wrap items-center justify-between gap-2">
+                                <div class="flex items-center gap-2">
+                                    <span class="px-2.5 py-1 rounded-md bg-blue-600 text-white font-black text-[11px] uppercase tracking-wider flex items-center gap-1 shadow-xs">
+                                        <i class="fa-solid fa-pen-to-square"></i> KOREKSI WAKTU TEMPUH
+                                    </span>
+                                    <span class="text-xs font-bold text-slate-300 hidden sm:inline">(Waktu Resmi Regu)</span>
+                                </div>
+                                <span class="text-[11px] text-emerald-400 bg-emerald-950/90 border border-emerald-800 px-2.5 py-0.5 rounded-full font-bold flex items-center gap-1.5">
+                                    <i class="fa-solid fa-database text-[10px]"></i> Tersimpan ke Database
+                                </span>
+                            </div>
+
+                            <div class="grid grid-cols-1 sm:grid-cols-12 gap-3 items-center">
+                                <div class="sm:col-span-7 relative">
+                                    <input type="text" id="time-recorded-input" name="time_recorded" value="{{ $score?->time_recorded ?: '00:00' }}" onchange="syncTimerInput(this.value)" placeholder="00:00" class="w-full bg-slate-950 border-2 border-blue-400 rounded-xl py-2.5 px-3 text-center font-mono-num font-black text-3xl sm:text-4xl tracking-widest text-blue-300 shadow-inner focus:outline-none focus:ring-4 focus:ring-blue-400/30">
+                                    <span class="absolute right-3.5 top-1/2 -translate-y-1/2 text-[10px] font-mono font-extrabold text-slate-500 uppercase">
+                                        MM:SS
+                                    </span>
+                                </div>
+                                <div class="sm:col-span-5 flex flex-col gap-1.5">
+                                    <button type="button" onclick="copyTimerToInput()" class="w-full py-2.5 px-3 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-black text-xs transition shadow-md shadow-blue-500/20 flex items-center justify-center gap-1.5 active:scale-95">
+                                        <i class="fa-solid fa-arrow-down-long text-xs"></i>
+                                        <span>Salin dari Stopwatch</span>
+                                    </button>
+                                    <div class="flex items-center justify-between text-[10px] text-slate-400 px-1">
+                                        <span>*Ketik manual bebas</span>
+                                        <span id="timer-warning-text" class="text-rose-400 font-bold"><i class="fa-solid fa-triangle-exclamation"></i> Max 08:00</span>
+                                    </div>
+                                </div>
                             </div>
                         </div>
+
                     </div>
 
                     <!-- Live Total Score Counter (Madya Max 760 Poin) -->
@@ -672,6 +701,13 @@
     function syncTimerInput(val) {
         document.getElementById('stopwatch-display').textContent = val || '00:00';
         document.getElementById('bottom-time-display').textContent = val || '00:00';
+        initStopwatchFromInput();
+    }
+
+    function copyTimerToInput() {
+        const timerVal = document.getElementById('stopwatch-display').textContent.trim();
+        document.getElementById('time-recorded-input').value = timerVal;
+        document.getElementById('bottom-time-display').textContent = timerVal;
         initStopwatchFromInput();
     }
 </script>
