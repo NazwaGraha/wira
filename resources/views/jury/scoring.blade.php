@@ -479,13 +479,13 @@
                 @php
                     $scenarioTitle = match ($catLevel) {
                         'Mula' => '1. Sayat • 2. Mimisan',
-                        'Wira' => '1. Patah Tulang • 2. Syok / Perdarahan',
+                        'Wira' => '1. Syok • 2. Patah Tulang',
                         default => '1. Pingsan • 2. Robek',
                     };
 
                     $targetTimeLabel = match ($catLevel) {
                         'Mula' => 'Target: 7 Menit (1m Kasus + 6m Tindakan)',
-                        'Wira' => 'Target: 10 Menit',
+                        'Wira' => 'Target: 8 Menit (1m Kasus + 7m Tindakan)',
                         default => 'Target: 8 Menit (1m Kasus + 7m Tindakan)',
                     };
 
@@ -637,12 +637,12 @@
                             ],
                             7 => [
                                 'title' => '7. PENANGANAN PATAH TULANG (KASUS 2)',
-                                'max' => 200,
+                                'max' => 130,
                                 'items' => [
-                                    '7_a' => ['label' => 'Tepat menentukan posisi fraktur/patah tulang', 'options' => [0, 10]],
-                                    '7_b' => ['label' => 'GSS sebelum pembidaian', 'options' => [10, 25, 50]],
-                                    '7_c' => ['label' => 'Pemasangan bidai melewati 2 sendi', 'options' => [15, 35, 70]],
-                                    '7_d' => ['label' => 'GSS setelah pembidaian & fiksasi', 'options' => [15, 35, 70]],
+                                    '7_a' => ['label' => 'Tepat menentukan posisi luka (kanan, kiri, atas, bawah)', 'options' => [0, 10]],
+                                    '7_b' => ['label' => 'Fiksasi manual (pertahankan posisi)', 'options' => [10, 25, 40]],
+                                    '7_c' => ['label' => 'Mengukur bidai & masukkan mitela sesuai ketentuan', 'options' => [10, 25, 40]],
+                                    '7_d' => ['label' => 'Pengikatan pada sendi yang banyak bergerak', 'options' => [10, 25, 40]],
                                 ]
                             ],
                             8 => [
@@ -665,10 +665,10 @@
                             ],
                             10 => [
                                 'title' => '10. PELAPORAN & KERJASAMA',
-                                'max' => 30,
+                                'max' => 20,
                                 'items' => [
-                                    '10_a' => ['label' => 'Kartu pelaporan diisi tepat & lengkap', 'options' => [0, 5, 15]],
-                                    '10_b' => ['label' => 'Kerjasama tim kompak & dinamis', 'options' => [0, 5, 15]],
+                                    '10_a' => ['label' => 'Kartu pelaporan diisi tepat & lengkap', 'options' => [0, 5, 10]],
+                                    '10_b' => ['label' => 'Kerjasama tim kompak & dinamis', 'options' => [0, 5, 10]],
                                 ]
                             ],
                         ];
@@ -771,18 +771,39 @@
                             ],
                         ];
                     }
+
+                    $scenarioBannerGrad = match ($catLevel) {
+                        'Mula' => 'from-emerald-950/90 to-slate-900 border-emerald-600/30',
+                        'Wira' => 'from-amber-950/90 to-slate-900 border-amber-600/30',
+                        default => 'from-blue-950/90 to-slate-900 border-blue-600/30',
+                    };
+                    $scenarioIconBox = match ($catLevel) {
+                        'Mula' => 'bg-emerald-600/30 border-emerald-500/40 text-emerald-400',
+                        'Wira' => 'bg-amber-500/25 border-amber-400/40 text-amber-400',
+                        default => 'bg-blue-600/30 border-blue-500/40 text-blue-400',
+                    };
+                    $scenarioTitleText = match ($catLevel) {
+                        'Mula' => 'text-emerald-300',
+                        'Wira' => 'text-amber-300',
+                        default => 'text-blue-300',
+                    };
+                    $scenarioPill = match ($catLevel) {
+                        'Mula' => 'bg-emerald-600/30 border-emerald-400/40 text-white',
+                        'Wira' => 'bg-amber-500/30 border-amber-400/40 text-amber-200',
+                        default => 'bg-blue-600/30 border-blue-400/40 text-white',
+                    };
                 @endphp
 
                 <!-- Banner Skenario Kasus Korban Lapangan -->
-                <div class="bg-gradient-to-r from-blue-950/90 to-slate-900 rounded-2xl p-2.5 border border-blue-600/30 flex items-center justify-between shadow-xs">
+                <div class="bg-gradient-to-r {{ $scenarioBannerGrad }} rounded-2xl p-2.5 border flex items-center justify-between shadow-xs">
                     <div class="flex items-center gap-2.5">
-                        <div class="w-8 h-8 rounded-xl bg-blue-600/30 border border-blue-500/40 text-blue-400 flex items-center justify-center text-sm shrink-0">
+                        <div class="w-8 h-8 rounded-xl {{ $scenarioIconBox }} border flex items-center justify-center text-sm shrink-0">
                             <i class="fa-solid fa-kit-medical"></i>
                         </div>
                         <div>
-                            <span class="text-[8.5px] font-black uppercase text-blue-300 block tracking-wider">KORBAN 1 • SKENARIO KASUS LAPANGAN:</span>
+                            <span class="text-[8.5px] font-black uppercase {{ $scenarioTitleText }} block tracking-wider">KORBAN 1 • SKENARIO KASUS LAPANGAN:</span>
                             <div class="text-xs font-black text-white flex items-center gap-1.5 mt-0.5">
-                                <span class="px-2 py-0.5 rounded bg-blue-600/30 border border-blue-400/40 text-white text-[10px]">{{ $scenarioTitle }}</span>
+                                <span class="px-2 py-0.5 rounded {{ $scenarioPill }} border text-[10px]">{{ $scenarioTitle }}</span>
                             </div>
                         </div>
                     </div>
@@ -837,6 +858,24 @@
                     </div>
                 </div>
 
+                @php
+                    $activeBtnClass = match ($catLevel) {
+                        'Mula' => 'bg-emerald-600 text-white shadow-md shadow-emerald-500/30 border border-emerald-400',
+                        'Wira' => 'bg-amber-500 text-slate-950 shadow-md shadow-amber-500/30 border border-amber-400 font-black',
+                        default => 'bg-blue-600 text-white shadow-md shadow-blue-500/30 border border-blue-400',
+                    };
+                    $subtotalPillColor = match ($catLevel) {
+                        'Mula' => 'text-emerald-400 bg-emerald-950/70 border-emerald-800/40',
+                        'Wira' => 'text-amber-400 bg-amber-950/70 border-amber-800/40',
+                        default => 'text-sky-400 bg-blue-950/70 border-blue-800/40',
+                    };
+                    $subtotalTextColor = match ($catLevel) {
+                        'Mula' => 'text-emerald-400',
+                        'Wira' => 'text-amber-400',
+                        default => 'text-sky-400',
+                    };
+                @endphp
+
                 <!-- DAFTAR BAGIAN PENILAIAN RESMI PERTOLONGAN PERTAMA (TOUCH-FRIENDLY PILLS) -->
                 <div class="space-y-3">
                     @foreach ($ppSections as $secNum => $sec)
@@ -850,7 +889,7 @@
                                 <span class="text-[11px] font-black text-slate-100 uppercase tracking-wide">
                                     {{ $sec['title'] }}
                                 </span>
-                                <span class="text-[9.5px] font-mono-num font-bold text-sky-400 bg-blue-950/70 px-2 py-0.5 rounded-lg border border-blue-800/40">
+                                <span class="text-[9.5px] font-mono-num font-bold {{ $subtotalPillColor }} px-2 py-0.5 rounded-lg border">
                                     Subtotal: <span id="subtotal-display-{{ $secNum }}">{{ $secSubtotal }}</span> / {{ $sec['max'] }}
                                 </span>
                             </div>
@@ -864,7 +903,7 @@
                                 <div class="p-2.5 rounded-xl bg-slate-950/60 border border-slate-800/80">
                                     <div class="flex items-center justify-between text-[10.5px] mb-2">
                                         <span class="text-slate-200 font-semibold leading-snug">&bull; {{ $item['label'] }}</span>
-                                        <span id="display_{{ $itemKey }}" class="font-mono-num font-black text-xs text-sky-400 shrink-0 ml-2">
+                                        <span id="display_{{ $itemKey }}" class="font-mono-num font-black text-xs {{ $subtotalTextColor }} shrink-0 ml-2">
                                             {{ $currVal !== null ? $currVal : $item['options'][0] }}
                                         </span>
                                     </div>
@@ -873,7 +912,7 @@
                                             @php
                                                 $isSelected = ($currVal !== null) ? ($currVal == $opt) : ($loop->first);
                                             @endphp
-                                            <button type="button" onclick="setPpScore('{{ $itemKey }}', {{ $opt }}, {{ $secNum }}, this)" class="btn-pp-{{ $itemKey }} py-2.5 rounded-xl font-mono text-xs font-bold transition flex items-center justify-center gap-1 active:scale-95 {{ $isSelected ? 'bg-blue-600 text-white shadow-md shadow-blue-500/30 border border-blue-400' : 'bg-slate-800 text-slate-400 border border-slate-700/80' }}">
+                                            <button type="button" onclick="setPpScore('{{ $itemKey }}', {{ $opt }}, {{ $secNum }}, this)" class="btn-pp-{{ $itemKey }} py-2.5 rounded-xl font-mono text-xs font-bold transition flex items-center justify-center gap-1 active:scale-95 {{ $isSelected ? $activeBtnClass : 'bg-slate-800 text-slate-400 border border-slate-700/80' }}">
                                                 {{ $opt }}
                                             </button>
                                         @endforeach
@@ -1142,10 +1181,16 @@
 
         const parent = btn.parentElement;
         if (parent) {
+            const activeClass = (CAT_LEVEL === 'Mula')
+                ? 'bg-emerald-600 text-white shadow-md shadow-emerald-500/30 border border-emerald-400'
+                : ((CAT_LEVEL === 'Wira')
+                    ? 'bg-amber-500 text-slate-950 shadow-md shadow-amber-500/30 border border-amber-400 font-black'
+                    : 'bg-blue-600 text-white shadow-md shadow-blue-500/30 border border-blue-400');
+
             parent.querySelectorAll('.btn-pp-' + key).forEach(b => {
                 b.className = 'btn-pp-' + key + ' py-2.5 rounded-xl font-mono text-xs font-bold transition flex items-center justify-center gap-1 active:scale-95 bg-slate-800 text-slate-400 border border-slate-700/80';
             });
-            btn.className = 'btn-pp-' + key + ' py-2.5 rounded-xl font-mono text-xs font-bold transition flex items-center justify-center gap-1 active:scale-95 bg-blue-600 text-white shadow-md shadow-blue-500/30 border border-blue-400';
+            btn.className = 'btn-pp-' + key + ' py-2.5 rounded-xl font-mono text-xs font-bold transition flex items-center justify-center gap-1 active:scale-95 ' + activeClass;
         }
 
         recalculateSectionPp(secNum);
@@ -1168,7 +1213,7 @@
         document.querySelectorAll('.rubric-pp-item').forEach(el => {
             total += parseFloat(el.value) || 0;
         });
-        const maxScore = (CAT_LEVEL === 'Mula') ? 465 : 760;
+        const maxScore = (CAT_LEVEL === 'Mula') ? 465 : ((CAT_LEVEL === 'Wira') ? 680 : 760);
         document.getElementById('input-final-score').value = total;
         document.getElementById('bottom-bar-subtitle').innerText = 'TOTAL SKOR PP (' + CAT_LEVEL.toUpperCase() + ')';
         document.getElementById('bottom-bar-score').innerText = total;
