@@ -1,39 +1,56 @@
 @extends('layouts.admin')
 
-@section('title', 'Grid Nilai Pertolongan Pertama Tingkat Mula - ' . $category->display_name)
+@section('title', 'Grid Nilai Pertolongan Pertama Mula - ' . $category->display_name)
 @section('page_title', 'Grid Nilai: ' . $category->display_name)
 
 @section('top_actions')
     <a href="{{ route('admin.competition-scores.input', $category->id) }}" class="bg-white hover:bg-slate-50 text-slate-700 border border-slate-300 px-4 py-2.5 rounded-xl font-bold text-xs shadow-2xs transition flex items-center gap-2">
         <i class="fa-solid fa-arrow-left"></i> Lembar Skor Utama
     </a>
-    <a href="{{ route('admin.competition-scores.master-sheet', ['level' => 'Mula']) }}" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2.5 rounded-xl font-bold text-xs shadow transition flex items-center gap-2">
+    <a href="{{ route('admin.competition-scores.master-sheet', ['level' => 'Mula']) }}" class="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2.5 rounded-xl font-bold text-xs shadow transition flex items-center gap-2">
         <i class="fa-solid fa-table-list"></i> Rekap Semua Sekolah
     </a>
 @endsection
 
 @push('styles')
 <style>
-    .btn-score.active-k {
-        background-color: #f1f5f9 !important;
-        color: #334155 !important;
-        border-color: #94a3b8 !important;
-        font-weight: 900 !important;
-        box-shadow: 0 2px 4px rgba(0,0,0,0.06);
+    .font-mono-num {
+        font-family: 'JetBrains Mono', monospace;
     }
-    .btn-score.active-c {
-        background-color: #fef3c7 !important;
-        color: #92400e !important;
-        border-color: #f59e0b !important;
-        font-weight: 900 !important;
-        box-shadow: 0 2px 6px rgba(245, 158, 11, 0.25);
+    .score-btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-width: 44px;
+        height: 32px;
+        padding: 0 10px;
+        font-size: 12px;
+        font-weight: 800;
+        font-family: 'JetBrains Mono', monospace;
+        border-radius: 10px;
+        border: 1.5px solid #cbd5e1;
+        background: #ffffff;
+        color: #475569;
+        cursor: pointer;
+        transition: all 0.15s ease;
+        box-shadow: 0 1px 2px rgba(0,0,0,0.04);
     }
-    .btn-score.active-b {
-        background-color: #dcfce7 !important;
-        color: #166534 !important;
-        border-color: #22c55e !important;
-        font-weight: 900 !important;
-        box-shadow: 0 2px 6px rgba(34, 197, 94, 0.25);
+    .score-btn:hover {
+        border-color: #10b981;
+        background: #ecfdf5;
+        color: #047857;
+    }
+    .score-btn.active {
+        background: #059669 !important;
+        border-color: #047857 !important;
+        color: #ffffff !important;
+        box-shadow: 0 3px 8px rgba(5, 150, 105, 0.4);
+        transform: translateY(-1px);
+    }
+    .score-btn.active-zero {
+        background: #64748b !important;
+        border-color: #475569 !important;
+        color: #ffffff !important;
     }
 </style>
 @endpush
@@ -57,7 +74,7 @@
         <input type="hidden" id="action-after" name="action_after" value="stay">
         <input type="hidden" name="next_team_id" value="{{ $nextTeam?->id }}">
 
-        <!-- Top Header & Metadata Card -->
+        <!-- Top Header & Metadata Card (Nomor Urut, Nama Sekolah, Kasus Korban, Stopwatch, Total Nilai) -->
         <div class="bg-white rounded-3xl p-6 shadow-sm border border-slate-200">
             <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-center">
                 
@@ -65,15 +82,16 @@
                 <div class="lg:col-span-7 space-y-4 border-b lg:border-b-0 lg:border-r border-slate-200 lg:pr-6 pb-6 lg:pb-0">
                     <div class="flex items-center justify-between flex-wrap gap-2">
                         <div class="flex items-center gap-2">
-                            <span class="px-3.5 py-1.5 rounded-xl {{ $category->gender_category === 'Putri' ? 'bg-rose-100 text-rose-800 border border-rose-300' : 'bg-blue-100 text-blue-800 border border-blue-300' }} font-black text-xs uppercase tracking-wider flex items-center gap-1.5">
-                                @if($category->gender_category === 'Putri')
-                                    <i class="fa-solid fa-venus"></i> {{ $category->code ?? 'LPP-MULA-PI' }} (Putri)
-                                @else
-                                    <i class="fa-solid fa-mars"></i> {{ $category->code ?? 'LPP-MULA-PA' }} (Putra)
-                                @endif
+                            @php
+                                $genderText = $category->gender_category === 'Putri' ? 'Putri' : ($category->gender_category === 'Putra' ? 'Putra' : 'Umum/Campuran');
+                                $genderIcon = $category->gender_category === 'Putri' ? 'fa-venus' : ($category->gender_category === 'Putra' ? 'fa-mars' : 'fa-children');
+                                $genderBadgeClass = $category->gender_category === 'Putri' ? 'bg-rose-50 text-rose-800 border-rose-200' : 'bg-emerald-50 text-emerald-800 border-emerald-200';
+                            @endphp
+                            <span class="px-3.5 py-1.5 rounded-xl {{ $genderBadgeClass }} border font-black text-xs uppercase tracking-wider flex items-center gap-1.5">
+                                <i class="fa-solid {{ $genderIcon }}"></i> {{ $category->code ?? 'LPP-MULA' }} ({{ $genderText }})
                             </span>
-                            <span class="px-3 py-1.5 rounded-xl bg-emerald-100 text-emerald-800 border border-emerald-300 font-extrabold text-xs">
-                                PMR Mula (SD/MI)
+                            <span class="px-3 py-1.5 rounded-xl bg-emerald-100 text-emerald-900 border border-emerald-300 font-extrabold text-xs">
+                                PMR Tingkat Mula (SD / MI)
                             </span>
                         </div>
 
@@ -101,100 +119,141 @@
                         </div>
                     </div>
 
-                    <!-- Dropdown Select Team -->
-                    @php
-                        $isPi = ($category->gender_category === 'Putri') || str_contains(strtoupper($category->code ?? ''), '-PI');
-                        $genderText = $isPi ? 'Putri' : 'Putra';
-                    @endphp
+                    <!-- Dropdown Select Current Team -->
                     <div>
-                        <label for="team-selector-dropdown" class="block text-xs font-black text-slate-500 uppercase tracking-wider mb-1.5 flex items-center justify-between">
-                            <span>PILIH REGU PESERTA YANG SEDANG DINILAI:</span>
-                            <span class="text-emerald-700 font-extrabold text-[11px] bg-emerald-50 px-2 py-0.5 rounded-md border border-emerald-200">
-                                Khusus PMR Mula {{ $genderText }} (SD/MI) &bull; Total: {{ $teams->count() }} Regu
+                        <label class="block text-xs font-black text-slate-500 uppercase tracking-wider mb-1.5 flex items-center justify-between">
+                            <span>Pilih Regu Peserta yang Sedang Dinilai:</span>
+                            <span class="text-emerald-700 bg-emerald-50 border-emerald-200 font-extrabold text-[11px] px-2.5 py-0.5 rounded-md border flex items-center gap-1">
+                                <i class="fa-solid fa-users"></i> Total: {{ $teams->count() }} Regu Terdaftar
                             </span>
                         </label>
                         <div class="relative">
-                            <select id="team-selector-dropdown" onchange="window.location.href='{{ route('admin.competition-scores.grid', $category->id) }}?round={{ $round }}&team_id=' + this.value" class="w-full bg-slate-50 hover:bg-slate-100 border-2 border-red-500 rounded-2xl py-3 px-4 text-sm font-black text-slate-900 focus:outline-none focus:ring-4 focus:ring-red-100 transition cursor-pointer appearance-none shadow-xs">
-                                @forelse($teams as $t)
+                            <select onchange="window.location.href = this.value" class="w-full bg-slate-50 border-2 border-emerald-500 rounded-2xl py-3 px-4 text-sm font-black text-slate-900 focus:outline-none focus:ring-4 focus:ring-emerald-500/20 shadow-xs cursor-pointer">
+                                @forelse($teams as $idx => $t)
                                     @php
-                                        $tScore = $scores->get($t->id);
-                                        $hasScore = $tScore && ($tScore->final_score > 0 || !empty($tScore->score_details['grid_rubric']));
+                                        $tScore = $t->scores->where('competition_category_id', $category->id)->where('round_name', $round)->first();
+                                        $isScored = $tScore && ($tScore->final_score > 0 || $tScore->practical_score > 0);
+                                        $statusLabel = $isScored ? "✓ Nilai: {$tScore->final_score} (" . ($tScore->time_recorded ?: '-') . ")" : "Belum dinilai";
+                                        $schoolName = $t->registration?->school_name ?: $t->team_name;
+                                        $regCode = $t->registration?->registration_code ?: 'REG';
+                                        $teamNo = $t->order_number ?: sprintf('A-%03d', $idx + 1);
                                     @endphp
-                                    <option value="{{ $t->id }}" {{ $currentTeam?->id == $t->id ? 'selected' : '' }}>
-                                        [No. {{ $t->order_number ?: '-' }}] {{ $t->registration?->school_name ?: $t->team_name }} &bull; {{ $t->team_label ?: $t->team_name }} [Mula {{ $genderText }}] ({{ $t->registration?->registration_code ?: 'OTS' }}) {{ $hasScore ? '✓ [Skor: ' . $tScore->final_score . ' | Wkt: ' . ($tScore->time_recorded ?: '-') . ']' : '(Belum dinilai)' }}
+                                    <option value="{{ route('admin.competition-scores.grid', ['category' => $category->id, 'team_id' => $t->id, 'round' => $round]) }}" {{ $currentTeam?->id == $t->id ? 'selected' : '' }}>
+                                        [No. {{ $teamNo }}] {{ $schoolName }} • {{ $t->team_name }} [Mula {{ $genderText }}] ({{ $regCode }}) — {{ $statusLabel }}
                                     </option>
                                 @empty
-                                    <option value="" disabled selected>-- Belum ada regu PMR Mula {{ $genderText }} (SD/MI) yang terdaftar di cabang ini --</option>
+                                    <option disabled selected>Belum ada regu peserta yang terdaftar</option>
                                 @endforelse
                             </select>
-                            <i class="fa-solid fa-chevron-down absolute right-4 top-1/2 -translate-y-1/2 text-slate-500 pointer-events-none"></i>
                         </div>
                     </div>
 
-                    <!-- Technical Guideline metadata -->
-                    <div class="grid grid-cols-2 sm:grid-cols-3 gap-3 pt-2 text-[11px] text-slate-600 bg-slate-50 p-3.5 rounded-2xl border border-slate-200/80">
+                    <!-- Current Active Team Details Banner -->
+                    @php
+                        $curTeamIdx = $teams->search(fn($item) => $item->id === $currentTeam?->id);
+                        $curOrderNo = $currentTeam?->order_number ?: ($curTeamIdx !== false ? sprintf('A-%03d', $curTeamIdx + 1) : 'A-001');
+                    @endphp
+                    <div class="bg-slate-50 border border-slate-200 rounded-2xl p-4 flex items-center justify-between">
                         <div>
-                            <span class="text-slate-400 font-bold block text-[10px] uppercase">Mekanisme Kejadian:</span>
-                            <strong class="text-slate-800 font-extrabold">Di sekolah & sekitar sekolah</strong>
+                            <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Regu Aktif Dinilai</span>
+                            <div class="text-base font-black text-slate-900 mt-0.5 flex items-center gap-2">
+                                <span class="px-2.5 py-0.5 rounded-lg bg-emerald-600 text-white font-mono font-black text-xs">
+                                    {{ $curOrderNo }}
+                                </span>
+                                <span>{{ $currentTeam?->registration?->school_name ?: ($currentTeam?->team_name ?? 'Pilih Regu') }}</span>
+                                <span class="text-xs font-bold text-slate-500">• {{ $currentTeam?->team_name }}</span>
+                            </div>
                         </div>
-                        <div>
-                            <span class="text-slate-400 font-bold block text-[10px] uppercase">Kasus Lomba:</span>
-                            <strong class="text-emerald-700 font-black"><i class="fa-solid fa-bandage mr-0.5"></i> Luka Ringan</strong>
+                        @if($currentTeam)
+                            <div class="text-right">
+                                <span class="text-[10px] font-bold text-slate-400 uppercase block">Kode Registrasi</span>
+                                <span class="font-mono font-bold text-xs text-slate-700 bg-white px-2 py-0.5 rounded border border-slate-200">
+                                    {{ $currentTeam->registration?->registration_code ?: '-' }}
+                                </span>
+                            </div>
+                        @endif
+                    </div>
+
+                    <!-- Box Kasus Resmi Sesuai Lembar Fisik Mula -->
+                    <div class="bg-gradient-to-r from-emerald-50 to-teal-50 border border-emerald-200 p-4 rounded-2xl flex items-center justify-between gap-4">
+                        <div class="flex items-center gap-3.5">
+                            <div class="w-12 h-12 rounded-xl bg-emerald-600 text-white flex items-center justify-center text-xl shrink-0 shadow-md shadow-emerald-500/20">
+                                <i class="fa-solid fa-kit-medical"></i>
+                            </div>
+                            <div>
+                                <span class="text-[10px] font-black uppercase tracking-wider text-emerald-800 block">KORBAN 1 • SKENARIO KASUS LAPANGAN:</span>
+                                <div class="text-sm font-black text-slate-900 mt-0.5 flex items-center gap-2">
+                                    <span class="px-2.5 py-0.5 rounded-md bg-white border border-emerald-300 text-emerald-900 font-extrabold text-xs shadow-2xs">1. Sayat</span>
+                                </div>
+                            </div>
                         </div>
-                        <div>
-                            <span class="text-slate-400 font-bold block text-[10px] uppercase">Buku Panduan:</span>
-                            <strong class="text-slate-800 font-extrabold">Pedoman PP 2008 & 2009</strong>
+                        <div class="text-right hidden sm:block">
+                            <span class="text-[10px] font-bold text-slate-400 uppercase block">Kategori</span>
+                            <span class="text-xs font-black text-slate-800">Pertolongan Pertama Mula</span>
                         </div>
                     </div>
+
                 </div>
 
-                <!-- Right: Live Stopwatch & Score Overview -->
-                <div class="lg:col-span-5 flex flex-col justify-between h-full space-y-4">
+                <!-- Right: Stopwatch & Live Score Preview -->
+                <div class="lg:col-span-5 space-y-4">
                     
-                    <!-- Stopwatch Card -->
-                    <div class="bg-gradient-to-br from-slate-900 to-slate-800 text-white p-5 rounded-2xl shadow-md border border-slate-700">
+                    <!-- Stopwatch Box (7 Menit: 1 Menit Baca Kasus + 6 Menit Tindakan) -->
+                    <div class="bg-slate-900 text-white p-5 rounded-2xl shadow-md border border-slate-800">
                         <div class="flex items-center justify-between mb-2">
-                            <span class="text-xs font-extrabold text-slate-300 tracking-wider uppercase flex items-center gap-1.5">
-                                <i class="fa-solid fa-stopwatch text-amber-400"></i> Stopwatch Waktu Praktik
-                            </span>
-                            <span class="text-[10px] bg-amber-400/20 text-amber-300 font-black px-2.5 py-0.5 rounded-full border border-amber-400/30">
-                                Maks: 06:30
-                            </span>
+                            <div class="flex items-center gap-2">
+                                <span class="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse"></span>
+                                <span class="text-xs font-black tracking-wider uppercase text-slate-300">STOPWATCH WAKTU PELAKSANAAN</span>
+                            </div>
+                            <span class="text-[10px] bg-slate-800 text-emerald-300 px-2 py-0.5 rounded font-mono font-bold">Total: 07:00 (1m Baca + 6m Tindakan)</span>
                         </div>
 
                         <div class="flex items-center justify-between gap-4">
-                            <div id="stopwatch-display" class="text-4xl font-black font-mono tracking-widest text-emerald-400">
-                                {{ $existingTime ?: '05:00' }}
+                            <!-- Digital Time Display -->
+                            <div id="stopwatch-display" class="font-mono-num font-black text-4xl tracking-tight text-white select-none">
+                                {{ $score?->time_recorded ?: '00:00' }}
                             </div>
+
+                            <!-- Stopwatch Controls -->
                             <div class="flex items-center gap-1.5">
-                                <button type="button" id="btn-timer-start" onclick="startTimer()" class="bg-emerald-600 hover:bg-emerald-700 text-white px-3.5 py-2 rounded-xl font-bold text-xs shadow-xs transition flex items-center gap-1">
+                                <button type="button" onclick="startTimer()" id="btn-timer-start" class="bg-emerald-600 hover:bg-emerald-500 text-white font-extrabold text-xs px-3.5 py-2 rounded-xl transition flex items-center gap-1 shadow-sm">
                                     <i class="fa-solid fa-play text-[10px]"></i> Mulai
                                 </button>
-                                <button type="button" id="btn-timer-pause" onclick="pauseTimer()" class="bg-amber-500 hover:bg-amber-600 text-white px-3.5 py-2 rounded-xl font-bold text-xs shadow-xs transition flex items-center gap-1">
+                                <button type="button" onclick="pauseTimer()" id="btn-timer-pause" class="bg-amber-500 hover:bg-amber-400 text-slate-950 font-extrabold text-xs px-3.5 py-2 rounded-xl transition flex items-center gap-1 shadow-sm">
                                     <i class="fa-solid fa-pause text-[10px]"></i> Jeda
                                 </button>
-                                <button type="button" onclick="resetTimer()" class="bg-slate-700 hover:bg-slate-600 text-slate-200 px-3 py-2 rounded-xl font-bold text-xs transition" title="Reset Waktu">
+                                <button type="button" onclick="resetTimer()" id="btn-timer-reset" class="bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold text-xs p-2 rounded-xl transition">
                                     <i class="fa-solid fa-rotate-right text-[10px]"></i>
                                 </button>
                             </div>
                         </div>
 
-                        <div class="mt-3 pt-2.5 border-t border-slate-700/80 text-[11px] text-slate-400 flex items-center justify-between gap-2">
-                            <span>Input Waktu Lapangan (MM:SS):</span>
-                            <input type="text" id="time-recorded-input" name="time_recorded" value="{{ $existingTime ?: '05:00' }}" oninput="syncTimerInput(this.value)" class="w-20 bg-slate-950 text-center font-mono font-black text-sm border border-slate-600 rounded-lg px-2 py-1 text-emerald-300 focus:outline-none focus:border-amber-400">
+                        <div class="mt-2.5 pt-2 border-t border-slate-700/80 text-[11px] text-slate-400 flex items-center justify-between gap-2">
+                            <span id="timer-warning-text" class="text-rose-400 font-bold flex items-center gap-1">
+                                <i class="fa-solid fa-triangle-exclamation"></i> Lewat 07:00 penanganan wajib diberhentikan
+                            </span>
+                            <div class="flex items-center gap-1.5">
+                                <span class="text-[10px]">Input Manual:</span>
+                                <input type="text" name="time_recorded" id="time-recorded-input" value="{{ $score?->time_recorded ?: '00:00' }}" onchange="syncTimerInput(this.value)" class="w-16 bg-slate-950 text-center font-mono font-black text-xs border border-slate-600 rounded px-1.5 py-0.5 text-emerald-300 focus:outline-none focus:border-emerald-400">
+                            </div>
                         </div>
                     </div>
 
-                    <!-- Live Score Counter -->
-                    <div class="bg-emerald-50 border-2 border-emerald-300 p-5 rounded-2xl flex items-center justify-between shadow-2xs">
+                    <!-- Live Total Score Counter (Mula Max 465 Poin) -->
+                    <div class="bg-gradient-to-br from-emerald-50 to-teal-50 border-2 border-emerald-300 p-4.5 rounded-2xl flex items-center justify-between shadow-sm">
                         <div>
-                            <div class="text-xs font-black text-emerald-900 uppercase tracking-wider">TOTAL NILAI PRAKTIK (GRID)</div>
-                            <div class="text-[11px] text-emerald-700 font-medium">Akumulasi 6 Bagian Rubrik Lapangan</div>
+                            <div class="text-xs font-black text-emerald-950 uppercase tracking-wider flex items-center gap-1.5">
+                                <i class="fa-solid fa-calculator text-emerald-600"></i> TOTAL NILAI PRAKTIK MULA
+                            </div>
+                            <div class="text-[11px] text-emerald-800 font-medium mt-0.5">Penjumlahan Otomatis Seluruh Nilai Checklist</div>
                         </div>
                         <div class="text-right">
-                            <div class="text-3xl sm:text-4xl font-black text-emerald-700 tracking-tight font-mono">
-                                <span id="grand-total-display">0</span> <span class="text-sm font-bold text-emerald-600">/ 540</span>
+                            <div class="text-4xl font-black text-emerald-700 font-mono-num tracking-tight">
+                                <span id="grand-total-display">0</span> <span class="text-base font-bold text-emerald-600 font-sans">/ 465</span>
                             </div>
+                            <span id="score-percentage-badge" class="text-[10px] font-extrabold text-emerald-700 bg-emerald-100 px-2 py-0.5 rounded-full border border-emerald-300">
+                                0% • Mulai Penilaian
+                            </span>
                         </div>
                     </div>
 
@@ -203,419 +262,348 @@
             </div>
         </div>
 
-        <!-- MAIN RUBRIC TABLE (GRID NILAI PERTOLONGAN PERTAMA TINGKAT MULA) -->
-        <div class="bg-white rounded-3xl shadow-sm border border-slate-200 overflow-hidden mt-6">
+        <!-- MAIN RUBRIC TABLE (GRID NILAI RESMI SUA BHAKTI BERKARYA MULA) -->
+        <div class="bg-white rounded-3xl shadow-sm border border-slate-200 overflow-hidden">
             
             <!-- Table Action Header -->
-            <div class="p-5 border-b border-slate-200 bg-slate-50/80 flex flex-wrap items-center justify-between gap-3">
-                <div class="flex items-center gap-2">
-                    <span class="w-3 h-3 rounded-full bg-emerald-500 inline-block animate-ping"></span>
-                    <span class="font-black text-sm text-slate-900">Lembar Penilaian Lapangan Resmi: Klik Nilai (K / C / B) Pada Setiap Uraian</span>
+            <div class="p-5 border-b border-slate-200 bg-slate-50 flex flex-wrap items-center justify-between gap-3">
+                <div class="flex items-center gap-2.5">
+                    <span class="w-3 h-3 rounded-full bg-emerald-600 inline-block"></span>
+                    <span class="font-black text-sm text-slate-900">Petunjuk Juri: Klik salah satu pilihan angka nilai pada setiap uraian kegiatan. Total otomatis terakumulasi.</span>
                 </div>
-                <!-- Quick Fill Helper Buttons -->
                 <div class="flex items-center gap-2">
-                    <button type="button" onclick="setAllValues('B')" class="text-xs font-bold text-emerald-700 bg-emerald-100 hover:bg-emerald-200 px-3.5 py-1.5 rounded-xl border border-emerald-300 transition shadow-2xs">
-                        <i class="fa-solid fa-circle-check mr-1"></i> Set Semua "Baik (B)"
+                    <button type="button" onclick="setAllMaxValues()" class="text-xs font-bold text-emerald-700 bg-emerald-100 hover:bg-emerald-200 px-3.5 py-1.5 rounded-xl border border-emerald-300 transition shadow-2xs flex items-center gap-1">
+                        <i class="fa-solid fa-circle-check"></i> Pilih Nilai Maksimal
                     </button>
-                    <button type="button" onclick="resetAllRubric()" class="text-xs font-bold text-slate-600 bg-white hover:bg-slate-100 px-3.5 py-1.5 rounded-xl border border-slate-300 transition shadow-2xs">
-                        <i class="fa-solid fa-rotate-left mr-1"></i> Kosongkan Rubrik
+                    <button type="button" onclick="resetAllRubric()" class="text-xs font-bold text-slate-600 bg-white hover:bg-slate-100 px-3.5 py-1.5 rounded-xl border border-slate-300 transition shadow-2xs flex items-center gap-1">
+                        <i class="fa-solid fa-rotate-left"></i> Reset Pilihan
                     </button>
                 </div>
             </div>
+
+            @php
+                // DEFINISI RESMI 9 BAGIAN & 28 BUTIR PERTOLONGAN PERTAMA MULA (MAX: 465 POIN)
+                $sections = [
+                    1 => [
+                        'title' => 'APD',
+                        'max' => 20,
+                        'items' => [
+                            '1_a' => ['label' => 'Terpasang sarung tangan lateks', 'options' => [0, 5, 10]],
+                            '1_b' => ['label' => 'Terpasang masker', 'options' => [0, 5, 10]],
+                        ]
+                    ],
+                    2 => [
+                        'title' => 'PENILAIAN KEADAAN',
+                        'max' => 30,
+                        'items' => [
+                            '2_a' => ['label' => 'Menjelaskan mekanisme kejadian', 'options' => [0, 5, 10]],
+                            '2_b' => ['label' => 'Memperkenalkan diri dan tim', 'options' => [0, 5, 10]],
+                            '2_c' => ['label' => 'Meminta izin dan saksi', 'options' => [0, 5, 10]],
+                        ]
+                    ],
+                    3 => [
+                        'title' => 'PENILAIAN & PENATALAKSANAAN KEAMANAN',
+                        'max' => 10,
+                        'items' => [
+                            '3_a' => ['label' => 'Menyimpulkan keadaan lokasi kejadian', 'options' => [0, 5, 10]],
+                        ]
+                    ],
+                    4 => [
+                        'title' => 'PENILAIAN DINI',
+                        'max' => 160,
+                        'items' => [
+                            '4_a' => ['label' => 'Menyimpulkan kesan umum kasus medis', 'options' => [0, 30]],
+                            '4_b' => ['label' => 'Cek respon suara dan nyeri', 'options' => [0, 10, 20]],
+                            '4_c' => ['label' => 'Meminta bantuan Guru', 'options' => [0, 10]],
+                            '4_d' => ['label' => 'Menstabilkan korban ke posisi terlentang', 'options' => [0, 5, 10]],
+                            '4_e' => ['label' => 'Cek nafas (LDR 3-5 detik) dan menyimpulkan', 'options' => [0, 15, 30]],
+                            '4_f' => ['label' => 'Cek nadi radialis (5-10 detik) dan menyimpulkan', 'options' => [0, 15, 30]],
+                            '4_g' => ['label' => 'Kontrol perdarahan 5 bagian tubuh dan menyimpulkan', 'options' => [0, 15, 30]],
+                        ]
+                    ],
+                    5 => [
+                        'title' => 'PEMERIKSAAN TANDA VITAL',
+                        'max' => 80,
+                        'items' => [
+                            '5_a' => ['label' => 'Nadi 1 menit (diukur dan diperiksa dengan tepat)', 'options' => [5, 10, 20]],
+                            '5_b' => ['label' => 'Nafas 1 menit (diukur dan diperiksan dengan tepat)', 'options' => [5, 10, 20]],
+                            '5_c' => ['label' => 'Suhu (menyimpulkan hasil yang didapat dari korban)', 'options' => [5, 10, 20]],
+                            '5_d' => ['label' => 'Kondisi, keadaan, dan warna kulit', 'options' => [5, 10, 20]],
+                        ]
+                    ],
+                    6 => [
+                        'title' => 'PENANGANAN SAYAT',
+                        'max' => 110,
+                        'items' => [
+                            '6_a' => ['label' => 'Tepat menentukan posisi luka (kanan, kiri, atas, bawah)', 'options' => [0, 10]],
+                            '6_b' => ['label' => 'Bersihkan sekitar luka dengan air bersih & beri antiseptik', 'options' => [10, 25, 50]],
+                            '6_c' => ['label' => 'Balut luka dengan tepat & istirahatkan', 'options' => [10, 25, 50]],
+                        ]
+                    ],
+                    7 => [
+                        'title' => 'CEK FISIK (PLNB)',
+                        'max' => 25,
+                        'items' => [
+                            '7_a' => ['label' => 'Kepala', 'options' => [0, 3, 5]],
+                            '7_b' => ['label' => 'Leher', 'options' => [0, 3, 5]],
+                            '7_c' => ['label' => 'Badan termasuk perut dan tulang punggung', 'options' => [0, 3, 5]],
+                            '7_d' => ['label' => 'Alat gerak atas & GSS', 'options' => [0, 3, 5]],
+                            '7_e' => ['label' => 'Alat gerak bawah & GSS', 'options' => [0, 3, 5]],
+                        ]
+                    ],
+                    8 => [
+                        'title' => 'RIWAYAT PENDERITA',
+                        'max' => 10,
+                        'items' => [
+                            '8_a' => ['label' => 'Wawancara KOMPAK', 'options' => [0, 5, 10]],
+                        ]
+                    ],
+                    9 => [
+                        'title' => 'PELAPORAN & KERJASAMA',
+                        'max' => 20,
+                        'items' => [
+                            '9_a' => ['label' => 'Kartu pelaporan diisi dengan tepat dan lengkap', 'options' => [0, 5, 10]],
+                            '9_b' => ['label' => 'Kerjasama tim', 'options' => [0, 5, 10]],
+                        ]
+                    ],
+                ];
+            @endphp
 
             <div class="overflow-x-auto">
                 <table class="w-full text-left text-xs border-collapse">
                     <thead>
                         <tr class="bg-slate-900 text-white uppercase text-[11px] tracking-wider font-black">
-                            <th class="py-3.5 px-4 w-12 text-center border-r border-slate-800">NO</th>
-                            <th class="py-3.5 px-5 border-r border-slate-800">URAIAN KEGIATAN PERTOLONGAN PERTAMA</th>
-                            <th class="py-3.5 px-4 text-center border-r border-slate-800 w-52">
-                                PILIHAN NILAI JURI<br>
-                                <span class="text-[9px] font-normal text-slate-300 tracking-normal">(K = Kurang, C = Cukup, B = Baik)</span>
+                            <th class="py-3.5 px-4 w-14 text-center border-r border-slate-800">NO</th>
+                            <th class="py-3.5 px-6 border-r border-slate-800">URAIAN KEGIATAN PERTOLONGAN PERTAMA</th>
+                            <th class="py-3.5 px-6 text-center border-r border-slate-800 w-64">
+                                PILIHAN NILAI CHECKLIST<br>
+                                <span class="text-[9px] font-normal text-slate-300 tracking-normal">(Klik tombol angka yang sesuai)</span>
                             </th>
                             <th class="py-3.5 px-4 text-center w-28 bg-black">SKOR</th>
                         </tr>
                     </thead>
-                    <tbody class="divide-y divide-slate-200 font-medium">
+                    <tbody class="divide-y divide-slate-200 font-medium text-slate-800">
+                        @foreach ($sections as $secNum => $sec)
+                            <!-- Section Header Row -->
+                            <tr class="bg-emerald-600 text-white font-black text-xs uppercase tracking-wider">
+                                <td class="py-2.5 px-4 text-center font-mono">{{ $secNum }}</td>
+                                <td colspan="2" class="py-2.5 px-6">{{ $sec['title'] }}</td>
+                                <td class="py-2.5 px-4 text-center bg-emerald-700 font-mono-num font-black text-xs text-white">
+                                    <span id="subtotal-display-{{ $secNum }}">0</span> / {{ $sec['max'] }}
+                                </td>
+                            </tr>
+                            <input type="hidden" name="subtotals[{{ $secNum }}]" id="subtotal-input-{{ $secNum }}" value="0">
 
-                        <!-- ================= SECTION 1: PENILAIAN KEADAAN ================= -->
-                        <tr class="bg-emerald-600 text-white font-black text-xs uppercase tracking-wider">
-                            <td class="py-2.5 px-4 text-center font-mono">1</td>
-                            <td colspan="2" class="py-2.5 px-5">PENILAIAN KEADAAN</td>
-                            <td class="py-2.5 px-4 text-center bg-emerald-700 font-mono font-black text-xs">
-                                <span id="subtotal-display-1">0</span> / 50
-                            </td>
-                        </tr>
-                        <input type="hidden" name="subtotals[1]" id="subtotal-input-1" value="0">
+                            <!-- Item Rows -->
+                            @foreach ($sec['items'] as $itemKey => $item)
+                                @php
+                                    $currVal = isset($existingRubric[$itemKey]) ? (int)$existingRubric[$itemKey] : null;
+                                    $maxOption = end($item['options']);
+                                @endphp
+                                <tr id="row_{{ $itemKey }}" class="hover:bg-slate-50 transition" data-key="{{ $itemKey }}" data-section="{{ $secNum }}" data-max="{{ $maxOption }}">
+                                    <td class="py-3 px-4 text-center text-slate-400 font-mono">•</td>
+                                    <td class="py-3 px-6 font-bold text-slate-800 leading-relaxed">{{ $item['label'] }}</td>
+                                    <td class="py-3 px-6 text-center">
+                                        <input type="hidden" name="rubric[{{ $itemKey }}]" id="input_{{ $itemKey }}" class="rubric-input" data-section="{{ $secNum }}" value="{{ $currVal !== null ? $currVal : $item['options'][0] }}">
 
-                        <!-- Sub 1.1 Aman Penolong -->
-                        <tr class="bg-slate-100/90 font-extrabold text-slate-700 text-[11px]">
-                            <td class="py-1.5 px-4 text-center text-slate-400">&bull;</td>
-                            <td colspan="3" class="py-1.5 px-5">Aman Penolong</td>
-                        </tr>
-                        @php
-                            $itemsSec1 = [
-                                '1_a' => ['label' => 'Sudah menggunakan APD (masker & sarung tangan)', 'options' => [0, 5, 10]],
-                            ];
-                        @endphp
-                        @foreach($itemsSec1 as $key => $meta)
-                            @include('admin.competition.scores.partials.grid-row', ['key' => $key, 'letter' => 'a', 'label' => $meta['label'], 'options' => $meta['options'], 'section' => 1])
+                                        <div class="inline-flex items-center justify-center gap-1.5 p-1 bg-slate-100/70 rounded-xl border border-slate-200">
+                                            @foreach ($item['options'] as $opt)
+                                                @php
+                                                    $isActive = ($currVal !== null && $currVal === $opt);
+                                                @endphp
+                                                <button type="button" onclick="selectScoreOption('{{ $itemKey }}', {{ $opt }})" data-val="{{ $opt }}" class="score-btn {{ $isActive ? ($opt == 0 ? 'active-zero' : 'active') : '' }}">
+                                                    {{ $opt }}
+                                                </button>
+                                            @endforeach
+                                        </div>
+                                    </td>
+                                    <td class="py-3 px-4 text-center font-mono-num font-black text-sm text-slate-900 bg-slate-50/60 row-score-cell">
+                                        <span id="display_{{ $itemKey }}" class="row-score-display {{ $currVal === null || $currVal === 0 ? 'text-slate-400' : 'text-emerald-700' }}">
+                                            {{ $currVal !== null ? $currVal : $item['options'][0] }}
+                                        </span>
+                                    </td>
+                                </tr>
+                            @endforeach
                         @endforeach
-
-                        <!-- Sub 1.2 Aman Lingkungan -->
-                        <tr class="bg-slate-100/90 font-extrabold text-slate-700 text-[11px]">
-                            <td class="py-1.5 px-4 text-center text-slate-400">&bull;</td>
-                            <td colspan="3" class="py-1.5 px-5">Aman Lingkungan</td>
-                        </tr>
-                        @php
-                            $itemsSec1b = [
-                                '1_b' => ['label' => 'Memperkenalkan diri dan tim', 'options' => [0, 5, 10], 'letter' => 'b'],
-                                '1_c' => ['label' => 'Memastikan sistematika kejadian', 'options' => [0, 5, 10], 'letter' => 'c'],
-                                '1_d' => ['label' => 'Meminta izin dan saksi', 'options' => [0, 5, 10], 'letter' => 'd'],
-                            ];
-                        @endphp
-                        @foreach($itemsSec1b as $key => $meta)
-                            @include('admin.competition.scores.partials.grid-row', ['key' => $key, 'letter' => $meta['letter'], 'label' => $meta['label'], 'options' => $meta['options'], 'section' => 1])
-                        @endforeach
-
-                        <!-- Sub 1.3 Aman Pasien -->
-                        <tr class="bg-slate-100/90 font-extrabold text-slate-700 text-[11px]">
-                            <td class="py-1.5 px-4 text-center text-slate-400">&bull;</td>
-                            <td colspan="3" class="py-1.5 px-5">Aman Pasien</td>
-                        </tr>
-                        @include('admin.competition.scores.partials.grid-row', ['key' => '1_e', 'letter' => 'e', 'label' => 'Memastikan lokasi kejadian (aman & tidak aman)', 'options' => [0, 5, 10], 'section' => 1])
-
-
-                        <!-- ================= SECTION 2: PENILAIAN DINI ================= -->
-                        <tr class="bg-emerald-600 text-white font-black text-xs uppercase tracking-wider">
-                            <td class="py-2.5 px-4 text-center font-mono">2</td>
-                            <td colspan="2" class="py-2.5 px-5">PENILAIAN DINI</td>
-                            <td class="py-2.5 px-4 text-center bg-emerald-700 font-mono font-black text-xs">
-                                <span id="subtotal-display-2">0</span> / 100
-                            </td>
-                        </tr>
-                        <input type="hidden" name="subtotals[2]" id="subtotal-input-2" value="0">
-                        @php
-                            $itemsSec2 = [
-                                '2_a' => ['label' => 'Menyebutkan kesan umum (trauma/medis)', 'options' => [0, 10, 20], 'letter' => 'a'],
-                                '2_b' => ['label' => 'Cek respon (awas)', 'options' => [0, 10, 20], 'letter' => 'b'],
-                                '2_c' => ['label' => 'Cek nafas (Pasien sadar)', 'options' => [0, 10, 20], 'letter' => 'c'],
-                                '2_d' => ['label' => 'Cek nadi (Radialis)', 'options' => [0, 10, 20], 'letter' => 'd'],
-                                '2_e' => ['label' => 'Meminta bantuan Guru/Orang dewasa', 'options' => [0, 10, 20], 'letter' => 'e'],
-                            ];
-                        @endphp
-                        @foreach($itemsSec2 as $key => $meta)
-                            @include('admin.competition.scores.partials.grid-row', ['key' => $key, 'letter' => $meta['letter'], 'label' => $meta['label'], 'options' => $meta['options'], 'section' => 2])
-                        @endforeach
-
-
-                        <!-- ================= SECTION 3: PENANGANAN KASUS ================= -->
-                        <tr class="bg-emerald-600 text-white font-black text-xs uppercase tracking-wider">
-                            <td class="py-2.5 px-4 text-center font-mono">3</td>
-                            <td colspan="2" class="py-2.5 px-5">PENANGANAN KASUS</td>
-                            <td class="py-2.5 px-4 text-center bg-emerald-700 font-mono font-black text-xs">
-                                <span id="subtotal-display-3">0</span> / 210
-                            </td>
-                        </tr>
-                        <input type="hidden" name="subtotals[3]" id="subtotal-input-3" value="0">
-
-                        <!-- Sub 3.1 Kasus Trauma -->
-                        <tr class="bg-slate-100/90 font-extrabold text-slate-700 text-[11px]">
-                            <td class="py-1.5 px-4 text-center text-slate-400">&bull;</td>
-                            <td colspan="3" class="py-1.5 px-5">Kasus Trauma (Bobot Skor Tinggi: 0 / 20 / 40)</td>
-                        </tr>
-                        @php
-                            $itemsSec3Trauma = [
-                                '3_a' => ['label' => 'Tepat menentukan posisi luka (kiri, kanan, atas, bawah)', 'options' => [0, 20, 40], 'letter' => 'a'],
-                                '3_b' => ['label' => 'Tepat menggunakan peralatan (penutup luka & pembalut luka)', 'options' => [0, 20, 40], 'letter' => 'b'],
-                                '3_c' => ['label' => 'Menyebutkan ciri-ciri & menentukan jenis luka', 'options' => [0, 20, 40], 'letter' => 'c'],
-                                '3_d' => ['label' => 'Penatalaksanaan Kasus Trauma', 'options' => [0, 20, 40], 'letter' => 'd'],
-                            ];
-                        @endphp
-                        @foreach($itemsSec3Trauma as $key => $meta)
-                            @include('admin.competition.scores.partials.grid-row', ['key' => $key, 'letter' => $meta['letter'], 'label' => $meta['label'], 'options' => $meta['options'], 'section' => 3])
-                        @endforeach
-
-                        <!-- Sub 3.2 Pemeriksaan Fisik Keseluruhan -->
-                        <tr class="bg-slate-100/90 font-extrabold text-slate-700 text-[11px]">
-                            <td class="py-1.5 px-4 text-center text-slate-400">&bull;</td>
-                            <td colspan="3" class="py-1.5 px-5">Pemeriksaan Fisik Keseluruhan (0 / 5 / 10)</td>
-                        </tr>
-                        @php
-                            $itemsSec3Fisik = [
-                                '3_e' => ['label' => 'Kepala (tengkorak, telinga, mata, hidung, mulut)', 'options' => [0, 5, 10], 'letter' => 'e'],
-                                '3_f' => ['label' => 'Leher (tulang leher / cervical)', 'options' => [0, 5, 10], 'letter' => 'f'],
-                                '3_g' => ['label' => 'Batang Tubuh (bahu, dada, perut, panggul, tulang belakang)', 'options' => [0, 5, 10], 'letter' => 'g'],
-                                '3_h' => ['label' => 'Alat gerak atas (lengan atas, sikut, lengan bawah, pergelangan)', 'options' => [0, 5, 10], 'letter' => 'h'],
-                                '3_i' => ['label' => 'Alat gerak bawah (tungkai atas, lutut, tungkai bawah, pergelangan)', 'options' => [0, 5, 10], 'letter' => 'i'],
-                            ];
-                        @endphp
-                        @foreach($itemsSec3Fisik as $key => $meta)
-                            @include('admin.competition.scores.partials.grid-row', ['key' => $key, 'letter' => $meta['letter'], 'label' => $meta['label'], 'options' => $meta['options'], 'section' => 3])
-                        @endforeach
-
-
-                        <!-- ================= SECTION 4: RIWAYAT PENDERITA ================= -->
-                        <tr class="bg-emerald-600 text-white font-black text-xs uppercase tracking-wider">
-                            <td class="py-2.5 px-4 text-center font-mono">4</td>
-                            <td colspan="2" class="py-2.5 px-5">RIWAYAT PENDERITA</td>
-                            <td class="py-2.5 px-4 text-center bg-emerald-700 font-mono font-black text-xs">
-                                <span id="subtotal-display-4">0</span> / 140
-                            </td>
-                        </tr>
-                        <input type="hidden" name="subtotals[4]" id="subtotal-input-4" value="0">
-                        <tr class="bg-slate-100/90 font-extrabold text-slate-700 text-[11px]">
-                            <td class="py-1.5 px-4 text-center text-slate-400">&bull;</td>
-                            <td colspan="3" class="py-1.5 px-5">Pemeriksaan Tanda Vital & Wawancara (0 / 10 / 20)</td>
-                        </tr>
-                        @php
-                            $itemsSec4 = [
-                                '4_a' => ['label' => 'Nadi 1 menit (diukur dan diperiksa dengan tepat)', 'options' => [0, 10, 20], 'letter' => 'a'],
-                                '4_b' => ['label' => 'Nafas 1 menit (diukur dan diperiksa dengan tepat)', 'options' => [0, 10, 20], 'letter' => 'b'],
-                                '4_c' => ['label' => 'Suhu (menggunakan alat atau tidak menggunakan alat)', 'options' => [0, 10, 20], 'letter' => 'c'],
-                                '4_d' => ['label' => 'Menganalisa kondisi dan warna kulit', 'options' => [0, 10, 20], 'letter' => 'd'],
-                                '4_e' => ['label' => 'Wawancara KOMPAK (pasien sadar)', 'options' => [0, 10, 20], 'letter' => 'e'],
-                                '4_f' => ['label' => 'Dukungan emosional kepada korban', 'options' => [0, 10, 20], 'letter' => 'f'],
-                                '4_g' => ['label' => 'Komunikasi dengan pasien selama tindakan', 'options' => [0, 10, 20], 'letter' => 'g'],
-                            ];
-                        @endphp
-                        @foreach($itemsSec4 as $key => $meta)
-                            @include('admin.competition.scores.partials.grid-row', ['key' => $key, 'letter' => $meta['letter'], 'label' => $meta['label'], 'options' => $meta['options'], 'section' => 4])
-                        @endforeach
-
-
-                        <!-- ================= SECTION 5: PELAPORAN ================= -->
-                        <tr class="bg-emerald-600 text-white font-black text-xs uppercase tracking-wider">
-                            <td class="py-2.5 px-4 text-center font-mono">5</td>
-                            <td colspan="2" class="py-2.5 px-5">PELAPORAN</td>
-                            <td class="py-2.5 px-4 text-center bg-emerald-700 font-mono font-black text-xs">
-                                <span id="subtotal-display-5">0</span> / 20
-                            </td>
-                        </tr>
-                        <input type="hidden" name="subtotals[5]" id="subtotal-input-5" value="0">
-                        @include('admin.competition.scores.partials.grid-row', ['key' => '5_a', 'letter' => 'a', 'label' => 'Pengisian kartu luka (diisi lengkap & jelas)', 'options' => [0, 10, 20], 'section' => 5])
-
-
-                        <!-- ================= SECTION 6: KEKOMPAKAN TIM ================= -->
-                        <tr class="bg-emerald-600 text-white font-black text-xs uppercase tracking-wider">
-                            <td class="py-2.5 px-4 text-center font-mono">6</td>
-                            <td colspan="2" class="py-2.5 px-5">KEKOMPAKAN TIM</td>
-                            <td class="py-2.5 px-4 text-center bg-emerald-700 font-mono font-black text-xs">
-                                <span id="subtotal-display-6">0</span> / 20
-                            </td>
-                        </tr>
-                        <input type="hidden" name="subtotals[6]" id="subtotal-input-6" value="0">
-                        @include('admin.competition.scores.partials.grid-row', ['key' => '6_a', 'letter' => 'a', 'label' => 'Kekompakan tim, koordinasi & pembagian tugas anggota regu', 'options' => [0, 10, 20], 'section' => 6])
-
-
-                        <!-- ================= GRAND TOTAL ROW ================= -->
-                        <tr class="bg-slate-900 text-white font-black text-base border-t-2 border-slate-800">
-                            <td colspan="3" class="py-4 px-6 text-right uppercase tracking-wider font-extrabold text-sm sm:text-base">
-                                JUMLAH TOTAL NILAI PRAKTIK:
-                            </td>
-                            <td class="py-4 px-4 text-center font-mono text-2xl text-emerald-400 bg-black">
-                                <span id="grand-total-row">0</span>
-                            </td>
-                        </tr>
-
                     </tbody>
+                    <tfoot>
+                        <tr class="bg-slate-900 text-white font-black text-sm">
+                            <td colspan="2" class="py-4 px-6 uppercase tracking-wider text-emerald-300">
+                                TOTAL AKUMULASI NILAI PRAKTIK PERTOLONGAN PERTAMA MULA
+                            </td>
+                            <td class="py-4 px-6 text-center text-xs text-slate-400 font-bold">
+                                Waktu Tempuh Tercatat: <span id="bottom-time-display" class="text-white font-mono font-bold text-sm">{{ $score?->time_recorded ?: '00:00' }}</span>
+                            </td>
+                            <td class="py-4 px-4 text-center bg-emerald-600 text-white font-mono-num font-black text-xl">
+                                <span id="grand-total-row">0</span> <span class="text-xs font-sans font-bold text-emerald-200">/ 465</span>
+                            </td>
+                        </tr>
+                    </tfoot>
                 </table>
             </div>
 
-            <!-- Footer Sign-off & Notes -->
-            <div class="p-6 bg-slate-50 border-t border-slate-200 flex flex-col md:flex-row justify-between items-center gap-4 text-xs">
-                <div class="w-full md:w-auto space-y-1">
-                    <label for="jury-notes-input" class="font-extrabold text-slate-700 block">Catatan Khusus Juri (Opsional):</label>
-                    <input type="text" id="jury-notes-input" name="notes" value="{{ $existingNotes }}" placeholder="Tuliskan catatan lapangan jika ada..." class="w-full md:w-96 text-xs bg-white border border-slate-300 rounded-xl px-3 py-2 text-slate-800 focus:outline-none focus:border-red-500 shadow-2xs">
-                </div>
-                <div class="flex items-center gap-3 self-end md:self-auto">
-                    <div class="text-right">
-                        <div class="font-bold text-slate-800">Dewan Juri Bertugas:</div>
-                        <div class="text-[11px] text-slate-500 font-medium">
-                            @forelse($category->assignedJuries as $jury)
-                                {{ $jury->name }}@if(!$loop->last), @endif
-                            @empty
-                                {{ auth()->user()?->name ?? 'Dewan Juri Resmi' }}
-                            @endforelse
+            <!-- Sticky Bottom Action Footer -->
+            <div class="p-6 bg-slate-50 border-t border-slate-200 flex flex-wrap items-center justify-between gap-4">
+                <div class="flex items-center gap-4">
+                    <div class="p-3 bg-white rounded-2xl border border-slate-200 flex items-center gap-3">
+                        <div class="text-[10px] font-bold text-slate-400 uppercase">Status Pengisian:</div>
+                        <div class="text-xs font-black text-emerald-600 flex items-center gap-1">
+                            <i class="fa-solid fa-circle-check"></i> 28 / 28 Item Lengkap
                         </div>
                     </div>
-                    <div class="w-10 h-10 rounded-full bg-slate-200 border-2 border-slate-300 flex items-center justify-center font-bold text-slate-600 shadow-2xs">
-                        <i class="fa-solid fa-signature"></i>
-                    </div>
-                </div>
-            </div>
-
-        </div>
-
-        <!-- STICKY BOTTOM ACTION BAR (FOR MOBILE, TABLET & DESKTOP JURY) -->
-        <div class="fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-md border-t-2 border-slate-200 px-4 sm:px-6 py-3.5 shadow-2xl z-50">
-            <div class="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-3">
-                <div class="flex items-center gap-4 w-full sm:w-auto justify-between sm:justify-start">
-                    <div>
-                        <span class="text-[10px] uppercase font-bold text-slate-400 block">Regu Sedang Dinilai:</span>
-                        <strong class="text-slate-900 text-xs sm:text-sm font-black truncate max-w-[200px] sm:max-w-xs block">
-                            [No. {{ $currentTeam?->order_number ?: '-' }}] {{ $currentTeam?->registration?->school_name ?: $currentTeam?->team_name }}
-                        </strong>
-                    </div>
-                    <div class="h-8 w-px bg-slate-200 hidden sm:block"></div>
-                    <div class="flex items-center gap-3">
-                        <div>
-                            <span class="text-[10px] uppercase font-bold text-slate-400 block">Waktu:</span>
-                            <strong id="bottom-time-display" class="text-emerald-700 font-mono font-black text-sm">{{ $existingTime ?: '05:00' }}</strong>
-                        </div>
-                        <div>
-                            <span class="text-[10px] uppercase font-bold text-slate-400 block">Total Nilai:</span>
-                            <strong class="text-emerald-700 font-mono font-black text-base"><span id="bottom-score-display">0</span> <span class="text-xs text-slate-400 font-normal">/ 540</span></strong>
-                        </div>
+                    <div class="flex items-center gap-2 text-xs text-slate-500 font-medium">
+                        <i class="fa-solid fa-clock-rotate-left text-slate-400"></i>
+                        <span>Otomatis sinkron ke Lembar Skor Utama & Peringkat Klasemen</span>
                     </div>
                 </div>
 
-                <!-- Submit Action Buttons -->
-                <div class="flex items-center gap-2 w-full sm:w-auto justify-end">
-                    <a href="{{ route('admin.competition-scores.input', $category->id) }}" class="bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs px-3.5 py-2.5 rounded-xl transition">
-                        Batal
-                    </a>
-                    <button type="button" onclick="submitScoreForm('stay')" class="bg-red-600 hover:bg-red-700 text-white font-black text-xs px-4 py-2.5 rounded-xl shadow-md transition flex items-center gap-1.5">
-                        <i class="fa-solid fa-floppy-disk"></i> <span>Simpan Nilai</span>
+                <div class="flex items-center gap-3">
+                    <button type="button" onclick="submitScoreForm('stay')" class="px-5 py-3 rounded-2xl bg-white hover:bg-slate-100 text-slate-700 font-extrabold text-xs border border-slate-300 transition shadow-xs flex items-center gap-2">
+                        <i class="fa-solid fa-floppy-disk text-slate-500"></i> Simpan Saja
                     </button>
                     @if($nextTeam)
-                        <button type="button" onclick="submitScoreForm('next')" class="bg-slate-900 hover:bg-black text-white font-black text-xs px-4 py-2.5 rounded-xl shadow-md transition flex items-center gap-1.5">
-                            <span>Simpan & Regu Berikutnya</span> <i class="fa-solid fa-forward-step text-[10px]"></i>
+                        <button type="button" onclick="submitScoreForm('next')" class="px-6 py-3 rounded-2xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white font-black text-xs transition shadow-lg shadow-emerald-500/20 flex items-center gap-2">
+                            <span>SIMPAN & LANJUT REGU BERIKUTNYA</span>
+                            <i class="fa-solid fa-arrow-right"></i>
                         </button>
                     @else
-                        <button type="button" onclick="submitScoreForm('back')" class="bg-blue-600 hover:bg-blue-700 text-white font-black text-xs px-4 py-2.5 rounded-xl shadow-md transition flex items-center gap-1.5">
-                            <span>Simpan & Selesai</span> <i class="fa-solid fa-circle-check text-[10px]"></i>
+                        <button type="button" onclick="submitScoreForm('stay')" class="px-6 py-3 rounded-2xl bg-emerald-600 hover:bg-emerald-700 text-white font-black text-xs transition shadow-lg shadow-emerald-500/20 flex items-center gap-2">
+                            <span>SIMPAN & SELESAI SEMUA REGU</span>
+                            <i class="fa-solid fa-check-double"></i>
                         </button>
                     @endif
                 </div>
             </div>
+
+        </div>
+
+        <!-- Catatan / Keterangan Tambahan Juri -->
+        <div class="bg-white rounded-3xl p-6 shadow-sm border border-slate-200">
+            <h3 class="text-sm font-black text-slate-900 uppercase tracking-wider mb-2 flex items-center gap-2">
+                <i class="fa-solid fa-pen-to-square text-emerald-600"></i> Catatan & Evaluasi Juri Lapangan (Opsional)
+            </h3>
+            <textarea name="notes" rows="3" placeholder="Tuliskan catatan khusus terkait penanganan luka sayat, ketepatan balutan, ketenangan adik-adik Mula, atau hal penting lainnya..." class="w-full bg-slate-50 border border-slate-200 rounded-2xl p-4 text-xs text-slate-800 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:bg-white transition">{{ $score?->notes }}</textarea>
         </div>
 
     </form>
-
 </div>
 @endsection
 
 @push('scripts')
 <script>
-    // Existing stored values
-    const initialRubric = @json($existingRubric);
-
-    // Initialize values on DOM load
-    document.addEventListener('DOMContentLoaded', function() {
-        if (initialRubric && Object.keys(initialRubric).length > 0) {
-            for (const [key, val] of Object.entries(initialRubric)) {
-                selectOption(key, parseInt(val), false);
-            }
-        }
-        recalcAll();
+    document.addEventListener('DOMContentLoaded', function () {
+        recalculateGrandTotal();
+        initStopwatchFromInput();
     });
 
-    // Select rubric item option (0, C, B)
-    function selectOption(key, val, triggerRecalc = true) {
-        const input = document.getElementById('input_' + key);
+    // Handle Selection of Score Pill
+    function selectScoreOption(itemKey, val) {
+        const input = document.getElementById(`input_${itemKey}`);
         if (!input) return;
+
         input.value = val;
 
-        const row = document.getElementById('row_' + key);
+        const row = document.getElementById(`row_${itemKey}`);
         if (row) {
-            // Update active state on buttons
-            row.querySelectorAll('.btn-score').forEach(btn => {
-                btn.classList.remove('active-k', 'active-c', 'active-b');
-                const optVal = parseInt(btn.getAttribute('data-value'));
-                if (optVal === val) {
-                    const optType = btn.getAttribute('data-type'); // 'k', 'c', 'b'
-                    btn.classList.add('active-' + optType);
+            // Remove active from all buttons in this row
+            row.querySelectorAll('.score-btn').forEach(btn => {
+                btn.classList.remove('active', 'active-zero');
+                if (parseInt(btn.dataset.val) === val) {
+                    btn.classList.add(val === 0 ? 'active-zero' : 'active');
                 }
             });
 
-            // Update displayed row score
-            const displayEl = row.querySelector('.row-score-display');
-            if (displayEl) {
-                displayEl.textContent = val;
+            // Update row display
+            const display = document.getElementById(`display_${itemKey}`);
+            if (display) {
+                display.textContent = val;
                 if (val === 0) {
-                    displayEl.className = 'row-score-display font-mono font-bold text-slate-400 text-sm';
-                } else if (val < parseInt(row.getAttribute('data-max') || '20')) {
-                    displayEl.className = 'row-score-display font-mono font-black text-amber-700 text-sm';
+                    display.className = 'row-score-display text-slate-400';
                 } else {
-                    displayEl.className = 'row-score-display font-mono font-black text-emerald-700 text-sm';
+                    display.className = 'row-score-display text-emerald-700';
                 }
             }
         }
 
-        if (triggerRecalc) {
-            recalcAll();
-        }
+        recalculateGrandTotal();
     }
 
-    // Recalculate section subtotals and grand total
-    function recalcAll() {
+    // Recalculate Subtotals and Grand Total
+    function recalculateGrandTotal() {
         let grandTotal = 0;
+        const sectionTotals = {};
 
-        for (let sec = 1; sec <= 6; sec++) {
-            let secTotal = 0;
-            document.querySelectorAll(`input.rubric-input[data-section="${sec}"]`).forEach(inp => {
-                secTotal += parseInt(inp.value || 0);
-            });
+        document.querySelectorAll('.rubric-input').forEach(input => {
+            const sec = input.dataset.section;
+            const val = parseInt(input.value) || 0;
 
-            const secInput = document.getElementById(`subtotal-input-${sec}`);
-            if (secInput) secInput.value = secTotal;
+            sectionTotals[sec] = (sectionTotals[sec] || 0) + val;
+            grandTotal += val;
+        });
 
-            const secDisplay = document.getElementById(`subtotal-display-${sec}`);
-            if (secDisplay) secDisplay.textContent = secTotal;
+        // Update Section Subtotal Displays & Hidden Inputs
+        for (const [sec, total] of Object.entries(sectionTotals)) {
+            const subDisplay = document.getElementById(`subtotal-display-${sec}`);
+            if (subDisplay) subDisplay.textContent = total;
 
-            grandTotal += secTotal;
+            const subInput = document.getElementById(`subtotal-input-${sec}`);
+            if (subInput) subInput.value = total;
         }
 
         // Update Grand Total Displays
         document.getElementById('grand-total-display').textContent = grandTotal;
         document.getElementById('grand-total-row').textContent = grandTotal;
-        document.getElementById('bottom-score-display').textContent = grandTotal;
+
+        // Update Percentage Badge (Max 465 Poin)
+        const pct = ((grandTotal / 465) * 100).toFixed(1);
+        const badge = document.getElementById('score-percentage-badge');
+        if (badge) {
+            badge.innerHTML = `${pct}% • ` + (pct >= 85 ? 'Sangat Baik' : (pct >= 70 ? 'Baik' : (pct >= 50 ? 'Cukup' : 'Perlu Evaluasi')));
+        }
     }
 
-    // Set all rubric items to maximum score "Baik (B)"
-    function setAllValues(type) {
+    // Set Semua Opsi Nilai Maksimal
+    function setAllMaxValues() {
         document.querySelectorAll('tr[id^="row_"]').forEach(row => {
-            const btnB = row.querySelector('.btn-score[data-type="' + type.toLowerCase() + '"]');
-            if (btnB) {
-                btnB.click();
+            const maxVal = row.dataset.max;
+            const btnMax = row.querySelector(`.score-btn[data-val="${maxVal}"]`);
+            if (btnMax) {
+                btnMax.click();
             }
         });
     }
 
-    // Reset all rubric options to 0
+    // Reset Semua Opsi Nilai ke 0 (atau opsi pertama)
     function resetAllRubric() {
-        if (!confirm('Apakah Anda yakin ingin mengosongkan pilihan rubrik nilai ini?')) return;
+        if (!confirm('Apakah Anda yakin ingin mengosongkan/mereset seluruh pilihan rubrik nilai ini?')) return;
         document.querySelectorAll('tr[id^="row_"]').forEach(row => {
-            const btnK = row.querySelector('.btn-score[data-type="k"]');
-            if (btnK) {
-                btnK.click();
+            const firstBtn = row.querySelector('.score-btn');
+            if (firstBtn) {
+                firstBtn.click();
             }
         });
     }
 
-    // Submit scoring form
     function submitScoreForm(action) {
         document.getElementById('action-after').value = action;
         document.getElementById('grid-score-form').submit();
     }
 
-    // Stopwatch Logic
+    // ================= STOPWATCH TIMER RESMI MULA (7 MENIT TOTAL) =================
     let timerInterval = null;
     let timerSeconds = 0;
     let timerRunning = false;
+    const MAX_SECONDS_ALLOWED = 420; // 7 Menit (07:00)
 
-    // Parse MM:SS to seconds on start
     function initStopwatchFromInput() {
         const inputVal = document.getElementById('time-recorded-input').value.trim();
         if (inputVal.includes(':')) {
             const parts = inputVal.split(':');
-            timerSeconds = (parseInt(parts[0]) || 0) * 60 + (parseInt(parts[1]) || 0);
-        } else if (!isNaN(parseInt(inputVal))) {
+            timerSeconds = (parseInt(parts[0], 10) || 0) * 60 + (parseInt(parts[1], 10) || 0);
+        } else {
             timerSeconds = parseInt(inputVal) || 0;
         }
     }
-    initStopwatchFromInput();
 
     function formatTime(totalSec) {
         const m = Math.floor(totalSec / 60).toString().padStart(2, '0');
@@ -628,12 +616,27 @@
         document.getElementById('stopwatch-display').textContent = str;
         document.getElementById('time-recorded-input').value = str;
         document.getElementById('bottom-time-display').textContent = str;
+
+        // Peringatan Batas Waktu 07:00
+        const warning = document.getElementById('timer-warning-text');
+        if (timerSeconds >= MAX_SECONDS_ALLOWED) {
+            pauseTimer();
+            if (warning) {
+                warning.className = 'text-rose-500 font-black animate-bounce text-xs';
+                warning.innerHTML = '<i class="fa-solid fa-circle-exclamation text-base"></i> BATAS 07:00 TERCAPAI! PENANGANAN DIBERHENTIKAN OTOMATIS.';
+            }
+            alert('Waktu Pertolongan Pertama telah mencapai batas maksimal 7 menit (07:00)!\nPenanganan korban wajib diberhentikan.');
+        } else {
+            if (warning) {
+                warning.className = 'text-rose-400 font-bold';
+                warning.innerHTML = '<i class="fa-solid fa-triangle-exclamation"></i> Lewat 07:00 penanganan wajib diberhentikan';
+            }
+        }
     }
 
     function startTimer() {
         if (timerRunning) return;
         timerRunning = true;
-        document.getElementById('btn-timer-start').classList.add('opacity-50');
         timerInterval = setInterval(() => {
             timerSeconds++;
             updateTimerDisplay();
@@ -641,10 +644,8 @@
     }
 
     function pauseTimer() {
-        if (!timerRunning) return;
         timerRunning = false;
         clearInterval(timerInterval);
-        document.getElementById('btn-timer-start').classList.remove('opacity-50');
     }
 
     function resetTimer() {
