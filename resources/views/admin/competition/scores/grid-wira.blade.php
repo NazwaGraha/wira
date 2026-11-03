@@ -80,14 +80,29 @@
                 
                 <!-- Left: Team Selector & Navigation -->
                 <div class="lg:col-span-7 space-y-4 border-b lg:border-b-0 lg:border-r border-slate-200 lg:pr-6 pb-6 lg:pb-0">
+                    @php
+                        $categoryCode = strtoupper(trim($category->code ?? ''));
+                        $catName = strtolower($category->name ?? '');
+                        $genderCat = $category->gender_category ?? '';
+                        $isPi = ($genderCat === 'Putri')
+                            || str_ends_with($categoryCode, '-PI')
+                            || str_contains($categoryCode, '-PI-')
+                            || str_contains($catName, 'putri');
+                        $isPa = ($genderCat === 'Putra')
+                            || str_ends_with($categoryCode, '-PA')
+                            || str_contains($categoryCode, '-PA-')
+                            || str_contains($catName, 'putra');
+                        $genderText = $isPi ? 'Putri' : ($isPa ? 'Putra' : ($category->gender_category ?: 'Umum'));
+                        $genderIcon = $isPi ? 'fa-venus' : 'fa-mars';
+                        $genderBadgeClass = $isPi ? 'text-rose-700 bg-rose-50 border-rose-200' : 'text-blue-700 bg-blue-50 border-blue-200';
+                        $curBadgeColor = $isPi ? 'bg-rose-600' : 'bg-amber-600';
+                        $borderColor = $isPi ? 'border-rose-500' : 'border-amber-500';
+                    @endphp
+
                     <div class="flex items-center justify-between flex-wrap gap-2">
                         <div class="flex items-center gap-2">
-                            <span class="px-3.5 py-1.5 rounded-xl {{ $category->gender_category === 'Putri' ? 'bg-rose-100 text-rose-800 border border-rose-300' : 'bg-blue-100 text-blue-800 border border-blue-300' }} font-black text-xs uppercase tracking-wider flex items-center gap-1.5">
-                                @if($category->gender_category === 'Putri')
-                                    <i class="fa-solid fa-venus"></i> {{ $category->code ?? 'LPP-WIRA-PI' }} (Putri)
-                                @else
-                                    <i class="fa-solid fa-mars"></i> {{ $category->code ?? 'LPP-WIRA-PA' }} (Putra)
-                                @endif
+                            <span class="px-3.5 py-1.5 rounded-xl {{ $isPi ? 'bg-rose-100 text-rose-800 border border-rose-300' : 'bg-blue-100 text-blue-800 border border-blue-300' }} font-black text-xs uppercase tracking-wider flex items-center gap-1.5">
+                                <i class="fa-solid {{ $genderIcon }}"></i> {{ $category->code ?? ($isPi ? 'LPP-WIRA-PI' : 'LPP-WIRA-PA') }} ({{ $genderText }})
                             </span>
                             <span class="px-3 py-1.5 rounded-xl bg-amber-100 text-amber-900 border border-amber-300 font-extrabold text-xs">
                                 PMR Wira (SMA / SMK / MA)
@@ -119,18 +134,11 @@
                     </div>
 
                     <!-- Dropdown Select Current Team -->
-                    @php
-                        $isPi = ($category->gender_category === 'Putri') || str_contains(strtoupper($category->code ?? ''), '-PI');
-                        $genderText = $isPi ? 'Putri' : 'Putra';
-                        $genderIcon = $isPi ? 'fa-venus' : 'fa-mars';
-                        $genderBadgeClass = $isPi ? 'text-rose-700 bg-rose-50 border-rose-200' : 'text-blue-700 bg-blue-50 border-blue-200';
-                        $borderColor = $isPi ? 'border-rose-500' : 'border-amber-500';
-                    @endphp
                     <div>
                         <label for="select-team-dropdown" class="block text-xs font-black text-slate-500 uppercase tracking-wider mb-1.5 flex items-center justify-between">
                             <span>Pilih Regu Peserta yang Sedang Dinilai:</span>
                             <span class="{{ $genderBadgeClass }} font-extrabold text-[11px] px-2.5 py-0.5 rounded-md border flex items-center gap-1">
-                                <i class="fa-solid {{ $genderIcon }}"></i> Khusus PMR Wira {{ $genderText }} &bull; Total: {{ $teams->count() }} Regu
+                                <i class="fa-solid {{ $genderIcon }}"></i> Khusus [{{ $category->code }}] PMR Wira {{ $genderText }} &bull; Total: {{ $teams->count() }} Regu
                             </span>
                         </label>
                         <div class="relative">
@@ -140,15 +148,30 @@
                                         $tScore = $scores->get($t->id);
                                         $isScored = $tScore && ($tScore->final_score !== null && $tScore->final_score > 0);
                                         $statusLabel = $isScored ? "✓ Nilai: {$tScore->final_score} (" . ($tScore->time_recorded ?: '-') . ")" : "Belum dinilai";
-                                        $schoolName = $t->registration?->school_name ?: $t->team_name;
+                                        $optSchool = trim($t->registration?->school_name ?? '');
+                                        $optRawName = trim($t->team_name ?? '');
+                                        $optLabel = trim($t->team_label ?? '');
+
+                                        $optRegu = $optLabel;
+                                        if (empty($optRegu)) {
+                                            if (!empty($optSchool) && str_starts_with($optRawName, $optSchool)) {
+                                                $optRegu = trim(substr($optRawName, strlen($optSchool)));
+                                            } else {
+                                                $optRegu = $optRawName;
+                                            }
+                                        }
+                                        if (empty($optRegu)) {
+                                            $optRegu = 'Regu ' . ($idx + 1);
+                                        }
+                                        $displaySchool = !empty($optSchool) ? $optSchool : ($optRawName ?: 'Sekolah');
                                         $regCode = $t->registration?->registration_code ?: 'REG';
                                         $teamNo = $t->order_number ?: sprintf('A-%03d', $idx + 1);
                                     @endphp
                                     <option value="{{ route('admin.competition-scores.grid', ['category' => $category->id, 'team_id' => $t->id, 'round' => $round]) }}" {{ $currentTeam?->id == $t->id ? 'selected' : '' }}>
-                                        [No. {{ $teamNo }}] {{ $schoolName }} • {{ $t->team_name }} [Wira {{ $genderText }}] ({{ $regCode }}) — {{ $statusLabel }}
+                                        [No. {{ $teamNo }}] {{ $displaySchool }} • {{ $optRegu }} [{{ $category->code }}] ({{ $regCode }}) — {{ $statusLabel }}
                                     </option>
                                 @empty
-                                    <option value="" disabled selected>-- Belum ada regu PMR Wira {{ $genderText }} (SMA/SMK/MA) yang terdaftar di cabang ini --</option>
+                                    <option value="" disabled selected>-- Belum ada regu peserta [{{ $category->code }}] PMR Wira {{ $genderText }} (SMA/SMK/MA) yang terdaftar --</option>
                                 @endforelse
                             </select>
                             <i class="fa-solid fa-chevron-down absolute right-4 top-1/2 -translate-y-1/2 text-slate-500 pointer-events-none"></i>
@@ -158,11 +181,52 @@
                             <div class="bg-amber-50 border border-amber-300 text-amber-900 p-3 rounded-2xl flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs font-bold shadow-2xs mt-2">
                                 <div class="flex items-center gap-2">
                                     <i class="fa-solid fa-circle-exclamation text-amber-600 text-base"></i>
-                                    <span>Belum ada regu peserta <strong>PMR Tingkat Wira {{ $genderText }} (SMA/SMK/MA)</strong> yang terdaftar di cabang ini.</span>
+                                    <span>Belum ada regu peserta <strong>[{{ $category->code }}] PMR Tingkat Wira {{ $genderText }} (SMA/SMK/MA)</strong> yang terdaftar di cabang ini.</span>
                                 </div>
                                 <a href="{{ route('admin.competition-scores.input', $category->id) }}" class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-amber-600 hover:bg-amber-700 text-white rounded-xl font-black text-xs transition shrink-0">
                                     <i class="fa-solid fa-plus"></i> Tambah Regu {{ $genderText }}
                                 </a>
+                            </div>
+                        @endif
+                    </div>
+
+                    <!-- Current Active Team Details Banner -->
+                    @php
+                        $curTeamIdx = $teams->search(fn($item) => $item->id === $currentTeam?->id);
+                        $curOrderNo = $currentTeam?->order_number ?: ($curTeamIdx !== false ? sprintf('A-%03d', $curTeamIdx + 1) : 'A-001');
+                        $curSchool = $currentTeam?->registration?->school_name ?: ($currentTeam?->team_name ?? 'Pilih Regu');
+                        $curRegu = $currentTeam?->team_label;
+                        if (empty($curRegu) && $currentTeam) {
+                            if (!empty($currentTeam->registration?->school_name) && str_starts_with($currentTeam->team_name, $currentTeam->registration->school_name)) {
+                                $curRegu = trim(substr($currentTeam->team_name, strlen($currentTeam->registration->school_name)));
+                            } else {
+                                $curRegu = $currentTeam->team_name;
+                            }
+                        }
+                        if (empty($curRegu) && $currentTeam) {
+                            $curRegu = 'Regu ' . ($curTeamIdx !== false ? $curTeamIdx + 1 : 1);
+                        }
+                    @endphp
+                    <div class="bg-slate-50 border border-slate-200 rounded-2xl p-4 flex items-center justify-between">
+                        <div>
+                            <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Regu Aktif Dinilai</span>
+                            <div class="text-base font-black text-slate-900 mt-0.5 flex items-center gap-2 flex-wrap">
+                                <span class="px-2.5 py-0.5 rounded-lg {{ $curBadgeColor }} text-white font-mono font-black text-xs">
+                                    {{ $curOrderNo }}
+                                </span>
+                                <span class="font-black">{{ $curSchool }}</span>
+                                <span class="text-xs font-bold text-slate-600">• {{ $curRegu }}</span>
+                                <span class="px-2 py-0.5 rounded-md {{ $genderBadgeClass }} text-[11px] font-black border">
+                                    [{{ $category->code }}]
+                                </span>
+                            </div>
+                        </div>
+                        @if($currentTeam)
+                            <div class="text-right shrink-0">
+                                <span class="text-[10px] font-bold text-slate-400 uppercase block">Kode Registrasi</span>
+                                <span class="font-mono font-bold text-xs text-slate-700 bg-white px-2 py-0.5 rounded border border-slate-200">
+                                    {{ $currentTeam->registration?->registration_code ?: '-' }}
+                                </span>
                             </div>
                         @endif
                     </div>

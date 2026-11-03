@@ -1235,9 +1235,26 @@ class CompetitionScoreController extends Controller
 
         $round = $request->query('round', 'Utama');
 
-        // Ambil seluruh tim terverifikasi khusus untuk tingkat PMR yang sesuai dengan kategori ini
+        // Ambil seluruh tim terverifikasi khusus untuk tingkat PMR dan cabang kategori lomba ini
+        $categoryCode = strtoupper(trim($category->code ?? ''));
+        $catName = strtolower($category->name ?? '');
+        $genderCat = $category->gender_category ?? '';
+
+        $isPutri = ($genderCat === 'Putri')
+            || str_ends_with($categoryCode, '-PI')
+            || str_contains($categoryCode, '-PI-')
+            || str_contains($catName, 'putri');
+
+        $isPutra = ($genderCat === 'Putra')
+            || str_ends_with($categoryCode, '-PA')
+            || str_contains($categoryCode, '-PA-')
+            || str_contains($catName, 'putra');
+
         $teams = CompetitionParticipantTeam::where('competition_category_id', $category->id)
-            ->where('is_active', true)
+            ->where(function ($q) {
+                $q->where('is_active', true)
+                    ->orWhereNull('is_active');
+            })
             ->where(function ($q) use ($category) {
                 $q->whereHas('registration', function ($rq) use ($category) {
                     $rq->where('status', 'verified');
@@ -1246,15 +1263,11 @@ class CompetitionScoreController extends Controller
                     }
                 })->orWhereNull('competition_registration_id');
             })
-            ->with(['registration'])
+            ->with(['registration', 'scores'])
             ->orderBy('order_number')
             ->get();
 
-        // Filter collection strictly untuk memastikan hanya tingkat yang sesuai
-        $isPutra = ($category->gender_category === 'Putra') || str_contains(strtoupper($category->code ?? ''), '-PA');
-        $isPutri = ($category->gender_category === 'Putri') || str_contains(strtoupper($category->code ?? ''), '-PI');
-
-        // Filter collection strictly untuk memastikan hanya tingkat dan kategori gender yang sesuai
+        // Filter collection strictly untuk memastikan hanya regu tingkat dan kategori gender yang sesuai dengan kode ini
         $teams = $teams->filter(function ($t) use ($category, $isPutra, $isPutri) {
             // 1. Filter Tingkat (Mula / Madya / Wira)
             if ($t->registration && ! empty($t->registration->level) && ! empty($category->level)) {
