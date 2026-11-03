@@ -60,7 +60,7 @@ class CompetitionParticipantController extends Controller
                     $q->orWhereNull('competition_registration_id');
                 }
             })
-            ->with(['registration', 'category']);
+            ->with(['registration', 'category', 'scores']);
 
         // Filter by Level
         if ($level && in_array($level, ['Mula', 'Madya', 'Wira'])) {
@@ -103,6 +103,158 @@ class CompetitionParticipantController extends Controller
 
             return "{$catPos}-{$genderOrder}-{$orderNum}-{$team->team_name}";
         });
+
+        // 1. Hitung Seluruh Juara per Cabang Lomba (Juara 1 s/d Juara Harapan 3)
+        $allEventCategories = CompetitionCategory::where(function ($q) use ($event) {
+            if ($event) {
+                $q->where('competition_event_id', $event->id)->orWhereNull('competition_event_id');
+            }
+        })
+            ->where('is_active', true)
+            ->orderBy('order_position')
+            ->get();
+
+        $categoryWinners = [];
+        $teamAwards = []; // Keyed by team_id
+        foreach ($allEventCategories as $catItem) {
+            $catWins = $catItem->getWinners();
+            $categoryWinners[$catItem->id] = $catWins;
+            foreach ($catWins as $cw) {
+                if ($cw->competition_participant_team_id) {
+                    $teamAwards[$cw->competition_participant_team_id] = [
+                        'rank' => $cw->official_rank ?? $cw->rank,
+                        'award_title' => $cw->award_title ?? ('Juara '.($cw->official_rank ?? $cw->rank)),
+                        'category_name' => $catItem->name,
+                        'category_code' => $catItem->code,
+                        'category_level' => $catItem->level,
+                        'final_score' => $cw->final_score,
+                        'time_recorded' => $cw->time_recorded,
+                        'score_details' => is_array($cw->score_details) ? $cw->score_details : (json_decode($cw->score_details ?? '', true) ?: []),
+                    ];
+                }
+            }
+        }
+
+        // 2. Hitung Klasemen Juara Umum untuk 3 Tingkatan PMR (Wira, Madya, Mula)
+        $standingsByLevel = [
+            'Wira' => [],
+            'Madya' => [],
+            'Mula' => [],
+        ];
+
+        foreach (['Wira', 'Madya', 'Mula'] as $lvl) {
+            $lvlCats = $allEventCategories->where('level', $lvl);
+            $matrix = [];
+
+            foreach ($lvlCats as $c) {
+                $wins = $categoryWinners[$c->id] ?? collect();
+                foreach ($wins as $w) {
+                    $rawSchool = $w->team?->registration?->school_name ?? $w->team?->team_name;
+                    $cleanSchool = preg_replace('/\s*\([A-Za-z0-9\s]+\)$/', '', $rawSchool);
+                    $effectiveRank = $w->official_rank ?? $w->rank;
+                    $points = $c->getPointsForRank($effectiveRank);
+
+                    if (! isset($matrix[$cleanSchool])) {
+                        $matrix[$cleanSchool] = [
+                            'school_name' => $cleanSchool,
+                            'total_points' => 0,
+                            'gold_count' => 0,
+                            'silver_count' => 0,
+                            'bronze_count' => 0,
+                            'trophies' => [],
+                        ];
+                    }
+
+                    if ($effectiveRank == 1) {
+                        $matrix[$cleanSchool]['gold_count']++;
+                    } elseif ($effectiveRank == 2) {
+                        $matrix[$cleanSchool]['silver_count']++;
+                    } elseif ($effectiveRank == 3) {
+                        $matrix[$cleanSchool]['bronze_count']++;
+                    }
+
+                    $matrix[$cleanSchool]['total_points'] += $points;
+                    $matrix[$cleanSchool]['trophies'][] = [
+                        'category' => $c->name,
+                        'code' => $c->code,
+                        'rank' => $effectiveRank,
+                        'award' => $w->award_title ?? "Juara {$effectiveRank}",
+                        'score' => $w->final_score,
+                        'team_name' => $w->team?->team_name,
+                    ];
+                }
+            }
+
+            uasort($matrix, function ($a, $b) {
+                if ($a['total_points'] != $b['total_points']) {
+                    return $b['total_points'] <=> $a['total_points'];
+                }
+                if ($a['gold_count'] != $b['gold_count']) {
+                    return $b['gold_count'] <=> $a['gold_count'];
+                }
+                if ($a['silver_count'] != $b['silver_count']) {
+                    return $b['silver_count'] <=> $a['silver_count'];
+                }
+
+                return $b['bronze_count'] <=> $a['bronze_count'];
+            });
+
+            $standingsByLevel[$lvl] = array_values($matrix);
+        }
+
+        // 3. Rekap Portofolio Lengkap per Kontingen Sekolah (Lomba yg diikuti, peserta & riwayat nilai)
+        $schoolRegistrations = CompetitionRegistration::where(function ($q) use ($event) {
+            if ($event) {
+                $q->where('competition_event_id', $event->id);
+            }
+        })
+            ->where('status', 'verified')
+            ->with(['teams.category', 'teams.scores'])
+            ->orderBy('school_name')
+            ->get();
+
+        $schoolPortfolios = [];
+        foreach ($schoolRegistrations as $sreg) {
+            $cleanSchool = preg_replace('/\s*\([A-Za-z0-9\s]+\)$/', '', $sreg->school_name);
+            if (! isset($schoolPortfolios[$cleanSchool])) {
+                $schoolPortfolios[$cleanSchool] = [
+                    'school_name' => $sreg->school_name,
+                    'clean_name' => $cleanSchool,
+                    'registration_id' => $sreg->id,
+                    'registration_code' => $sreg->registration_code,
+                    'level' => $sreg->level,
+                    'advisor_name' => $sreg->advisor_name,
+                    'advisor_phone' => $sreg->advisor_phone,
+                    'categories' => collect(),
+                    'teams' => collect(),
+                    'total_points' => 0,
+                    'awards' => collect(),
+                ];
+            }
+
+            foreach ($sreg->teams as $tm) {
+                if (! $tm->is_active) {
+                    continue;
+                }
+                $tmCat = $tm->category;
+                if ($tmCat && ! $schoolPortfolios[$cleanSchool]['categories']->contains('id', $tmCat->id)) {
+                    $schoolPortfolios[$cleanSchool]['categories']->push($tmCat);
+                }
+
+                $aw = $teamAwards[$tm->id] ?? null;
+                if ($aw) {
+                    $schoolPortfolios[$cleanSchool]['awards']->push(array_merge($aw, [
+                        'team_name' => $tm->team_name,
+                        'team_label' => $tm->team_label,
+                    ]));
+                    if ($tmCat) {
+                        $schoolPortfolios[$cleanSchool]['total_points'] += $tmCat->getPointsForRank($aw['rank']);
+                    }
+                }
+
+                $schoolPortfolios[$cleanSchool]['teams']->push($tm);
+            }
+        }
 
         // Summary counts
         $allVerifiedTeams = CompetitionParticipantTeam::where('is_active', true)
@@ -154,7 +306,12 @@ class CompetitionParticipantController extends Controller
             'categories',
             'teams',
             'teamsByCategory',
-            'stats'
+            'stats',
+            'standingsByLevel',
+            'categoryWinners',
+            'teamAwards',
+            'schoolPortfolios',
+            'allEventCategories'
         ));
     }
 
@@ -172,7 +329,7 @@ class CompetitionParticipantController extends Controller
         if ($orderNumber) {
             // Normalisasi otomatis format A-001 jika polanya huruf dan angka
             if (preg_match('/^([a-z])[-]?(\d+)$/i', $orderNumber, $m)) {
-                $orderNumber = strtoupper($m[1]) . '-' . sprintf('%03d', intval($m[2]));
+                $orderNumber = strtoupper($m[1]).'-'.sprintf('%03d', intval($m[2]));
             }
 
             // Validasi keunikan no. urut peserta di cabang lomba yang sama
@@ -183,6 +340,7 @@ class CompetitionParticipantController extends Controller
 
             if ($duplicate) {
                 $usedBy = $duplicate->registration?->school_name ?: $duplicate->team_name;
+
                 return redirect()->back()
                     ->withInput()
                     ->with('error', "No. Urut Peserta '{$orderNumber}' sudah digunakan oleh regu {$duplicate->team_name} ({$usedBy}) pada cabang lomba ini!");
@@ -230,7 +388,7 @@ class CompetitionParticipantController extends Controller
             }
 
             if (preg_match('/^([a-z])[-]?(\d+)$/i', $orderNum, $m)) {
-                $orderNum = strtoupper($m[1]) . '-' . sprintf('%03d', intval($m[2]));
+                $orderNum = strtoupper($m[1]).'-'.sprintf('%03d', intval($m[2]));
             }
 
             $team = $teamsToUpdate->get($teamId);
@@ -251,6 +409,7 @@ class CompetitionParticipantController extends Controller
 
             if ($dbDuplicate) {
                 $usedBy = $dbDuplicate->registration?->school_name ?: $dbDuplicate->team_name;
+
                 return redirect()->back()->with('error', "No. Urut Peserta '{$orderNum}' sudah digunakan oleh regu {$dbDuplicate->team_name} ({$usedBy}) pada cabang lomba ini!");
             }
 
@@ -264,7 +423,7 @@ class CompetitionParticipantController extends Controller
                 $orderNum = trim((string) $rawOrder);
                 if ($orderNum !== '') {
                     if (preg_match('/^([a-z])[-]?(\d+)$/i', $orderNum, $m)) {
-                        $orderNum = strtoupper($m[1]) . '-' . sprintf('%03d', intval($m[2]));
+                        $orderNum = strtoupper($m[1]).'-'.sprintf('%03d', intval($m[2]));
                     }
                     $team->update(['order_number' => $orderNum]);
                 } else {
@@ -344,6 +503,7 @@ class CompetitionParticipantController extends Controller
         }
 
         $modeText = $shuffle ? 'Undian TM (Acak)' : 'Berurutan';
+
         return redirect()->back()->with('success', "No. Urut Peserta skema {$modeText} (Regu A: A-001.. Regu B: B-001..) berhasil di-generate secara otomatis untuk {$totalAssigned} regu peserta!");
     }
 

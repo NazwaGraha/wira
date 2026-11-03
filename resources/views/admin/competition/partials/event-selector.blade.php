@@ -1,9 +1,9 @@
 <!-- Event Selector & Edition Context Bar -->
 <div class="bg-white rounded-2xl p-4 sm:p-5 shadow-xs border border-slate-200 flex flex-col md:flex-row md:items-center justify-between gap-4">
     <!-- Left: Event Dropdown & Badge -->
-    <div class="flex flex-wrap items-center gap-3">
-        <div class="w-10 h-10 rounded-xl bg-red-50 text-red-600 flex items-center justify-center font-bold text-lg shrink-0">
-            <i class="fa-solid fa-trophy"></i>
+    <div class="flex flex-wrap items-center gap-3.5">
+        <div class="shrink-0 bg-white p-1 rounded-xl border border-slate-200 shadow-2xs">
+            <img src="{{ asset('images/logo_pmi_sman1ciawi_official.png') }}" alt="Palang Merah Indonesia & SMA Negeri 1 Ciawi" class="h-12 w-auto object-contain">
         </div>
         <div>
             <div class="flex items-center gap-2">

@@ -417,15 +417,21 @@ class CompetitionCategory extends Model
                     $h2->award_title = 'Juara Harapan 2';
                     $winners->push($h2);
                 }
+                if (isset($semiScores[2])) {
+                    $h3 = $semiScores[2];
+                    $h3->official_rank = 6;
+                    $h3->award_title = 'Juara Harapan 3';
+                    $winners->push($h3);
+                }
             }
 
             return $winners;
         }
 
-        // Kategori reguler (1 babak): ambil top 5 rank
+        // Kategori reguler (1 babak): ambil top 6 rank (Juara 1 s/d Juara Harapan 3)
         return CompetitionScore::where('competition_category_id', $this->id)
             ->where('is_disqualified', false)
-            ->whereIn('rank', [1, 2, 3, 4, 5])
+            ->whereIn('rank', [1, 2, 3, 4, 5, 6])
             ->with('team.registration')
             ->orderBy('rank', 'asc')
             ->get()
@@ -437,6 +443,7 @@ class CompetitionCategory extends Model
                     3 => 'Juara 3',
                     4 => 'Juara Harapan 1',
                     5 => 'Juara Harapan 2',
+                    6 => 'Juara Harapan 3',
                     default => "Peringkat {$s->rank}",
                 };
 
