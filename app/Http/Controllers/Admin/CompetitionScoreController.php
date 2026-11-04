@@ -2738,158 +2738,39 @@ class CompetitionScoreController extends Controller
             return $a->time_seconds <=> $b->time_seconds;
         })->values();
 
-        // Tetapkan peringkat sementara & lolos 9 besar semifinal
+        // Tetapkan peringkat & Predikat Juara langsung (Sistem 1 Sesi Olimpiade)
         $rankCounter = 1;
         $sortedTeams->each(function ($t) use (&$rankCounter) {
             if ($t->has_score) {
                 $curRank = $rankCounter;
                 $t->rank = $curRank;
-                $t->is_top_9 = ($curRank <= 9);
+                $t->award_title = match ($curRank) {
+                    1 => 'Juara 1',
+                    2 => 'Juara 2',
+                    3 => 'Juara 3',
+                    4 => 'Juara Harapan 1',
+                    5 => 'Juara Harapan 2',
+                    6 => 'Juara Harapan 3',
+                    default => "Peringkat {$curRank}",
+                };
+                $t->is_winner = ($curRank <= 6);
                 $rankCounter++;
             } else {
                 $t->rank = null;
-                $t->is_top_9 = false;
+                $t->award_title = 'Belum Dinilai';
+                $t->is_winner = false;
             }
         });
 
-        $top9Teams = $sortedTeams->filter(fn ($t) => $t->is_top_9)->values();
+        // 6 Besar Pemenang Resmi Olimpiade (Langsung dari hasil 1 sesi)
+        $juara1Team = $sortedTeams->firstWhere('rank', 1);
+        $juara2Team = $sortedTeams->firstWhere('rank', 2);
+        $juara3Team = $sortedTeams->firstWhere('rank', 3);
+        $harapan1Team = $sortedTeams->firstWhere('rank', 4);
+        $harapan2Team = $sortedTeams->firstWhere('rank', 5);
+        $harapan3Team = $sortedTeams->firstWhere('rank', 6);
 
-        // 2. DATA SESI 2: TAHAP SEMI-FINAL (3 TERMIN @ 3 TIM)
-        $semiScores = CompetitionScore::where('competition_category_id', $category->id)
-            ->where(function ($q) {
-                $q->where('round_name', 'Semi Final')
-                    ->orWhere('round_name', 'like', '%Semi Final%')
-                    ->orWhere('round_name', 'like', '%Semifinal%')
-                    ->orWhere('round_name', 'like', '%Babak 2%');
-            })
-            ->get()
-            ->keyBy('competition_participant_team_id');
-
-        $termin1Teams = collect();
-        $termin2Teams = collect();
-        $termin3Teams = collect();
-
-        foreach ($allTeams as $team) {
-            $sc = $semiScores->get($team->id);
-            if ($sc) {
-                $details = is_array($sc->score_details) ? $sc->score_details : (json_decode($sc->score_details ?? '', true) ?? []);
-                $termin = $details['termin'] ?? null;
-                $tObj = clone $team;
-                $tObj->soal_amplop = $details['soal_amplop'] ?? 0;
-                $tObj->rebutan = $details['rebutan'] ?? 0;
-                $tObj->balon = $details['balon'] ?? 0;
-                $tObj->total_score = (float) $sc->final_score;
-                $tObj->termin_rank = $sc->rank ?? null;
-                $tObj->termin = $termin;
-
-                if ($termin == 1) {
-                    $termin1Teams->push($tObj);
-                } elseif ($termin == 2) {
-                    $termin2Teams->push($tObj);
-                } elseif ($termin == 3) {
-                    $termin3Teams->push($tObj);
-                }
-            }
-        }
-
-        // Hitung ranking per termin
-        $termin1Teams = $termin1Teams->sort(fn ($a, $b) => $b->total_score <=> $a->total_score)->values();
-        $termin1Teams->each(function ($t, $idx) {
-            $t->termin_rank = $idx + 1;
-        });
-
-        $termin2Teams = $termin2Teams->sort(fn ($a, $b) => $b->total_score <=> $a->total_score)->values();
-        $termin2Teams->each(function ($t, $idx) {
-            $t->termin_rank = $idx + 1;
-        });
-
-        $termin3Teams = $termin3Teams->sort(fn ($a, $b) => $b->total_score <=> $a->total_score)->values();
-        $termin3Teams->each(function ($t, $idx) {
-            $t->termin_rank = $idx + 1;
-        });
-
-        // Identifikasi 3 Finalis (Juara 1 masing-masing termin)
-        $finalist1 = $termin1Teams->sortBy('termin_rank')->first();
-        $finalist2 = $termin2Teams->sortBy('termin_rank')->first();
-        $finalist3 = $termin3Teams->sortBy('termin_rank')->first();
-        $finalistsList = collect([$finalist1, $finalist2, $finalist3])->filter()->values();
-
-        // 6 Tim Non-Finalis diurutkan untuk Juara Harapan 1 & 2
-        $nonFinalists = collect();
-        foreach ([$termin1Teams, $termin2Teams, $termin3Teams] as $tCol) {
-            foreach ($tCol as $t) {
-                if ($t->termin_rank > 1) {
-                    $nonFinalists->push($t);
-                }
-            }
-        }
-
-        $sortedNonFinalists = $nonFinalists->sortByDesc('total_score')->values();
-        $sortedNonFinalists->each(function ($t, $idx) {
-            $t->harapan_rank = $idx + 1;
-            $t->overall_rank = $idx + 4;
-            $t->is_harapan_1 = ($idx === 0);
-            $t->is_harapan_2 = ($idx === 1);
-        });
-
-        $harapan1Team = $sortedNonFinalists->firstWhere('is_harapan_1', true);
-        $harapan2Team = $sortedNonFinalists->firstWhere('is_harapan_2', true);
-
-        // 3. DATA SESI 3: GRAND FINAL
-        $finalScores = CompetitionScore::where('competition_category_id', $category->id)
-            ->where(function ($q) {
-                $q->where('round_name', 'Final')
-                    ->orWhere('round_name', 'like', '%Babak 3%')
-                    ->orWhere('round_name', 'like', '%Grand Final%');
-            })
-            ->get()
-            ->keyBy('competition_participant_team_id');
-
-        $finalGrandTeams = collect();
-        if ($finalistsList->isNotEmpty()) {
-            foreach ($finalistsList as $fTeam) {
-                $sc = $finalScores->get($fTeam->id);
-                $details = is_array($sc?->score_details) ? $sc->score_details : (json_decode($sc?->score_details ?? '', true) ?? []);
-                $fObj = clone $fTeam;
-                $fObj->soal_amplop = $details['soal_amplop'] ?? 0;
-                $fObj->rebutan_bertingkat = $details['rebutan_bertingkat'] ?? 0;
-                $fObj->taruh_nilai = $details['taruh_nilai'] ?? 0;
-                $fObj->total_score = (float) ($sc?->final_score ?? 0);
-                $fObj->grand_rank = $sc?->rank ?? null;
-                $finalGrandTeams->push($fObj);
-            }
-        } elseif ($finalScores->isNotEmpty()) {
-            $finalTeamModels = CompetitionParticipantTeam::whereIn('id', $finalScores->keys())->with('registration')->get();
-            foreach ($finalTeamModels as $fTeam) {
-                $sc = $finalScores->get($fTeam->id);
-                $details = is_array($sc?->score_details) ? $sc->score_details : (json_decode($sc?->score_details ?? '', true) ?? []);
-                $fObj = clone $fTeam;
-                $fObj->soal_amplop = $details['soal_amplop'] ?? 0;
-                $fObj->rebutan_bertingkat = $details['rebutan_bertingkat'] ?? 0;
-                $fObj->taruh_nilai = $details['taruh_nilai'] ?? 0;
-                $fObj->total_score = (float) ($sc?->final_score ?? 0);
-                $fObj->grand_rank = $sc?->rank ?? null;
-                $finalGrandTeams->push($fObj);
-            }
-        }
-
-        if ($finalGrandTeams->isNotEmpty()) {
-            if ($finalGrandTeams->where('total_score', '>', 0)->isNotEmpty()) {
-                $finalGrandTeams = $finalGrandTeams->sortByDesc('total_score')->values();
-                $finalGrandTeams->each(function ($t, $idx) {
-                    $t->grand_rank = $idx + 1;
-                });
-            } else {
-                $finalGrandTeams->each(function ($t) {
-                    $t->grand_rank = null;
-                });
-            }
-        }
-
-        $hasSemiResults = $termin1Teams->isNotEmpty() || $termin2Teams->isNotEmpty() || $termin3Teams->isNotEmpty();
-        $hasFinalResults = $finalGrandTeams->isNotEmpty() && $finalGrandTeams->where('total_score', '>', 0)->isNotEmpty();
-
-        // Statistik Babak Penyisihan
+        // Statistik Penilaian Olimpiade
         $scoredList = $sortedTeams->where('has_score', true);
         $totalTeamsCount = $allTeams->count();
         $scoredCount = $scoredList->count();
@@ -2912,17 +2793,12 @@ class CompetitionScoreController extends Controller
             'activeFormulaLabel',
             'allTeams',
             'sortedTeams',
-            'top9Teams',
-            'termin1Teams',
-            'termin2Teams',
-            'termin3Teams',
-            'finalistsList',
-            'sortedNonFinalists',
+            'juara1Team',
+            'juara2Team',
+            'juara3Team',
             'harapan1Team',
             'harapan2Team',
-            'finalGrandTeams',
-            'hasSemiResults',
-            'hasFinalResults',
+            'harapan3Team',
             'totalTeamsCount',
             'scoredCount',
             'highestScore',
@@ -3001,14 +2877,14 @@ class CompetitionScoreController extends Controller
                 // Hapus duplikat ronde lama jika ada
                 CompetitionScore::where('competition_category_id', $category->id)
                     ->where('competition_participant_team_id', $teamId)
-                    ->whereIn('round_name', ['Utama', 'Olimpiade'])
+                    ->whereIn('round_name', ['Penyisihan', 'Olimpiade'])
                     ->delete();
 
                 CompetitionScore::updateOrCreate(
                     [
                         'competition_category_id' => $category->id,
                         'competition_participant_team_id' => $teamId,
-                        'round_name' => 'Penyisihan',
+                        'round_name' => 'Utama',
                     ],
                     $scoreData
                 );
@@ -3017,8 +2893,9 @@ class CompetitionScoreController extends Controller
             // Hitung ulang ranking resmi secara konsisten (Skor tertinggi -> Waktu tercepat)
             $allScores = CompetitionScore::where('competition_category_id', $category->id)
                 ->where(function ($q) {
-                    $q->where('round_name', 'Penyisihan')
-                        ->orWhere('round_name', 'Utama');
+                    $q->where('round_name', 'Utama')
+                        ->orWhere('round_name', 'Penyisihan')
+                        ->orWhere('round_name', 'Olimpiade');
                 })
                 ->where('is_disqualified', false)
                 ->get();
@@ -3036,14 +2913,28 @@ class CompetitionScoreController extends Controller
             })->values();
 
             foreach ($sorted as $idx => $sc) {
-                $sc->rank = $idx + 1;
+                $curRank = $idx + 1;
+                $sc->rank = $curRank;
+                $awardTitle = match ($curRank) {
+                    1 => 'Juara 1',
+                    2 => 'Juara 2',
+                    3 => 'Juara 3',
+                    4 => 'Juara Harapan 1',
+                    5 => 'Juara Harapan 2',
+                    6 => 'Juara Harapan 3',
+                    default => "Peringkat {$curRank}",
+                };
+                $details = is_array($sc->score_details) ? $sc->score_details : (json_decode($sc->score_details ?? '', true) ?? []);
+                $details['award_title'] = $awardTitle;
+                $details['predicate'] = $awardTitle;
+                $sc->score_details = $details;
                 $sc->save();
             }
 
             DB::commit();
 
-            return redirect()->route('admin.competition-scores.olimpiade', ['category' => $category->id, 'stage' => 1])
-                ->with('success', 'Seluruh nilai & waktu tempuh Babak Penyisihan Olimpiade berhasil disimpan! Klasemen ranking telah diperbarui.');
+            return redirect()->route('admin.competition-scores.olimpiade', $category->id)
+                ->with('success', 'Seluruh nilai Olimpiade berhasil disimpan! Juara 1 s.d. Harapan 3 dan seluruh peringkat telah resmi ditetapkan.');
         } catch (\Throwable $e) {
             DB::rollBack();
             Log::error('Error in olimpiadeSave: '.$e->getMessage(), ['exception' => $e]);
@@ -3474,14 +3365,14 @@ class CompetitionScoreController extends Controller
 
                 CompetitionScore::where('competition_category_id', $category->id)
                     ->where('competition_participant_team_id', $team->id)
-                    ->whereIn('round_name', ['Utama', 'Olimpiade'])
+                    ->whereIn('round_name', ['Penyisihan', 'Olimpiade'])
                     ->delete();
 
                 CompetitionScore::updateOrCreate(
                     [
                         'competition_category_id' => $category->id,
                         'competition_participant_team_id' => $team->id,
-                        'round_name' => 'Penyisihan',
+                        'round_name' => 'Utama',
                     ],
                     $scoreData
                 );
@@ -3490,8 +3381,9 @@ class CompetitionScoreController extends Controller
             // Hitung ulang ranking (Nilai Tertinggi -> Waktu Tercepat)
             $allScores = CompetitionScore::where('competition_category_id', $category->id)
                 ->where(function ($q) {
-                    $q->where('round_name', 'Penyisihan')
-                        ->orWhere('round_name', 'Utama');
+                    $q->where('round_name', 'Utama')
+                        ->orWhere('round_name', 'Penyisihan')
+                        ->orWhere('round_name', 'Olimpiade');
                 })
                 ->where('is_disqualified', false)
                 ->get();
@@ -3509,14 +3401,28 @@ class CompetitionScoreController extends Controller
             })->values();
 
             foreach ($sorted as $idx => $sc) {
-                $sc->rank = $idx + 1;
+                $curRank = $idx + 1;
+                $sc->rank = $curRank;
+                $awardTitle = match ($curRank) {
+                    1 => 'Juara 1',
+                    2 => 'Juara 2',
+                    3 => 'Juara 3',
+                    4 => 'Juara Harapan 1',
+                    5 => 'Juara Harapan 2',
+                    6 => 'Juara Harapan 3',
+                    default => "Peringkat {$curRank}",
+                };
+                $details = is_array($sc->score_details) ? $sc->score_details : (json_decode($sc->score_details ?? '', true) ?? []);
+                $details['award_title'] = $awardTitle;
+                $details['predicate'] = $awardTitle;
+                $sc->score_details = $details;
                 $sc->save();
             }
 
             DB::commit();
 
-            return redirect()->route('admin.competition-scores.olimpiade', ['category' => $category->id, 'stage' => 1])
-                ->with('success', 'Data simulasi 20 regu Olimpiade sesuai sheet panitia berhasil dimuat lengkap dengan perhitungan ranking!');
+            return redirect()->route('admin.competition-scores.olimpiade', $category->id)
+                ->with('success', 'Data simulasi 20 regu Olimpiade sesuai sheet panitia berhasil dimuat! Juara 1 s.d. Harapan 3 langsung resmi ditentukan.');
         } catch (\Throwable $e) {
             DB::rollBack();
             Log::error('Error in olimpiadeSeedSimulation: '.$e->getMessage(), ['exception' => $e]);
@@ -3558,6 +3464,7 @@ class CompetitionScoreController extends Controller
         $scores = CompetitionScore::where('competition_category_id', $category->id)
             ->where(function ($q) {
                 $q->where('round_name', 'Utama')
+                    ->orWhere('round_name', 'Penyisihan')
                     ->orWhere('round_name', 'Olimpiade')
                     ->orWhereNull('round_name');
             })
@@ -3570,7 +3477,7 @@ class CompetitionScoreController extends Controller
 
             $teamCopy = clone $team;
             $teamCopy->final_score = $sc?->final_score !== null ? (float) $sc->final_score : null;
-            $teamCopy->waktu = $sc?->time_recorded ?: ($details['waktu_tempuh'] ?? '-');
+            $teamCopy->waktu = $sc?->time_recorded ? self::normalizeTimeString($sc->time_recorded) : ($details['waktu_tempuh'] ?? '-');
             $teamCopy->time_seconds = $sc ? ($details['time_seconds'] ?? self::parseTimeToSeconds($teamCopy->waktu) ?? 999999) : 999999;
             $teamCopy->benar = $details['benar'] ?? null;
             $teamCopy->salah = $details['salah'] ?? null;
@@ -3584,10 +3491,19 @@ class CompetitionScoreController extends Controller
                 return [-$t->final_score, $t->time_seconds];
             })->values();
 
-        // Tetapkan medali
+        // Tetapkan medali & predikat juara langsung
         $teams->each(function ($t, $idx) {
             $r = $idx + 1;
             $t->live_rank = $r;
+            $t->award_title = match ($r) {
+                1 => 'Juara 1',
+                2 => 'Juara 2',
+                3 => 'Juara 3',
+                4 => 'Juara Harapan 1',
+                5 => 'Juara Harapan 2',
+                6 => 'Juara Harapan 3',
+                default => "Peringkat {$r}",
+            };
         });
 
         return view('admin.competition.scores.olimpiade-live', compact('category', 'teams'));

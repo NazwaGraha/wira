@@ -143,7 +143,7 @@
                         <th class="py-4 px-4 text-center w-28 text-slate-400">KOSONG</th>
                         <th class="py-4 px-4 text-center w-36 text-amber-300">WAKTU TEMPUH</th>
                         <th class="py-4 px-5 text-center w-36 text-white bg-slate-800/80">NILAI AKHIR</th>
-                        <th class="py-4 px-4 text-center w-40 text-emerald-400 bg-black">STATUS (TOP 9)</th>
+                        <th class="py-4 px-4 text-center w-48 text-amber-400 bg-black">PREDIKAT JUARA</th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-slate-800/70 font-semibold">
@@ -161,8 +161,8 @@
                             } elseif ($r === 3) {
                                 $rowBg = 'bg-amber-700/10 hover:bg-amber-700/15';
                                 $rankClass = 'bg-amber-700 text-amber-100 font-black border-amber-600';
-                            } elseif ($r <= 9) {
-                                $rowBg = 'bg-emerald-950/20 hover:bg-emerald-950/30';
+                            } elseif ($r <= 6) {
+                                $rowBg = 'bg-sky-950/20 hover:bg-sky-950/30';
                             }
                         @endphp
                         <tr class="{{ $rowBg }} transition">
@@ -197,14 +197,34 @@
                             <td class="py-3.5 px-5 text-center font-mono font-black text-xl text-white bg-slate-800/40">
                                 {{ $t->final_score !== null ? $t->final_score : '-' }}
                             </td>
-                            <td class="py-3.5 px-4 text-center">
-                                @if($r <= 9)
-                                    <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-emerald-950 text-emerald-400 border border-emerald-700/80 text-xs font-black">
-                                        <i class="fa-solid fa-circle-check text-[10px]"></i> Lolos Semifinal
+                            <td class="py-3.5 px-4 text-center whitespace-nowrap">
+                                @if($r === 1)
+                                    <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-amber-400 text-slate-950 font-black text-xs shadow-sm">
+                                        <i class="fa-solid fa-crown text-amber-900"></i> JUARA 1 (EMAS)
+                                    </span>
+                                @elseif($r === 2)
+                                    <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-200 text-slate-900 font-black text-xs shadow-sm">
+                                        <i class="fa-solid fa-medal text-slate-600"></i> JUARA 2 (PERAK)
+                                    </span>
+                                @elseif($r === 3)
+                                    <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-amber-700 text-amber-100 font-black text-xs shadow-sm">
+                                        <i class="fa-solid fa-medal text-amber-300"></i> JUARA 3 (PERUNGGU)
+                                    </span>
+                                @elseif($r === 4)
+                                    <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-sky-950 text-sky-300 border border-sky-600 font-bold text-xs">
+                                        <i class="fa-solid fa-award text-sky-400"></i> JUARA HARAPAN 1
+                                    </span>
+                                @elseif($r === 5)
+                                    <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-sky-950/80 text-sky-300 border border-sky-700 font-bold text-xs">
+                                        <i class="fa-solid fa-award text-sky-400"></i> JUARA HARAPAN 2
+                                    </span>
+                                @elseif($r === 6)
+                                    <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-sky-950/60 text-sky-300 border border-sky-800 font-bold text-xs">
+                                        <i class="fa-solid fa-award text-sky-400"></i> JUARA HARAPAN 3
                                     </span>
                                 @else
-                                    <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-slate-800/80 text-slate-400 border border-slate-700 text-xs font-semibold">
-                                        Belum Lolos
+                                    <span class="inline-flex items-center px-3 py-1.5 rounded-xl bg-slate-800/80 text-slate-400 border border-slate-700 text-xs font-semibold">
+                                        Peringkat {{ $r }}
                                     </span>
                                 @endif
                             </td>

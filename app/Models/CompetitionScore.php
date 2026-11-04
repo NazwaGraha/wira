@@ -50,4 +50,14 @@ class CompetitionScore extends Model
     {
         return $this->hasMany(CompetitionScorePhoto::class, 'competition_score_id');
     }
+
+    public function getPredicateAttribute(): ?string
+    {
+        return $this->score_details['predicate'] ?? $this->score_details['award_title'] ?? null;
+    }
+
+    public function getAwardTitleAttribute(): ?string
+    {
+        return $this->score_details['award_title'] ?? $this->score_details['predicate'] ?? null;
+    }
 }

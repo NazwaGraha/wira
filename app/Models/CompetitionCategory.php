@@ -332,7 +332,12 @@ class CompetitionCategory extends Model
      */
     public function getWinners(): Collection
     {
-        if ($this->has_rounds) {
+        // Khusus kategori berbabak sistem gugur seperti Cepat Tepat (LCT)
+        $isLctRounds = $this->has_rounds
+            && ! str_contains(strtolower($this->name), 'olimpiade')
+            && ! str_starts_with($this->code ?? '', 'OLIM');
+
+        if ($isLctRounds) {
             $winners = collect();
 
             // 1. Ambil Finalis dari Babak Final

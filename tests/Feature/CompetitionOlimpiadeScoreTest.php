@@ -156,7 +156,7 @@ class CompetitionOlimpiadeScoreTest extends TestCase
                 'formula_type' => 'standard',
             ]);
 
-        $response->assertRedirect(route('admin.competition-scores.olimpiade', ['category' => $this->wiraCategory->id, 'stage' => 1]));
+        $response->assertRedirect(route('admin.competition-scores.olimpiade', $this->wiraCategory->id));
         $response->assertSessionHas('success');
 
         // Verifikasi Team A Juara 1 (Skor 100, 07:54)
@@ -164,18 +164,21 @@ class CompetitionOlimpiadeScoreTest extends TestCase
         $this->assertNotNull($scoreA);
         $this->assertEquals(100.0, $scoreA->final_score);
         $this->assertEquals(1, $scoreA->rank);
+        $this->assertEquals('Juara 1', $scoreA->predicate);
 
         // Verifikasi Team B Juara 2 (Skor 100, 10:33 -> Tie Breaker Waktu)
         $scoreB = CompetitionScore::where('competition_participant_team_id', $teamB->id)->first();
         $this->assertNotNull($scoreB);
         $this->assertEquals(100.0, $scoreB->final_score);
         $this->assertEquals(2, $scoreB->rank);
+        $this->assertEquals('Juara 2', $scoreB->predicate);
 
         // Verifikasi Team C Juara 3 (Skor 96)
         $scoreC = CompetitionScore::where('competition_participant_team_id', $teamC->id)->first();
         $this->assertNotNull($scoreC);
         $this->assertEquals(96.0, $scoreC->final_score);
         $this->assertEquals(3, $scoreC->rank);
+        $this->assertEquals('Juara 3', $scoreC->predicate);
     }
 
     public function test_admin_can_input_time_in_mm_ss_format_example_05_12(): void
@@ -207,7 +210,7 @@ class CompetitionOlimpiadeScoreTest extends TestCase
                 'formula_type' => 'standard',
             ]);
 
-        $response->assertRedirect(route('admin.competition-scores.olimpiade', ['category' => $this->wiraCategory->id, 'stage' => 1]));
+        $response->assertRedirect(route('admin.competition-scores.olimpiade', $this->wiraCategory->id));
 
         $score = CompetitionScore::where('competition_participant_team_id', $team->id)->first();
         $this->assertNotNull($score);
@@ -216,49 +219,80 @@ class CompetitionOlimpiadeScoreTest extends TestCase
         $this->assertEquals(80.0, $score->final_score);
     }
 
-    public function test_admin_can_seed_olimpiade_simulation_data(): void
+    public function test_admin_can_seed_olimpiade_simulation_data_and_determines_single_session_winners(): void
     {
         $response = $this->actingAs($this->adminUser)
             ->post(route('admin.competition-scores.olimpiade-seed-simulation', $this->wiraCategory->id));
 
-        $response->assertRedirect(route('admin.competition-scores.olimpiade', ['category' => $this->wiraCategory->id, 'stage' => 1]));
+        $response->assertRedirect(route('admin.competition-scores.olimpiade', $this->wiraCategory->id));
         $response->assertSessionHas('success');
 
         // Pastikan 20 tim simulasi terbuat dan memiliki nilai
         $this->assertEquals(20, CompetitionParticipantTeam::where('competition_category_id', $this->wiraCategory->id)->count());
         $this->assertEquals(20, CompetitionScore::where('competition_category_id', $this->wiraCategory->id)->count());
 
-        // Cek bahwa ranking 1 adalah SMAN 5 Bandung A (50 benar, 0 salah -> Skema 2: 50 + 50 - 0 = 100 poin, 07:54)
+        // Cek bahwa ranking 1 adalah SMAN 5 Bandung A (Juara 1 Emas, Skor 100, 07:54)
         $rank1Score = CompetitionScore::where('competition_category_id', $this->wiraCategory->id)
             ->where('rank', 1)
             ->first();
         $this->assertNotNull($rank1Score);
         $this->assertEquals(100.0, $rank1Score->final_score);
         $this->assertEquals('07:54', $rank1Score->time_recorded);
+        $this->assertEquals('Juara 1', $rank1Score->predicate);
 
-        // Cek Ranking 4 adalah SMAN 1 Cikarang Utara B (44 benar, 2 salah -> Skema 2: 50 + 44 - 2 = 92 poin sesuai sheet panitia)
+        // Cek Ranking 2 adalah SMAN 1 Cianjur (Juara 2 Perak, Skor 100, 10:33)
+        $rank2Score = CompetitionScore::where('competition_category_id', $this->wiraCategory->id)
+            ->where('rank', 2)
+            ->first();
+        $this->assertNotNull($rank2Score);
+        $this->assertEquals(100.0, $rank2Score->final_score);
+        $this->assertEquals('10:33', $rank2Score->time_recorded);
+        $this->assertEquals('Juara 2', $rank2Score->predicate);
+
+        // Cek Ranking 3 adalah SMAN 1 Karawang (Juara 3 Perunggu, Skor 98, 11:16)
+        $rank3Score = CompetitionScore::where('competition_category_id', $this->wiraCategory->id)
+            ->where('rank', 3)
+            ->first();
+        $this->assertNotNull($rank3Score);
+        $this->assertEquals(98.0, $rank3Score->final_score);
+        $this->assertEquals('11:16', $rank3Score->time_recorded);
+        $this->assertEquals('Juara 3', $rank3Score->predicate);
+
+        // Cek Ranking 4 adalah SMAN 1 Cikarang Utara B (Juara Harapan 1, Skor 92, 07:45)
         $rank4Score = CompetitionScore::where('competition_category_id', $this->wiraCategory->id)
             ->where('rank', 4)
             ->first();
         $this->assertNotNull($rank4Score);
         $this->assertEquals(92.0, $rank4Score->final_score);
         $this->assertEquals('07:45', $rank4Score->time_recorded);
+        $this->assertEquals('Juara Harapan 1', $rank4Score->predicate);
 
-        // Cek Ranking 9 adalah SMAN 1 Cikarang Utara A (32 benar, 12 salah -> Skema 2: 50 + 32 - 12 = 70 poin sesuai sheet panitia)
-        $rank9Score = CompetitionScore::where('competition_category_id', $this->wiraCategory->id)
-            ->where('rank', 9)
+        // Cek Ranking 5 adalah SMAN 3 Bekasi (Juara Harapan 2, Skor 80, 14:18)
+        $rank5Score = CompetitionScore::where('competition_category_id', $this->wiraCategory->id)
+            ->where('rank', 5)
             ->first();
-        $this->assertNotNull($rank9Score);
-        $this->assertEquals(70.0, $rank9Score->final_score);
-        $this->assertEquals('07:28', $rank9Score->time_recorded);
+        $this->assertNotNull($rank5Score);
+        $this->assertEquals(80.0, $rank5Score->final_score);
+        $this->assertEquals('14:18', $rank5Score->time_recorded);
+        $this->assertEquals('Juara Harapan 2', $rank5Score->predicate);
 
-        // Cek Ranking 20 adalah SMAN 1 Purwakarta (20 benar, 25 salah -> Skema 2: 50 + 20 - 25 = 45 poin sesuai sheet panitia)
-        $rank20Score = CompetitionScore::where('competition_category_id', $this->wiraCategory->id)
-            ->where('rank', 20)
+        // Cek Ranking 6 adalah SMAN 5 Bandung B (Juara Harapan 3, Skor 76, 07:00)
+        $rank6Score = CompetitionScore::where('competition_category_id', $this->wiraCategory->id)
+            ->where('rank', 6)
             ->first();
-        $this->assertNotNull($rank20Score);
-        $this->assertEquals(45.0, $rank20Score->final_score);
-        $this->assertEquals('10:04', $rank20Score->time_recorded);
+        $this->assertNotNull($rank6Score);
+        $this->assertEquals(76.0, $rank6Score->final_score);
+        $this->assertEquals('07:00', $rank6Score->time_recorded);
+        $this->assertEquals('Juara Harapan 3', $rank6Score->predicate);
+
+        // Verifikasi getWinners() model mengembalikan pemenang secara langsung
+        $winners = $this->wiraCategory->getWinners();
+        $this->assertEquals('SMAN 5 Bandung A', $winners[0]?->team?->team_name);
+        $this->assertEquals('SMAN 1 Cianjur', $winners[1]?->team?->team_name);
+        $this->assertEquals('SMAN 1 Karawang', $winners[2]?->team?->team_name);
+        $this->assertEquals('SMAN 1 Cikarang Utara B', $winners[3]?->team?->team_name);
+        $this->assertEquals('SMAN 3 Bekasi', $winners[4]?->team?->team_name);
+        $this->assertEquals('SMAN 5 Bandung B', $winners[5]?->team?->team_name);
     }
 
     public function test_grid_route_redirects_to_olimpiade_view(): void
@@ -269,114 +303,26 @@ class CompetitionOlimpiadeScoreTest extends TestCase
         $response->assertRedirect(route('admin.competition-scores.olimpiade', $this->wiraCategory->id));
     }
 
-    public function test_admin_can_generate_semifinal_from_top_9_with_anti_school_clash(): void
+    public function test_single_session_winners_podium_is_rendered_properly(): void
     {
         // 1. Seed simulasi olimpiade (20 tim)
         $this->actingAs($this->adminUser)
             ->post(route('admin.competition-scores.olimpiade-seed-simulation', $this->wiraCategory->id));
 
-        // 2. Generate Semifinal dari 9 tim teratas
+        // 2. Akses halaman grid olimpiade
         $response = $this->actingAs($this->adminUser)
-            ->post(route('admin.competition-scores.olimpiade-generate-semifinal', $this->wiraCategory->id));
+            ->get(route('admin.competition-scores.olimpiade', $this->wiraCategory->id));
 
-        $response->assertRedirect(route('admin.competition-scores.olimpiade', ['category' => $this->wiraCategory->id, 'stage' => 2]));
-        $response->assertSessionHas('success');
-
-        // Pastikan ada 9 tim yang masuk babak semifinal
-        $semiScores = CompetitionScore::where('competition_category_id', $this->wiraCategory->id)
-            ->where('round_name', 'Semi Final')
-            ->get();
-
-        $this->assertCount(9, $semiScores);
-
-        // Pastikan pembagian termin tidak membenturkan satu sekolah (SMAN 5 Bandung A & B harus di termin berbeda)
-        $teamA = CompetitionParticipantTeam::where('competition_category_id', $this->wiraCategory->id)
-            ->where('team_name', 'SMAN 5 Bandung A')
-            ->first();
-        $teamB = CompetitionParticipantTeam::where('competition_category_id', $this->wiraCategory->id)
-            ->where('team_name', 'SMAN 5 Bandung B')
-            ->first();
-
-        $scoreSemiA = $semiScores->firstWhere('competition_participant_team_id', $teamA->id);
-        $scoreSemiB = $semiScores->firstWhere('competition_participant_team_id', $teamB->id);
-
-        $this->assertNotNull($scoreSemiA);
-        $this->assertNotNull($scoreSemiB);
-        $this->assertNotEquals($scoreSemiA->score_details['termin'], $scoreSemiB->score_details['termin']);
-    }
-
-    public function test_admin_can_save_olimpiade_semifinal_and_grand_final(): void
-    {
-        // Seed simulasi & generate semifinal
-        $this->actingAs($this->adminUser)
-            ->post(route('admin.competition-scores.olimpiade-seed-simulation', $this->wiraCategory->id));
-        $this->actingAs($this->adminUser)
-            ->post(route('admin.competition-scores.olimpiade-generate-semifinal', $this->wiraCategory->id));
-
-        $semiScores = CompetitionScore::where('competition_category_id', $this->wiraCategory->id)
-            ->where('round_name', 'Semi Final')
-            ->get();
-
-        // Siapkan input semi
-        $amplop = [];
-        $rebutan = [];
-        $balon = [];
-        $termins = [];
-
-        foreach ($semiScores as $idx => $sc) {
-            $tId = $sc->competition_participant_team_id;
-            $tNum = $sc->score_details['termin'];
-            $termins[$tId] = $tNum;
-            $amplop[$tId] = 100 + ($idx * 10);
-            $rebutan[$tId] = 50;
-            $balon[$tId] = 50;
-        }
-
-        $resSemi = $this->actingAs($this->adminUser)
-            ->post(route('admin.competition-scores.olimpiade-save-semifinal', $this->wiraCategory->id), [
-                'semi_amplop' => $amplop,
-                'semi_rebutan' => $rebutan,
-                'semi_balon' => $balon,
-                'semi_termin' => $termins,
-            ]);
-
-        $resSemi->assertRedirect(route('admin.competition-scores.olimpiade', ['category' => $this->wiraCategory->id, 'stage' => 2]));
-
-        // Pastikan 3 juara termin otomatis terdaftar di babak Final
-        $finalScores = CompetitionScore::where('competition_category_id', $this->wiraCategory->id)
-            ->where('round_name', 'Final')
-            ->get();
-        $this->assertCount(3, $finalScores);
-
-        // Simpan nilai Final
-        $finalAmplop = [];
-        $finalRebutan = [];
-        $finalTaruh = [];
-        $scoresToAssign = [300, 200, 100];
-
-        foreach ($finalScores as $fIdx => $fs) {
-            $fId = $fs->competition_participant_team_id;
-            $finalAmplop[$fId] = $scoresToAssign[$fIdx] ?? 100;
-            $finalRebutan[$fId] = 0;
-            $finalTaruh[$fId] = 0;
-        }
-
-        $resFinal = $this->actingAs($this->adminUser)
-            ->post(route('admin.competition-scores.olimpiade-save-final', $this->wiraCategory->id), [
-                'final_amplop' => $finalAmplop,
-                'final_rebutan' => $finalRebutan,
-                'final_taruh' => $finalTaruh,
-            ]);
-
-        $resFinal->assertRedirect(route('admin.competition-scores.olimpiade', ['category' => $this->wiraCategory->id, 'stage' => 3]));
-
-        // Cek Juara 1 Final
-        $juara1Final = CompetitionScore::where('competition_category_id', $this->wiraCategory->id)
-            ->where('round_name', 'Final')
-            ->where('rank', 1)
-            ->first();
-        $this->assertNotNull($juara1Final);
-        $this->assertEquals(300.0, $juara1Final->final_score);
+        $response->assertStatus(200);
+        $response->assertSee('JUARA 1 (EMAS)');
+        $response->assertSee('JUARA 2 (PERAK)');
+        $response->assertSee('JUARA 3 (PERUNGGU)');
+        $response->assertSee('JUARA HARAPAN 1');
+        $response->assertSee('JUARA HARAPAN 2');
+        $response->assertSee('JUARA HARAPAN 3');
+        $response->assertSee('SMAN 5 Bandung A');
+        $response->assertSee('SMAN 1 Cianjur');
+        $response->assertSee('SMAN 1 Karawang');
     }
 
     public function test_jury_can_save_olimpiade_score_on_mobile(): void
@@ -455,7 +401,7 @@ class CompetitionOlimpiadeScoreTest extends TestCase
                 'formula_type' => 'standard',
             ]);
 
-        $response->assertRedirect(route('admin.competition-scores.olimpiade', ['category' => $this->wiraCategory->id, 'stage' => 1]));
+        $response->assertRedirect(route('admin.competition-scores.olimpiade', $this->wiraCategory->id));
 
         $score = CompetitionScore::where('competition_participant_team_id', $team->id)->first();
         $this->assertNotNull($score);

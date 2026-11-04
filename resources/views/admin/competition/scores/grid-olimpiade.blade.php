@@ -67,7 +67,7 @@
         </div>
     @endif
 
-    <!-- ================= APP HEADER CARD & STAGE STEPPER ================= -->
+    <!-- ================= APP HEADER CARD & PODIUM JUARA ================= -->
     <header class="bg-gradient-to-r {{ $headerGradient }} text-white rounded-3xl p-6 sm:p-7 shadow-xl border relative overflow-hidden space-y-6">
         <div class="absolute -right-20 -top-20 w-80 h-80 rounded-full blur-3xl opacity-25 {{ $isMadya ? 'bg-blue-500' : 'bg-amber-500' }} pointer-events-none"></div>
 
@@ -84,161 +84,171 @@
                         </span>
                         <span class="text-xs font-bold text-slate-300 flex items-center gap-1.5">
                             <span class="w-2 h-2 rounded-full {{ $isMadya ? 'bg-sky-400' : 'bg-amber-400' }} animate-ping"></span>
-                            SISTEM PENILAIAN &bull; OLIMPIADE KEPALANGMERAHAN (3 TAHAP)
+                            SISTEM PENILAIAN 1 SESI &bull; LANGSUNG MENENTUKAN JUARA
                         </span>
                     </div>
                     <h1 class="text-xl sm:text-2xl font-black text-white tracking-tight">
-                        Lembar Grid Nilai &amp; Turnamen Olimpiade
+                        Lembar Grid Nilai &amp; Penentuan Juara Olimpiade
                     </h1>
                     <p class="text-xs text-slate-300 mt-1 flex items-center gap-2 flex-wrap">
                         <span>Sua Bhakti Berkarya &bull; PMI SMAN 1 Ciawi</span>
                         <span>&bull;</span>
-                        <span class="font-mono text-[11px] {{ $isMadya ? 'text-sky-300' : 'text-amber-300' }} font-bold">Alur Resmi: Penyisihan (Top 9) &rarr; Semifinal (3 Termin) &rarr; Grand Final</span>
+                        <span class="font-mono text-[11px] {{ $isMadya ? 'text-sky-300' : 'text-amber-300' }} font-bold">Nilai Tertinggi &amp; Waktu Tercepat Langsung Menentukan Juara 1 s.d. Harapan 3</span>
                     </p>
                 </div>
             </div>
 
-            <!-- Right: Stage Switcher Pills -->
-            <div class="flex items-center gap-2 bg-slate-900/80 p-1.5 rounded-2xl shrink-0 border border-white/10 flex-wrap">
-                <a href="{{ route('admin.competition-scores.olimpiade', ['category' => $category->id, 'stage' => 1]) }}"
-                   class="px-4 py-2 rounded-xl font-black text-xs transition flex items-center gap-2 {{ $activeStage === 1 ? ($isMadya ? 'bg-blue-600 text-white shadow-sm' : 'bg-amber-500 text-slate-950 shadow-sm') : 'text-slate-300 hover:text-white hover:bg-white/10' }}">
-                    <i class="fa-solid fa-list-check"></i>
-                    <span>Sesi 1: Penyisihan</span>
-                </a>
-                <a href="{{ route('admin.competition-scores.olimpiade', ['category' => $category->id, 'stage' => 2]) }}"
-                   class="px-4 py-2 rounded-xl font-black text-xs transition flex items-center gap-2 {{ $activeStage === 2 ? ($isMadya ? 'bg-blue-600 text-white shadow-sm' : 'bg-amber-500 text-slate-950 shadow-sm') : 'text-slate-300 hover:text-white hover:bg-white/10' }}">
-                    <i class="fa-solid fa-diagram-project"></i>
-                    <span>Sesi 2: Semi-Final</span>
-                </a>
-                <a href="{{ route('admin.competition-scores.olimpiade', ['category' => $category->id, 'stage' => 3]) }}"
-                   class="px-4 py-2 rounded-xl font-black text-xs transition flex items-center gap-2 {{ $activeStage === 3 ? ($isMadya ? 'bg-blue-600 text-white shadow-sm' : 'bg-amber-500 text-slate-950 shadow-sm') : 'text-slate-300 hover:text-white hover:bg-white/10' }}">
-                    <i class="fa-solid fa-trophy"></i>
-                    <span>Sesi 3: Grand Final</span>
-                </a>
+            <!-- Right: Action Reset -->
+            <div class="flex items-center gap-2 shrink-0">
+                <form action="{{ route('admin.competition-scores.olimpiade-reset-stage', $category->id) }}" method="POST" onsubmit="return confirm('Reset seluruh nilai dan hasil juara Olimpiade kategori ini?')">
+                    @csrf
+                    <button type="submit" class="px-4 py-2 rounded-xl bg-slate-900/80 hover:bg-rose-950 text-slate-300 hover:text-rose-200 border border-white/10 hover:border-rose-500/50 font-bold text-xs transition flex items-center gap-2 cursor-pointer shadow-sm">
+                        <i class="fa-solid fa-rotate-left text-rose-400"></i> Reset Nilai Olimpiade
+                    </button>
+                </form>
             </div>
         </div>
 
-        <!-- 3-Stage Progress Cards -->
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 relative z-10">
-            <!-- Step 1 Card -->
-            <a href="{{ route('admin.competition-scores.olimpiade', ['category' => $category->id, 'stage' => 1]) }}"
-               class="p-4 rounded-2xl border-2 transition text-left flex items-start gap-3.5 {{ $activeStage === 1 ? ($isMadya ? 'bg-blue-900/50 border-blue-400' : 'bg-amber-900/50 border-amber-400') : 'bg-white/5 border-white/10 hover:border-white/30' }}">
-                <div class="w-10 h-10 rounded-xl flex items-center justify-center font-black text-sm shrink-0 {{ $activeStage === 1 ? ($isMadya ? 'bg-blue-500 text-white' : 'bg-amber-400 text-slate-950') : 'bg-white/10 text-white' }}">
-                    1
+        <!-- PODIUM PEMENANG 6 BESAR (Juara 1 s/d Juara Harapan 3) -->
+        <div class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-6 gap-3.5 relative z-10">
+            <!-- Juara 1 (Emas) -->
+            <div class="bg-gradient-to-b from-amber-500/20 to-amber-950/40 rounded-2xl p-3.5 border-2 border-amber-400/80 shadow-lg flex flex-col justify-between">
+                <div class="flex items-center justify-between mb-1.5">
+                    <span class="px-2.5 py-0.5 rounded-lg bg-amber-400 text-slate-950 font-black text-[10.5px] uppercase flex items-center gap-1 shadow-xs">
+                        <i class="fa-solid fa-crown text-amber-900"></i> JUARA 1
+                    </span>
+                    <span class="text-[10px] font-mono text-amber-200 font-bold">EMAS</span>
                 </div>
                 <div>
-                    <div class="font-black text-xs uppercase tracking-wider {{ $activeStage === 1 ? ($isMadya ? 'text-sky-300' : 'text-amber-300') : 'text-slate-200' }}">Sesi 1: Penyisihan (50 Soal)</div>
-                    <div class="text-[11px] text-slate-300 font-semibold mt-0.5">Saring 9 Regu Terbaik Lolos Semifinal</div>
-                    <div class="text-[10px] mt-1">
-                        @if($top9Teams->count() >= 9)
-                            <span class="text-emerald-400 font-bold"><i class="fa-solid fa-circle-check"></i> 9 Regu Siap Lolos</span>
-                        @else
-                            <span class="text-amber-300 font-bold"><i class="fa-solid fa-clock"></i> {{ $top9Teams->count() }} Regu Terdata</span>
-                        @endif
+                    <div id="podium-school-1" class="font-black text-white text-xs sm:text-sm leading-tight truncate">
+                        {{ $juara1Team ? ($juara1Team->registration?->school_name ?? $juara1Team->team_name) : 'Belum Ada' }}
+                    </div>
+                    <div id="podium-team-1" class="text-[10px] text-amber-200/80 font-medium truncate mt-0.5">
+                        {{ $juara1Team ? ($juara1Team->team_label ?: $juara1Team->team_name) : '-' }}
                     </div>
                 </div>
-            </a>
+                <div class="mt-2.5 pt-2 border-t border-amber-400/20 flex items-center justify-between font-mono">
+                    <span class="text-[10px] text-amber-200">Skor: <strong id="podium-score-1" class="text-white text-xs">{{ $juara1Team?->final_score ?? '-' }}</strong></span>
+                    <span id="podium-time-1" class="text-[10px] text-amber-200">{{ $juara1Team?->waktu ?? '-' }}</span>
+                </div>
+            </div>
 
-            <!-- Step 2 Card -->
-            <a href="{{ route('admin.competition-scores.olimpiade', ['category' => $category->id, 'stage' => 2]) }}"
-               class="p-4 rounded-2xl border-2 transition text-left flex items-start gap-3.5 {{ $activeStage === 2 ? ($isMadya ? 'bg-blue-900/50 border-blue-400' : 'bg-amber-900/50 border-amber-400') : 'bg-white/5 border-white/10 hover:border-white/30' }}">
-                <div class="w-10 h-10 rounded-xl flex items-center justify-center font-black text-sm shrink-0 {{ $activeStage === 2 ? ($isMadya ? 'bg-blue-500 text-white' : 'bg-amber-400 text-slate-950') : 'bg-white/10 text-white' }}">
-                    2
+            <!-- Juara 2 (Perak) -->
+            <div class="bg-slate-800/60 rounded-2xl p-3.5 border border-slate-400/60 shadow-md flex flex-col justify-between">
+                <div class="flex items-center justify-between mb-1.5">
+                    <span class="px-2.5 py-0.5 rounded-lg bg-slate-200 text-slate-900 font-black text-[10.5px] uppercase flex items-center gap-1 shadow-xs">
+                        <i class="fa-solid fa-medal text-slate-600"></i> JUARA 2
+                    </span>
+                    <span class="text-[10px] font-mono text-slate-300 font-bold">PERAK</span>
                 </div>
                 <div>
-                    <div class="font-black text-xs uppercase tracking-wider {{ $activeStage === 2 ? ($isMadya ? 'text-sky-300' : 'text-amber-300') : 'text-slate-200' }}">Sesi 2: Semi-Final (3 Termin)</div>
-                    <div class="text-[11px] text-slate-300 font-semibold mt-0.5">3 Termin @ 3 Tim (Pemisahan Sekolah)</div>
-                    <div class="text-[10px] mt-1">
-                        @if($hasSemiResults)
-                            <span class="text-emerald-400 font-bold"><i class="fa-solid fa-circle-check"></i> Juara Termin &amp; Harapan Siap</span>
-                        @else
-                            <span class="text-slate-400">Amplop &bull; Rebutan &bull; Balon</span>
-                        @endif
+                    <div id="podium-school-2" class="font-black text-white text-xs sm:text-sm leading-tight truncate">
+                        {{ $juara2Team ? ($juara2Team->registration?->school_name ?? $juara2Team->team_name) : 'Belum Ada' }}
+                    </div>
+                    <div id="podium-team-2" class="text-[10px] text-slate-300 font-medium truncate mt-0.5">
+                        {{ $juara2Team ? ($juara2Team->team_label ?: $juara2Team->team_name) : '-' }}
                     </div>
                 </div>
-            </a>
+                <div class="mt-2.5 pt-2 border-t border-slate-700 flex items-center justify-between font-mono">
+                    <span class="text-[10px] text-slate-300">Skor: <strong id="podium-score-2" class="text-white text-xs">{{ $juara2Team?->final_score ?? '-' }}</strong></span>
+                    <span id="podium-time-2" class="text-[10px] text-slate-300">{{ $juara2Team?->waktu ?? '-' }}</span>
+                </div>
+            </div>
 
-            <!-- Step 3 Card -->
-            <a href="{{ route('admin.competition-scores.olimpiade', ['category' => $category->id, 'stage' => 3]) }}"
-               class="p-4 rounded-2xl border-2 transition text-left flex items-start gap-3.5 {{ $activeStage === 3 ? ($isMadya ? 'bg-blue-900/50 border-blue-400' : 'bg-amber-900/50 border-amber-400') : 'bg-white/5 border-white/10 hover:border-white/30' }}">
-                <div class="w-10 h-10 rounded-xl flex items-center justify-center font-black text-sm shrink-0 {{ $activeStage === 3 ? ($isMadya ? 'bg-blue-500 text-white' : 'bg-amber-400 text-slate-950') : 'bg-white/10 text-white' }}">
-                    3
+            <!-- Juara 3 (Perunggu) -->
+            <div class="bg-amber-950/30 rounded-2xl p-3.5 border border-amber-600/40 shadow-md flex flex-col justify-between">
+                <div class="flex items-center justify-between mb-1.5">
+                    <span class="px-2.5 py-0.5 rounded-lg bg-amber-700/80 text-amber-100 font-black text-[10.5px] uppercase flex items-center gap-1 shadow-xs">
+                        <i class="fa-solid fa-medal text-amber-300"></i> JUARA 3
+                    </span>
+                    <span class="text-[10px] font-mono text-amber-300 font-bold">PERUNGGU</span>
                 </div>
                 <div>
-                    <div class="font-black text-xs uppercase tracking-wider {{ $activeStage === 3 ? ($isMadya ? 'text-sky-300' : 'text-amber-300') : 'text-slate-200' }}">Sesi 3: Grand Final</div>
-                    <div class="text-[11px] text-slate-300 font-semibold mt-0.5">Penentuan Juara 1, 2, dan 3</div>
-                    <div class="text-[10px] mt-1">
-                        @if($hasFinalResults)
-                            <span class="text-amber-300 font-bold"><i class="fa-solid fa-trophy"></i> Juara Resmi Ditetapkan</span>
-                        @else
-                            <span class="text-slate-400">Rebutan Bertingkat &amp; Taruh Nilai</span>
-                        @endif
+                    <div id="podium-school-3" class="font-black text-white text-xs sm:text-sm leading-tight truncate">
+                        {{ $juara3Team ? ($juara3Team->registration?->school_name ?? $juara3Team->team_name) : 'Belum Ada' }}
+                    </div>
+                    <div id="podium-team-3" class="text-[10px] text-amber-200/70 font-medium truncate mt-0.5">
+                        {{ $juara3Team ? ($juara3Team->team_label ?: $juara3Team->team_name) : '-' }}
                     </div>
                 </div>
-            </a>
+                <div class="mt-2.5 pt-2 border-t border-amber-600/20 flex items-center justify-between font-mono">
+                    <span class="text-[10px] text-amber-300">Skor: <strong id="podium-score-3" class="text-white text-xs">{{ $juara3Team?->final_score ?? '-' }}</strong></span>
+                    <span id="podium-time-3" class="text-[10px] text-amber-300">{{ $juara3Team?->waktu ?? '-' }}</span>
+                </div>
+            </div>
+
+            <!-- Harapan 1 -->
+            <div class="bg-sky-950/30 rounded-2xl p-3.5 border border-sky-600/30 shadow-md flex flex-col justify-between">
+                <div class="flex items-center justify-between mb-1.5">
+                    <span class="px-2 py-0.5 rounded-lg bg-sky-950 text-sky-300 border border-sky-700 font-bold text-[10px] uppercase flex items-center gap-1">
+                        <i class="fa-solid fa-award text-sky-400"></i> HARAPAN 1
+                    </span>
+                    <span class="text-[10px] font-mono text-sky-300">#4</span>
+                </div>
+                <div>
+                    <div id="podium-school-4" class="font-black text-white text-xs sm:text-sm leading-tight truncate">
+                        {{ $harapan1Team ? ($harapan1Team->registration?->school_name ?? $harapan1Team->team_name) : 'Belum Ada' }}
+                    </div>
+                    <div id="podium-team-4" class="text-[10px] text-sky-200/70 font-medium truncate mt-0.5">
+                        {{ $harapan1Team ? ($harapan1Team->team_label ?: $harapan1Team->team_name) : '-' }}
+                    </div>
+                </div>
+                <div class="mt-2.5 pt-2 border-t border-sky-800/40 flex items-center justify-between font-mono">
+                    <span class="text-[10px] text-sky-300">Skor: <strong id="podium-score-4" class="text-white text-xs">{{ $harapan1Team?->final_score ?? '-' }}</strong></span>
+                    <span id="podium-time-4" class="text-[10px] text-sky-300">{{ $harapan1Team?->waktu ?? '-' }}</span>
+                </div>
+            </div>
+
+            <!-- Harapan 2 -->
+            <div class="bg-sky-950/20 rounded-2xl p-3.5 border border-sky-600/20 shadow-md flex flex-col justify-between">
+                <div class="flex items-center justify-between mb-1.5">
+                    <span class="px-2 py-0.5 rounded-lg bg-sky-950/80 text-sky-300 border border-sky-800 font-bold text-[10px] uppercase flex items-center gap-1">
+                        <i class="fa-solid fa-award text-sky-400"></i> HARAPAN 2
+                    </span>
+                    <span class="text-[10px] font-mono text-sky-300">#5</span>
+                </div>
+                <div>
+                    <div id="podium-school-5" class="font-black text-white text-xs sm:text-sm leading-tight truncate">
+                        {{ $harapan2Team ? ($harapan2Team->registration?->school_name ?? $harapan2Team->team_name) : 'Belum Ada' }}
+                    </div>
+                    <div id="podium-team-5" class="text-[10px] text-sky-200/70 font-medium truncate mt-0.5">
+                        {{ $harapan2Team ? ($harapan2Team->team_label ?: $harapan2Team->team_name) : '-' }}
+                    </div>
+                </div>
+                <div class="mt-2.5 pt-2 border-t border-sky-800/30 flex items-center justify-between font-mono">
+                    <span class="text-[10px] text-sky-300">Skor: <strong id="podium-score-5" class="text-white text-xs">{{ $harapan2Team?->final_score ?? '-' }}</strong></span>
+                    <span id="podium-time-5" class="text-[10px] text-sky-300">{{ $harapan2Team?->waktu ?? '-' }}</span>
+                </div>
+            </div>
+
+            <!-- Harapan 3 -->
+            <div class="bg-sky-950/20 rounded-2xl p-3.5 border border-sky-600/20 shadow-md flex flex-col justify-between">
+                <div class="flex items-center justify-between mb-1.5">
+                    <span class="px-2 py-0.5 rounded-lg bg-sky-950/60 text-sky-300 border border-sky-800 font-bold text-[10px] uppercase flex items-center gap-1">
+                        <i class="fa-solid fa-award text-sky-400"></i> HARAPAN 3
+                    </span>
+                    <span class="text-[10px] font-mono text-sky-300">#6</span>
+                </div>
+                <div>
+                    <div id="podium-school-6" class="font-black text-white text-xs sm:text-sm leading-tight truncate">
+                        {{ $harapan3Team ? ($harapan3Team->registration?->school_name ?? $harapan3Team->team_name) : 'Belum Ada' }}
+                    </div>
+                    <div id="podium-team-6" class="text-[10px] text-sky-200/70 font-medium truncate mt-0.5">
+                        {{ $harapan3Team ? ($harapan3Team->team_label ?: $harapan3Team->team_name) : '-' }}
+                    </div>
+                </div>
+                <div class="mt-2.5 pt-2 border-t border-sky-800/30 flex items-center justify-between font-mono">
+                    <span class="text-[10px] text-sky-300">Skor: <strong id="podium-score-6" class="text-white text-xs">{{ $harapan3Team?->final_score ?? '-' }}</strong></span>
+                    <span id="podium-time-6" class="text-[10px] text-sky-300">{{ $harapan3Team?->waktu ?? '-' }}</span>
+                </div>
+            </div>
         </div>
     </header>
 
+    <div class="space-y-6">
 
-    {{-- ========================================================================= --}}
-    {{-- SESI 1: BABAK PENYISIHAN (50 SOAL OLIMPIADE)                                --}}
-    {{-- ========================================================================= --}}
-    @if($activeStage === 1)
-        <div class="space-y-6">
-
-            <!-- Stage 1 Top Instruction & Smart Bracket Banner -->
-            <div class="bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 text-white rounded-3xl p-6 shadow-md border border-indigo-900/50 flex flex-col lg:flex-row lg:items-center justify-between gap-5">
-                <div class="space-y-2">
-                    <div class="flex items-center gap-2 flex-wrap">
-                        <span class="px-2.5 py-0.5 rounded-md text-[10px] font-black uppercase tracking-wider bg-emerald-500 text-slate-950">
-                            Sesi 1 (Tahap Penyisihan)
-                        </span>
-                        <span class="text-xs font-bold text-indigo-200">
-                            Penyaringan 9 Regu Terbaik Lolos Semi-Final
-                        </span>
-                    </div>
-                    <h2 class="text-lg font-black text-white">
-                        Klasemen Nilai &amp; Waktu Tempuh Babak Penyisihan Olimpiade
-                    </h2>
-                    <p class="text-xs text-slate-300 max-w-3xl leading-relaxed">
-                        Pada babak ini <strong>belum ditentukan juara</strong>. Sistem secara otomatis menyaring <strong>9 regu terbaik (Top 9)</strong> yang berhak masuk ke babak semi-final. Peringkat diurutkan dari <strong>Nilai Akhir tertinggi</strong>, dan jika nilai kembar, <strong>Waktu Tempuh tercepat ([MM]:SS)</strong> menjadi penentu peringkat secara otomatis.
-                    </p>
-                </div>
-
-                <div class="flex items-center gap-3 shrink-0 flex-wrap">
-                    <form action="{{ route('admin.competition-scores.olimpiade-generate-semifinal', $category->id) }}" method="POST" onsubmit="return confirm('Generate bagan semifinal sekarang? 9 tim teratas hasil penyisihan akan didistribusikan ke 3 Termin dengan algoritma anti-bentrok satu sekolah.')">
-                        @csrf
-                        <button type="submit" class="px-4 py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-black text-xs shadow-md transition flex items-center gap-2 cursor-pointer">
-                            <i class="fa-solid fa-diagram-project"></i>
-                            <span>Generate Bagan Semifinal (Anti-Bentrokan)</span>
-                        </button>
-                    </form>
-
-                    <form action="{{ route('admin.competition-scores.olimpiade-reset-stage', $category->id) }}" method="POST" onsubmit="return confirm('Reset seluruh nilai babak penyisihan olimpiade?')">
-                        @csrf
-                        <input type="hidden" name="stage" value="prelim">
-                        <button type="submit" class="px-3 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold text-xs border border-slate-700 transition flex items-center gap-1.5 cursor-pointer" title="Reset Nilai Penyisihan">
-                            <i class="fa-solid fa-rotate-left"></i> Reset
-                        </button>
-                    </form>
-                </div>
-            </div>
-
-            <!-- Smart Bracket Info Callout -->
-            <div class="bg-amber-50 border-2 border-amber-300 text-amber-950 p-4.5 rounded-2xl flex items-start gap-3.5 shadow-2xs">
-                <i class="fa-solid fa-shield-halved text-2xl text-amber-600 shrink-0 mt-0.5"></i>
-                <div class="text-xs space-y-1">
-                    <div class="font-black text-sm uppercase tracking-wide text-amber-950">
-                        Aturan Semifinal: Pemisahan Regu dari Pangkalan Sekolah yang Sama
-                    </div>
-                    <p class="text-amber-800 leading-relaxed font-medium">
-                        Jika ada sekolah yang meloloskan lebih dari 1 regu ke babak semi-final (contoh: <em>SMAN 5 Bandung A &amp; B</em> atau <em>SMAN 1 Cikarang Utara A &amp; B</em>), sistem otomatis mendistribusikan mereka ke <strong>termin yang berbeda</strong> agar tidak saling mengeliminasi di babak semi-final!
-                    </p>
-                </div>
-            </div>
-
-            <!-- ================= FORMULA INFO CALLOUT & STATS CARDS ================= -->
-            <div class="grid grid-cols-1 lg:grid-cols-12 gap-5">
+        <!-- ================= FORMULA INFO CALLOUT & STATS CARDS ================= -->
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-5">
                 <!-- Formula Banner (7 Cols) -->
                 <div class="lg:col-span-7 bg-white rounded-3xl p-5 shadow-sm border border-slate-200/90 flex flex-col justify-between">
                     <div class="flex items-start justify-between gap-3 mb-3">
@@ -281,7 +291,7 @@
                         </div>
                         <div class="mt-2 text-[11px] text-slate-300 flex items-center gap-2 border-t border-slate-800 pt-2">
                             <i class="fa-solid fa-scale-balanced text-amber-400"></i>
-                            <span><strong>Aturan Ranking:</strong> Diurutkan dari <strong>Nilai Tertinggi</strong>. Jika nilai sama, peserta dengan <strong>Waktu Tempuh Tercepat</strong> ([MM]:SS) otomatis menempati ranking lebih atas. <strong>Top 9</strong> melaju ke Semifinal.</span>
+                            <span><strong>Aturan Ranking:</strong> Diurutkan dari <strong>Nilai Tertinggi</strong>. Jika nilai sama, peserta dengan <strong>Waktu Tempuh Tercepat</strong> ([MM]:SS) otomatis menempati ranking lebih atas untuk menentukan <strong>Juara 1 s.d. Harapan 3</strong> secara langsung.</span>
                         </div>
                     </div>
 
@@ -375,22 +385,25 @@
                                 <h2 class="font-black text-sm sm:text-base text-slate-900">
                                     Lembar Kerja Penginputan &amp; Klasemen Olimpiade
                                 </h2>
-                                <p class="text-[11px] text-slate-500 font-medium">Input jumlah jawaban benar, salah, dan waktu tempuh. Sistem otomatis mengurutkan klasemen dan menyaring 9 besar semifinal.</p>
+                                <p class="text-[11px] text-slate-500 font-medium">Input jumlah jawaban benar, salah, dan waktu tempuh. Sistem otomatis menentukan Juara 1 s.d. Harapan 3 secara presisi.</p>
                             </div>
                         </div>
 
                         <div class="flex items-center gap-2.5">
                             <div class="relative">
                                 <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
-                                <input type="text" id="filter-search" oninput="filterTableRows(this.value)" placeholder="Cari nama sekolah / regu..." class="pl-8 pr-3 py-1.5 rounded-xl border border-slate-300 text-xs bg-white text-slate-900 outline-none w-48 sm:w-60 focus:border-blue-500">
+                                <input type="text" id="filter-search" oninput="filterTableRows(this.value)" placeholder="Cari nama sekolah / regu..." class="pl-8 pr-3 py-1.5 rounded-xl border border-slate-300 text-xs bg-white text-slate-900 outline-none w-44 sm:w-56 focus:border-blue-500">
                             </div>
-                            <button type="button" onclick="sortRowsByRank()" class="px-3.5 py-1.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs flex items-center gap-1.5 shadow-xs transition active:scale-95 cursor-pointer">
+                            <button type="button" onclick="sortRowsByRank()" id="btn-sort-rank" class="px-3 py-1.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs flex items-center gap-1.5 shadow-xs transition active:scale-95 cursor-pointer">
                                 <i class="fa-solid fa-arrow-down-short-wide"></i> Urutkan Ranking
+                            </button>
+                            <button type="button" onclick="sortRowsByOrder()" id="btn-sort-order" class="px-3 py-1.5 rounded-xl bg-white hover:bg-slate-100 text-slate-700 font-bold text-xs flex items-center gap-1.5 border border-slate-300 shadow-2xs transition active:scale-95 cursor-pointer">
+                                <i class="fa-solid fa-arrow-down-1-9"></i> Urutkan No Urut
                             </button>
                         </div>
                     </div>
 
-                    <!-- Table Itself: Strictly starts with NO URUT, and far right is RANKING -->
+                    <!-- Table Itself: Strictly starts with NO URUT, and far right is PREDIKAT JUARA & RANKING -->
                     <div class="overflow-x-auto">
                         <table id="olimpiade-table" class="w-full text-left text-xs border-collapse">
                             <thead>
@@ -418,8 +431,8 @@
                                     <th class="py-4 px-3 text-center border-r border-slate-800 w-32 {{ $isMadya ? 'bg-blue-950 text-sky-300' : 'bg-amber-950 text-amber-300' }}">
                                         NILAI AKHIR
                                     </th>
-                                    <th class="py-4 px-4 text-center w-56 bg-black text-slate-200">
-                                        RANKING
+                                    <th class="py-4 px-4 text-center w-60 bg-black text-slate-200">
+                                        PREDIKAT JUARA &amp; RANKING
                                     </th>
                                 </tr>
                             </thead>
@@ -433,19 +446,17 @@
                                         $timeVal = $t->waktu ?: '00:00';
                                         $scoreVal = $t->final_score !== null ? $t->final_score : 0;
                                         $scoreAltVal = $t->score_alt !== null ? $t->score_alt : 50;
-                                        $isQualified = ($rVal && $rVal <= 9);
+                                        $isWinner = ($rVal && $rVal <= 6);
 
-                                        $rowHighlight = 'hover:bg-slate-50/80';
+                                        $rowHighlight = 'border-l-4 border-l-transparent hover:bg-slate-50/80';
                                         if ($rVal === 1) {
-                                            $rowHighlight = 'bg-amber-500/5 hover:bg-amber-500/10 border-l-4 border-l-amber-500';
+                                            $rowHighlight = 'bg-amber-500/10 hover:bg-amber-500/15 border-l-4 border-l-amber-500';
                                         } elseif ($rVal === 2) {
-                                            $rowHighlight = 'bg-slate-500/5 hover:bg-slate-500/10 border-l-4 border-l-slate-400';
+                                            $rowHighlight = 'bg-slate-400/10 hover:bg-slate-400/15 border-l-4 border-l-slate-400';
                                         } elseif ($rVal === 3) {
-                                            $rowHighlight = 'bg-amber-700/5 hover:bg-amber-700/10 border-l-4 border-l-amber-700';
-                                        } elseif ($isQualified) {
-                                            $rowHighlight = 'bg-emerald-500/5 hover:bg-emerald-500/10 border-l-4 border-l-emerald-500';
-                                        } else {
-                                            $rowHighlight = 'border-l-4 border-l-transparent hover:bg-slate-50/80';
+                                            $rowHighlight = 'bg-amber-700/10 hover:bg-amber-700/15 border-l-4 border-l-amber-700';
+                                        } elseif ($rVal >= 4 && $rVal <= 6) {
+                                            $rowHighlight = 'bg-sky-500/5 hover:bg-sky-500/10 border-l-4 border-l-sky-500';
                                         }
                                     @endphp
                                     <tr id="row-team-{{ $t->id }}" 
@@ -558,29 +569,37 @@
                                             </div>
                                         </td>
 
-                                        <!-- 8. RANKING (Menggantikan Predikat Juara & Menampilkan Status Kelolosan Top 9) -->
+                                        <!-- 8. PREDIKAT JUARA & RANKING -->
                                         <td class="py-3 px-4 text-center whitespace-nowrap">
                                             <div id="badge-container-{{ $t->id }}">
                                                 @if($t->has_score && $rVal)
                                                     @if($rVal === 1)
-                                                        <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-amber-100 text-amber-900 border border-amber-300 font-black text-xs shadow-2xs">
-                                                            <i class="fa-solid fa-crown text-amber-600"></i> Peringkat 1 &bull; Lolos Semifinal
+                                                        <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-amber-400 text-slate-950 font-black text-xs shadow-sm">
+                                                            <i class="fa-solid fa-crown text-amber-900"></i> JUARA 1 (EMAS)
                                                         </span>
                                                     @elseif($rVal === 2)
-                                                        <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-200 text-slate-900 border border-slate-300 font-black text-xs shadow-2xs">
-                                                            <i class="fa-solid fa-award text-slate-600"></i> Peringkat 2 &bull; Lolos Semifinal
+                                                        <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-200 text-slate-900 font-black text-xs shadow-sm">
+                                                            <i class="fa-solid fa-medal text-slate-600"></i> JUARA 2 (PERAK)
                                                         </span>
                                                     @elseif($rVal === 3)
-                                                        <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-amber-50 text-amber-950 border border-amber-400 font-black text-xs shadow-2xs">
-                                                            <i class="fa-solid fa-award text-amber-700"></i> Peringkat 3 &bull; Lolos Semifinal
+                                                        <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-amber-700 text-amber-100 font-black text-xs shadow-sm">
+                                                            <i class="fa-solid fa-medal text-amber-300"></i> JUARA 3 (PERUNGGU)
                                                         </span>
-                                                    @elseif($rVal <= 9)
-                                                        <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-emerald-100 text-emerald-900 border border-emerald-300 font-black text-xs shadow-2xs">
-                                                            <i class="fa-solid fa-circle-check text-emerald-600"></i> Peringkat {{ $rVal }} &bull; Lolos Semifinal
+                                                    @elseif($rVal === 4)
+                                                        <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-sky-100 text-sky-900 border border-sky-300 font-black text-xs shadow-2xs">
+                                                            <i class="fa-solid fa-award text-sky-600"></i> JUARA HARAPAN 1
+                                                        </span>
+                                                    @elseif($rVal === 5)
+                                                        <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-sky-50 text-sky-900 border border-sky-200 font-bold text-xs">
+                                                            <i class="fa-solid fa-award text-sky-500"></i> JUARA HARAPAN 2
+                                                        </span>
+                                                    @elseif($rVal === 6)
+                                                        <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-sky-50/70 text-sky-800 border border-sky-200/80 font-bold text-xs">
+                                                            <i class="fa-solid fa-award text-sky-400"></i> JUARA HARAPAN 3
                                                         </span>
                                                     @else
-                                                        <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-100 text-slate-600 border border-slate-200 font-bold text-xs">
-                                                            <i class="fa-solid fa-circle-xmark text-slate-400"></i> Peringkat {{ $rVal }} &bull; Belum Lolos
+                                                        <span class="inline-flex items-center px-3 py-1.5 rounded-xl bg-slate-100 text-slate-600 border border-slate-200 font-medium text-xs">
+                                                            Peringkat {{ $rVal }}
                                                         </span>
                                                     @endif
                                                 @else
@@ -625,7 +644,7 @@
                         </div>
                         <div>
                             <div class="text-xs font-black text-white">Status Penyimpanan: Siap Disimpan</div>
-                            <div class="text-[11px] text-slate-400">Perubahan nilai &amp; waktu tempuh akan langsung memperbarui klasemen ranking penyisihan.</div>
+                            <div class="text-[11px] text-slate-400">Perubahan nilai &amp; waktu tempuh akan langsung memperbarui klasemen juara dan sertifikat lomba.</div>
                         </div>
                     </div>
 
@@ -634,518 +653,13 @@
                             Batalkan Perubahan
                         </button>
                         <button type="submit" class="px-6 py-2.5 rounded-xl {{ $saveBtnClass }} font-black text-xs transition shadow-lg flex items-center gap-2 cursor-pointer">
-                            <i class="fa-solid fa-floppy-disk"></i> Simpan &amp; Perbarui Klasemen Peringkat
+                            <i class="fa-solid fa-floppy-disk"></i> Simpan &amp; Perbarui Klasemen Juara
                         </button>
                     </div>
                 </div>
             </form>
 
         </div>
-    @endif
-
-
-    {{-- ========================================================================= --}}
-    {{-- SESI 2: BABAK SEMI-FINAL (3 TERMIN @ 3 TIM)                               --}}
-    {{-- ========================================================================= --}}
-    @if($activeStage === 2)
-        <div class="space-y-6">
-
-            <!-- Stage 2 Top Instruction Banner -->
-            <div class="bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 text-white rounded-3xl p-6 shadow-md border border-indigo-900/50 flex flex-col lg:flex-row lg:items-center justify-between gap-5">
-                <div class="space-y-2">
-                    <div class="flex items-center gap-2 flex-wrap">
-                        <span class="px-2.5 py-0.5 rounded-md text-[10px] font-black uppercase tracking-wider bg-indigo-500 text-white">
-                            Sesi 2 (Babak Semi-Final)
-                        </span>
-                        <span class="text-xs font-bold text-indigo-200">
-                            3 Termin Pertandingan @ 3 Regu (Format Cepat Tepat)
-                        </span>
-                    </div>
-                    <h2 class="text-lg font-black text-white">
-                        Penilaian Meja Semifinal: Soal Amplop, Rebutan, dan Balon
-                    </h2>
-                    <p class="text-xs text-slate-300 max-w-3xl leading-relaxed">
-                        Masing-masing termin bertanding 3 regu. Pemenang (Juara 1) tiap termin otomatis memegang tiket ke <strong>Babak Grand Final</strong>. Sedangkan <strong>Juara Harapan 1 dan 2</strong> ditentukan dari skor tertinggi seluruh peserta semi-final non-finalis.
-                    </p>
-                </div>
-
-                <div class="flex items-center gap-3 shrink-0 flex-wrap">
-                    <a href="{{ route('admin.competition-scores.olimpiade', ['category' => $category->id, 'stage' => 3]) }}" class="px-4 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-600 text-slate-950 font-black text-xs shadow-md transition flex items-center gap-2">
-                        <span>Lanjut ke Grand Final</span>
-                        <i class="fa-solid fa-arrow-right"></i>
-                    </a>
-
-                    <form action="{{ route('admin.competition-scores.olimpiade-reset-stage', $category->id) }}" method="POST" onsubmit="return confirm('Reset seluruh nilai babak semifinal?')">
-                        @csrf
-                        <input type="hidden" name="stage" value="semifinal">
-                        <button type="submit" class="px-3 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold text-xs border border-slate-700 transition flex items-center gap-1.5 cursor-pointer" title="Reset Nilai Semifinal">
-                            <i class="fa-solid fa-rotate-left"></i> Reset
-                        </button>
-                    </form>
-                </div>
-            </div>
-
-            <!-- Form Simpan Nilai Semifinal (3 Termin) -->
-            <form action="{{ route('admin.competition-scores.olimpiade-save-semifinal', $category->id) }}" method="POST">
-                @csrf
-                <div class="space-y-6">
-
-                    @php
-                        $terminConfigs = [
-                            1 => ['title' => 'Termin 1 (Sesi Pagi / Meja 1)', 'teams' => $termin1Teams, 'color' => 'border-amber-400 bg-amber-50/20', 'headerBg' => 'bg-amber-400 text-slate-950', 'tiket' => 'Tiket Final A'],
-                            2 => ['title' => 'Termin 2 (Sesi Siang / Meja 2)', 'teams' => $termin2Teams, 'color' => 'border-rose-400 bg-rose-50/20', 'headerBg' => 'bg-rose-500 text-white', 'tiket' => 'Tiket Final B'],
-                            3 => ['title' => 'Termin 3 (Sesi Sore / Meja 3)', 'teams' => $termin3Teams, 'color' => 'border-emerald-400 bg-emerald-50/20', 'headerBg' => 'bg-emerald-600 text-white', 'tiket' => 'Tiket Final C'],
-                        ];
-                    @endphp
-
-                    <div class="grid grid-cols-1 gap-6">
-                        @foreach($terminConfigs as $tNum => $conf)
-                            <div class="bg-white rounded-3xl shadow-sm border {{ $conf['color'] }} overflow-hidden">
-                                <div class="p-4 {{ $conf['headerBg'] }} flex items-center justify-between gap-3 flex-wrap">
-                                    <div class="flex items-center gap-2">
-                                        <span class="w-7 h-7 rounded-lg bg-black/20 flex items-center justify-center font-black text-xs">
-                                            T{{ $tNum }}
-                                        </span>
-                                        <span class="font-black text-sm uppercase tracking-wider">
-                                            {{ $conf['title'] }}
-                                        </span>
-                                    </div>
-                                    <span class="text-xs font-black uppercase tracking-wider px-2.5 py-1 rounded-lg bg-white/20">
-                                        Juara 1 Lolos &rarr; {{ $conf['tiket'] }}
-                                    </span>
-                                </div>
-
-                                <div class="overflow-x-auto">
-                                    <table class="w-full text-left text-xs border-collapse">
-                                        <thead>
-                                            <tr class="bg-slate-900 text-white uppercase text-[11px] tracking-wider font-black">
-                                                <th class="py-3 px-4 w-16 text-center border-r border-slate-800">NO</th>
-                                                <th class="py-3 px-5 border-r border-slate-800">NAMA SEKOLAH / REGU</th>
-                                                <th class="py-3 px-4 text-center border-r border-slate-800 w-44">TOTAL NILAI SOAL AMPLOP</th>
-                                                <th class="py-3 px-4 text-center border-r border-slate-800 w-48">TOTAL NILAI SOAL REBUTAN</th>
-                                                <th class="py-3 px-4 text-center border-r border-slate-800 w-40">TOTAL NILAI BALON</th>
-                                                <th class="py-3 px-4 text-center border-r border-slate-800 w-36 bg-slate-950">POIN TOTAL</th>
-                                                <th class="py-3 px-4 text-center w-44 bg-black">RANKING / STATUS</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody class="divide-y divide-slate-200 font-medium">
-                                            @forelse($conf['teams'] as $tIdx => $t)
-                                                @php
-                                                    $isWinner = ($t->termin_rank == 1);
-                                                    $rowBg = $isWinner ? 'bg-emerald-50/70 font-bold border-l-4 border-l-emerald-500' : 'hover:bg-slate-50 border-l-4 border-l-transparent';
-                                                @endphp
-                                                <tr class="{{ $rowBg }} transition" id="row-semi-{{ $t->id }}" data-termin="{{ $tNum }}">
-                                                    <td class="py-3.5 px-4 text-center font-mono font-bold text-slate-800">
-                                                        <input type="hidden" name="semi_termin[{{ $t->id }}]" value="{{ $tNum }}">
-                                                        {{ $tIdx + 1 }}
-                                                    </td>
-                                                    <td class="py-3.5 px-5">
-                                                        <div class="font-black text-slate-900 text-sm">
-                                                            {{ $t->team_name ?? ($t->registration?->school_name ?? 'Regu ' . ($tIdx + 1)) }}
-                                                        </div>
-                                                        <div class="text-[11px] text-slate-500 font-medium">
-                                                            Pangkalan: {{ $t->registration?->school_name ?? '-' }}
-                                                        </div>
-                                                    </td>
-                                                    <td class="py-3.5 px-4 text-center">
-                                                        <input type="number" step="any" name="semi_amplop[{{ $t->id }}]" id="inp-amplop-{{ $t->id }}" value="{{ $t->soal_amplop ?? 0 }}" oninput="calcSemiRow({{ $t->id }}, {{ $tNum }})" class="w-24 text-center font-mono font-bold text-sm bg-white border border-slate-300 rounded-xl py-1.5 px-2 focus:ring-2 focus:ring-indigo-500" data-termin="{{ $tNum }}">
-                                                    </td>
-                                                    <td class="py-3.5 px-4 text-center">
-                                                        <div class="flex items-center justify-center gap-1">
-                                                            <input type="number" step="any" name="semi_rebutan[{{ $t->id }}]" id="inp-rebutan-{{ $t->id }}" value="{{ $t->rebutan ?? 0 }}" oninput="calcSemiRow({{ $t->id }}, {{ $tNum }})" class="w-24 text-center font-mono font-bold text-sm bg-white border border-slate-300 rounded-xl py-1.5 px-2 focus:ring-2 focus:ring-indigo-500" data-termin="{{ $tNum }}">
-                                                            <div class="flex flex-col gap-0.5">
-                                                                <button type="button" onclick="adjustInput('inp-rebutan-{{ $t->id }}', 100, {{ $t->id }}, {{ $tNum }})" class="px-1.5 py-0.5 text-[9px] font-black rounded bg-emerald-100 text-emerald-800 hover:bg-emerald-200 shadow-2xs cursor-pointer">+100</button>
-                                                                <button type="button" onclick="adjustInput('inp-rebutan-{{ $t->id }}', -50, {{ $t->id }}, {{ $tNum }})" class="px-1.5 py-0.5 text-[9px] font-black rounded bg-rose-100 text-rose-800 hover:bg-rose-200 shadow-2xs cursor-pointer">-50</button>
-                                                            </div>
-                                                        </div>
-                                                    </td>
-                                                    <td class="py-3.5 px-4 text-center">
-                                                        <input type="number" step="any" name="semi_balon[{{ $t->id }}]" id="inp-balon-{{ $t->id }}" value="{{ $t->balon ?? 0 }}" oninput="calcSemiRow({{ $t->id }}, {{ $tNum }})" class="w-24 text-center font-mono font-bold text-sm bg-white border border-slate-300 rounded-xl py-1.5 px-2 focus:ring-2 focus:ring-indigo-500" data-termin="{{ $tNum }}">
-                                                    </td>
-                                                    <td class="py-3.5 px-4 text-center font-mono font-black text-base text-indigo-900 bg-indigo-50/50">
-                                                        <span id="display-total-{{ $t->id }}">{{ number_format($t->total_score ?? 0, 0, ',', '.') }}</span>
-                                                    </td>
-                                                    <td class="py-3.5 px-4 text-center font-bold" id="display-status-{{ $t->id }}">
-                                                        @if($isWinner)
-                                                            <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-xl bg-emerald-100 text-emerald-800 border border-emerald-300 text-[10px] font-black uppercase tracking-wider shadow-2xs">
-                                                                <i class="fa-solid fa-ticket text-emerald-600"></i> Lolos Final
-                                                            </span>
-                                                        @else
-                                                            <span class="inline-flex items-center justify-center px-2.5 py-1 rounded-xl bg-slate-100 text-slate-700 text-xs font-bold border border-slate-200">
-                                                                Peringkat {{ $t->termin_rank ?? ($tIdx + 1) }}
-                                                            </span>
-                                                        @endif
-                                                    </td>
-                                                </tr>
-                                            @empty
-                                                <tr>
-                                                    <td colspan="7" class="py-6 text-center text-slate-400 font-bold">
-                                                        Belum ada regu pada termin ini. Klik "Generate Bagan Semifinal" di Tahap 1.
-                                                    </td>
-                                                </tr>
-                                            @endforelse
-                                        </tbody>
-                                    </table>
-                                </div>
-                            </div>
-                        @endforeach
-                    </div>
-
-                    <div class="bg-white rounded-2xl p-4 border border-slate-200 flex items-center justify-between gap-3 flex-wrap">
-                        <div class="text-xs text-slate-600 font-medium">
-                            * Nilai total otomatis terhitung. Tekan tombol simpan untuk memperbarui tiket Final dan Juara Harapan.
-                        </div>
-                        <button type="submit" class="px-6 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs shadow-md transition flex items-center gap-2 cursor-pointer">
-                            <i class="fa-solid fa-floppy-disk"></i>
-                            <span>Simpan Nilai Semifinal (Semua Termin)</span>
-                        </button>
-                    </div>
-
-                </div>
-            </form>
-
-            <!-- Table: Kompilasi 6 Tim Non-Finalis (Penentuan Juara Harapan 1 & 2) -->
-            <div class="bg-white rounded-3xl shadow-sm border border-slate-200 overflow-hidden mt-6">
-                <div class="p-5 border-b border-slate-200 bg-slate-50/80 flex items-center justify-between gap-3 flex-wrap">
-                    <div>
-                        <div class="text-xs font-bold text-amber-700 uppercase tracking-wider flex items-center gap-1.5">
-                            <i class="fa-solid fa-award text-amber-500"></i> Akumulasi Poin Semifinal Non-Finalis
-                        </div>
-                        <h3 class="text-sm font-black text-slate-900 mt-0.5">
-                            Penetapan Juara Harapan 1 &amp; Juara Harapan 2 (Sesuai Aturan Resmi)
-                        </h3>
-                    </div>
-                    <span class="text-xs font-medium text-slate-500">
-                        Diambil dari skor tertinggi dari seluruh termin semi-final (di luar 3 finalis)
-                    </span>
-                </div>
-
-                <div class="overflow-x-auto">
-                    <table class="w-full text-left text-xs border-collapse">
-                        <thead>
-                            <tr class="bg-slate-900 text-white uppercase text-[11px] tracking-wider font-black">
-                                <th class="py-3 px-4 w-16 text-center border-r border-slate-800">NO</th>
-                                <th class="py-3 px-5 border-r border-slate-800">NAMA SEKOLAH / REGU</th>
-                                <th class="py-3 px-4 text-center border-r border-slate-800 w-36">TERMIN ASAL</th>
-                                <th class="py-3 px-4 text-center border-r border-slate-800 w-44">POIN TOTAL SEMIFINAL</th>
-                                <th class="py-3 px-4 text-center w-48 bg-black">STATUS PREDIKAT JUARA</th>
-                            </tr>
-                        </thead>
-                        <tbody class="divide-y divide-slate-200 font-medium">
-                            @forelse($sortedNonFinalists as $nIdx => $nt)
-                                @php
-                                    $isH1 = ($nIdx === 0);
-                                    $isH2 = ($nIdx === 1);
-                                    $rowClass = $isH1 ? 'bg-amber-50/80 font-bold' : ($isH2 ? 'bg-amber-50/40 font-bold' : '');
-                                @endphp
-                                <tr class="{{ $rowClass }}">
-                                    <td class="py-3.5 px-4 text-center font-mono font-bold text-slate-800">
-                                        {{ $nIdx + 1 }}
-                                    </td>
-                                    <td class="py-3.5 px-5">
-                                        <div class="font-black text-slate-900 text-sm">
-                                            {{ $nt->team_name ?? ($nt->registration?->school_name ?? '-') }}
-                                        </div>
-                                    </td>
-                                    <td class="py-3.5 px-4 text-center font-bold text-slate-700">
-                                        Termin {{ $nt->termin ?? '-' }} (Peringkat {{ $nt->termin_rank }})
-                                    </td>
-                                    <td class="py-3.5 px-4 text-center font-mono font-black text-sm text-slate-900">
-                                        {{ number_format($nt->total_score, 0, ',', '.') }}
-                                    </td>
-                                    <td class="py-3.5 px-4 text-center">
-                                        @if($isH1)
-                                            <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-xl bg-gradient-to-r from-amber-400 to-yellow-500 text-stone-950 font-black text-xs shadow-2xs border border-yellow-300">
-                                                <i class="fa-solid fa-trophy"></i> Juara Harapan 1
-                                            </span>
-                                        @elseif($isH2)
-                                            <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-xl bg-amber-100 text-amber-900 font-black text-xs shadow-2xs border border-amber-300">
-                                                <i class="fa-solid fa-medal"></i> Juara Harapan 2
-                                            </span>
-                                        @else
-                                            <span class="text-xs font-bold text-slate-500">
-                                                Peringkat {{ $nt->overall_rank ?? ($nIdx + 4) }}
-                                            </span>
-                                        @endif
-                                    </td>
-                                </tr>
-                            @empty
-                                <tr>
-                                    <td colspan="5" class="py-6 text-center text-slate-400 font-bold">
-                                        Data nilai semifinal belum diisi. Lengkapi nilai di ketiga termin di atas lalu simpan.
-                                    </td>
-                                </tr>
-                            @endforelse
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-
-        </div>
-    @endif
-
-
-    {{-- ========================================================================= --}}
-    {{-- SESI 3: BABAK GRAND FINAL                                                 --}}
-    {{-- ========================================================================= --}}
-    @if($activeStage === 3)
-        <div class="space-y-6">
-
-            <!-- Stage 3 Top Instruction Banner -->
-            <div class="bg-gradient-to-r from-slate-900 via-amber-950 to-slate-900 text-white rounded-3xl p-6 shadow-md border border-amber-900/50 flex flex-col lg:flex-row lg:items-center justify-between gap-5">
-                <div class="space-y-2">
-                    <div class="flex items-center gap-2 flex-wrap">
-                        <span class="px-2.5 py-0.5 rounded-md text-[10px] font-black uppercase tracking-wider bg-amber-400 text-slate-950">
-                            Sesi 3 (Grand Final)
-                        </span>
-                        <span class="text-xs font-bold text-amber-200">
-                            Perebutan Juara 1, 2, dan 3 Olimpiade
-                        </span>
-                    </div>
-                    <h2 class="text-lg font-black text-white">
-                        Babak Puncak: Soal Amplop, Rebutan Bertingkat, dan Taruh Nilai
-                    </h2>
-                    <p class="text-xs text-slate-300 max-w-3xl leading-relaxed">
-                        Diikuti oleh <strong>3 regu pemenang masing-masing termin semi-final</strong>. Babak ini menentukan Juara 1 (Emas), Juara 2 (Perak), dan Juara 3 (Perunggu). Juara Harapan 1 dan 2 otomatis dirangkum dari hasil semifinal.
-                    </p>
-                </div>
-
-                <div class="flex items-center gap-3 shrink-0 flex-wrap">
-                    <form action="{{ route('admin.competition-scores.olimpiade-reset-stage', $category->id) }}" method="POST" onsubmit="return confirm('Reset nilai babak final?')">
-                        @csrf
-                        <input type="hidden" name="stage" value="final">
-                        <button type="submit" class="px-3.5 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold text-xs border border-slate-700 transition flex items-center gap-1.5 cursor-pointer">
-                            <i class="fa-solid fa-rotate-left"></i> Reset Final
-                        </button>
-                    </form>
-                </div>
-            </div>
-
-            <!-- Form Simpan Nilai Grand Final -->
-            <form action="{{ route('admin.competition-scores.olimpiade-save-final', $category->id) }}" method="POST">
-                @csrf
-                <div class="bg-white rounded-3xl shadow-sm border border-slate-200 overflow-hidden">
-                    <div class="p-4 sm:p-5 border-b border-slate-200 bg-slate-50/80 flex items-center justify-between gap-3 flex-wrap">
-                        <div class="flex items-center gap-2">
-                            <i class="fa-solid fa-trophy text-amber-500 text-base"></i>
-                            <span class="font-black text-xs sm:text-sm text-slate-900">
-                                Lembar Nilai Grand Final (3 Regu Puncak)
-                            </span>
-                        </div>
-                        <button type="submit" class="px-5 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-600 text-slate-950 font-black text-xs shadow-md transition flex items-center gap-2 cursor-pointer">
-                            <i class="fa-solid fa-floppy-disk"></i>
-                            <span>Simpan Nilai Grand Final</span>
-                        </button>
-                    </div>
-
-                    <div class="overflow-x-auto">
-                        <table class="w-full text-left text-xs border-collapse">
-                            <thead>
-                                <tr class="bg-slate-900 text-white uppercase text-[11px] tracking-wider font-black">
-                                    <th class="py-3.5 px-4 w-16 text-center border-r border-slate-800">NO</th>
-                                    <th class="py-3.5 px-5 border-r border-slate-800">NAMA SEKOLAH / REGU FINALIS</th>
-                                    <th class="py-3.5 px-4 text-center border-r border-slate-800 w-44">TOTAL NILAI SOAL AMPLOP</th>
-                                    <th class="py-3.5 px-4 text-center border-r border-slate-800 w-52">TOTAL NILAI REBUTAN BERTINGKAT</th>
-                                    <th class="py-3.5 px-4 text-center border-r border-slate-800 w-44">TOTAL NILAI TARUH NILAI</th>
-                                    <th class="py-3.5 px-4 text-center border-r border-slate-800 w-40 bg-slate-950">POIN TOTAL</th>
-                                    <th class="py-3.5 px-4 text-center w-48 bg-black">PERINGKAT JUARA</th>
-                                </tr>
-                            </thead>
-                            <tbody class="divide-y divide-slate-200 font-medium">
-                                @forelse($finalGrandTeams as $fIdx => $ft)
-                                    @php
-                                        $fRank = $ft->grand_rank;
-                                        $hasScore = ($ft->total_score > 0);
-                                        $isJuara1 = ($fRank === 1 && $hasScore);
-                                        $isJuara2 = ($fRank === 2 && $hasScore);
-                                        $isJuara3 = ($fRank === 3 && $hasScore);
-                                        $teamName = $ft->team_name ?? ($ft->registration?->school_name ?? 'Finalis ' . ($fIdx + 1));
-                                    @endphp
-                                    <tr class="{{ $isJuara1 ? 'bg-amber-50/70 font-bold border-l-4 border-l-amber-500' : ($isJuara2 ? 'bg-slate-100/60 font-bold border-l-4 border-l-slate-400' : ($isJuara3 ? 'bg-amber-50/40 font-bold border-l-4 border-l-amber-700' : 'hover:bg-slate-50 border-l-4 border-l-transparent')) }} transition" id="row-final-{{ $ft->id }}" data-team-id="{{ $ft->id }}" data-team-name="{{ $teamName }}">
-                                        <td class="py-3.5 px-4 text-center font-mono font-bold text-slate-800" id="final-no-{{ $ft->id }}">
-                                            {{ $fIdx + 1 }}
-                                        </td>
-                                        <td class="py-3.5 px-5">
-                                            <div class="font-black text-slate-900 text-sm">
-                                                {{ $teamName }}
-                                            </div>
-                                            <div class="text-[11px] text-slate-500 font-medium">
-                                                Pangkalan: {{ $ft->registration?->school_name ?? '-' }}
-                                            </div>
-                                        </td>
-                                        <td class="py-3.5 px-4 text-center">
-                                            <input type="number" step="any" name="final_amplop[{{ $ft->id }}]" id="inp-final-amplop-{{ $ft->id }}" value="{{ $ft->soal_amplop ?? 0 }}" oninput="calcFinalRow({{ $ft->id }})" class="w-28 text-center font-mono font-bold text-sm bg-white border border-slate-300 rounded-xl py-1.5 px-2 focus:ring-2 focus:ring-amber-500 final-score-input" data-team-id="{{ $ft->id }}">
-                                        </td>
-                                        <td class="py-3.5 px-4 text-center">
-                                            <div class="flex items-center justify-center gap-1">
-                                                <input type="number" step="any" name="final_rebutan[{{ $ft->id }}]" id="inp-final-rebutan-{{ $ft->id }}" value="{{ $ft->rebutan_bertingkat ?? 0 }}" oninput="calcFinalRow({{ $ft->id }})" class="w-28 text-center font-mono font-bold text-sm bg-white border border-slate-300 rounded-xl py-1.5 px-2 focus:ring-2 focus:ring-amber-500 final-score-input" data-team-id="{{ $ft->id }}">
-                                                <div class="flex flex-col gap-0.5">
-                                                    <button type="button" onclick="adjustFinalInput('inp-final-rebutan-{{ $ft->id }}', 100, {{ $ft->id }})" class="px-1.5 py-0.5 text-[9px] font-black rounded bg-emerald-100 text-emerald-800 hover:bg-emerald-200 shadow-2xs cursor-pointer">+100</button>
-                                                    <button type="button" onclick="adjustFinalInput('inp-final-rebutan-{{ $ft->id }}', -50, {{ $ft->id }})" class="px-1.5 py-0.5 text-[9px] font-black rounded bg-rose-100 text-rose-800 hover:bg-rose-200 shadow-2xs cursor-pointer">-50</button>
-                                                </div>
-                                            </div>
-                                        </td>
-                                        <td class="py-3.5 px-4 text-center">
-                                            <input type="number" step="any" name="final_taruh[{{ $ft->id }}]" id="inp-final-taruh-{{ $ft->id }}" value="{{ $ft->taruh_nilai ?? 0 }}" oninput="calcFinalRow({{ $ft->id }})" class="w-28 text-center font-mono font-bold text-sm bg-white border border-slate-300 rounded-xl py-1.5 px-2 focus:ring-2 focus:ring-amber-500 final-score-input" data-team-id="{{ $ft->id }}">
-                                        </td>
-                                        <td class="py-3.5 px-4 text-center font-mono font-black text-lg text-amber-950 bg-amber-50/50">
-                                            <span id="display-final-total-{{ $ft->id }}">{{ number_format($ft->total_score ?? 0, 0, ',', '.') }}</span>
-                                        </td>
-                                        <td class="py-3.5 px-4 text-center font-bold" id="display-final-status-{{ $ft->id }}">
-                                            @if($isJuara1)
-                                                <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-xl bg-gradient-to-r from-amber-400 to-yellow-500 text-stone-950 font-black text-xs shadow-2xs border border-yellow-300">
-                                                    🥇 Juara 1
-                                                </span>
-                                            @elseif($isJuara2)
-                                                <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-xl bg-gradient-to-r from-slate-200 to-slate-300 text-slate-800 font-black text-xs shadow-2xs border border-slate-400">
-                                                    🥈 Juara 2
-                                                </span>
-                                            @elseif($isJuara3)
-                                                <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-xl bg-gradient-to-r from-amber-700 to-yellow-800 text-amber-100 font-black text-xs shadow-2xs border border-amber-600">
-                                                    🥉 Juara 3
-                                                </span>
-                                            @else
-                                                <span class="inline-flex items-center justify-center px-2.5 py-1 rounded-xl bg-slate-100 text-slate-500 text-xs font-semibold border border-slate-200">
-                                                    Belum Dinilai
-                                                </span>
-                                            @endif
-                                        </td>
-                                    </tr>
-                                @empty
-                                    <tr>
-                                        <td colspan="7" class="py-8 text-center text-slate-400 font-bold">
-                                            Belum ada finalis. Selesaikan dan simpan penilaian di Sesi 2 (Semi-Final) terlebih dahulu.
-                                        </td>
-                                    </tr>
-                                @endforelse
-                            </tbody>
-                        </table>
-                    </div>
-
-                    <div class="p-4 bg-slate-50 border-t border-slate-200 flex items-center justify-between gap-3 flex-wrap">
-                        <div class="text-xs text-slate-500 font-medium">
-                            * Babak Taruh Nilai: Peserta mempertaruhkan poin strategis sesuai ketentuan dewan juri.
-                        </div>
-                        <button type="submit" class="px-6 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-600 text-slate-950 font-black text-xs shadow-md transition flex items-center gap-2 cursor-pointer">
-                            <i class="fa-solid fa-floppy-disk"></i>
-                            <span>Simpan Nilai Grand Final</span>
-                        </button>
-                    </div>
-                </div>
-            </form>
-
-            <!-- Grand Podium & Final Summary Cards -->
-            <div class="bg-white rounded-3xl p-6 shadow-sm border border-slate-200 space-y-6">
-                <div class="border-b border-slate-100 pb-3">
-                    <h3 class="text-base font-black text-slate-900 flex items-center gap-2">
-                        <i class="fa-solid fa-trophy text-amber-500"></i>
-                        <span>Podium Kejuaraan Resmi Olimpiade Kepalangmerahan</span>
-                    </h3>
-                    <p class="text-xs text-slate-500 mt-0.5">Daftar juara resmi berdasarkan akumulasi babak Grand Final dan babak Semifinal.</p>
-                </div>
-
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <!-- Juara 1 -->
-                    <div class="p-5 rounded-3xl bg-gradient-to-b from-amber-50 to-amber-100/60 border-2 border-amber-300 relative overflow-hidden flex flex-col justify-between">
-                        <div class="flex items-center justify-between">
-                            <span class="px-3 py-1 rounded-xl bg-amber-400 text-slate-950 font-black text-xs shadow-2xs">JUARA 1 (EMAS)</span>
-                            <span class="text-3xl">🥇</span>
-                        </div>
-                        <div class="my-4">
-                            @php $j1 = $finalGrandTeams->firstWhere('grand_rank', 1); @endphp
-                            <div class="font-black text-lg text-slate-900">
-                                {{ $j1 ? ($j1->team_name ?? ($j1->registration?->school_name ?? '-')) : 'Menunggu Grand Final' }}
-                            </div>
-                            <div class="text-xs font-semibold text-slate-600 mt-1">
-                                Pangkalan: {{ $j1 ? ($j1->registration?->school_name ?? '-') : '-' }}
-                            </div>
-                        </div>
-                        <div class="pt-3 border-t border-amber-200/80 flex items-center justify-between">
-                            <span class="text-xs text-amber-900 font-bold">Total Poin Final</span>
-                            <span class="font-mono font-black text-lg text-amber-950">{{ $j1 ? number_format($j1->total_score, 0, ',', '.') : '-' }}</span>
-                        </div>
-                    </div>
-
-                    <!-- Juara 2 -->
-                    <div class="p-5 rounded-3xl bg-gradient-to-b from-slate-50 to-slate-100/60 border-2 border-slate-300 relative overflow-hidden flex flex-col justify-between">
-                        <div class="flex items-center justify-between">
-                            <span class="px-3 py-1 rounded-xl bg-slate-300 text-slate-900 font-black text-xs shadow-2xs">JUARA 2 (PERAK)</span>
-                            <span class="text-3xl">🥈</span>
-                        </div>
-                        <div class="my-4">
-                            @php $j2 = $finalGrandTeams->firstWhere('grand_rank', 2); @endphp
-                            <div class="font-black text-lg text-slate-900">
-                                {{ $j2 ? ($j2->team_name ?? ($j2->registration?->school_name ?? '-')) : 'Menunggu Grand Final' }}
-                            </div>
-                            <div class="text-xs font-semibold text-slate-600 mt-1">
-                                Pangkalan: {{ $j2 ? ($j2->registration?->school_name ?? '-') : '-' }}
-                            </div>
-                        </div>
-                        <div class="pt-3 border-t border-slate-200 flex items-center justify-between">
-                            <span class="text-xs text-slate-700 font-bold">Total Poin Final</span>
-                            <span class="font-mono font-black text-lg text-slate-900">{{ $j2 ? number_format($j2->total_score, 0, ',', '.') : '-' }}</span>
-                        </div>
-                    </div>
-
-                    <!-- Juara 3 -->
-                    <div class="p-5 rounded-3xl bg-gradient-to-b from-amber-50/50 to-amber-100/40 border-2 border-amber-600/40 relative overflow-hidden flex flex-col justify-between">
-                        <div class="flex items-center justify-between">
-                            <span class="px-3 py-1 rounded-xl bg-amber-700 text-white font-black text-xs shadow-2xs">JUARA 3 (PERUNGGU)</span>
-                            <span class="text-3xl">🥉</span>
-                        </div>
-                        <div class="my-4">
-                            @php $j3 = $finalGrandTeams->firstWhere('grand_rank', 3); @endphp
-                            <div class="font-black text-lg text-slate-900">
-                                {{ $j3 ? ($j3->team_name ?? ($j3->registration?->school_name ?? '-')) : 'Menunggu Grand Final' }}
-                            </div>
-                            <div class="text-xs font-semibold text-slate-600 mt-1">
-                                Pangkalan: {{ $j3 ? ($j3->registration?->school_name ?? '-') : '-' }}
-                            </div>
-                        </div>
-                        <div class="pt-3 border-t border-amber-600/20 flex items-center justify-between">
-                            <span class="text-xs text-amber-900 font-bold">Total Poin Final</span>
-                            <span class="font-mono font-black text-lg text-amber-950">{{ $j3 ? number_format($j3->total_score, 0, ',', '.') : '-' }}</span>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Juara Harapan 1 & 2 Cards -->
-                <div class="pt-4 border-t border-slate-100">
-                    <div class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-3">Juara Harapan (Dari Semifinal):</div>
-                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                        <div class="p-4 rounded-2xl bg-slate-50 border border-slate-200 flex items-center justify-between">
-                            <div>
-                                <span class="px-2 py-0.5 rounded-md bg-amber-100 text-amber-900 font-black text-[10px] uppercase">JUARA HARAPAN 1</span>
-                                <div class="font-black text-sm text-slate-900 mt-1">
-                                    {{ $harapan1Team ? ($harapan1Team->team_name ?? ($harapan1Team->registration?->school_name ?? '-')) : '-' }}
-                                </div>
-                                <div class="text-[11px] text-slate-500">Pangkalan: {{ $harapan1Team ? ($harapan1Team->registration?->school_name ?? '-') : '-' }}</div>
-                            </div>
-                            <div class="text-right">
-                                <div class="text-[10px] text-slate-400 font-semibold">Poin Semifinal</div>
-                                <div class="font-mono font-black text-base text-slate-900">{{ $harapan1Team ? number_format($harapan1Team->total_score, 0, ',', '.') : '-' }}</div>
-                            </div>
-                        </div>
-
-                        <div class="p-4 rounded-2xl bg-slate-50 border border-slate-200 flex items-center justify-between">
-                            <div>
-                                <span class="px-2 py-0.5 rounded-md bg-slate-200 text-slate-800 font-black text-[10px] uppercase">JUARA HARAPAN 2</span>
-                                <div class="font-black text-sm text-slate-900 mt-1">
-                                    {{ $harapan2Team ? ($harapan2Team->team_name ?? ($harapan2Team->registration?->school_name ?? '-')) : '-' }}
-                                </div>
-                                <div class="text-[11px] text-slate-500">Pangkalan: {{ $harapan2Team ? ($harapan2Team->registration?->school_name ?? '-') : '-' }}</div>
-                            </div>
-                            <div class="text-right">
-                                <div class="text-[10px] text-slate-400 font-semibold">Poin Semifinal</div>
-                                <div class="font-mono font-black text-base text-slate-900">{{ $harapan2Team ? number_format($harapan2Team->total_score, 0, ',', '.') : '-' }}</div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-        </div>
-    @endif
 
 </div>
 
@@ -1173,7 +687,8 @@
             calculateRowScore(teamId);
         });
 
-        sortRowsByRank();
+        recalculateAllRanks();
+        updateSummaryStats();
     }
 
     function adjustScoreInput(inputId, delta) {
@@ -1184,12 +699,27 @@
         input.value = next;
         
         const teamId = inputId.split('_')[1];
-        handleRowChange(teamId, true);
+        handleRowChange(teamId, false);
     }
 
     function handleRowChange(teamId, shouldSort = false) {
         calculateRowScore(teamId);
+
+        // Auto kalkulasi kolom kosong jika benar & salah terisi
+        const bInput = document.getElementById('benar_' + teamId);
+        const sInput = document.getElementById('salah_' + teamId);
+        const kInput = document.getElementById('kosong_' + teamId);
+        if (bInput && sInput && kInput) {
+            const b = parseInt(bInput.value) || 0;
+            const s = parseInt(sInput.value) || 0;
+            if (bInput.value !== '' || sInput.value !== '') {
+                kInput.value = Math.max(0, 50 - (b + s));
+            }
+        }
+
+        recalculateAllRanks();
         updateSummaryStats();
+
         if (shouldSort) {
             sortRowsByRank();
         }
@@ -1219,6 +749,174 @@
 
         if (row) {
             row.setAttribute('data-score', finalScore);
+        }
+    }
+
+    function getRankBadgeHtml(rankVal) {
+        if (rankVal === 1) {
+            return '<span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-amber-400 text-slate-950 font-black text-xs shadow-sm"><i class="fa-solid fa-crown text-amber-900"></i> JUARA 1 (EMAS)</span>';
+        } else if (rankVal === 2) {
+            return '<span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-200 text-slate-900 font-black text-xs shadow-sm"><i class="fa-solid fa-medal text-slate-600"></i> JUARA 2 (PERAK)</span>';
+        } else if (rankVal === 3) {
+            return '<span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-amber-700 text-amber-100 font-black text-xs shadow-sm"><i class="fa-solid fa-medal text-amber-300"></i> JUARA 3 (PERUNGGU)</span>';
+        } else if (rankVal === 4) {
+            return '<span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-sky-100 text-sky-900 border border-sky-300 font-black text-xs shadow-2xs"><i class="fa-solid fa-award text-sky-600"></i> JUARA HARAPAN 1</span>';
+        } else if (rankVal === 5) {
+            return '<span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-sky-50 text-sky-900 border border-sky-200 font-bold text-xs"><i class="fa-solid fa-award text-sky-500"></i> JUARA HARAPAN 2</span>';
+        } else if (rankVal === 6) {
+            return '<span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-sky-50/70 text-sky-800 border border-sky-200/80 font-bold text-xs"><i class="fa-solid fa-award text-sky-400"></i> JUARA HARAPAN 3</span>';
+        } else {
+            return '<span class="inline-flex items-center px-3 py-1.5 rounded-xl bg-slate-100 text-slate-600 border border-slate-200 font-medium text-xs">Peringkat ' + rankVal + '</span>';
+        }
+    }
+
+    function recalculateAllRanks() {
+        const tbody = document.getElementById('olimpiade-tbody');
+        if (!tbody) return;
+        const rows = Array.from(tbody.querySelectorAll('.team-row'));
+
+        const scoredRows = [];
+        const unscoredRows = [];
+
+        rows.forEach(r => {
+            const teamId = r.getAttribute('data-team-id');
+            const bVal = document.getElementById('benar_' + teamId)?.value;
+            const sVal = document.getElementById('salah_' + teamId)?.value;
+            const hasInput = (bVal !== '' && bVal !== undefined) || (sVal !== '' && sVal !== undefined);
+
+            if (hasInput) {
+                scoredRows.push(r);
+            } else {
+                unscoredRows.push(r);
+            }
+        });
+
+        // Urutkan scored rows berdasarkan: Score DESC -> Time ASC
+        scoredRows.sort((a, b) => {
+            const scoreA = parseFloat(a.getAttribute('data-score')) || -999;
+            const scoreB = parseFloat(b.getAttribute('data-score')) || -999;
+            if (scoreA !== scoreB) {
+                return scoreB - scoreA;
+            }
+            const timeA = parseInt(a.getAttribute('data-time-seconds')) || 999999;
+            const timeB = parseInt(b.getAttribute('data-time-seconds')) || 999999;
+            return timeA - timeB;
+        });
+
+        // Terapkan ranking dan badge pada scored rows
+        scoredRows.forEach((row, idx) => {
+            const teamId = row.getAttribute('data-team-id');
+            const rankVal = idx + 1;
+            row.setAttribute('data-rank', rankVal);
+
+            // Row styling
+            if (rankVal === 1) {
+                row.className = 'team-row transition-colors duration-150 border-b border-slate-100 bg-amber-500/10 hover:bg-amber-500/15 border-l-4 border-l-amber-500';
+            } else if (rankVal === 2) {
+                row.className = 'team-row transition-colors duration-150 border-b border-slate-100 bg-slate-400/10 hover:bg-slate-400/15 border-l-4 border-l-slate-400';
+            } else if (rankVal === 3) {
+                row.className = 'team-row transition-colors duration-150 border-b border-slate-100 bg-amber-700/10 hover:bg-amber-700/15 border-l-4 border-l-amber-700';
+            } else if (rankVal >= 4 && rankVal <= 6) {
+                row.className = 'team-row transition-colors duration-150 border-b border-slate-100 bg-sky-500/5 hover:bg-sky-500/10 border-l-4 border-l-sky-500';
+            } else {
+                row.className = 'team-row transition-colors duration-150 border-b border-slate-100 hover:bg-slate-50/80 border-l-4 border-l-transparent';
+            }
+
+            const container = document.getElementById('badge-container-' + teamId);
+            if (container) {
+                container.innerHTML = getRankBadgeHtml(rankVal);
+            }
+        });
+
+        // Terapkan pada unscored rows
+        unscoredRows.forEach(row => {
+            const teamId = row.getAttribute('data-team-id');
+            row.setAttribute('data-rank', 9999);
+            row.className = 'team-row transition-colors duration-150 border-b border-slate-100 hover:bg-slate-50/80 border-l-4 border-l-transparent';
+            const container = document.getElementById('badge-container-' + teamId);
+            if (container) {
+                container.innerHTML = '<span class="inline-flex items-center px-3 py-1.5 rounded-xl bg-slate-100 text-slate-400 font-semibold text-xs border border-slate-200">Belum Dinilai</span>';
+            }
+        });
+
+        // Update 6 Podium Cards di bagian atas secara real-time
+        for (let i = 1; i <= 6; i++) {
+            const r = scoredRows[i - 1];
+            const schoolEl = document.getElementById('podium-school-' + i);
+            const teamEl = document.getElementById('podium-team-' + i);
+            const scoreEl = document.getElementById('podium-score-' + i);
+            const timeEl = document.getElementById('podium-time-' + i);
+
+            if (r) {
+                const teamId = r.getAttribute('data-team-id');
+                const school = r.querySelector('td:nth-child(2) .font-bold')?.innerText || '-';
+                const teamLabel = r.querySelector('td:nth-child(2) .text-[11px] span:first-child')?.innerText || '-';
+                const score = r.getAttribute('data-score') || '0';
+                const time = document.getElementById('waktu_' + teamId)?.value || '00:00';
+
+                if (schoolEl) schoolEl.innerText = school;
+                if (teamEl) teamEl.innerText = teamLabel;
+                if (scoreEl) scoreEl.innerText = score;
+                if (timeEl) timeEl.innerText = time;
+            } else {
+                if (schoolEl) schoolEl.innerText = 'Belum Ada';
+                if (teamEl) teamEl.innerText = '-';
+                if (scoreEl) scoreEl.innerText = '-';
+                if (timeEl) timeEl.innerText = '-';
+            }
+        }
+    }
+
+    function sortRowsByRank() {
+        const tbody = document.getElementById('olimpiade-tbody');
+        if (!tbody) return;
+        recalculateAllRanks();
+
+        const rows = Array.from(tbody.querySelectorAll('.team-row'));
+        rows.sort((a, b) => {
+            const rankA = parseInt(a.getAttribute('data-rank')) || 9999;
+            const rankB = parseInt(b.getAttribute('data-rank')) || 9999;
+            if (rankA !== rankB) {
+                return rankA - rankB;
+            }
+            const orderA = parseInt(a.getAttribute('data-order')) || 9999;
+            const orderB = parseInt(b.getAttribute('data-order')) || 9999;
+            return orderA - orderB;
+        });
+
+        rows.forEach(r => tbody.appendChild(r));
+
+        const btnRank = document.getElementById('btn-sort-rank');
+        const btnOrder = document.getElementById('btn-sort-order');
+        if (btnRank) {
+            btnRank.className = 'px-3 py-1.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs flex items-center gap-1.5 shadow-xs transition active:scale-95 cursor-pointer';
+        }
+        if (btnOrder) {
+            btnOrder.className = 'px-3 py-1.5 rounded-xl bg-white hover:bg-slate-100 text-slate-700 font-bold text-xs flex items-center gap-1.5 border border-slate-300 shadow-2xs transition active:scale-95 cursor-pointer';
+        }
+    }
+
+    function sortRowsByOrder() {
+        const tbody = document.getElementById('olimpiade-tbody');
+        if (!tbody) return;
+        recalculateAllRanks();
+
+        const rows = Array.from(tbody.querySelectorAll('.team-row'));
+        rows.sort((a, b) => {
+            const orderA = parseInt(a.getAttribute('data-order')) || 9999;
+            const orderB = parseInt(b.getAttribute('data-order')) || 9999;
+            return orderA - orderB;
+        });
+
+        rows.forEach(r => tbody.appendChild(r));
+
+        const btnRank = document.getElementById('btn-sort-rank');
+        const btnOrder = document.getElementById('btn-sort-order');
+        if (btnOrder) {
+            btnOrder.className = 'px-3 py-1.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs flex items-center gap-1.5 shadow-xs transition active:scale-95 cursor-pointer';
+        }
+        if (btnRank) {
+            btnRank.className = 'px-3 py-1.5 rounded-xl bg-white hover:bg-slate-100 text-slate-700 font-bold text-xs flex items-center gap-1.5 border border-slate-300 shadow-2xs transition active:scale-95 cursor-pointer';
         }
     }
 
@@ -1253,16 +951,13 @@
 
     function onTimeInput(input, teamId) {
         let val = input.value;
-        // Keep only numbers and colon
         val = val.replace(/[^0-9:]/g, '');
 
-        // Prevent multiple colons
         const parts = val.split(':');
         if (parts.length > 2) {
             val = parts[0] + ':' + parts.slice(1).join('');
         }
 
-        // Auto insert colon if user enters 3 or 4 digits without colon e.g. "051" -> "05:1"
         if (!val.includes(':') && val.length >= 3) {
             val = val.slice(0, 2) + ':' + val.slice(2, 4);
         }
@@ -1278,6 +973,7 @@
             row.setAttribute('data-time-seconds', parseTimeToSeconds(val));
         }
 
+        recalculateAllRanks();
         updateSummaryStats();
     }
 
@@ -1286,12 +982,11 @@
         if (!val) {
             const row = document.getElementById('row-team-' + teamId);
             if (row) row.setAttribute('data-time-seconds', 999999);
+            recalculateAllRanks();
             updateSummaryStats();
-            sortRowsByRank();
             return;
         }
 
-        // Format to standard MM:SS (e.g. 5:12 -> 05:12)
         if (/^\d{1}:[0-5]\d$/.test(val)) {
             val = '0' + val;
         } else if (/^\d{1,2}:\d{1}$/.test(val)) {
@@ -1311,64 +1006,7 @@
             row.setAttribute('data-time-seconds', parseTimeToSeconds(val));
         }
 
-        updateSummaryStats();
-        sortRowsByRank();
-    }
-
-    function sortRowsByRank() {
-        const tbody = document.getElementById('olimpiade-tbody');
-        if (!tbody) return;
-        const rows = Array.from(tbody.querySelectorAll('.team-row'));
-
-        rows.sort((a, b) => {
-            const scoreA = parseFloat(a.getAttribute('data-score')) || -999;
-            const scoreB = parseFloat(b.getAttribute('data-score')) || -999;
-
-            if (scoreA !== scoreB) {
-                return scoreB - scoreA; // Score DESC
-            }
-
-            const timeA = parseInt(a.getAttribute('data-time-seconds')) || 999999;
-            const timeB = parseInt(b.getAttribute('data-time-seconds')) || 999999;
-
-            return timeA - timeB; // Time ASC
-        });
-
-        // Re-append rows in sorted order and update ranking column
-        rows.forEach((row, idx) => {
-            tbody.appendChild(row);
-            const teamId = row.getAttribute('data-team-id');
-            const rankVal = idx + 1;
-            const container = document.getElementById('badge-container-' + teamId);
-
-            // Row border highlight
-            if (rankVal === 1) {
-                row.className = 'team-row transition-colors duration-150 border-b border-slate-100 bg-amber-500/5 hover:bg-amber-500/10 border-l-4 border-l-amber-500';
-            } else if (rankVal === 2) {
-                row.className = 'team-row transition-colors duration-150 border-b border-slate-100 bg-slate-500/5 hover:bg-slate-500/10 border-l-4 border-l-slate-400';
-            } else if (rankVal === 3) {
-                row.className = 'team-row transition-colors duration-150 border-b border-slate-100 bg-amber-700/5 hover:bg-amber-700/10 border-l-4 border-l-amber-700';
-            } else if (rankVal <= 9) {
-                row.className = 'team-row transition-colors duration-150 border-b border-slate-100 bg-emerald-500/5 hover:bg-emerald-500/10 border-l-4 border-l-emerald-500';
-            } else {
-                row.className = 'team-row transition-colors duration-150 border-b border-slate-100 hover:bg-slate-50/80 border-l-4 border-l-transparent';
-            }
-
-            if (container) {
-                if (rankVal === 1) {
-                    container.innerHTML = '<span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-amber-100 text-amber-900 border border-amber-300 font-black text-xs shadow-2xs"><i class="fa-solid fa-crown text-amber-600"></i> Peringkat 1 &bull; Lolos Semifinal</span>';
-                } else if (rankVal === 2) {
-                    container.innerHTML = '<span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-200 text-slate-900 border border-slate-300 font-black text-xs shadow-2xs"><i class="fa-solid fa-award text-slate-600"></i> Peringkat 2 &bull; Lolos Semifinal</span>';
-                } else if (rankVal === 3) {
-                    container.innerHTML = '<span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-amber-50 text-amber-950 border border-amber-400 font-black text-xs shadow-2xs"><i class="fa-solid fa-award text-amber-700"></i> Peringkat 3 &bull; Lolos Semifinal</span>';
-                } else if (rankVal <= 9) {
-                    container.innerHTML = '<span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-emerald-100 text-emerald-900 border border-emerald-300 font-black text-xs shadow-2xs"><i class="fa-solid fa-circle-check text-emerald-600"></i> Peringkat ' + rankVal + ' &bull; Lolos Semifinal</span>';
-                } else {
-                    container.innerHTML = '<span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-100 text-slate-600 border border-slate-200 font-bold text-xs"><i class="fa-solid fa-circle-xmark text-slate-400"></i> Peringkat ' + rankVal + ' &bull; Belum Lolos</span>';
-                }
-            }
-        });
-
+        recalculateAllRanks();
         updateSummaryStats();
     }
 
@@ -1386,8 +1024,9 @@
         rows.forEach(r => {
             const teamId = r.getAttribute('data-team-id');
             const b = document.getElementById('benar_' + teamId)?.value;
+            const s = document.getElementById('salah_' + teamId)?.value;
 
-            if (b !== '' && b !== undefined) {
+            if ((b !== '' && b !== undefined) || (s !== '' && s !== undefined)) {
                 scored++;
                 const score = parseFloat(r.getAttribute('data-score')) || 0;
                 sum += score;
@@ -1437,51 +1076,11 @@
         });
     }
 
-    // Semi-Final & Grand Final calculations
-    function calcSemiRow(teamId, terminNum) {
-        const a = parseFloat(document.getElementById('inp-amplop-' + teamId)?.value) || 0;
-        const r = parseFloat(document.getElementById('inp-rebutan-' + teamId)?.value) || 0;
-        const b = parseFloat(document.getElementById('inp-balon-' + teamId)?.value) || 0;
-        const total = a + r + b;
-
-        const disp = document.getElementById('display-total-' + teamId);
-        if (disp) {
-            disp.innerText = new Intl.NumberFormat('id-ID').format(total);
-        }
-    }
-
-    function adjustInput(inputId, delta, teamId, terminNum) {
-        const inp = document.getElementById(inputId);
-        if (!inp) return;
-        const cur = parseFloat(inp.value) || 0;
-        inp.value = cur + delta;
-        calcSemiRow(teamId, terminNum);
-    }
-
-    function calcFinalRow(teamId) {
-        const a = parseFloat(document.getElementById('inp-final-amplop-' + teamId)?.value) || 0;
-        const r = parseFloat(document.getElementById('inp-final-rebutan-' + teamId)?.value) || 0;
-        const t = parseFloat(document.getElementById('inp-final-taruh-' + teamId)?.value) || 0;
-        const total = a + r + t;
-
-        const disp = document.getElementById('display-final-total-' + teamId);
-        if (disp) {
-            disp.innerText = new Intl.NumberFormat('id-ID').format(total);
-        }
-    }
-
-    function adjustFinalInput(inputId, delta, teamId) {
-        const inp = document.getElementById(inputId);
-        if (!inp) return;
-        const cur = parseFloat(inp.value) || 0;
-        inp.value = cur + delta;
-        calcFinalRow(teamId);
-    }
-
-    // Auto sort on page load for Stage 1
+    // Auto calculate ranks and summary on page load
     document.addEventListener('DOMContentLoaded', function () {
         if (document.getElementById('olimpiade-tbody')) {
-            sortRowsByRank();
+            recalculateAllRanks();
+            updateSummaryStats();
         }
     });
 </script>
