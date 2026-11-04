@@ -178,6 +178,44 @@ class CompetitionOlimpiadeScoreTest extends TestCase
         $this->assertEquals(3, $scoreC->rank);
     }
 
+    public function test_admin_can_input_time_in_mm_ss_format_example_05_12(): void
+    {
+        $reg = CompetitionRegistration::create([
+            'registration_code' => 'REG-TIME-1',
+            'competition_event_id' => $this->event->id,
+            'school_name' => 'SMAN 1 Ciawi Regu A',
+            'level' => 'Wira',
+            'advisor_name' => 'Pembina Time',
+            'advisor_phone' => '08123456789',
+            'advisor_email' => 'pembina.time@test.com',
+            'status' => 'verified',
+        ]);
+        $team = CompetitionParticipantTeam::create([
+            'competition_category_id' => $this->wiraCategory->id,
+            'competition_registration_id' => $reg->id,
+            'team_name' => 'SMAN 1 Ciawi Regu A',
+            'order_number' => 1,
+            'is_active' => true,
+        ]);
+
+        // Input 05:12
+        $response = $this->actingAs($this->adminUser)
+            ->post(route('admin.competition-scores.olimpiade-save', $this->wiraCategory->id), [
+                'benar' => [$team->id => 45],
+                'salah' => [$team->id => 5],
+                'waktu' => [$team->id => '05:12'],
+                'formula_type' => 'standard',
+            ]);
+
+        $response->assertRedirect(route('admin.competition-scores.olimpiade', ['category' => $this->wiraCategory->id, 'stage' => 1]));
+
+        $score = CompetitionScore::where('competition_participant_team_id', $team->id)->first();
+        $this->assertNotNull($score);
+        $this->assertEquals('05:12', $score->time_recorded);
+        $this->assertEquals(312, $score->score_details['time_seconds']);
+        $this->assertEquals(80.0, $score->final_score);
+    }
+
     public function test_admin_can_seed_olimpiade_simulation_data(): void
     {
         $response = $this->actingAs($this->adminUser)

@@ -482,7 +482,8 @@
                                                        min="0" 
                                                        max="50" 
                                                        placeholder="0"
-                                                       oninput="handleRowChange({{ $t->id }})" 
+                                                       oninput="handleRowChange({{ $t->id }}, false)" 
+                                                       onblur="handleRowChange({{ $t->id }}, true)"
                                                        class="input-benar w-12 text-center font-mono font-black text-sm text-emerald-700 bg-emerald-50/50 rounded-lg py-1 border border-emerald-200 outline-none {{ $activeInputBorder }}">
                                                 <button type="button" onclick="adjustScoreInput('benar_{{ $t->id }}', 1)" class="w-6 h-6 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs flex items-center justify-center cursor-pointer">+</button>
                                             </div>
@@ -499,7 +500,8 @@
                                                        min="0" 
                                                        max="50" 
                                                        placeholder="0"
-                                                       oninput="handleRowChange({{ $t->id }})" 
+                                                       oninput="handleRowChange({{ $t->id }}, false)" 
+                                                       onblur="handleRowChange({{ $t->id }}, true)"
                                                        class="input-salah w-12 text-center font-mono font-black text-sm text-rose-700 bg-rose-50/50 rounded-lg py-1 border border-rose-200 outline-none {{ $activeInputBorder }}">
                                                 <button type="button" onclick="adjustScoreInput('salah_{{ $t->id }}', 1)" class="w-6 h-6 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs flex items-center justify-center cursor-pointer">+</button>
                                             </div>
@@ -513,16 +515,19 @@
                                         </td>
 
                                         <!-- 6. WAKTU TEMPUH (MM:SS) -->
-                                        <td class="py-3 px-3 text-center">
-                                            <div class="inline-flex items-center gap-1.5 bg-slate-50 border border-slate-200 px-2 py-1 rounded-xl">
-                                                <i class="fa-solid fa-stopwatch text-slate-400 text-xs"></i>
+                                        <td class="py-3 px-3 text-center whitespace-nowrap">
+                                            <div class="inline-flex items-center gap-1.5 bg-white border border-slate-300 hover:border-slate-400 focus-within:border-amber-500 focus-within:ring-2 focus-within:ring-amber-200 px-2.5 py-1.5 rounded-xl shadow-2xs transition">
+                                                <i class="fa-solid fa-stopwatch text-amber-500 text-xs"></i>
                                                 <input type="text" 
                                                        id="waktu_{{ $t->id }}" 
                                                        name="waktu[{{ $t->id }}]" 
                                                        value="{{ $t->waktu ?: '' }}" 
-                                                       placeholder="00:00" 
-                                                       oninput="handleTimeChange({{ $t->id }}, this.value)"
-                                                       class="input-waktu w-16 text-center font-mono font-bold text-xs text-slate-900 bg-transparent outline-none">
+                                                       placeholder="05:12" 
+                                                       maxlength="5"
+                                                       oninput="onTimeInput(this, {{ $t->id }})"
+                                                       onblur="onTimeBlur(this, {{ $t->id }})"
+                                                       title="Format Waktu: Menit:Detik (contoh: 05:12)"
+                                                       class="input-waktu w-20 text-center font-mono font-black text-xs sm:text-sm text-slate-900 bg-transparent outline-none tracking-wider placeholder:text-slate-300">
                                             </div>
                                         </td>
 
@@ -1164,12 +1169,15 @@
         input.value = next;
         
         const teamId = inputId.split('_')[1];
-        handleRowChange(teamId);
+        handleRowChange(teamId, true);
     }
 
-    function handleRowChange(teamId) {
+    function handleRowChange(teamId, shouldSort = false) {
         calculateRowScore(teamId);
-        sortRowsByRank();
+        updateSummaryStats();
+        if (shouldSort) {
+            sortRowsByRank();
+        }
     }
 
     function calculateRowScore(teamId) {
@@ -1203,20 +1211,94 @@
 
     function parseTimeToSeconds(timeStr) {
         if (!timeStr) return 999999;
-        const parts = timeStr.trim().split(':');
-        if (parts.length >= 2) {
-            const m = parseInt(parts[0]) || 0;
-            const s = parseInt(parts[1]) || 0;
-            return (m * 60) + s;
+        timeStr = String(timeStr).trim();
+        if (!timeStr || timeStr === '00:00') return 999999;
+
+        timeStr = timeStr.replace('.', ':').replace(',', ':');
+
+        if (timeStr.includes(':')) {
+            const parts = timeStr.split(':');
+            if (parts.length >= 2) {
+                const m = parseInt(parts[0], 10) || 0;
+                const s = parseInt(parts[1], 10) || 0;
+                const total = (m * 60) + s;
+                return total > 0 ? total : 999999;
+            }
         }
+
+        const digits = timeStr.replace(/\D/g, '');
+        if (digits.length === 3 || digits.length === 4) {
+            const padded = digits.padStart(4, '0');
+            const m = parseInt(padded.slice(0, 2), 10) || 0;
+            const s = parseInt(padded.slice(2), 10) || 0;
+            const total = (m * 60) + s;
+            return total > 0 ? total : 999999;
+        }
+
         return 999999;
     }
 
-    function handleTimeChange(teamId, val) {
+    function onTimeInput(input, teamId) {
+        let val = input.value;
+        // Keep only numbers and colon
+        val = val.replace(/[^0-9:]/g, '');
+
+        // Prevent multiple colons
+        const parts = val.split(':');
+        if (parts.length > 2) {
+            val = parts[0] + ':' + parts.slice(1).join('');
+        }
+
+        // Auto insert colon if user enters 3 or 4 digits without colon e.g. "051" -> "05:1"
+        if (!val.includes(':') && val.length >= 3) {
+            val = val.slice(0, 2) + ':' + val.slice(2, 4);
+        }
+
+        if (val.length > 5) {
+            val = val.slice(0, 5);
+        }
+
+        input.value = val;
+
         const row = document.getElementById('row-team-' + teamId);
         if (row) {
             row.setAttribute('data-time-seconds', parseTimeToSeconds(val));
         }
+
+        updateSummaryStats();
+    }
+
+    function onTimeBlur(input, teamId) {
+        let val = input.value.trim();
+        if (!val) {
+            const row = document.getElementById('row-team-' + teamId);
+            if (row) row.setAttribute('data-time-seconds', 999999);
+            updateSummaryStats();
+            sortRowsByRank();
+            return;
+        }
+
+        // Format to standard MM:SS (e.g. 5:12 -> 05:12)
+        if (/^\d{1}:[0-5]\d$/.test(val)) {
+            val = '0' + val;
+        } else if (/^\d{1,2}:\d{1}$/.test(val)) {
+            const parts = val.split(':');
+            val = parts[0].padStart(2, '0') + ':' + parts[1].padStart(2, '0');
+        } else if (/^\d{3,4}$/.test(val)) {
+            const padded = val.padStart(4, '0');
+            val = padded.slice(0, 2) + ':' + padded.slice(2);
+        } else if (/^\d{1,2}$/.test(val)) {
+            val = val.padStart(2, '0') + ':00';
+        }
+
+        input.value = val;
+
+        const row = document.getElementById('row-team-' + teamId);
+        if (row) {
+            row.setAttribute('data-time-seconds', parseTimeToSeconds(val));
+        }
+
+        updateSummaryStats();
         sortRowsByRank();
     }
 
