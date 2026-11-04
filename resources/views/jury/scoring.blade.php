@@ -550,7 +550,7 @@
                         </div>
                         <div class="flex items-center gap-1.5">
                             <button type="button" onclick="adjustMobileOlim('benar', -1)" class="w-8 h-8 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold text-sm flex items-center justify-center">-</button>
-                            <input type="number" name="rubric[benar]" id="mobile-olim-benar" value="{{ $olimBenar }}" min="0" max="50" oninput="recalculateMobileOlim()" class="w-14 bg-black/70 border border-emerald-500/40 rounded-lg py-1.5 text-center font-mono font-black text-base text-emerald-300 outline-none">
+                            <input type="number" name="rubric[benar]" id="mobile-olim-benar" value="{{ $olimBenar }}" min="0" max="999" oninput="recalculateMobileOlim()" class="w-16 bg-black/70 border border-emerald-500/40 rounded-lg py-1.5 text-center font-mono font-black text-base text-emerald-300 outline-none">
                             <button type="button" onclick="adjustMobileOlim('benar', 1)" class="w-8 h-8 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold text-sm flex items-center justify-center">+</button>
                         </div>
                     </div>
@@ -565,22 +565,24 @@
                         </div>
                         <div class="flex items-center gap-1.5">
                             <button type="button" onclick="adjustMobileOlim('salah', -1)" class="w-8 h-8 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold text-sm flex items-center justify-center">-</button>
-                            <input type="number" name="rubric[salah]" id="mobile-olim-salah" value="{{ $olimSalah }}" min="0" max="50" oninput="recalculateMobileOlim()" class="w-14 bg-black/70 border border-rose-500/40 rounded-lg py-1.5 text-center font-mono font-black text-base text-rose-300 outline-none">
+                            <input type="number" name="rubric[salah]" id="mobile-olim-salah" value="{{ $olimSalah }}" min="0" max="999" oninput="recalculateMobileOlim()" class="w-16 bg-black/70 border border-rose-500/40 rounded-lg py-1.5 text-center font-mono font-black text-base text-rose-300 outline-none">
                             <button type="button" onclick="adjustMobileOlim('salah', 1)" class="w-8 h-8 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold text-sm flex items-center justify-center">+</button>
                         </div>
                     </div>
 
                     <!-- Row 3: Tidak Dijawab / Kosong -->
-                    <div class="bg-slate-950/40 p-2.5 rounded-xl border border-slate-800/60 flex items-center justify-between text-slate-400">
+                    <div class="bg-slate-950/60 p-2.5 rounded-xl border border-slate-800/80 flex items-center justify-between">
                         <div>
                             <div class="text-xs font-bold text-slate-300 flex items-center gap-1">
-                                <i class="fa-solid fa-circle-minus"></i> Tidak Dijawab (0)
+                                <i class="fa-solid fa-circle-minus"></i> Tidak Dijawab / Kosong (0)
                             </div>
-                            <div class="text-[9px] text-slate-500 mt-0.5">Otomatis: 50 &minus; (Benar + Salah)</div>
+                            <div class="text-[9px] text-slate-400 mt-0.5">Jumlah butir soal tidak dijawab</div>
                         </div>
-                        <span id="mobile-olim-kosong" class="font-mono font-bold text-sm text-slate-300 bg-slate-800 px-3 py-1 rounded-lg border border-slate-700">
-                            {{ $olimKosong }}
-                        </span>
+                        <div class="flex items-center gap-1.5">
+                            <button type="button" onclick="adjustMobileOlim('kosong', -1)" class="w-8 h-8 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold text-sm flex items-center justify-center">-</button>
+                            <input type="number" name="rubric[kosong]" id="mobile-olim-kosong" value="{{ $olimKosong }}" min="0" max="999" oninput="recalculateMobileOlim()" class="w-16 bg-black/70 border border-slate-600 rounded-lg py-1.5 text-center font-mono font-bold text-base text-slate-200 outline-none">
+                            <button type="button" onclick="adjustMobileOlim('kosong', 1)" class="w-8 h-8 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold text-sm flex items-center justify-center">+</button>
+                        </div>
                     </div>
                 </div>
 
@@ -1339,18 +1341,17 @@
         const input = document.getElementById('mobile-olim-' + field);
         if (!input) return;
         let cur = parseInt(input.value) || 0;
-        input.value = Math.max(0, Math.min(50, cur + delta));
+        input.value = Math.max(0, Math.min(999, cur + delta));
         recalculateMobileOlim();
     }
 
     function recalculateMobileOlim() {
         const bInput = document.getElementById('mobile-olim-benar');
         const sInput = document.getElementById('mobile-olim-salah');
-        const kDisplay = document.getElementById('mobile-olim-kosong');
+        const kInput = document.getElementById('mobile-olim-kosong');
         const b = parseInt(bInput ? bInput.value : 0) || 0;
         const s = parseInt(sInput ? sInput.value : 0) || 0;
-        const k = Math.max(0, 50 - (b + s));
-        if (kDisplay) kDisplay.innerText = k;
+        const k = parseInt(kInput ? kInput.value : 0) || 0;
 
         const totalScore = (b - s) * 2;
         document.getElementById('input-final-score').value = totalScore;

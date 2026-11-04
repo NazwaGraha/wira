@@ -266,7 +266,11 @@
                             <div class="flex items-center gap-2">
                                 <span class="text-slate-400 font-bold uppercase text-[10px]">FORMULA:</span>
                                 <span id="formula-label-display" class="font-mono font-black text-sm {{ $isMadya ? 'text-sky-400' : 'text-amber-400' }}">
-                                    Nilai Akhir = (Benar &minus; Salah) &times; 2
+                                    @if(($activeFormulaType ?? 'skema2') === 'skema2')
+                                        Nilai Akhir = 50 + Benar &minus; Salah (Skema 2)
+                                    @else
+                                        Nilai Akhir = (Benar &minus; Salah) &times; 2
+                                    @endif
                                 </span>
                             </div>
                             <div class="flex items-center gap-2 font-mono text-[11px] text-slate-300">
@@ -284,13 +288,13 @@
                     <div class="flex items-center justify-between text-[11px] text-slate-500 font-medium flex-wrap gap-2">
                         <span class="flex items-center gap-1.5">
                             <i class="fa-solid fa-circle-check text-emerald-500"></i>
-                            Kolom "Tidak Dijawab" dihitung otomatis: <code>50 - (Benar + Salah)</code>
+                            Kolom Benar, Salah, dan Kosong mendukung nilai hingga 3 digit (contoh: 200)
                         </span>
                         <div class="flex items-center gap-1.5">
                             <span class="text-[10px] text-slate-400">Pilihan Formula:</span>
                             <select id="select-formula-mode" onchange="changeFormulaMode(this.value)" class="text-[11px] font-bold bg-slate-100 border border-slate-300 rounded-lg px-2 py-0.5 text-slate-800 outline-none">
-                                <option value="standard" selected>Resmi: (Benar - Salah) x 2</option>
-                                <option value="skema2">Skema 2: 50 + Benar - Salah</option>
+                                <option value="skema2" {{ ($activeFormulaType ?? 'skema2') === 'skema2' ? 'selected' : '' }}>Skema 2: 50 + Benar - Salah (Draft Sheet)</option>
+                                <option value="standard" {{ ($activeFormulaType ?? 'skema2') === 'standard' ? 'selected' : '' }}>Standar: (Benar - Salah) x 2</option>
                             </select>
                         </div>
                     </div>
@@ -403,7 +407,7 @@
                                             <i class="fa-solid fa-xmark"></i> SALAH (&minus;1)
                                         </div>
                                     </th>
-                                    <th class="py-4 px-3 text-center border-r border-slate-800 w-28 bg-slate-800 text-slate-300">
+                                    <th class="py-4 px-3 text-center border-r border-slate-800 w-36 bg-slate-800 text-slate-300">
                                         KOSONG (0)
                                     </th>
                                     <th class="py-4 px-3 text-center border-r border-slate-800 w-36 bg-slate-900 text-amber-300">
@@ -480,11 +484,11 @@
                                                        name="benar[{{ $t->id }}]" 
                                                        value="{{ $t->has_score ? $bVal : '' }}" 
                                                        min="0" 
-                                                       max="50" 
+                                                       max="999" 
                                                        placeholder="0"
                                                        oninput="handleRowChange({{ $t->id }}, false)" 
                                                        onblur="handleRowChange({{ $t->id }}, true)"
-                                                       class="input-benar w-12 text-center font-mono font-black text-sm text-emerald-700 bg-emerald-50/50 rounded-lg py-1 border border-emerald-200 outline-none {{ $activeInputBorder }}">
+                                                       class="input-benar w-16 text-center font-mono font-black text-sm text-emerald-700 bg-emerald-50/50 rounded-lg py-1 border border-emerald-200 outline-none {{ $activeInputBorder }}">
                                                 <button type="button" onclick="adjustScoreInput('benar_{{ $t->id }}', 1)" class="w-6 h-6 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs flex items-center justify-center cursor-pointer">+</button>
                                             </div>
                                         </td>
@@ -498,20 +502,31 @@
                                                        name="salah[{{ $t->id }}]" 
                                                        value="{{ $t->has_score ? $sVal : '' }}" 
                                                        min="0" 
-                                                       max="50" 
+                                                       max="999" 
                                                        placeholder="0"
                                                        oninput="handleRowChange({{ $t->id }}, false)" 
                                                        onblur="handleRowChange({{ $t->id }}, true)"
-                                                       class="input-salah w-12 text-center font-mono font-black text-sm text-rose-700 bg-rose-50/50 rounded-lg py-1 border border-rose-200 outline-none {{ $activeInputBorder }}">
+                                                       class="input-salah w-16 text-center font-mono font-black text-sm text-rose-700 bg-rose-50/50 rounded-lg py-1 border border-rose-200 outline-none {{ $activeInputBorder }}">
                                                 <button type="button" onclick="adjustScoreInput('salah_{{ $t->id }}', 1)" class="w-6 h-6 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs flex items-center justify-center cursor-pointer">+</button>
                                             </div>
                                         </td>
 
-                                        <!-- 5. TIDAK DIJAWAB (0) -->
+                                        <!-- 5. TIDAK DIJAWAB / KOSONG (0) -->
                                         <td class="py-3 px-3 text-center">
-                                            <span id="kosong_{{ $t->id }}" class="inline-flex items-center justify-center w-10 py-1 rounded-lg bg-slate-100 border border-slate-200 font-mono font-bold text-xs text-slate-600" title="Otomatis: 50 - (Benar + Salah)">
-                                                {{ $t->has_score ? $kVal : 50 }}
-                                            </span>
+                                            <div class="inline-flex items-center gap-1 bg-white p-1 rounded-xl border border-slate-200 shadow-2xs">
+                                                <button type="button" onclick="adjustScoreInput('kosong_{{ $t->id }}', -1)" class="w-6 h-6 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs flex items-center justify-center cursor-pointer">-</button>
+                                                <input type="number" 
+                                                       id="kosong_{{ $t->id }}" 
+                                                       name="kosong[{{ $t->id }}]" 
+                                                       value="{{ $t->has_score ? ($t->kosong !== null ? $t->kosong : $kVal) : '' }}" 
+                                                       min="0" 
+                                                       max="999" 
+                                                       placeholder="0"
+                                                       oninput="handleRowChange({{ $t->id }}, false)" 
+                                                       onblur="handleRowChange({{ $t->id }}, true)"
+                                                       class="input-kosong w-16 text-center font-mono font-bold text-sm text-slate-700 bg-slate-100/70 rounded-lg py-1 border border-slate-300 outline-none focus:border-slate-500">
+                                                <button type="button" onclick="adjustScoreInput('kosong_{{ $t->id }}', 1)" class="w-6 h-6 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs flex items-center justify-center cursor-pointer">+</button>
+                                            </div>
                                         </td>
 
                                         <!-- 6. WAKTU TEMPUH (MM:SS) -->
@@ -538,7 +553,11 @@
                                                     {{ $t->has_score ? $scoreVal : '-' }}
                                                 </span>
                                                 <span id="score-alt-{{ $t->id }}" class="text-[9px] font-mono text-slate-400 mt-0.5">
-                                                    Skema 2: {{ $t->has_score ? $scoreAltVal : '-' }}
+                                                    @if(($activeFormulaType ?? 'skema2') === 'skema2')
+                                                        Standar: {{ $t->has_score ? (($bVal - $sVal) * 2) : '-' }}
+                                                    @else
+                                                        Skema 2: {{ $t->has_score ? $scoreAltVal : '-' }}
+                                                    @endif
                                                 </span>
                                             </div>
                                         </td>
@@ -1136,7 +1155,7 @@
 
 @push('scripts')
 <script>
-    let currentFormulaMode = 'standard'; // 'standard' = (B - S) * 2 | 'skema2' = 50 + B - S
+    let currentFormulaMode = '{{ $activeFormulaType ?? 'skema2' }}'; // 'skema2' = 50 + B - S (draft panitia) | 'standard' = (B - S) * 2
 
     function changeFormulaMode(mode) {
         currentFormulaMode = mode;
@@ -1146,7 +1165,7 @@
         const label = document.getElementById('formula-label-display');
         if (label) {
             if (mode === 'skema2') {
-                label.innerHTML = 'Nilai Akhir = 50 + Benar &minus; Salah';
+                label.innerHTML = 'Nilai Akhir = 50 + Benar &minus; Salah (Skema 2)';
             } else {
                 label.innerHTML = 'Nilai Akhir = (Benar &minus; Salah) &times; 2';
             }
@@ -1165,7 +1184,7 @@
         const input = document.getElementById(inputId);
         if (!input) return;
         let cur = parseInt(input.value) || 0;
-        let next = Math.max(0, Math.min(50, cur + delta));
+        let next = Math.max(0, Math.min(999, cur + delta));
         input.value = next;
         
         const teamId = inputId.split('_')[1];
@@ -1183,7 +1202,6 @@
     function calculateRowScore(teamId) {
         const bInput = document.getElementById('benar_' + teamId);
         const sInput = document.getElementById('salah_' + teamId);
-        const kDisplay = document.getElementById('kosong_' + teamId);
         const scoreDisplay = document.getElementById('score-display-' + teamId);
         const scoreAltDisplay = document.getElementById('score-alt-' + teamId);
         const row = document.getElementById('row-team-' + teamId);
@@ -1192,9 +1210,6 @@
 
         const b = parseInt(bInput.value) || 0;
         const s = parseInt(sInput.value) || 0;
-        const k = Math.max(0, 50 - (b + s));
-
-        if (kDisplay) kDisplay.innerText = k;
 
         const standardScore = (b - s) * 2;
         const skema2Score = 50 + b - s;
@@ -1202,7 +1217,11 @@
         const activeScore = (currentFormulaMode === 'skema2') ? skema2Score : standardScore;
 
         if (scoreDisplay) scoreDisplay.innerText = activeScore;
-        if (scoreAltDisplay) scoreAltDisplay.innerText = 'Skema 2: ' + skema2Score;
+        if (scoreAltDisplay) {
+            scoreAltDisplay.innerText = (currentFormulaMode === 'skema2') 
+                ? 'Standar: ' + standardScore 
+                : 'Skema 2: ' + skema2Score;
+        }
 
         if (row) {
             row.setAttribute('data-score', activeScore);

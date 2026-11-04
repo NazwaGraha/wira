@@ -228,13 +228,37 @@ class CompetitionOlimpiadeScoreTest extends TestCase
         $this->assertEquals(20, CompetitionParticipantTeam::where('competition_category_id', $this->wiraCategory->id)->count());
         $this->assertEquals(20, CompetitionScore::where('competition_category_id', $this->wiraCategory->id)->count());
 
-        // Cek bahwa ranking 1 adalah SMAN 5 Bandung A
+        // Cek bahwa ranking 1 adalah SMAN 5 Bandung A (100 poin, 07:54)
         $rank1Score = CompetitionScore::where('competition_category_id', $this->wiraCategory->id)
             ->where('rank', 1)
             ->first();
         $this->assertNotNull($rank1Score);
         $this->assertEquals(100.0, $rank1Score->final_score);
         $this->assertEquals('07:54', $rank1Score->time_recorded);
+
+        // Cek Ranking 4 adalah SMAN 1 Cikarang Utara B (44 benar, 2 salah -> 92 poin sesuai Draft Sheet Skema 2)
+        $rank4Score = CompetitionScore::where('competition_category_id', $this->wiraCategory->id)
+            ->where('rank', 4)
+            ->first();
+        $this->assertNotNull($rank4Score);
+        $this->assertEquals(92.0, $rank4Score->final_score);
+        $this->assertEquals('07:45', $rank4Score->time_recorded);
+
+        // Cek Ranking 9 adalah SMAN 1 Cikarang Utara A (32 benar, 12 salah -> 70 poin)
+        $rank9Score = CompetitionScore::where('competition_category_id', $this->wiraCategory->id)
+            ->where('rank', 9)
+            ->first();
+        $this->assertNotNull($rank9Score);
+        $this->assertEquals(70.0, $rank9Score->final_score);
+        $this->assertEquals('07:28', $rank9Score->time_recorded);
+
+        // Cek Ranking 20 adalah SMAN 1 Purwakarta (20 benar, 25 salah -> 45 poin)
+        $rank20Score = CompetitionScore::where('competition_category_id', $this->wiraCategory->id)
+            ->where('rank', 20)
+            ->first();
+        $this->assertNotNull($rank20Score);
+        $this->assertEquals(45.0, $rank20Score->final_score);
+        $this->assertEquals('10:04', $rank20Score->time_recorded);
     }
 
     public function test_grid_route_redirects_to_olimpiade_view(): void
@@ -399,5 +423,46 @@ class CompetitionOlimpiadeScoreTest extends TestCase
         $this->assertEquals(44, $score->score_details['benar']);
         $this->assertEquals(2, $score->score_details['salah']);
         $this->assertEquals(4, $score->score_details['kosong']);
+    }
+
+    public function test_admin_can_input_three_digit_scores_and_custom_kosong_value(): void
+    {
+        $reg = CompetitionRegistration::create([
+            'registration_code' => 'REG-3DIGIT',
+            'competition_event_id' => $this->event->id,
+            'school_name' => 'SMAN 1 Tiga Digit',
+            'level' => 'Wira',
+            'advisor_name' => 'Pembina 3 Digit',
+            'advisor_phone' => '08123456789',
+            'advisor_email' => '3digit@test.com',
+            'status' => 'verified',
+        ]);
+        $team = CompetitionParticipantTeam::create([
+            'competition_category_id' => $this->wiraCategory->id,
+            'competition_registration_id' => $reg->id,
+            'team_name' => 'SMAN 1 Tiga Digit',
+            'order_number' => 1,
+            'is_active' => true,
+        ]);
+
+        // Input 3-digit: benar 200, salah 10, kosong 5
+        $response = $this->actingAs($this->adminUser)
+            ->post(route('admin.competition-scores.olimpiade-save', $this->wiraCategory->id), [
+                'benar' => [$team->id => 200],
+                'salah' => [$team->id => 10],
+                'kosong' => [$team->id => 5],
+                'waktu' => [$team->id => '12:34'],
+                'formula_type' => 'standard',
+            ]);
+
+        $response->assertRedirect(route('admin.competition-scores.olimpiade', ['category' => $this->wiraCategory->id, 'stage' => 1]));
+
+        $score = CompetitionScore::where('competition_participant_team_id', $team->id)->first();
+        $this->assertNotNull($score);
+        $this->assertEquals(380.0, $score->final_score); // (200 - 10) * 2
+        $this->assertEquals(200, $score->score_details['benar']);
+        $this->assertEquals(10, $score->score_details['salah']);
+        $this->assertEquals(5, $score->score_details['kosong']);
+        $this->assertEquals('12:34', $score->time_recorded);
     }
 }

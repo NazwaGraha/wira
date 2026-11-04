@@ -2670,7 +2670,7 @@ class CompetitionScoreController extends Controller
 
             $b = $teamCopy->benar ?? 0;
             $s = $teamCopy->salah ?? 0;
-            $teamCopy->kosong = isset($details['kosong']) ? (int) $details['kosong'] : max(0, 50 - ($b + $s));
+            $teamCopy->kosong = isset($details['kosong']) ? (int) $details['kosong'] : ($teamCopy->has_score ? 0 : null);
 
             $timeStr = $sc?->time_recorded ?: ($details['waktu_tempuh'] ?? null);
             $teamCopy->waktu = $timeStr;
@@ -2870,9 +2870,22 @@ class CompetitionScoreController extends Controller
         $fastestTeam = $scoredList->sortBy('time_seconds')->first();
         $fastestTime = $fastestTeam?->waktu ?: '00:00';
 
+        // Deteksi formula aktif dari data tersimpan, default 'skema2' (Draft Penilaian Olimpiade Skema 2)
+        $firstScored = $sortedTeams->firstWhere('has_score', true);
+        $activeFormulaType = 'skema2';
+        if ($firstScored && $firstScored->score_record) {
+            $scDetails = is_array($firstScored->score_record->score_details)
+                ? $firstScored->score_record->score_details
+                : json_decode($firstScored->score_record->score_details ?? '', true);
+            if (! empty($scDetails['formula_type'])) {
+                $activeFormulaType = $scDetails['formula_type'];
+            }
+        }
+
         return view('admin.competition.scores.grid-olimpiade', compact(
             'category',
             'activeStage',
+            'activeFormulaType',
             'allTeams',
             'sortedTeams',
             'top9Teams',
@@ -2903,8 +2916,9 @@ class CompetitionScoreController extends Controller
     {
         $inputBenar = $request->input('benar', []);
         $inputSalah = $request->input('salah', []);
+        $inputKosong = $request->input('kosong', []);
         $inputWaktu = $request->input('waktu', []);
-        $formulaType = $request->input('formula_type', 'standard'); // 'standard': (B - S) * 2, 'skema2': 50 + B - S
+        $formulaType = $request->input('formula_type', 'skema2'); // 'skema2': 50 + B - S (default draft panitia), 'standard': (B - S) * 2
 
         $juryUserId = $this->resolveSafeJuryUserId($category);
 
@@ -2916,9 +2930,15 @@ class CompetitionScoreController extends Controller
                     continue;
                 }
 
-                $b = max(0, min(50, (int) $bVal));
-                $s = max(0, min(50, (int) ($inputSalah[$teamId] ?? 0)));
-                $k = max(0, 50 - ($b + $s));
+                // Mendukung input hingga 3 digit (contoh: 200)
+                $b = max(0, min(999, (int) $bVal));
+                $s = max(0, min(999, (int) ($inputSalah[$teamId] ?? 0)));
+
+                if (isset($inputKosong[$teamId]) && $inputKosong[$teamId] !== '') {
+                    $k = max(0, min(999, (int) $inputKosong[$teamId]));
+                } else {
+                    $k = 0;
+                }
 
                 $rawTime = trim((string) ($inputWaktu[$teamId] ?? ''));
                 $timeStr = self::normalizeTimeString($rawTime);
@@ -3402,7 +3422,8 @@ class CompetitionScoreController extends Controller
                 $b = $sim['benar'];
                 $s = $sim['salah'];
                 $k = $sim['kosong'];
-                $finalScore = (float) (($b - $s) * 2);
+                // Hitung Nilai Akhir sesuai Skema 2: 50 + Benar - Salah (Draft Penilaian Olimpiade Skema 2)
+                $finalScore = (float) (50 + $b - $s);
                 $timeSec = self::parseTimeToSeconds($sim['waktu']);
 
                 $scoreData = [
@@ -3414,7 +3435,8 @@ class CompetitionScoreController extends Controller
                         'kosong' => $k,
                         'waktu_tempuh' => $sim['waktu'],
                         'time_seconds' => $timeSec,
-                        'formula_type' => 'standard',
+                        'formula_type' => 'skema2',
+                        'formula_label' => '50 + Benar - Salah (Skema 2)',
                         'score_standard' => ($b - $s) * 2,
                         'score_skema2' => 50 + $b - $s,
                     ],
