@@ -143,6 +143,7 @@
                         <th class="py-4 px-4 text-center w-28 text-slate-400">KOSONG</th>
                         <th class="py-4 px-4 text-center w-36 text-amber-300">WAKTU TEMPUH</th>
                         <th class="py-4 px-5 text-center w-36 text-white bg-slate-800/80">NILAI AKHIR</th>
+                        <th class="py-4 px-4 text-center w-40 text-emerald-400 bg-black">STATUS (TOP 9)</th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-slate-800/70 font-semibold">
@@ -160,6 +161,8 @@
                             } elseif ($r === 3) {
                                 $rowBg = 'bg-amber-700/10 hover:bg-amber-700/15';
                                 $rankClass = 'bg-amber-700 text-amber-100 font-black border-amber-600';
+                            } elseif ($r <= 9) {
+                                $rowBg = 'bg-emerald-950/20 hover:bg-emerald-950/30';
                             }
                         @endphp
                         <tr class="{{ $rowBg }} transition">
@@ -193,6 +196,17 @@
                             </td>
                             <td class="py-3.5 px-5 text-center font-mono font-black text-xl text-white bg-slate-800/40">
                                 {{ $t->final_score !== null ? $t->final_score : '-' }}
+                            </td>
+                            <td class="py-3.5 px-4 text-center">
+                                @if($r <= 9)
+                                    <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-emerald-950 text-emerald-400 border border-emerald-700/80 text-xs font-black">
+                                        <i class="fa-solid fa-circle-check text-[10px]"></i> Lolos Semifinal
+                                    </span>
+                                @else
+                                    <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-slate-800/80 text-slate-400 border border-slate-700 text-xs font-semibold">
+                                        Belum Lolos
+                                    </span>
+                                @endif
                             </td>
                         </tr>
                     @empty

@@ -313,7 +313,11 @@ Route::prefix('admin')->name('admin.')->group(function () {
         // Modul Penilaian Khusus Olimpiade Kepalangmerahan (OLIM)
         Route::get('/competition-scores/{category}/olimpiade', [CompetitionScoreController::class, 'olimpiadeView'])->name('competition-scores.olimpiade');
         Route::post('/competition-scores/{category}/olimpiade-save', [CompetitionScoreController::class, 'olimpiadeSave'])->name('competition-scores.olimpiade-save');
+        Route::post('/competition-scores/{category}/olimpiade-generate-semifinal', [CompetitionScoreController::class, 'olimpiadeGenerateSemifinal'])->name('competition-scores.olimpiade-generate-semifinal');
+        Route::post('/competition-scores/{category}/olimpiade-save-semifinal', [CompetitionScoreController::class, 'olimpiadeSaveSemifinal'])->name('competition-scores.olimpiade-save-semifinal');
+        Route::post('/competition-scores/{category}/olimpiade-save-final', [CompetitionScoreController::class, 'olimpiadeSaveFinal'])->name('competition-scores.olimpiade-save-final');
         Route::post('/competition-scores/{category}/olimpiade-reset', [CompetitionScoreController::class, 'olimpiadeReset'])->name('competition-scores.olimpiade-reset');
+        Route::post('/competition-scores/{category}/olimpiade-reset-stage', [CompetitionScoreController::class, 'olimpiadeResetStage'])->name('competition-scores.olimpiade-reset-stage');
         Route::post('/competition-scores/{category}/olimpiade-seed-simulation', [CompetitionScoreController::class, 'olimpiadeSeedSimulation'])->name('competition-scores.olimpiade-seed-simulation');
         Route::get('/competition-scores/{category}/olimpiade-live', [CompetitionScoreController::class, 'olimpiadeLiveScreen'])->name('competition-scores.olimpiade-live');
         Route::get('/competition-scores/{category}/olimpiade-export-excel', [CompetitionScoreController::class, 'olimpiadeExportExcel'])->name('competition-scores.olimpiade-export-excel');
