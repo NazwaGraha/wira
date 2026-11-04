@@ -160,6 +160,67 @@
         </div>
     </div>
 
+    <!-- ========================================================================= -->
+    <!-- PANEL KONFIGURASI PENAYANGAN MENU INFORMASI LOMBA DI HALAMAN PUBLIK       -->
+    <!-- ========================================================================= -->
+    <div class="rounded-3xl border-2 {{ $isInfoMenuVisible ? 'bg-gradient-to-r from-emerald-50/80 via-white to-teal-50/60 border-emerald-300' : 'bg-gradient-to-r from-amber-50/80 via-white to-orange-50/60 border-amber-300' }} p-5 sm:p-6 shadow-sm transition-all">
+        <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-5">
+            <div class="flex items-start gap-4">
+                <div class="w-12 h-12 sm:w-14 sm:h-14 rounded-2xl {{ $isInfoMenuVisible ? 'bg-emerald-500 text-white shadow-lg shadow-emerald-500/30' : 'bg-amber-500 text-white shadow-lg shadow-amber-500/30' }} flex items-center justify-center text-xl sm:text-2xl shrink-0">
+                    <i class="fa-solid {{ $isInfoMenuVisible ? 'fa-eye' : 'fa-eye-slash' }}"></i>
+                </div>
+                <div class="space-y-1">
+                    <div class="flex items-center gap-2 flex-wrap">
+                        <span class="text-[10px] font-black uppercase tracking-wider px-2.5 py-0.5 rounded-full {{ $isInfoMenuVisible ? 'bg-emerald-100 text-emerald-800 border border-emerald-300' : 'bg-amber-100 text-amber-800 border border-amber-300' }}">
+                            <i class="fa-solid {{ $isInfoMenuVisible ? 'fa-circle-check text-emerald-600' : 'fa-triangle-exclamation text-amber-600' }} mr-1"></i>
+                            {{ $isInfoMenuVisible ? 'STATUS: DITAYANGKAN (TAMPIL DI WEB)' : 'STATUS: TIDAK DITAYANGKAN (DISEMBUNYIKAN)' }}
+                        </span>
+                        @if($selectedEvent)
+                            <span class="text-[10px] font-bold text-slate-500 bg-white px-2 py-0.5 rounded-full border border-slate-200">
+                                Event: {{ $selectedEvent->title }}
+                            </span>
+                        @endif
+                    </div>
+                    <h3 class="text-base sm:text-lg font-black text-slate-900 leading-tight">
+                        Konfigurasi Menu Informasi Lomba di Halaman Publik
+                    </h3>
+                    <p class="text-xs text-slate-600 leading-relaxed max-w-3xl">
+                        @if($isInfoMenuVisible)
+                            Tombol <strong>"Menu Informasi Lomba"</strong> dan jendela pop-up berkas saat ini <strong>DITAYANGKAN</strong> di halaman <a href="{{ route('lomba.index') }}" target="_blank" class="text-emerald-700 underline font-bold hover:text-emerald-800">https://latihan.pmrwirasmanic.or.id/lomba</a>. Pengunjung umum dan calon kontingen dapat melihat tombol serta mengunduh dokumen panduan.
+                        @else
+                            Tombol <strong>"Menu Informasi Lomba"</strong> saat ini <strong>DISEMBUNYIKAN</strong> dari halaman <a href="{{ route('lomba.index') }}" target="_blank" class="text-amber-700 underline font-bold hover:text-amber-800">https://latihan.pmrwirasmanic.or.id/lomba</a>. Pengunjung umum tidak akan melihat tombol maupun pop-up berkas dokumen ini sampai Anda mengaktifkannya kembali.
+                        @endif
+                    </p>
+                </div>
+            </div>
+
+            <!-- Action Controls Form -->
+            <div class="flex items-center gap-3 shrink-0 flex-wrap sm:flex-nowrap pt-2 lg:pt-0 border-t lg:border-t-0 border-slate-200/80">
+                <form action="{{ route('admin.competition-info-menus.toggle-visibility') }}" method="POST" class="w-full sm:w-auto">
+                    @csrf
+                    @if($selectedEvent)
+                        <input type="hidden" name="competition_event_id" value="{{ $selectedEvent->id }}">
+                    @endif
+                    @if($isInfoMenuVisible)
+                        <button type="submit" name="is_info_menu_visible" value="0" onclick="return confirm('Apakah Anda yakin ingin MENYEMBUNYIKAN Menu Informasi Lomba dari halaman https://latihan.pmrwirasmanic.or.id/lomba?');" class="w-full sm:w-auto px-5 py-3 rounded-2xl bg-amber-500 hover:bg-amber-600 active:scale-95 text-slate-950 font-black text-xs uppercase tracking-wider transition flex items-center justify-center gap-2 shadow-md shadow-amber-900/10 cursor-pointer">
+                            <i class="fa-solid fa-eye-slash text-sm"></i>
+                            <span>Sembunyikan dari Web</span>
+                        </button>
+                    @else
+                        <button type="submit" name="is_info_menu_visible" value="1" onclick="return confirm('Apakah Anda yakin ingin MENAYANGKAN Menu Informasi Lomba ke halaman https://latihan.pmrwirasmanic.or.id/lomba?');" class="w-full sm:w-auto px-5 py-3 rounded-2xl bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white font-black text-xs uppercase tracking-wider transition flex items-center justify-center gap-2 shadow-md shadow-emerald-950/20 cursor-pointer">
+                            <i class="fa-solid fa-eye text-sm"></i>
+                            <span>Tayangkan ke Web</span>
+                        </button>
+                    @endif
+                </form>
+                <a href="{{ route('lomba.index') }}" target="_blank" class="w-full sm:w-auto px-4 py-3 rounded-2xl bg-white hover:bg-slate-50 text-slate-700 font-bold text-xs border border-slate-300 transition flex items-center justify-center gap-2 shadow-2xs">
+                    <i class="fa-solid fa-arrow-up-right-from-square text-xs text-sky-500"></i>
+                    <span>Cek Langsung</span>
+                </a>
+            </div>
+        </div>
+    </div>
+
     <!-- Filter Bar, Real-time Search & View Switcher -->
     <div class="bg-white p-4 sm:p-5 rounded-2xl border border-slate-200 shadow-sm flex flex-col md:flex-row items-center justify-between gap-4">
         <!-- Search Input -->

@@ -44,6 +44,7 @@ class CompetitionEvent extends Model
         'bank_wira_number_2',
         'bank_wira_holder_2',
         'is_active',
+        'is_info_menu_visible',
         'is_registration_open',
         'wave1_name',
         'wave1_start_date',
@@ -114,8 +115,21 @@ class CompetitionEvent extends Model
         'is_waves_enabled' => 'boolean',
         'registration_fee' => 'decimal:2',
         'is_active' => 'boolean',
+        'is_info_menu_visible' => 'boolean',
         'is_registration_open' => 'boolean',
     ];
+
+    /**
+     * Cek apakah Menu Informasi Lomba di halaman publik diizinkan tayang atau tidak.
+     */
+    public function isInfoMenuVisible(): bool
+    {
+        if (! isset($this->attributes['is_info_menu_visible'])) {
+            return true;
+        }
+
+        return (bool) $this->is_info_menu_visible;
+    }
 
     /**
      * Get the currently active wave status.

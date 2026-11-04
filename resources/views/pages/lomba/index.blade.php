@@ -734,7 +734,7 @@
             @endif
 
             <!-- Quick Info Banner -->
-            <div class="mt-10 sm:mt-12 grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6 max-w-4xl mx-auto">
+            <div class="mt-10 sm:mt-12 grid grid-cols-1 {{ ($isInfoMenuVisible ?? true) ? 'md:grid-cols-3 max-w-4xl' : 'md:grid-cols-2 max-w-2xl' }} gap-4 sm:gap-6 mx-auto">
                 <div class="bg-slate-800/80 border border-slate-700/80 backdrop-blur p-4 sm:p-5 rounded-2xl flex items-center gap-4">
                     <div class="w-11 h-11 sm:w-12 sm:h-12 rounded-xl bg-red-500/10 text-red-400 flex items-center justify-center text-lg sm:text-xl shrink-0">
                         <i class="fa-solid fa-calendar-days"></i>
@@ -765,6 +765,7 @@
                     </div>
                 </div>
 
+                @if($isInfoMenuVisible ?? true)
                 <!-- Pusat Informasi Button -->
                 <button type="button" onclick="openInfoModal()" class="text-left bg-gradient-to-br from-slate-800/90 via-slate-800/70 to-slate-800/90 hover:from-slate-800 hover:to-red-950/40 border border-slate-700/80 hover:border-red-500/50 backdrop-blur p-4 sm:p-5 rounded-2xl flex items-center gap-4 transition-all duration-200 hover:shadow-xl hover:shadow-red-950/30 cursor-pointer group w-full relative overflow-hidden">
                     <div class="absolute -right-4 -bottom-4 w-20 h-20 bg-red-500/5 rounded-full blur-xl pointer-events-none"></div>
@@ -774,7 +775,7 @@
                     <div class="flex-grow min-w-0">
                         <div class="flex items-center justify-between gap-1 mb-0.5">
                             <span class="text-xs text-red-400 font-bold uppercase tracking-wider">Pusat Informasi</span>
-                            <span class="text-[10px] bg-red-500/20 text-red-300 px-2 py-0.5 rounded-full font-extrabold border border-red-500/30">8 Menu</span>
+                            <span class="text-[10px] bg-red-500/20 text-red-300 px-2 py-0.5 rounded-full font-extrabold border border-red-500/30">{{ $infoMenus->count() }} Menu</span>
                         </div>
                         <div class="text-xs sm:text-sm font-black text-white group-hover:text-red-200 transition truncate">Menu Informasi Lomba</div>
                         <div class="text-[10px] sm:text-[11px] text-slate-400 flex items-center gap-1.5 mt-0.5 font-medium">
@@ -783,6 +784,7 @@
                         </div>
                     </div>
                 </button>
+                @endif
             </div>
         </div>
     </section>
@@ -908,6 +910,7 @@
     </section>
 @endif
 
+@if($isInfoMenuVisible ?? true)
 <!-- ============================================================ -->
 <!-- MODAL POPUP: MENU INFORMASI LOMBA (8 SUB MENU TERPADU)       -->
 <!-- ============================================================ -->
@@ -1151,6 +1154,7 @@
         </div>
     </div>
 </div>
+@endif
 
 @push('scripts')
 <script>

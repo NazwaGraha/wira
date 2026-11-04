@@ -264,9 +264,13 @@
                     <div class="bg-slate-900 text-white rounded-2xl p-3.5 mb-3 border border-slate-800">
                         <div class="flex items-center justify-between flex-wrap gap-2 text-xs">
                             <div class="flex items-center gap-2">
-                                <span class="text-slate-400 font-bold uppercase text-[10px]">FORMULA RESMI:</span>
+                                <span class="text-slate-400 font-bold uppercase text-[10px]">FORMULA:</span>
                                 <span id="formula-label-display" class="font-mono font-black text-sm {{ $isMadya ? 'text-sky-400' : 'text-amber-400' }}">
-                                    Nilai Akhir = (Benar &minus; Salah) &times; 2
+                                    @if(($activeFormulaType ?? 'skema2') === 'skema2')
+                                        Nilai Akhir = 50 + Benar &minus; Salah (Skema 2)
+                                    @else
+                                        Nilai Akhir = (Benar &minus; Salah) &times; 2 (Standar)
+                                    @endif
                                 </span>
                             </div>
                             <div class="flex items-center gap-2 font-mono text-[11px] text-slate-300">
@@ -284,11 +288,15 @@
                     <div class="flex items-center justify-between text-[11px] text-slate-500 font-medium flex-wrap gap-2">
                         <span class="flex items-center gap-1.5">
                             <i class="fa-solid fa-circle-check text-emerald-500"></i>
-                            Perhitungan Resmi: <code>(Benar &minus; Salah) &times; 2</code> &bull; Mendukung input hingga 3 digit (contoh: 200)
+                            Input Benar, Salah, Kosong mendukung 3 digit (contoh: 200) &bull; Waktu otomatis ([MM]:SS)
                         </span>
-                        <span class="text-[10px] text-slate-400 font-semibold">
-                            Tie-Breaker: Waktu Tercepat ([MM]:SS)
-                        </span>
+                        <div class="flex items-center gap-1.5">
+                            <span class="text-[10px] text-slate-400 font-semibold">Pilihan Formula:</span>
+                            <select id="select-formula-mode" onchange="changeFormulaMode(this.value)" class="text-[11px] font-bold bg-slate-100 border border-slate-300 rounded-lg px-2 py-0.5 text-slate-800 outline-none">
+                                <option value="skema2" {{ ($activeFormulaType ?? 'skema2') === 'skema2' ? 'selected' : '' }}>Skema 2: 50 + Benar - Salah (Draft Sheet)</option>
+                                <option value="standard" {{ ($activeFormulaType ?? 'skema2') === 'standard' ? 'selected' : '' }}>Standar: (Benar - Salah) x 2</option>
+                            </select>
+                        </div>
                     </div>
                 </div>
 
@@ -355,7 +363,7 @@
             <!-- ================= FORM & MAIN TABLE GRID CONTAINER ================= -->
             <form id="olimpiade-form" action="{{ route('admin.competition-scores.olimpiade-save', $category->id) }}" method="POST">
                 @csrf
-                <input type="hidden" name="formula_type" id="input-formula-type" value="standard">
+                <input type="hidden" name="formula_type" id="input-formula-type" value="{{ $activeFormulaType ?? 'skema2' }}">
 
                 <div class="bg-white rounded-3xl shadow-md border border-slate-200 overflow-hidden">
                     
@@ -544,8 +552,8 @@
                                                 <span id="score-display-{{ $t->id }}" class="font-mono font-black text-base {{ $scoreTextColor }} bg-white px-3 py-1 rounded-xl border border-slate-200 shadow-xs">
                                                     {{ $t->has_score ? $scoreVal : '-' }}
                                                 </span>
-                                                <span class="text-[9px] font-mono text-slate-400 mt-0.5">
-                                                    (B &minus; S) &times; 2
+                                                <span id="score-formula-tag-{{ $t->id }}" class="text-[9px] font-mono text-slate-400 mt-0.5">
+                                                    {{ ($activeFormulaType ?? 'skema2') === 'skema2' ? '50 + B - S' : '(B - S) x 2' }}
                                                 </span>
                                             </div>
                                         </td>
@@ -1143,6 +1151,31 @@
 
 @push('scripts')
 <script>
+    let currentFormulaMode = '{{ $activeFormulaType ?? 'skema2' }}';
+
+    function changeFormulaMode(mode) {
+        currentFormulaMode = mode;
+        const hiddenInput = document.getElementById('input-formula-type');
+        if (hiddenInput) hiddenInput.value = mode;
+
+        const label = document.getElementById('formula-label-display');
+        if (label) {
+            if (mode === 'skema2') {
+                label.innerHTML = 'Nilai Akhir = 50 + Benar &minus; Salah (Skema 2)';
+            } else {
+                label.innerHTML = 'Nilai Akhir = (Benar &minus; Salah) &times; 2 (Standar)';
+            }
+        }
+
+        const rows = document.querySelectorAll('.team-row');
+        rows.forEach(r => {
+            const teamId = r.getAttribute('data-team-id');
+            calculateRowScore(teamId);
+        });
+
+        sortRowsByRank();
+    }
+
     function adjustScoreInput(inputId, delta) {
         const input = document.getElementById(inputId);
         if (!input) return;
@@ -1166,6 +1199,7 @@
         const bInput = document.getElementById('benar_' + teamId);
         const sInput = document.getElementById('salah_' + teamId);
         const scoreDisplay = document.getElementById('score-display-' + teamId);
+        const scoreFormulaTag = document.getElementById('score-formula-tag-' + teamId);
         const row = document.getElementById('row-team-' + teamId);
 
         if (!bInput || !sInput) return;
@@ -1173,10 +1207,15 @@
         const b = parseInt(bInput.value) || 0;
         const s = parseInt(sInput.value) || 0;
 
-        // Nilai Akhir resmi: (Benar - Salah) * 2
-        const finalScore = (b - s) * 2;
+        // Hitung nilai akhir sesuai formula mode aktif
+        const standardScore = (b - s) * 2;
+        const skema2Score = 50 + b - s;
+        const finalScore = (currentFormulaMode === 'standard') ? standardScore : skema2Score;
 
         if (scoreDisplay) scoreDisplay.innerText = finalScore;
+        if (scoreFormulaTag) {
+            scoreFormulaTag.innerText = (currentFormulaMode === 'standard') ? '(B - S) x 2' : '50 + B - S';
+        }
 
         if (row) {
             row.setAttribute('data-score', finalScore);

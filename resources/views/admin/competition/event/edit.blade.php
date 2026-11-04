@@ -387,6 +387,22 @@
                         </div>
                     </div>
 
+                    <!-- Toggle Penayangan Menu Informasi Lomba -->
+                    <div class="p-4 rounded-xl border {{ $event->isInfoMenuVisible() ? 'bg-rose-50/70 border-rose-200' : 'bg-slate-50 border-slate-200' }}">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <div class="text-xs font-bold text-slate-900 flex items-center gap-1.5">
+                                    <i class="fa-solid fa-folder-open text-rose-500"></i> Menu Informasi Lomba
+                                </div>
+                                <div class="text-[11px] text-slate-500">Tayangkan tombol &amp; modal berkas di /lomba</div>
+                            </div>
+                            <label class="relative inline-flex items-center cursor-pointer">
+                                <input type="checkbox" name="is_info_menu_visible" value="1" class="sr-only peer" {{ old('is_info_menu_visible', $event->isInfoMenuVisible()) ? 'checked' : '' }}>
+                                <div class="w-11 h-6 bg-slate-300 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-rose-600"></div>
+                            </label>
+                        </div>
+                    </div>
+
                     <!-- Mode Tampilan Halaman Lomba (3 Kondisi) -->
                     <div class="p-4 rounded-xl border border-slate-200 bg-slate-50/70 space-y-2">
                         <label class="block text-xs font-bold text-slate-900 uppercase tracking-wider">

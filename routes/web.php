@@ -368,6 +368,7 @@ Route::prefix('admin')->name('admin.')->group(function () {
 
         // Pengelolaan Menu Informasi Lomba (CRUD Sub Menu & Dokumen Berkas)
         Route::resource('competition-info-menus', CompetitionInfoMenuController::class)->names('competition-info-menus');
+        Route::post('/competition-info-menus/toggle-visibility', [CompetitionInfoMenuController::class, 'toggleVisibility'])->name('competition-info-menus.toggle-visibility');
         Route::post('/competition-info-menus/{id}/toggle-active', [CompetitionInfoMenuController::class, 'toggleActive'])->name('competition-info-menus.toggle-active');
         Route::post('/competition-info-menus/{id}/quick-upload', [CompetitionInfoMenuController::class, 'quickUpload'])->name('competition-info-menus.quick-upload');
         Route::post('/competition-info-menus-reset-defaults', [CompetitionInfoMenuController::class, 'resetDefaults'])->name('competition-info-menus.reset-defaults');

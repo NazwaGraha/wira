@@ -31,6 +31,13 @@ class CompetitionInfoMenuController extends Controller
                 });
             }
 
+            // Ensure is_info_menu_visible column exists on competition_events
+            if (Schema::hasTable('competition_events') && ! Schema::hasColumn('competition_events', 'is_info_menu_visible')) {
+                Schema::table('competition_events', function (Blueprint $table) {
+                    $table->boolean('is_info_menu_visible')->default(true)->after('is_active');
+                });
+            }
+
             if (Schema::hasTable('competition_info_menus') && CompetitionInfoMenu::count() === 0) {
                 $activeEvent = CompetitionEvent::where('is_active', true)->first() ?: CompetitionEvent::first();
                 foreach (CompetitionInfoMenu::defaultItems() as $item) {
@@ -89,10 +96,14 @@ class CompetitionInfoMenuController extends Controller
         $uploadedFileCount = $infoMenus->whereNotNull('file_path')->count();
         $linkCount = $infoMenus->whereIn('action_type', ['link', 'whatsapp'])->count();
 
+        // Status Penayangan Menu Informasi Lomba di Halaman Publik (/lomba)
+        $isInfoMenuVisible = $selectedEvent ? $selectedEvent->isInfoMenuVisible() : true;
+
         return view('admin.competition.info-menus.index', compact(
             'infoMenus',
             'allEvents',
             'selectedEvent',
+            'isInfoMenuVisible',
             'totalMenus',
             'activeCount',
             'fileCount',
@@ -298,5 +309,42 @@ class CompetitionInfoMenuController extends Controller
         $infoMenu->save();
 
         return redirect()->back()->with('success', 'Berkas untuk menu "'.$infoMenu->title.'" berhasil diunggah!');
+    }
+
+    /**
+     * Konfigurasi / Toggle Penayangan Menu Informasi Lomba di Halaman Publik (/lomba)
+     */
+    public function toggleVisibility(Request $request)
+    {
+        $selectedEventId = $request->input('competition_event_id');
+        $event = null;
+
+        if ($selectedEventId) {
+            $event = CompetitionEvent::find($selectedEventId);
+        }
+
+        if (! $event) {
+            $event = CompetitionEvent::where('is_active', true)->first() ?: CompetitionEvent::first();
+        }
+
+        if (! $event) {
+            return redirect()->back()->with('error', 'Tidak ditemukan data event lomba untuk dikonfigurasi.');
+        }
+
+        // Jika request mengirim status spesifik (misal dari form checkbox/switch), gunakan itu.
+        if ($request->has('is_info_menu_visible')) {
+            $newStatus = $request->boolean('is_info_menu_visible');
+        } else {
+            $newStatus = ! $event->isInfoMenuVisible();
+        }
+
+        $event->is_info_menu_visible = $newStatus;
+        $event->save();
+
+        $statusText = $newStatus
+            ? 'DITAYANGKAN di halaman https://latihan.pmrwirasmanic.or.id/lomba (Pengunjung dapat mengakses tombol & dokumen panduan)'
+            : 'DISEMBUNYIKAN dari halaman https://latihan.pmrwirasmanic.or.id/lomba (Tombol & popup modal tidak tampil bagi publik)';
+
+        return redirect()->back()->with('success', 'Pengaturan berhasil disimpan! Menu Informasi Lomba saat ini '.$statusText);
     }
 }

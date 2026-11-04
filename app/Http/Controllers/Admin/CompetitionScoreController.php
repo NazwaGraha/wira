@@ -2655,8 +2655,21 @@ class CompetitionScoreController extends Controller
             ->get()
             ->keyBy('competition_participant_team_id');
 
+        // Cek formula yang tersimpan atau dipilih (default: skema2 sesuai sheet panitia)
+        $firstScoreWithFormula = $scores->first(function ($sc) {
+            $d = is_array($sc?->score_details) ? $sc->score_details : (json_decode($sc?->score_details ?? '', true) ?? []);
+
+            return ! empty($d['formula_type']);
+        });
+        $savedFormulaType = null;
+        if ($firstScoreWithFormula) {
+            $d = is_array($firstScoreWithFormula->score_details) ? $firstScoreWithFormula->score_details : (json_decode($firstScoreWithFormula->score_details ?? '', true) ?? []);
+            $savedFormulaType = $d['formula_type'] ?? null;
+        }
+        $activeFormulaType = $request->input('formula') ?? $savedFormulaType ?? 'skema2';
+
         // Petakan data peserta dengan rincian Benar, Salah, Kosong, Waktu Tempuh, Nilai Akhir
-        $mappedTeams = $allTeams->map(function ($team) use ($scores) {
+        $mappedTeams = $allTeams->map(function ($team) use ($scores, $activeFormulaType) {
             $sc = $scores->get($team->id);
             $details = is_array($sc?->score_details)
                 ? $sc->score_details
@@ -2673,10 +2686,27 @@ class CompetitionScoreController extends Controller
             $teamCopy->kosong = isset($details['kosong']) ? (int) $details['kosong'] : ($teamCopy->has_score ? 0 : null);
 
             $timeStr = $sc?->time_recorded ?: ($details['waktu_tempuh'] ?? null);
-            $teamCopy->waktu = $timeStr;
+            $teamCopy->waktu = self::normalizeTimeString($timeStr);
             $teamCopy->time_seconds = $sc ? ($details['time_seconds'] ?? self::parseTimeToSeconds($timeStr) ?? 999999) : 999999;
-            $teamCopy->final_score = $sc?->final_score !== null ? (float) $sc->final_score : null;
-            $teamCopy->score_alt = $teamCopy->has_score ? (50 + $b - $s) : null;
+
+            $standardScore = $teamCopy->has_score ? (float) (($b - $s) * 2) : null;
+            $skema2Score = $teamCopy->has_score ? (float) (50 + $b - $s) : null;
+            $teamCopy->score_standard = $standardScore;
+            $teamCopy->score_skema2 = $skema2Score;
+
+            if ($teamCopy->has_score) {
+                if ($activeFormulaType === 'standard') {
+                    $teamCopy->final_score = $standardScore;
+                    $teamCopy->score_alt = $skema2Score;
+                } else {
+                    $teamCopy->final_score = $skema2Score;
+                    $teamCopy->score_alt = $standardScore;
+                }
+            } else {
+                $teamCopy->final_score = null;
+                $teamCopy->score_alt = null;
+            }
+
             $teamCopy->rank = $sc?->rank;
 
             return $teamCopy;
@@ -2870,12 +2900,15 @@ class CompetitionScoreController extends Controller
         $fastestTeam = $scoredList->sortBy('time_seconds')->first();
         $fastestTime = $fastestTeam?->waktu ?: '00:00';
 
-        // Nilai Akhir resmi olimpiade: (Benar - Salah) * 2
-        $activeFormulaLabel = '(Benar - Salah) * 2';
+        // Formula perhitungan nilai olimpiade
+        $activeFormulaLabel = ($activeFormulaType === 'standard')
+            ? '(Benar - Salah) * 2'
+            : '50 + Benar - Salah (Skema 2)';
 
         return view('admin.competition.scores.grid-olimpiade', compact(
             'category',
             'activeStage',
+            'activeFormulaType',
             'activeFormulaLabel',
             'allTeams',
             'sortedTeams',
@@ -2909,6 +2942,7 @@ class CompetitionScoreController extends Controller
         $inputSalah = $request->input('salah', []);
         $inputKosong = $request->input('kosong', []);
         $inputWaktu = $request->input('waktu', []);
+        $formulaType = $request->input('formula_type', 'skema2');
 
         $juryUserId = $this->resolveSafeJuryUserId($category);
 
@@ -2934,8 +2968,16 @@ class CompetitionScoreController extends Controller
                 $timeStr = self::normalizeTimeString($rawTime);
                 $timeSec = self::parseTimeToSeconds($timeStr) ?? 999999;
 
-                // Perhitungan Nilai Akhir resmi: (Benar - Salah) * 2
-                $finalScore = (float) (($b - $s) * 2);
+                // Perhitungan Nilai Akhir sesuai formula aktif
+                if ($formulaType === 'standard') {
+                    $finalScore = (float) (($b - $s) * 2);
+                    $formulaLabel = '(Benar - Salah) * 2';
+                    $formulaDesc = 'Nilai Benar dikurangi Nilai Salah dikali 2';
+                } else {
+                    $finalScore = (float) (50 + $b - $s);
+                    $formulaLabel = '50 + Benar - Salah';
+                    $formulaDesc = 'Skema 2: Skor dasar 50 ditambah Benar dikurangi Salah (Draft Sheet Panitia)';
+                }
 
                 $scoreData = [
                     'final_score' => $finalScore,
@@ -2946,9 +2988,9 @@ class CompetitionScoreController extends Controller
                         'kosong' => $k,
                         'waktu_tempuh' => $timeStr,
                         'time_seconds' => $timeSec,
-                        'formula_type' => 'standard',
-                        'formula_label' => '(Benar - Salah) * 2',
-                        'formula_desc' => 'Nilai Benar dikurangi Nilai Salah dikali 2',
+                        'formula_type' => $formulaType,
+                        'formula_label' => $formulaLabel,
+                        'formula_desc' => $formulaDesc,
                     ],
                 ];
 
@@ -3407,8 +3449,8 @@ class CompetitionScoreController extends Controller
                 $b = $sim['benar'];
                 $s = $sim['salah'];
                 $k = $sim['kosong'];
-                // Hitung Nilai Akhir resmi: (Benar - Salah) * 2
-                $finalScore = (float) (($b - $s) * 2);
+                // Hitung Nilai Akhir sesuai Skema 2 sheet panitia: 50 + Benar - Salah
+                $finalScore = (float) (50 + $b - $s);
                 $timeSec = self::parseTimeToSeconds($sim['waktu']);
 
                 $scoreData = [
@@ -3420,9 +3462,9 @@ class CompetitionScoreController extends Controller
                         'kosong' => $k,
                         'waktu_tempuh' => $sim['waktu'],
                         'time_seconds' => $timeSec,
-                        'formula_type' => 'standard',
-                        'formula_label' => '(Benar - Salah) * 2',
-                        'formula_desc' => 'Nilai Benar dikurangi Nilai Salah dikali 2',
+                        'formula_type' => 'skema2',
+                        'formula_label' => '50 + Benar - Salah',
+                        'formula_desc' => 'Skema 2: Skor dasar 50 ditambah Benar dikurangi Salah (Draft Sheet Panitia)',
                     ],
                 ];
 

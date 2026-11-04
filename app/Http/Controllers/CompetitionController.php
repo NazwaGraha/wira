@@ -85,7 +85,13 @@ class CompetitionController extends Controller
             $pastGalleries = collect();
         }
 
-        return view('pages.lomba.index', compact('event', 'pastEvent', 'pageState', 'categoriesByLevel', 'infoMenus', 'pastGalleries'));
+        // Konfigurasi Penayangan Menu Informasi Lomba di Halaman Publik
+        $isInfoMenuVisible = true;
+        if ($targetEvent) {
+            $isInfoMenuVisible = $targetEvent->isInfoMenuVisible();
+        }
+
+        return view('pages.lomba.index', compact('event', 'pastEvent', 'pageState', 'categoriesByLevel', 'infoMenus', 'isInfoMenuVisible', 'pastGalleries'));
     }
 
     public function register()

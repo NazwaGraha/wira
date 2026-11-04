@@ -66,7 +66,7 @@ class CompetitionOlimpiadeScoreTest extends TestCase
 
         $responseWira->assertStatus(200);
         $responseWira->assertSee('WIRA (SMA / SMK / MA)');
-        $responseWira->assertSee('Nilai Akhir = (Benar');
+        $responseWira->assertSee('Nilai Akhir =');
 
         // 2. Madya Grid View
         $responseMadya = $this->actingAs($this->adminUser)
@@ -228,7 +228,7 @@ class CompetitionOlimpiadeScoreTest extends TestCase
         $this->assertEquals(20, CompetitionParticipantTeam::where('competition_category_id', $this->wiraCategory->id)->count());
         $this->assertEquals(20, CompetitionScore::where('competition_category_id', $this->wiraCategory->id)->count());
 
-        // Cek bahwa ranking 1 adalah SMAN 5 Bandung A (50 benar, 0 salah -> (50 - 0) * 2 = 100 poin, 07:54)
+        // Cek bahwa ranking 1 adalah SMAN 5 Bandung A (50 benar, 0 salah -> Skema 2: 50 + 50 - 0 = 100 poin, 07:54)
         $rank1Score = CompetitionScore::where('competition_category_id', $this->wiraCategory->id)
             ->where('rank', 1)
             ->first();
@@ -236,28 +236,28 @@ class CompetitionOlimpiadeScoreTest extends TestCase
         $this->assertEquals(100.0, $rank1Score->final_score);
         $this->assertEquals('07:54', $rank1Score->time_recorded);
 
-        // Cek Ranking 4 adalah SMAN 1 Cikarang Utara B (44 benar, 2 salah -> (44 - 2) * 2 = 84 poin)
+        // Cek Ranking 4 adalah SMAN 1 Cikarang Utara B (44 benar, 2 salah -> Skema 2: 50 + 44 - 2 = 92 poin sesuai sheet panitia)
         $rank4Score = CompetitionScore::where('competition_category_id', $this->wiraCategory->id)
             ->where('rank', 4)
             ->first();
         $this->assertNotNull($rank4Score);
-        $this->assertEquals(84.0, $rank4Score->final_score);
+        $this->assertEquals(92.0, $rank4Score->final_score);
         $this->assertEquals('07:45', $rank4Score->time_recorded);
 
-        // Cek Ranking 9 adalah SMAN 1 Cikarang Utara A (32 benar, 12 salah -> (32 - 12) * 2 = 40 poin)
+        // Cek Ranking 9 adalah SMAN 1 Cikarang Utara A (32 benar, 12 salah -> Skema 2: 50 + 32 - 12 = 70 poin sesuai sheet panitia)
         $rank9Score = CompetitionScore::where('competition_category_id', $this->wiraCategory->id)
             ->where('rank', 9)
             ->first();
         $this->assertNotNull($rank9Score);
-        $this->assertEquals(40.0, $rank9Score->final_score);
+        $this->assertEquals(70.0, $rank9Score->final_score);
         $this->assertEquals('07:28', $rank9Score->time_recorded);
 
-        // Cek Ranking 20 adalah SMAN 1 Purwakarta (20 benar, 25 salah -> (20 - 25) * 2 = -10 poin)
+        // Cek Ranking 20 adalah SMAN 1 Purwakarta (20 benar, 25 salah -> Skema 2: 50 + 20 - 25 = 45 poin sesuai sheet panitia)
         $rank20Score = CompetitionScore::where('competition_category_id', $this->wiraCategory->id)
             ->where('rank', 20)
             ->first();
         $this->assertNotNull($rank20Score);
-        $this->assertEquals(-10.0, $rank20Score->final_score);
+        $this->assertEquals(45.0, $rank20Score->final_score);
         $this->assertEquals('10:04', $rank20Score->time_recorded);
     }
 

@@ -74,6 +74,7 @@ class CompetitionEventController extends Controller
 
         $validated['slug'] = Str::slug($validated['title']).'-'.time();
         $validated['is_active'] = $request->boolean('is_active');
+        $validated['is_info_menu_visible'] = $request->boolean('is_info_menu_visible');
         $validated['is_registration_open'] = $request->boolean('is_registration_open');
         $validated['is_waves_enabled'] = $request->boolean('is_waves_enabled');
         $validated['display_mode'] = $request->input('display_mode', 'auto');
@@ -179,6 +180,7 @@ class CompetitionEventController extends Controller
         ]);
 
         $validated['is_active'] = $request->boolean('is_active');
+        $validated['is_info_menu_visible'] = $request->boolean('is_info_menu_visible');
         $validated['is_registration_open'] = $request->boolean('is_registration_open');
         $validated['is_waves_enabled'] = $request->boolean('is_waves_enabled');
         $validated['display_mode'] = $request->input('display_mode', 'auto');
