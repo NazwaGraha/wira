@@ -228,7 +228,7 @@ class CompetitionOlimpiadeScoreTest extends TestCase
         $this->assertEquals(20, CompetitionParticipantTeam::where('competition_category_id', $this->wiraCategory->id)->count());
         $this->assertEquals(20, CompetitionScore::where('competition_category_id', $this->wiraCategory->id)->count());
 
-        // Cek bahwa ranking 1 adalah SMAN 5 Bandung A (100 poin, 07:54)
+        // Cek bahwa ranking 1 adalah SMAN 5 Bandung A (50 benar, 0 salah -> (50 - 0) * 2 = 100 poin, 07:54)
         $rank1Score = CompetitionScore::where('competition_category_id', $this->wiraCategory->id)
             ->where('rank', 1)
             ->first();
@@ -236,28 +236,28 @@ class CompetitionOlimpiadeScoreTest extends TestCase
         $this->assertEquals(100.0, $rank1Score->final_score);
         $this->assertEquals('07:54', $rank1Score->time_recorded);
 
-        // Cek Ranking 4 adalah SMAN 1 Cikarang Utara B (44 benar, 2 salah -> 92 poin sesuai Draft Sheet Skema 2)
+        // Cek Ranking 4 adalah SMAN 1 Cikarang Utara B (44 benar, 2 salah -> (44 - 2) * 2 = 84 poin)
         $rank4Score = CompetitionScore::where('competition_category_id', $this->wiraCategory->id)
             ->where('rank', 4)
             ->first();
         $this->assertNotNull($rank4Score);
-        $this->assertEquals(92.0, $rank4Score->final_score);
+        $this->assertEquals(84.0, $rank4Score->final_score);
         $this->assertEquals('07:45', $rank4Score->time_recorded);
 
-        // Cek Ranking 9 adalah SMAN 1 Cikarang Utara A (32 benar, 12 salah -> 70 poin)
+        // Cek Ranking 9 adalah SMAN 1 Cikarang Utara A (32 benar, 12 salah -> (32 - 12) * 2 = 40 poin)
         $rank9Score = CompetitionScore::where('competition_category_id', $this->wiraCategory->id)
             ->where('rank', 9)
             ->first();
         $this->assertNotNull($rank9Score);
-        $this->assertEquals(70.0, $rank9Score->final_score);
+        $this->assertEquals(40.0, $rank9Score->final_score);
         $this->assertEquals('07:28', $rank9Score->time_recorded);
 
-        // Cek Ranking 20 adalah SMAN 1 Purwakarta (20 benar, 25 salah -> 45 poin)
+        // Cek Ranking 20 adalah SMAN 1 Purwakarta (20 benar, 25 salah -> (20 - 25) * 2 = -10 poin)
         $rank20Score = CompetitionScore::where('competition_category_id', $this->wiraCategory->id)
             ->where('rank', 20)
             ->first();
         $this->assertNotNull($rank20Score);
-        $this->assertEquals(45.0, $rank20Score->final_score);
+        $this->assertEquals(-10.0, $rank20Score->final_score);
         $this->assertEquals('10:04', $rank20Score->time_recorded);
     }
 

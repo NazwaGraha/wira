@@ -2870,22 +2870,13 @@ class CompetitionScoreController extends Controller
         $fastestTeam = $scoredList->sortBy('time_seconds')->first();
         $fastestTime = $fastestTeam?->waktu ?: '00:00';
 
-        // Deteksi formula aktif dari data tersimpan, default 'skema2' (Draft Penilaian Olimpiade Skema 2)
-        $firstScored = $sortedTeams->firstWhere('has_score', true);
-        $activeFormulaType = 'skema2';
-        if ($firstScored && $firstScored->score_record) {
-            $scDetails = is_array($firstScored->score_record->score_details)
-                ? $firstScored->score_record->score_details
-                : json_decode($firstScored->score_record->score_details ?? '', true);
-            if (! empty($scDetails['formula_type'])) {
-                $activeFormulaType = $scDetails['formula_type'];
-            }
-        }
+        // Nilai Akhir resmi olimpiade: (Benar - Salah) * 2
+        $activeFormulaLabel = '(Benar - Salah) * 2';
 
         return view('admin.competition.scores.grid-olimpiade', compact(
             'category',
             'activeStage',
-            'activeFormulaType',
+            'activeFormulaLabel',
             'allTeams',
             'sortedTeams',
             'top9Teams',
@@ -2918,7 +2909,6 @@ class CompetitionScoreController extends Controller
         $inputSalah = $request->input('salah', []);
         $inputKosong = $request->input('kosong', []);
         $inputWaktu = $request->input('waktu', []);
-        $formulaType = $request->input('formula_type', 'skema2'); // 'skema2': 50 + B - S (default draft panitia), 'standard': (B - S) * 2
 
         $juryUserId = $this->resolveSafeJuryUserId($category);
 
@@ -2944,12 +2934,8 @@ class CompetitionScoreController extends Controller
                 $timeStr = self::normalizeTimeString($rawTime);
                 $timeSec = self::parseTimeToSeconds($timeStr) ?? 999999;
 
-                // Perhitungan Nilai Akhir
-                if ($formulaType === 'skema2') {
-                    $finalScore = (float) (50 + $b - $s);
-                } else {
-                    $finalScore = (float) (($b - $s) * 2);
-                }
+                // Perhitungan Nilai Akhir resmi: (Benar - Salah) * 2
+                $finalScore = (float) (($b - $s) * 2);
 
                 $scoreData = [
                     'final_score' => $finalScore,
@@ -2960,10 +2946,9 @@ class CompetitionScoreController extends Controller
                         'kosong' => $k,
                         'waktu_tempuh' => $timeStr,
                         'time_seconds' => $timeSec,
-                        'formula_type' => $formulaType,
-                        'formula_label' => ($formulaType === 'skema2') ? '50 + Benar - Salah' : '(Benar - Salah) * 2',
-                        'score_standard' => ($b - $s) * 2,
-                        'score_skema2' => 50 + $b - $s,
+                        'formula_type' => 'standard',
+                        'formula_label' => '(Benar - Salah) * 2',
+                        'formula_desc' => 'Nilai Benar dikurangi Nilai Salah dikali 2',
                     ],
                 ];
 
@@ -3422,8 +3407,8 @@ class CompetitionScoreController extends Controller
                 $b = $sim['benar'];
                 $s = $sim['salah'];
                 $k = $sim['kosong'];
-                // Hitung Nilai Akhir sesuai Skema 2: 50 + Benar - Salah (Draft Penilaian Olimpiade Skema 2)
-                $finalScore = (float) (50 + $b - $s);
+                // Hitung Nilai Akhir resmi: (Benar - Salah) * 2
+                $finalScore = (float) (($b - $s) * 2);
                 $timeSec = self::parseTimeToSeconds($sim['waktu']);
 
                 $scoreData = [
@@ -3435,10 +3420,9 @@ class CompetitionScoreController extends Controller
                         'kosong' => $k,
                         'waktu_tempuh' => $sim['waktu'],
                         'time_seconds' => $timeSec,
-                        'formula_type' => 'skema2',
-                        'formula_label' => '50 + Benar - Salah (Skema 2)',
-                        'score_standard' => ($b - $s) * 2,
-                        'score_skema2' => 50 + $b - $s,
+                        'formula_type' => 'standard',
+                        'formula_label' => '(Benar - Salah) * 2',
+                        'formula_desc' => 'Nilai Benar dikurangi Nilai Salah dikali 2',
                     ],
                 ];
 
