@@ -11,6 +11,7 @@
     $isLKTR = str_contains($catName, 'tandu') || str_contains($catName, 'lktr') || str_starts_with($catCode, 'LKTR');
     $isPRS = str_contains($catName, 'pendidikan remaja sebaya') || str_contains($catName, 'prs') || str_starts_with($catCode, 'PRS');
     $isMewarnai = str_contains($catName, 'mewarnai') || str_starts_with($catCode, 'MEWARNAI');
+    $isOlim = str_contains($catName, 'olimpiade') || str_contains($catName, 'olympiade') || str_starts_with($catCode, 'OLIM');
     $isPP = str_contains($catName, 'pertolongan pertama') || str_starts_with($catCode, 'LPP') || str_starts_with($catCode, 'PP');
 
     // WARNA HANYA UNTUK HEADER CARD & BADGE NOMOR URUT (SESUAI PERMINTAAN USER):
@@ -468,6 +469,118 @@
                             <button type="button" onclick="setMewarnaiScore('c3', 18)" class="py-1 rounded bg-blue-600 text-white text-[9px] font-black shadow">18</button>
                             <button type="button" onclick="setMewarnaiScore('c3', 20)" class="py-1 rounded bg-slate-800 hover:bg-slate-700 text-[9px] text-slate-300 font-bold">20</button>
                         </div>
+                    </div>
+                </div>
+
+            @elseif ($isOlim)
+                <!-- ========================================================================= -->
+                <!-- 4. RUBRIK OLIMPIADE KEPALANGMERAHAN (OLIM) 50 SOAL -->
+                <!-- ========================================================================= -->
+                @php
+                    $olimBenar = intval($existingRubric['benar'] ?? 0);
+                    $olimSalah = intval($existingRubric['salah'] ?? 0);
+                    $olimKosong = max(0, 50 - ($olimBenar + $olimSalah));
+                    $olimScore = ($olimBenar - $olimSalah) * 2;
+                @endphp
+
+                <!-- Stopwatch & Input Waktu Pengerjaan -->
+                <div class="bg-slate-900 rounded-2xl p-3 border border-slate-800 space-y-2.5 shadow-sm">
+                    <div class="flex items-center justify-between">
+                        <span class="text-[10px] font-black uppercase text-slate-300 flex items-center gap-1.5">
+                            <i class="fa-solid fa-stopwatch {{ $catLevel === 'Madya' ? 'text-sky-400' : 'text-amber-400' }}"></i> STOPWATCH WAKTU PENGERJAAN
+                        </span>
+                        <span class="text-[8.5px] font-mono text-slate-400 bg-slate-950 px-2 py-0.5 rounded border border-slate-800">
+                            Format [MM]:SS
+                        </span>
+                    </div>
+
+                    <div class="flex items-center justify-between bg-black/60 rounded-xl p-2.5 border border-slate-800">
+                        <div>
+                            <div id="stopwatch-display" class="text-2xl font-black font-mono {{ $catLevel === 'Madya' ? 'text-sky-400' : 'text-amber-400' }} tracking-wider">
+                                {{ sprintf('%02d:%02d', $recordedMinutes, $recordedSeconds) }}
+                            </div>
+                            <div class="text-[8px] text-slate-400 mt-0.5 font-bold">Waktu Tempuh Olimpiade</div>
+                        </div>
+                        <div class="flex items-center gap-1.5">
+                            <button type="button" onclick="toggleStopwatch()" class="px-3 py-1.5 rounded-lg {{ $catLevel === 'Madya' ? 'bg-blue-600 hover:bg-blue-500 text-white' : 'bg-amber-500 hover:bg-amber-600 text-slate-950 font-black' }} font-bold text-xs active:scale-95 transition flex items-center gap-1 shadow">
+                                <i id="icon-timer-btn" class="fa-solid fa-play text-[9px]"></i>
+                                <span id="label-timer-btn">Mulai</span>
+                            </button>
+                            <button type="button" onclick="resetStopwatch()" class="p-1.5 px-2.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs border border-slate-700 active:scale-95 transition" title="Reset">
+                                <i class="fa-solid fa-rotate-right"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Koreksi Waktu Manual Fleksibel -->
+                    <div class="bg-slate-950/70 rounded-xl p-2 border border-slate-800/80 flex items-center justify-between gap-2">
+                        <span class="text-[9.5px] font-bold text-slate-400 shrink-0">Koreksi Manual:</span>
+                        <div class="flex items-center gap-1.5">
+                            <div class="flex items-center gap-1">
+                                <input type="number" id="input-minutes-box" value="{{ $recordedMinutes }}" min="0" max="180" oninput="syncManualTime()" class="w-12 bg-black/60 border border-slate-700 rounded-lg py-1 text-center font-mono font-bold text-xs text-white">
+                                <span class="text-[9px] text-slate-500">m</span>
+                            </div>
+                            <span class="text-slate-600">:</span>
+                            <div class="flex items-center gap-1">
+                                <input type="number" id="input-seconds-box" value="{{ $recordedSeconds }}" min="0" max="59" oninput="syncManualTime()" class="w-12 bg-black/60 border border-slate-700 rounded-lg py-1 text-center font-mono font-bold text-xs text-white">
+                                <span class="text-[9px] text-slate-500">s</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Input Benar, Salah, Kosong Olimpiade -->
+                <div class="bg-slate-900 rounded-2xl p-3 border border-slate-800 space-y-3 shadow-sm">
+                    <div class="flex items-center justify-between border-b border-slate-800/80 pb-2">
+                        <span class="text-[11px] font-black text-slate-100 uppercase tracking-wide">
+                            LEMBAR JAWABAN (50 SOAL)
+                        </span>
+                        <span class="text-[9.5px] font-mono font-bold text-slate-400 bg-slate-950 px-2 py-0.5 rounded-lg border border-slate-800">
+                            Bobot: B (+1) • S (-1) • K (0)
+                        </span>
+                    </div>
+
+                    <!-- Row 1: Jawaban Benar -->
+                    <div class="bg-slate-950/60 p-2.5 rounded-xl border border-slate-800/80 flex items-center justify-between">
+                        <div>
+                            <div class="text-xs font-bold text-emerald-400 flex items-center gap-1">
+                                <i class="fa-solid fa-circle-check"></i> Jawaban Benar (+1)
+                            </div>
+                            <div class="text-[9px] text-slate-400 mt-0.5">Jumlah butir soal dijawab tepat</div>
+                        </div>
+                        <div class="flex items-center gap-1.5">
+                            <button type="button" onclick="adjustMobileOlim('benar', -1)" class="w-8 h-8 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold text-sm flex items-center justify-center">-</button>
+                            <input type="number" name="rubric[benar]" id="mobile-olim-benar" value="{{ $olimBenar }}" min="0" max="50" oninput="recalculateMobileOlim()" class="w-14 bg-black/70 border border-emerald-500/40 rounded-lg py-1.5 text-center font-mono font-black text-base text-emerald-300 outline-none">
+                            <button type="button" onclick="adjustMobileOlim('benar', 1)" class="w-8 h-8 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold text-sm flex items-center justify-center">+</button>
+                        </div>
+                    </div>
+
+                    <!-- Row 2: Jawaban Salah -->
+                    <div class="bg-slate-950/60 p-2.5 rounded-xl border border-slate-800/80 flex items-center justify-between">
+                        <div>
+                            <div class="text-xs font-bold text-rose-400 flex items-center gap-1">
+                                <i class="fa-solid fa-circle-xmark"></i> Jawaban Salah (&minus;1)
+                            </div>
+                            <div class="text-[9px] text-slate-400 mt-0.5">Jumlah butir soal dijawab keliru</div>
+                        </div>
+                        <div class="flex items-center gap-1.5">
+                            <button type="button" onclick="adjustMobileOlim('salah', -1)" class="w-8 h-8 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold text-sm flex items-center justify-center">-</button>
+                            <input type="number" name="rubric[salah]" id="mobile-olim-salah" value="{{ $olimSalah }}" min="0" max="50" oninput="recalculateMobileOlim()" class="w-14 bg-black/70 border border-rose-500/40 rounded-lg py-1.5 text-center font-mono font-black text-base text-rose-300 outline-none">
+                            <button type="button" onclick="adjustMobileOlim('salah', 1)" class="w-8 h-8 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold text-sm flex items-center justify-center">+</button>
+                        </div>
+                    </div>
+
+                    <!-- Row 3: Tidak Dijawab / Kosong -->
+                    <div class="bg-slate-950/40 p-2.5 rounded-xl border border-slate-800/60 flex items-center justify-between text-slate-400">
+                        <div>
+                            <div class="text-xs font-bold text-slate-300 flex items-center gap-1">
+                                <i class="fa-solid fa-circle-minus"></i> Tidak Dijawab (0)
+                            </div>
+                            <div class="text-[9px] text-slate-500 mt-0.5">Otomatis: 50 &minus; (Benar + Salah)</div>
+                        </div>
+                        <span id="mobile-olim-kosong" class="font-mono font-bold text-sm text-slate-300 bg-slate-800 px-3 py-1 rounded-lg border border-slate-700">
+                            {{ $olimKosong }}
+                        </span>
                     </div>
                 </div>
 
@@ -1061,6 +1174,7 @@
     const IS_LKTR = {{ $isLKTR ? 'true' : 'false' }};
     const IS_PRS = {{ $isPRS ? 'true' : 'false' }};
     const IS_MEWARNAI = {{ $isMewarnai ? 'true' : 'false' }};
+    const IS_OLIM = {{ $isOlim ? 'true' : 'false' }};
     const IS_PP = {{ $isPP ? 'true' : 'false' }};
 
     // ================= KALKULASI & INTERAKSI SKOR LIVE =================
@@ -1218,6 +1332,34 @@
         document.getElementById('bottom-bar-subtitle').innerText = 'TOTAL SKOR PP (' + CAT_LEVEL.toUpperCase() + ')';
         document.getElementById('bottom-bar-score').innerText = total;
         document.getElementById('bottom-bar-max').innerText = '/ ' + maxScore;
+    }
+
+    // 5. OLIMPIADE
+    function adjustMobileOlim(field, delta) {
+        const input = document.getElementById('mobile-olim-' + field);
+        if (!input) return;
+        let cur = parseInt(input.value) || 0;
+        input.value = Math.max(0, Math.min(50, cur + delta));
+        recalculateMobileOlim();
+    }
+
+    function recalculateMobileOlim() {
+        const bInput = document.getElementById('mobile-olim-benar');
+        const sInput = document.getElementById('mobile-olim-salah');
+        const kDisplay = document.getElementById('mobile-olim-kosong');
+        const b = parseInt(bInput ? bInput.value : 0) || 0;
+        const s = parseInt(sInput ? sInput.value : 0) || 0;
+        const k = Math.max(0, 50 - (b + s));
+        if (kDisplay) kDisplay.innerText = k;
+
+        const totalScore = (b - s) * 2;
+        document.getElementById('input-final-score').value = totalScore;
+        const sub = document.getElementById('bottom-bar-subtitle');
+        if (sub) sub.innerText = `BENAR: ${b} • SALAH: ${s} • KOSONG: ${k}`;
+        const scEl = document.getElementById('bottom-bar-score');
+        if (scEl) scEl.innerText = totalScore;
+        const maxEl = document.getElementById('bottom-bar-max');
+        if (maxEl) maxEl.innerText = 'POIN';
     }
 
     function syncManualTime() {
@@ -1548,5 +1690,11 @@
             }
         });
     }
+
+    document.addEventListener('DOMContentLoaded', function() {
+        if (IS_OLIM) {
+            recalculateMobileOlim();
+        }
+    });
 </script>
 @endpush

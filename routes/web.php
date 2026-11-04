@@ -309,6 +309,15 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::post('/competition-scores/{category}/lct-seed-simulation', [CompetitionScoreController::class, 'lctSeedSimulation'])->name('competition-scores.lct-seed-simulation');
         Route::get('/competition-scores/{category}/lct-live', [CompetitionScoreController::class, 'lctLiveScreen'])->name('competition-scores.lct-live');
         Route::get('/competition-scores/{category}/lct-export-excel', [CompetitionScoreController::class, 'lctExportExcel'])->name('competition-scores.lct-export-excel');
+
+        // Modul Penilaian Khusus Olimpiade Kepalangmerahan (OLIM)
+        Route::get('/competition-scores/{category}/olimpiade', [CompetitionScoreController::class, 'olimpiadeView'])->name('competition-scores.olimpiade');
+        Route::post('/competition-scores/{category}/olimpiade-save', [CompetitionScoreController::class, 'olimpiadeSave'])->name('competition-scores.olimpiade-save');
+        Route::post('/competition-scores/{category}/olimpiade-reset', [CompetitionScoreController::class, 'olimpiadeReset'])->name('competition-scores.olimpiade-reset');
+        Route::post('/competition-scores/{category}/olimpiade-seed-simulation', [CompetitionScoreController::class, 'olimpiadeSeedSimulation'])->name('competition-scores.olimpiade-seed-simulation');
+        Route::get('/competition-scores/{category}/olimpiade-live', [CompetitionScoreController::class, 'olimpiadeLiveScreen'])->name('competition-scores.olimpiade-live');
+        Route::get('/competition-scores/{category}/olimpiade-export-excel', [CompetitionScoreController::class, 'olimpiadeExportExcel'])->name('competition-scores.olimpiade-export-excel');
+
         Route::get('/competition-scores/{category}/export-excel', [CompetitionScoreController::class, 'exportExcel'])->name('competition-scores.export-excel');
         Route::post('/competition-scores/{category}/save', [CompetitionScoreController::class, 'saveScores'])->name('competition-scores.save');
         Route::post('/competition-scores/{category}/reset', [CompetitionScoreController::class, 'resetScores'])->name('competition-scores.reset');

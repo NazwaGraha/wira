@@ -1231,6 +1231,11 @@ class CompetitionScoreController extends Controller
             return redirect()->route('admin.competition-scores.lct', $category->id);
         }
 
+        // Jika kategori adalah Olimpiade Kepalangmerahan (OLIM), arahkan ke sistem penilaian Olimpiade
+        if (str_contains(strtolower($category->name), 'olimpiade') || str_contains(strtolower($category->name), 'olympiade') || str_starts_with($category->code ?? '', 'OLIM')) {
+            return redirect()->route('admin.competition-scores.olimpiade', $category->id);
+        }
+
         $category->loadMissing(['assignedJuries', 'event']);
 
         $round = $request->query('round', 'Utama');
@@ -2617,5 +2622,484 @@ class CompetitionScoreController extends Controller
         }
 
         return $termins;
+    }
+
+    // =========================================================================
+    // MODUL KHUSUS: SISTEM PENILAIAN OLIMPIADE KEPALANGMERAHAN (OLIM)
+    // =========================================================================
+
+    /**
+     * Tampilan Utama Grid Penilaian Olimpiade Kepalangmerahan (Madya & Wira)
+     */
+    public function olimpiadeView(CompetitionCategory $category, Request $request)
+    {
+        $category->loadMissing(['assignedJuries', 'event']);
+
+        // Ambil seluruh tim peserta yang terdaftar pada kategori Olimpiade ini
+        $allTeams = CompetitionParticipantTeam::where('competition_category_id', $category->id)
+            ->where('is_active', true)
+            ->with(['registration'])
+            ->orderBy('order_number')
+            ->get();
+
+        // Ambil data nilai tersimpan
+        $scores = CompetitionScore::where('competition_category_id', $category->id)
+            ->where(function ($q) {
+                $q->where('round_name', 'Utama')
+                    ->orWhere('round_name', 'Olimpiade')
+                    ->orWhereNull('round_name');
+            })
+            ->get()
+            ->keyBy('competition_participant_team_id');
+
+        // Petakan data peserta dengan rincian Benar, Salah, Kosong, Waktu Tempuh, Nilai Akhir
+        $mappedTeams = $allTeams->map(function ($team) use ($scores) {
+            $sc = $scores->get($team->id);
+            $details = is_array($sc?->score_details)
+                ? $sc->score_details
+                : (json_decode($sc?->score_details ?? '', true) ?? []);
+
+            $teamCopy = clone $team;
+            $teamCopy->score_record = $sc;
+            $teamCopy->has_score = ($sc !== null && $sc->final_score !== null);
+            $teamCopy->benar = isset($details['benar']) ? (int) $details['benar'] : ($teamCopy->has_score ? (int) ($details['correct'] ?? 0) : null);
+            $teamCopy->salah = isset($details['salah']) ? (int) $details['salah'] : ($teamCopy->has_score ? (int) ($details['wrong'] ?? 0) : null);
+
+            $b = $teamCopy->benar ?? 0;
+            $s = $teamCopy->salah ?? 0;
+            $teamCopy->kosong = isset($details['kosong']) ? (int) $details['kosong'] : max(0, 50 - ($b + $s));
+
+            $timeStr = $sc?->time_recorded ?: ($details['waktu_tempuh'] ?? null);
+            $teamCopy->waktu = $timeStr;
+            $teamCopy->time_seconds = $sc ? ($details['time_seconds'] ?? self::parseTimeToSeconds($timeStr) ?? 999999) : 999999;
+            $teamCopy->final_score = $sc?->final_score !== null ? (float) $sc->final_score : null;
+            $teamCopy->score_alt = $teamCopy->has_score ? (50 + $b - $s) : null;
+            $teamCopy->rank = $sc?->rank;
+
+            return $teamCopy;
+        });
+
+        // Urutkan klasemen: Nilai Tertinggi (DESC) -> Waktu Tempuh Tercepat (ASC)
+        $sortedTeams = $mappedTeams->sort(function ($a, $b) {
+            $scoreA = $a->final_score;
+            $scoreB = $b->final_score;
+
+            // Jika keduanya belum dinilai, urutkan berdasarkan order_number
+            if ($scoreA === null && $scoreB === null) {
+                return strnatcasecmp((string) ($a->order_number ?? ''), (string) ($b->order_number ?? ''));
+            }
+            // Prioritaskan yang sudah dinilai di atas
+            if ($scoreA === null) {
+                return 1;
+            }
+            if ($scoreB === null) {
+                return -1;
+            }
+
+            // Keduanya dinilai: Nilai tertinggi di posisi teratas
+            if ($scoreA != $scoreB) {
+                return $scoreB <=> $scoreA;
+            }
+
+            // Jika nilai sama, waktu tempuh tercepat (ascending)
+            return $a->time_seconds <=> $b->time_seconds;
+        })->values();
+
+        // Tetapkan peringkat sementara & predikat juara
+        $rankCounter = 1;
+        $sortedTeams->each(function ($t) use (&$rankCounter) {
+            if ($t->has_score) {
+                $curRank = $t->rank ?: $rankCounter;
+                $t->rank = $curRank;
+                if ($curRank === 1) {
+                    $t->badge = 'JUARA 1';
+                    $t->badge_type = 'gold';
+                } elseif ($curRank === 2) {
+                    $t->badge = 'JUARA 2';
+                    $t->badge_type = 'silver';
+                } elseif ($curRank === 3) {
+                    $t->badge = 'JUARA 3';
+                    $t->badge_type = 'bronze';
+                } elseif ($curRank === 4) {
+                    $t->badge = 'HARAPAN 1';
+                    $t->badge_type = 'blue';
+                } elseif ($curRank === 5) {
+                    $t->badge = 'HARAPAN 2';
+                    $t->badge_type = 'blue';
+                } elseif ($curRank === 6) {
+                    $t->badge = 'HARAPAN 3';
+                    $t->badge_type = 'blue';
+                } else {
+                    $t->badge = 'TERVERIFIKASI';
+                    $t->badge_type = 'gray';
+                }
+                $rankCounter++;
+            } else {
+                $t->badge = 'BELUM DINILAI';
+                $t->badge_type = 'gray';
+            }
+        });
+
+        // Statistik
+        $scoredList = $sortedTeams->where('has_score', true);
+        $totalTeamsCount = $allTeams->count();
+        $scoredCount = $scoredList->count();
+        $highestScore = $scoredList->isNotEmpty() ? $scoredList->max('final_score') : 0;
+        $highestTeam = $scoredList->firstWhere('final_score', $highestScore);
+        $avgScore = $scoredList->isNotEmpty() ? round($scoredList->avg('final_score'), 1) : 0;
+
+        $fastestTeam = $scoredList->sortBy('time_seconds')->first();
+        $fastestTime = $fastestTeam?->waktu ?: '00:00';
+
+        return view('admin.competition.scores.grid-olimpiade', compact(
+            'category',
+            'allTeams',
+            'sortedTeams',
+            'totalTeamsCount',
+            'scoredCount',
+            'highestScore',
+            'highestTeam',
+            'avgScore',
+            'fastestTime',
+            'fastestTeam'
+        ));
+    }
+
+    /**
+     * Simpan Seluruh Nilai Olimpiade (Batch Save & Rank Calculation)
+     */
+    public function olimpiadeSave(CompetitionCategory $category, Request $request)
+    {
+        $inputBenar = $request->input('benar', []);
+        $inputSalah = $request->input('salah', []);
+        $inputWaktu = $request->input('waktu', []);
+        $formulaType = $request->input('formula_type', 'standard'); // 'standard': (B - S) * 2, 'skema2': 50 + B - S
+
+        $juryUserId = $this->resolveSafeJuryUserId($category);
+
+        try {
+            DB::beginTransaction();
+
+            foreach ($inputBenar as $teamId => $bVal) {
+                if ($bVal === null || $bVal === '') {
+                    continue;
+                }
+
+                $b = max(0, min(50, (int) $bVal));
+                $s = max(0, min(50, (int) ($inputSalah[$teamId] ?? 0)));
+                $k = max(0, 50 - ($b + $s));
+
+                $rawTime = trim((string) ($inputWaktu[$teamId] ?? ''));
+                $timeStr = self::normalizeTimeString($rawTime);
+                $timeSec = self::parseTimeToSeconds($timeStr) ?? 999999;
+
+                // Perhitungan Nilai Akhir
+                if ($formulaType === 'skema2') {
+                    $finalScore = (float) (50 + $b - $s);
+                } else {
+                    $finalScore = (float) (($b - $s) * 2);
+                }
+
+                $scoreData = [
+                    'final_score' => $finalScore,
+                    'time_recorded' => $timeStr ?: null,
+                    'score_details' => [
+                        'benar' => $b,
+                        'salah' => $s,
+                        'kosong' => $k,
+                        'waktu_tempuh' => $timeStr,
+                        'time_seconds' => $timeSec,
+                        'formula_type' => $formulaType,
+                        'formula_label' => ($formulaType === 'skema2') ? '50 + Benar - Salah' : '(Benar - Salah) * 2',
+                        'score_standard' => ($b - $s) * 2,
+                        'score_skema2' => 50 + $b - $s,
+                    ],
+                ];
+
+                if (Schema::hasColumn('competition_scores', 'jury_user_id')) {
+                    $scoreData['jury_user_id'] = $juryUserId;
+                }
+
+                CompetitionScore::updateOrCreate(
+                    [
+                        'competition_category_id' => $category->id,
+                        'competition_participant_team_id' => $teamId,
+                        'round_name' => 'Utama',
+                    ],
+                    $scoreData
+                );
+            }
+
+            // Hitung ulang ranking resmi secara konsisten
+            $allScores = CompetitionScore::where('competition_category_id', $category->id)
+                ->where('round_name', 'Utama')
+                ->where('is_disqualified', false)
+                ->get();
+
+            $sorted = $allScores->sort(function ($a, $b) {
+                if ($a->final_score != $b->final_score) {
+                    return $b->final_score <=> $a->final_score;
+                }
+                $detailsA = is_array($a->score_details) ? $a->score_details : (json_decode($a->score_details ?? '', true) ?? []);
+                $detailsB = is_array($b->score_details) ? $b->score_details : (json_decode($b->score_details ?? '', true) ?? []);
+                $secA = $detailsA['time_seconds'] ?? self::parseTimeToSeconds($a->time_recorded) ?? 999999;
+                $secB = $detailsB['time_seconds'] ?? self::parseTimeToSeconds($b->time_recorded) ?? 999999;
+
+                return $secA <=> $secB;
+            })->values();
+
+            foreach ($sorted as $idx => $sc) {
+                $sc->rank = $idx + 1;
+                $sc->save();
+            }
+
+            DB::commit();
+
+            return redirect()->route('admin.competition-scores.olimpiade', $category->id)
+                ->with('success', 'Seluruh nilai & waktu tempuh Olimpiade berhasil disimpan! Klasemen ranking resmi telah diperbarui.');
+        } catch (\Throwable $e) {
+            DB::rollBack();
+            Log::error('Error in olimpiadeSave: '.$e->getMessage(), ['exception' => $e]);
+
+            return redirect()->back()
+                ->withInput()
+                ->with('error', 'Gagal menyimpan nilai olimpiade: '.$e->getMessage());
+        }
+    }
+
+    /**
+     * Muat Data Simulasi Olimpiade Sesuai Draft Sheet Panitia (20 Tim Lengkap)
+     */
+    public function olimpiadeSeedSimulation(CompetitionCategory $category, Request $request)
+    {
+        $isMadya = strcasecmp((string) $category->level, 'Madya') === 0;
+
+        // Data 20 regu sesuai sheet panitia
+        $wiraSimulation = [
+            ['name' => 'SMAN 1 Cikarang Utara B', 'order' => 1, 'benar' => 44, 'salah' => 2, 'kosong' => 4, 'waktu' => '07:45'],
+            ['name' => 'SMAN 1 Cikarang Utara A', 'order' => 2, 'benar' => 32, 'salah' => 12, 'kosong' => 6, 'waktu' => '07:28'],
+            ['name' => 'SMAN 1 Tambun Selatan', 'order' => 3, 'benar' => 21, 'salah' => 24, 'kosong' => 5, 'waktu' => '07:23'],
+            ['name' => 'SMAN 2 Bekasi', 'order' => 4, 'benar' => 26, 'salah' => 17, 'kosong' => 7, 'waktu' => '09:22'],
+            ['name' => 'SMAN 1 Bekasi', 'order' => 5, 'benar' => 24, 'salah' => 21, 'kosong' => 5, 'waktu' => '08:12'],
+            ['name' => 'SMAN 3 Bekasi', 'order' => 6, 'benar' => 38, 'salah' => 8, 'kosong' => 4, 'waktu' => '14:18'],
+            ['name' => 'SMAN 1 Karawang', 'order' => 7, 'benar' => 48, 'salah' => 0, 'kosong' => 2, 'waktu' => '11:16'],
+            ['name' => 'SMAN 1 Cikampek', 'order' => 8, 'benar' => 23, 'salah' => 20, 'kosong' => 7, 'waktu' => '14:59'],
+            ['name' => 'SMAN 1 Purwakarta', 'order' => 9, 'benar' => 20, 'salah' => 25, 'kosong' => 5, 'waktu' => '10:04'],
+            ['name' => 'SMAN 1 Subang', 'order' => 10, 'benar' => 35, 'salah' => 9, 'kosong' => 6, 'waktu' => '10:22'],
+            ['name' => 'SMAN 5 Bandung B', 'order' => 11, 'benar' => 36, 'salah' => 10, 'kosong' => 4, 'waktu' => '07:00'],
+            ['name' => 'SMAN 2 Bandung', 'order' => 12, 'benar' => 25, 'salah' => 19, 'kosong' => 6, 'waktu' => '13:00'],
+            ['name' => 'SMAN 5 Bandung A', 'order' => 13, 'benar' => 50, 'salah' => 0, 'kosong' => 0, 'waktu' => '07:54'],
+            ['name' => 'SMAN 1 Bogor', 'order' => 14, 'benar' => 30, 'salah' => 14, 'kosong' => 6, 'waktu' => '15:00'],
+            ['name' => 'SMAN 3 Bogor', 'order' => 15, 'benar' => 28, 'salah' => 18, 'kosong' => 4, 'waktu' => '08:34'],
+            ['name' => 'SMAN 1 Depok', 'order' => 16, 'benar' => 30, 'salah' => 15, 'kosong' => 5, 'waktu' => '13:43'],
+            ['name' => 'SMAN 1 Sukabumi', 'order' => 17, 'benar' => 25, 'salah' => 20, 'kosong' => 5, 'waktu' => '13:42'],
+            ['name' => 'SMAN 1 Garut', 'order' => 18, 'benar' => 32, 'salah' => 11, 'kosong' => 7, 'waktu' => '09:34'],
+            ['name' => 'SMAN 1 Tasikmalaya', 'order' => 19, 'benar' => 27, 'salah' => 17, 'kosong' => 6, 'waktu' => '11:00'],
+            ['name' => 'SMAN 1 Cianjur', 'order' => 20, 'benar' => 50, 'salah' => 0, 'kosong' => 0, 'waktu' => '10:33'],
+        ];
+
+        $madyaSimulation = [
+            ['name' => 'SMPN 1 Cikarang Utara B', 'order' => 1, 'benar' => 44, 'salah' => 2, 'kosong' => 4, 'waktu' => '07:45'],
+            ['name' => 'SMPN 1 Cikarang Utara A', 'order' => 2, 'benar' => 32, 'salah' => 12, 'kosong' => 6, 'waktu' => '07:28'],
+            ['name' => 'SMPN 1 Tambun Selatan', 'order' => 3, 'benar' => 21, 'salah' => 24, 'kosong' => 5, 'waktu' => '07:23'],
+            ['name' => 'SMPN 2 Bekasi', 'order' => 4, 'benar' => 26, 'salah' => 17, 'kosong' => 7, 'waktu' => '09:22'],
+            ['name' => 'SMPN 1 Bekasi', 'order' => 5, 'benar' => 24, 'salah' => 21, 'kosong' => 5, 'waktu' => '08:12'],
+            ['name' => 'SMPN 3 Bekasi', 'order' => 6, 'benar' => 38, 'salah' => 8, 'kosong' => 4, 'waktu' => '14:18'],
+            ['name' => 'SMPN 1 Karawang', 'order' => 7, 'benar' => 48, 'salah' => 0, 'kosong' => 2, 'waktu' => '11:16'],
+            ['name' => 'SMPN 1 Cikampek', 'order' => 8, 'benar' => 23, 'salah' => 20, 'kosong' => 7, 'waktu' => '14:59'],
+            ['name' => 'SMPN 1 Purwakarta', 'order' => 9, 'benar' => 20, 'salah' => 25, 'kosong' => 5, 'waktu' => '10:04'],
+            ['name' => 'SMPN 1 Subang', 'order' => 10, 'benar' => 35, 'salah' => 9, 'kosong' => 6, 'waktu' => '10:22'],
+            ['name' => 'SMPN 5 Bandung B', 'order' => 11, 'benar' => 36, 'salah' => 10, 'kosong' => 4, 'waktu' => '07:00'],
+            ['name' => 'SMPN 2 Bandung', 'order' => 12, 'benar' => 25, 'salah' => 19, 'kosong' => 6, 'waktu' => '13:00'],
+            ['name' => 'SMPN 5 Bandung A', 'order' => 13, 'benar' => 50, 'salah' => 0, 'kosong' => 0, 'waktu' => '07:54'],
+            ['name' => 'SMPN 1 Ciawi (Bogor)', 'order' => 14, 'benar' => 30, 'salah' => 14, 'kosong' => 6, 'waktu' => '15:00'],
+            ['name' => 'SMPN 3 Bogor', 'order' => 15, 'benar' => 28, 'salah' => 18, 'kosong' => 4, 'waktu' => '08:34'],
+            ['name' => 'SMPN 1 Depok', 'order' => 16, 'benar' => 30, 'salah' => 15, 'kosong' => 5, 'waktu' => '13:43'],
+            ['name' => 'SMPN 1 Sukabumi', 'order' => 17, 'benar' => 25, 'salah' => 20, 'kosong' => 5, 'waktu' => '13:42'],
+            ['name' => 'SMPN 1 Garut', 'order' => 18, 'benar' => 32, 'salah' => 11, 'kosong' => 7, 'waktu' => '09:34'],
+            ['name' => 'MTsN 1 Kota Bogor', 'order' => 19, 'benar' => 27, 'salah' => 17, 'kosong' => 6, 'waktu' => '11:00'],
+            ['name' => 'SMPN 1 Cianjur', 'order' => 20, 'benar' => 50, 'salah' => 0, 'kosong' => 0, 'waktu' => '10:33'],
+        ];
+
+        $simulationData = $isMadya ? $madyaSimulation : $wiraSimulation;
+        $juryUserId = $this->resolveSafeJuryUserId($category);
+
+        try {
+            DB::beginTransaction();
+
+            foreach ($simulationData as $sim) {
+                $reg = CompetitionRegistration::firstOrCreate(
+                    [
+                        'competition_event_id' => $category->competition_event_id,
+                        'school_name' => $sim['name'],
+                    ],
+                    [
+                        'registration_code' => 'SIM-OLIM-'.str_pad((string) $sim['order'], 3, '0', STR_PAD_LEFT),
+                        'level' => $category->level ?: ($isMadya ? 'Madya' : 'Wira'),
+                        'advisor_name' => 'Pembina '.$sim['name'],
+                        'advisor_phone' => '081234567890',
+                        'advisor_email' => 'pembina@'.Str::slug($sim['name']).'.sch.id',
+                        'status' => 'verified',
+                        'total_fee' => 150000,
+                    ]
+                );
+
+                $team = CompetitionParticipantTeam::firstOrCreate(
+                    [
+                        'competition_category_id' => $category->id,
+                        'competition_registration_id' => $reg->id,
+                    ],
+                    [
+                        'team_name' => $sim['name'],
+                        'team_label' => 'Regu Utama',
+                        'order_number' => $sim['order'],
+                        'is_active' => true,
+                    ]
+                );
+
+                $b = $sim['benar'];
+                $s = $sim['salah'];
+                $k = $sim['kosong'];
+                $finalScore = (float) (($b - $s) * 2);
+                $timeSec = self::parseTimeToSeconds($sim['waktu']);
+
+                $scoreData = [
+                    'final_score' => $finalScore,
+                    'time_recorded' => $sim['waktu'],
+                    'score_details' => [
+                        'benar' => $b,
+                        'salah' => $s,
+                        'kosong' => $k,
+                        'waktu_tempuh' => $sim['waktu'],
+                        'time_seconds' => $timeSec,
+                        'formula_type' => 'standard',
+                        'score_standard' => ($b - $s) * 2,
+                        'score_skema2' => 50 + $b - $s,
+                    ],
+                ];
+
+                if (Schema::hasColumn('competition_scores', 'jury_user_id')) {
+                    $scoreData['jury_user_id'] = $juryUserId;
+                }
+
+                CompetitionScore::updateOrCreate(
+                    [
+                        'competition_category_id' => $category->id,
+                        'competition_participant_team_id' => $team->id,
+                        'round_name' => 'Utama',
+                    ],
+                    $scoreData
+                );
+            }
+
+            // Hitung ulang ranking
+            $allScores = CompetitionScore::where('competition_category_id', $category->id)
+                ->where('round_name', 'Utama')
+                ->where('is_disqualified', false)
+                ->get();
+
+            $sorted = $allScores->sort(function ($a, $b) {
+                if ($a->final_score != $b->final_score) {
+                    return $b->final_score <=> $a->final_score;
+                }
+                $detailsA = is_array($a->score_details) ? $a->score_details : (json_decode($a->score_details ?? '', true) ?? []);
+                $detailsB = is_array($b->score_details) ? $b->score_details : (json_decode($b->score_details ?? '', true) ?? []);
+                $secA = $detailsA['time_seconds'] ?? self::parseTimeToSeconds($a->time_recorded) ?? 999999;
+                $secB = $detailsB['time_seconds'] ?? self::parseTimeToSeconds($b->time_recorded) ?? 999999;
+
+                return $secA <=> $secB;
+            })->values();
+
+            foreach ($sorted as $idx => $sc) {
+                $sc->rank = $idx + 1;
+                $sc->save();
+            }
+
+            DB::commit();
+
+            return redirect()->route('admin.competition-scores.olimpiade', $category->id)
+                ->with('success', 'Data simulasi 20 regu Olimpiade sesuai sheet panitia berhasil dimuat lengkap dengan perhitungan ranking!');
+        } catch (\Throwable $e) {
+            DB::rollBack();
+            Log::error('Error in olimpiadeSeedSimulation: '.$e->getMessage(), ['exception' => $e]);
+
+            return redirect()->back()
+                ->with('error', 'Gagal memuat data simulasi: '.$e->getMessage());
+        }
+    }
+
+    /**
+     * Reset Seluruh Nilai Olimpiade
+     */
+    public function olimpiadeReset(CompetitionCategory $category, Request $request)
+    {
+        CompetitionScore::where('competition_category_id', $category->id)
+            ->where(function ($q) {
+                $q->where('round_name', 'Utama')
+                    ->orWhere('round_name', 'Olimpiade')
+                    ->orWhereNull('round_name');
+            })
+            ->delete();
+
+        return redirect()->route('admin.competition-scores.olimpiade', $category->id)
+            ->with('success', 'Seluruh nilai dan data ranking Olimpiade berhasil di-reset dan dikosongkan.');
+    }
+
+    /**
+     * Layar Proyektor / Panggung Live Olimpiade
+     */
+    public function olimpiadeLiveScreen(CompetitionCategory $category, Request $request)
+    {
+        $category->loadMissing(['event']);
+
+        $allTeams = CompetitionParticipantTeam::where('competition_category_id', $category->id)
+            ->where('is_active', true)
+            ->with(['registration'])
+            ->get();
+
+        $scores = CompetitionScore::where('competition_category_id', $category->id)
+            ->where(function ($q) {
+                $q->where('round_name', 'Utama')
+                    ->orWhere('round_name', 'Olimpiade')
+                    ->orWhereNull('round_name');
+            })
+            ->get()
+            ->keyBy('competition_participant_team_id');
+
+        $teams = $allTeams->map(function ($team) use ($scores) {
+            $sc = $scores->get($team->id);
+            $details = is_array($sc?->score_details) ? $sc->score_details : (json_decode($sc?->score_details ?? '', true) ?? []);
+
+            $teamCopy = clone $team;
+            $teamCopy->final_score = $sc?->final_score !== null ? (float) $sc->final_score : null;
+            $teamCopy->waktu = $sc?->time_recorded ?: ($details['waktu_tempuh'] ?? '-');
+            $teamCopy->time_seconds = $sc ? ($details['time_seconds'] ?? self::parseTimeToSeconds($teamCopy->waktu) ?? 999999) : 999999;
+            $teamCopy->benar = $details['benar'] ?? null;
+            $teamCopy->salah = $details['salah'] ?? null;
+            $teamCopy->kosong = $details['kosong'] ?? null;
+            $teamCopy->rank = $sc?->rank;
+
+            return $teamCopy;
+        })->filter(fn ($t) => $t->final_score !== null)
+            ->sortBy(function ($t) {
+                // Skor tertinggi -> Waktu tercepat
+                return [-$t->final_score, $t->time_seconds];
+            })->values();
+
+        // Tetapkan medali
+        $teams->each(function ($t, $idx) {
+            $r = $idx + 1;
+            $t->live_rank = $r;
+        });
+
+        return view('admin.competition.scores.olimpiade-live', compact('category', 'teams'));
+    }
+
+    /**
+     * Export Excel Lembar Penilaian Olimpiade
+     */
+    public function olimpiadeExportExcel(CompetitionCategory $category, Request $request, CompetitionSpreadsheetService $spreadsheetService)
+    {
+        return $this->exportExcel($category, $request, $spreadsheetService);
     }
 }

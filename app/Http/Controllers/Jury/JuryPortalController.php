@@ -455,6 +455,7 @@ class JuryPortalController extends Controller
         $isLKTR = str_contains(strtolower($category->name), 'tandu') || str_contains(strtolower($category->code ?? ''), 'LKTR');
         $isPRS = str_contains(strtolower($category->name), 'pendidikan remaja sebaya') || str_contains(strtolower($category->code ?? ''), 'PRS');
         $isMewarnai = str_contains(strtolower($category->name), 'mewarnai') || str_contains(strtolower($category->code ?? ''), 'MEWARNAI');
+        $isOlim = str_contains(strtolower($category->name), 'olimpiade') || str_contains(strtolower($category->code ?? ''), 'OLIM');
 
         $finalScore = (float) $request->input('final_score');
 
@@ -484,6 +485,16 @@ class JuryPortalController extends Controller
                 $scoreDetails['time_score'] = $timeScore;
                 $scoreDetails['practical_score'] = $techScore;
                 $finalScore = $techScore + $timeScore;
+            } elseif ($isOlim) {
+                $b = (int) ($rubric['benar'] ?? 0);
+                $s = (int) ($rubric['salah'] ?? 0);
+                $k = max(0, 50 - ($b + $s));
+                $scoreDetails['benar'] = $b;
+                $scoreDetails['salah'] = $s;
+                $scoreDetails['kosong'] = $k;
+                $scoreDetails['waktu_tempuh'] = $timeRecorded;
+                $scoreDetails['time_seconds'] = CompetitionScoreController::parseTimeToSeconds($timeRecorded) ?? 999999;
+                $finalScore = (float) (($b - $s) * 2);
             } else {
                 $sumScore = 0;
                 foreach ($rubric as $v) {
@@ -513,6 +524,28 @@ class JuryPortalController extends Controller
         CompetitionScorePhoto::where('competition_participant_team_id', $team->id)
             ->whereNull('competition_score_id')
             ->update(['competition_score_id' => $score->id]);
+
+        if ($isOlim) {
+            $allScores = CompetitionScore::where('competition_category_id', $category->id)
+                ->where('round_name', 'Utama')
+                ->where('is_disqualified', false)
+                ->get();
+            $sorted = $allScores->sort(function ($a, $b) {
+                if ($a->final_score != $b->final_score) {
+                    return $b->final_score <=> $a->final_score;
+                }
+                $detailsA = is_array($a->score_details) ? $a->score_details : (json_decode($a->score_details ?? '', true) ?? []);
+                $detailsB = is_array($b->score_details) ? $b->score_details : (json_decode($b->score_details ?? '', true) ?? []);
+                $secA = $detailsA['time_seconds'] ?? CompetitionScoreController::parseTimeToSeconds($a->time_recorded) ?? 999999;
+                $secB = $detailsB['time_seconds'] ?? CompetitionScoreController::parseTimeToSeconds($b->time_recorded) ?? 999999;
+
+                return $secA <=> $secB;
+            })->values();
+            foreach ($sorted as $idx => $sc) {
+                $sc->rank = $idx + 1;
+                $sc->save();
+            }
+        }
 
         // Cari regu berikutnya yang tampil
         $allTeams = CompetitionParticipantTeam::where('competition_category_id', $category->id)
