@@ -514,17 +514,18 @@
                                                    class="input-salah w-14 sm:w-16 text-center font-mono font-black text-xs sm:text-sm text-rose-700 bg-rose-50/70 focus:bg-white rounded-lg py-1 border border-rose-300 outline-none {{ $activeInputBorder }} shadow-2xs transition">
                                         </td>
 
-                                        <!-- 5. TIDAK DIJAWAB / KOSONG (0) - Readonly / Otomatis -->
+                                        <!-- 5. TIDAK DIJAWAB / KOSONG (0) -->
                                         <td class="py-3 px-2 text-center">
-                                            <input type="text" 
+                                            <input type="number" 
                                                    id="kosong_{{ $t->id }}" 
                                                    name="kosong[{{ $t->id }}]" 
                                                    value="{{ $t->has_score ? ($t->kosong !== null ? $t->kosong : $kVal) : '' }}" 
-                                                   readonly
-                                                   tabindex="-1"
-                                                   placeholder="50"
-                                                   class="input-kosong w-12 sm:w-14 text-center font-mono font-bold text-xs text-slate-500 bg-slate-100 rounded-lg py-1 border border-slate-200 cursor-not-allowed select-none shadow-2xs"
-                                                   title="Dihitung otomatis: 50 - (Benar + Salah)">
+                                                   min="0" 
+                                                   max="999" 
+                                                   placeholder="0"
+                                                   oninput="handleRowChange({{ $t->id }}, false, true)" 
+                                                   onblur="handleRowChange({{ $t->id }}, true, true)"
+                                                   class="input-kosong w-14 sm:w-16 text-center font-mono font-bold text-xs sm:text-sm text-slate-700 bg-slate-50/70 focus:bg-white rounded-lg py-1 border border-slate-300 outline-none focus:border-slate-500 focus:ring-2 focus:ring-slate-200 shadow-2xs transition">
                                         </td>
 
                                         <!-- 6. WAKTU TEMPUH (MM:SS) -->
@@ -689,20 +690,23 @@
         handleRowChange(teamId, false);
     }
 
-    function handleRowChange(teamId, shouldSort = false) {
+    function handleRowChange(teamId, shouldSort = false, isManualKosong = false) {
         calculateRowScore(teamId);
 
-        // Auto kalkulasi kolom kosong jika benar & salah terisi
         const bInput = document.getElementById('benar_' + teamId);
         const sInput = document.getElementById('salah_' + teamId);
         const kInput = document.getElementById('kosong_' + teamId);
-        if (bInput && sInput && kInput) {
+
+        if (isManualKosong && kInput) {
+            kInput.dataset.manual = 'true';
+        }
+
+        // Auto kalkulasi kolom kosong hanya jika user belum mengisi kolom kosong secara manual
+        if (bInput && sInput && kInput && !isManualKosong && kInput.dataset.manual !== 'true') {
             const b = parseInt(bInput.value) || 0;
             const s = parseInt(sInput.value) || 0;
             if (bInput.value !== '' || sInput.value !== '') {
                 kInput.value = Math.max(0, 50 - (b + s));
-            } else {
-                kInput.value = '';
             }
         }
 
