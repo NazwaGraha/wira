@@ -327,114 +327,141 @@
                                     <table class="w-full text-center border-collapse min-w-[620px]">
                                         <thead>
                                             <tr class="bg-slate-900 text-white text-[11px] uppercase font-black tracking-wider">
-                                                <th rowspan="2" class="py-2.5 px-2 w-10 border-r border-b border-slate-700">No</th>
+                                                <th rowspan="2" class="py-2.5 px-2 w-12 border-r border-b border-slate-700">No</th>
                                                 <th rowspan="2" class="py-2.5 px-3 text-left border-r border-b border-slate-700">ASPEK PENILAIAN</th>
-                                                <th colspan="3" class="py-2 px-2 bg-slate-800 border-r border-b border-slate-700">Penilaian</th>
-                                                <th rowspan="2" class="py-2.5 px-3 w-28 bg-slate-950 text-amber-300 border-b border-slate-700">Nilai (Input)</th>
+                                                <th colspan="3" class="py-2.5 px-2 bg-slate-800 border-b border-slate-700">Penilaian (Input Nilai)</th>
                                             </tr>
                                             <tr class="bg-slate-800 text-slate-300 text-[10px] font-black uppercase">
-                                                <th class="py-1 px-2 border-r border-slate-700 w-24">0-14</th>
-                                                <th class="py-1 px-2 border-r border-slate-700 w-24">15-28</th>
-                                                <th class="py-1 px-2 border-r border-slate-700 w-24">29-43</th>
+                                                <th class="py-1 px-2 border-r border-slate-700 w-28">0-14</th>
+                                                <th class="py-1 px-2 border-r border-slate-700 w-28">15-28</th>
+                                                <th class="py-1 px-2 w-28">29-43</th>
                                             </tr>
                                         </thead>
                                         <tbody class="text-xs divide-y divide-slate-300 font-semibold text-slate-800">
                                             
                                             {{-- 1. KETEPATAN --}}
-                                            <tr class="bg-slate-200/90 text-slate-900 font-black text-xs text-left">
-                                                <td rowspan="{{ count($mulaKetepatanItems) + 1 }}" class="py-2 px-2 text-center border-r-2 border-slate-900 font-bold align-middle bg-slate-100">
+                                            <tr class="bg-slate-200/90 text-slate-900 font-black text-xs text-left border-b border-slate-300">
+                                                <td rowspan="{{ count($mulaKetepatanItems) + 1 }}" class="py-2.5 px-2 text-center border-r-2 border-slate-900 font-bold align-middle bg-slate-100 text-sm">
                                                     1
                                                 </td>
-                                                <td class="py-2 px-3 tracking-wider uppercase font-black bg-slate-200/90 border-r border-slate-300" colspan="4">
+                                                <td class="py-2.5 px-3 tracking-wider uppercase font-black bg-slate-200/90 border-r border-slate-300">
                                                     KETEPATAN <span class="text-[10px] text-slate-600 font-bold ml-1">(Maksimal: 301 Poin)</span>
                                                 </td>
-                                                <td class="py-2 px-2 text-center font-mono text-slate-900 font-black bg-slate-300/90" id="display_subtotal_ketepatan">0</td>
+                                                <td colspan="3" class="py-2 px-3 text-right bg-slate-300/80 font-mono font-black text-xs text-slate-900">
+                                                    Subtotal Ketepatan: <span id="display_subtotal_ketepatan" class="text-rose-600 text-sm">0</span> / 301 Poin
+                                                </td>
                                             </tr>
 
                                             @foreach($mulaKetepatanItems as $it)
+                                                @php
+                                                    $v = $it['val'];
+                                                    $col0Val = ($v !== null && $v !== '' && $v <= 14) ? $v : '';
+                                                    $col1Val = ($v !== null && $v !== '' && $v >= 15 && $v <= 28) ? $v : '';
+                                                    $col2Val = ($v !== null && $v !== '' && $v >= 29) ? $v : '';
+                                                @endphp
                                                 <tr class="hover:bg-slate-50/60 transition">
                                                     <td class="py-2 px-3 text-left border-r border-slate-300 font-medium text-slate-800">
                                                         {{ $it['label'] }}
                                                     </td>
-                                                    @foreach($it['ranges'] as $idx => $rText)
-                                                        @php
-                                                            $optVal = $it['opts'][$idx];
-                                                        @endphp
-                                                        <td class="p-1 border-r border-slate-300 w-24">
-                                                            <button type="button" 
-                                                                onclick="selectScoreMula('{{ $it['key'] }}', {{ $optVal }}, {{ $idx }}, this)" 
-                                                                class="btn-mula-{{ $it['key'] }} btn-mula-{{ $it['key'] }}-{{ $idx }} w-full py-1.5 rounded-lg {{ ($it['val'] !== null && $it['val'] == $optVal) ? 'selected-pill' : 'bg-slate-100 hover:bg-slate-200 text-slate-700' }} font-bold text-xs border border-slate-200 transition">
-                                                                {{ $rText }}
-                                                            </button>
-                                                        </td>
-                                                    @endforeach
-                                                    <td class="py-1 px-2 bg-slate-50/80">
+                                                    <td class="p-1 border-r border-slate-300 w-28">
                                                         <input type="number" 
-                                                            min="0" 
-                                                            max="{{ $it['max'] }}" 
-                                                            id="score_input_{{ $it['key'] }}" 
-                                                            value="{{ $it['val'] !== null ? $it['val'] : '' }}" 
-                                                            placeholder="0-{{ $it['max'] }}"
-                                                            oninput="manualScoreInputMula('{{ $it['key'] }}', this.value, {{ $it['max'] }})" 
-                                                            class="w-full text-center font-mono font-black text-xs bg-white text-slate-900 border border-slate-300 rounded-lg py-1 px-1 focus:ring-2 focus:ring-rose-500 focus:outline-none">
+                                                            id="input_col_{{ $it['key'] }}_0" 
+                                                            value="{{ $col0Val }}" 
+                                                            placeholder="0-14" 
+                                                            oninput="handleMulaInput('{{ $it['key'] }}', 0, this.value)" 
+                                                            class="w-full text-center font-mono font-black text-xs sm:text-sm bg-white text-slate-900 border border-slate-300 rounded-lg py-1.5 px-1 focus:ring-2 focus:ring-rose-500 focus:outline-none transition">
+                                                    </td>
+                                                    <td class="p-1 border-r border-slate-300 w-28">
+                                                        <input type="number" 
+                                                            id="input_col_{{ $it['key'] }}_1" 
+                                                            value="{{ $col1Val }}" 
+                                                            placeholder="15-28" 
+                                                            oninput="handleMulaInput('{{ $it['key'] }}', 1, this.value)" 
+                                                            class="w-full text-center font-mono font-black text-xs sm:text-sm bg-white text-slate-900 border border-slate-300 rounded-lg py-1.5 px-1 focus:ring-2 focus:ring-rose-500 focus:outline-none transition">
+                                                    </td>
+                                                    <td class="p-1 w-28">
+                                                        <input type="number" 
+                                                            id="input_col_{{ $it['key'] }}_2" 
+                                                            value="{{ $col2Val }}" 
+                                                            placeholder="29-43" 
+                                                            oninput="handleMulaInput('{{ $it['key'] }}', 2, this.value)" 
+                                                            class="w-full text-center font-mono font-black text-xs sm:text-sm bg-white text-slate-900 border border-slate-300 rounded-lg py-1.5 px-1 focus:ring-2 focus:ring-rose-500 focus:outline-none transition">
                                                     </td>
                                                 </tr>
                                             @endforeach
 
                                             {{-- 2. KEKUATAN --}}
                                             <tr class="bg-slate-200/90 text-slate-900 font-black text-xs text-left border-t-2 border-slate-900">
-                                                <td rowspan="{{ count($mulaKekuatanItems) + 1 }}" class="py-2 px-2 text-center border-r-2 border-slate-900 font-bold align-middle bg-slate-100">
+                                                <td rowspan="{{ count($mulaKekuatanItems) + 2 }}" class="py-2.5 px-2 text-center border-r-2 border-slate-900 font-bold align-middle bg-slate-100 text-sm">
                                                     2
                                                 </td>
-                                                <td class="py-2 px-3 tracking-wider uppercase font-black bg-slate-200/90 border-r border-slate-300" colspan="4">
+                                                <td class="py-2.5 px-3 tracking-wider uppercase font-black bg-slate-200/90 border-r border-slate-300">
                                                     KEKUATAN <span class="text-[10px] text-slate-600 font-bold ml-1">(Maksimal: 399 Poin)</span>
                                                 </td>
-                                                <td class="py-2 px-2 text-center font-mono text-slate-900 font-black bg-slate-300/90" id="display_subtotal_kekuatan_mula">0</td>
+                                                <td colspan="3" class="py-2 px-3 text-right bg-slate-300/80 font-mono font-black text-xs text-slate-900">
+                                                    Subtotal Kekuatan: <span id="display_subtotal_kekuatan_mula" class="text-rose-600 text-sm">0</span> / 399 Poin
+                                                </td>
+                                            </tr>
+                                            <tr class="bg-slate-700 text-slate-200 text-[10px] font-black uppercase text-center">
+                                                <td class="py-1 px-3 text-left border-r border-slate-600 font-bold text-slate-300">RENTANG NILAI KEKUATAN :</td>
+                                                <th class="py-1 px-2 border-r border-slate-600 w-28">0-44</th>
+                                                <th class="py-1 px-2 border-r border-slate-600 w-28">45-88</th>
+                                                <th class="py-1 px-2 w-28">89-133</th>
                                             </tr>
 
                                             @foreach($mulaKekuatanItems as $it)
+                                                @php
+                                                    $v = $it['val'];
+                                                    $col0Val = ($v !== null && $v !== '' && $v <= 44) ? $v : '';
+                                                    $col1Val = ($v !== null && $v !== '' && $v >= 45 && $v <= 88) ? $v : '';
+                                                    $col2Val = ($v !== null && $v !== '' && $v >= 89) ? $v : '';
+                                                @endphp
                                                 <tr class="hover:bg-slate-50/60 transition">
                                                     <td class="py-2 px-3 text-left border-r border-slate-300 font-medium text-slate-800">
                                                         {{ $it['label'] }}
                                                     </td>
-                                                    @foreach($it['ranges'] as $idx => $rText)
-                                                        @php
-                                                            $optVal = $it['opts'][$idx];
-                                                        @endphp
-                                                        <td class="p-1 border-r border-slate-300 w-24">
-                                                            <button type="button" 
-                                                                onclick="selectScoreMula('{{ $it['key'] }}', {{ $optVal }}, {{ $idx }}, this)" 
-                                                                class="btn-mula-{{ $it['key'] }} btn-mula-{{ $it['key'] }}-{{ $idx }} w-full py-1.5 rounded-lg {{ ($it['val'] !== null && $it['val'] == $optVal) ? 'selected-pill' : 'bg-slate-100 hover:bg-slate-200 text-slate-700' }} font-bold text-xs border border-slate-200 transition">
-                                                                {{ $rText }}
-                                                            </button>
-                                                        </td>
-                                                    @endforeach
-                                                    <td class="py-1 px-2 bg-slate-50/80">
+                                                    <td class="p-1 border-r border-slate-300 w-28">
                                                         <input type="number" 
-                                                            min="0" 
-                                                            max="{{ $it['max'] }}" 
-                                                            id="score_input_{{ $it['key'] }}" 
-                                                            value="{{ $it['val'] !== null ? $it['val'] : '' }}" 
-                                                            placeholder="0-{{ $it['max'] }}"
-                                                            oninput="manualScoreInputMula('{{ $it['key'] }}', this.value, {{ $it['max'] }})" 
-                                                            class="w-full text-center font-mono font-black text-xs bg-white text-slate-900 border border-slate-300 rounded-lg py-1 px-1 focus:ring-2 focus:ring-rose-500 focus:outline-none">
+                                                            id="input_col_{{ $it['key'] }}_0" 
+                                                            value="{{ $col0Val }}" 
+                                                            placeholder="0-44" 
+                                                            oninput="handleMulaInput('{{ $it['key'] }}', 0, this.value)" 
+                                                            class="w-full text-center font-mono font-black text-xs sm:text-sm bg-white text-slate-900 border border-slate-300 rounded-lg py-1.5 px-1 focus:ring-2 focus:ring-rose-500 focus:outline-none transition">
+                                                    </td>
+                                                    <td class="p-1 border-r border-slate-300 w-28">
+                                                        <input type="number" 
+                                                            id="input_col_{{ $it['key'] }}_1" 
+                                                            value="{{ $col1Val }}" 
+                                                            placeholder="45-88" 
+                                                            oninput="handleMulaInput('{{ $it['key'] }}', 1, this.value)" 
+                                                            class="w-full text-center font-mono font-black text-xs sm:text-sm bg-white text-slate-900 border border-slate-300 rounded-lg py-1.5 px-1 focus:ring-2 focus:ring-rose-500 focus:outline-none transition">
+                                                    </td>
+                                                    <td class="p-1 w-28">
+                                                        <input type="number" 
+                                                            id="input_col_{{ $it['key'] }}_2" 
+                                                            value="{{ $col2Val }}" 
+                                                            placeholder="89-133" 
+                                                            oninput="handleMulaInput('{{ $it['key'] }}', 2, this.value)" 
+                                                            class="w-full text-center font-mono font-black text-xs sm:text-sm bg-white text-slate-900 border border-slate-300 rounded-lg py-1.5 px-1 focus:ring-2 focus:ring-rose-500 focus:outline-none transition">
                                                     </td>
                                                 </tr>
                                             @endforeach
 
                                             {{-- 3. WAKTU (Menit) --}}
                                             <tr class="bg-slate-200/90 text-slate-900 font-black text-xs text-left border-t-2 border-slate-900">
-                                                <td rowspan="2" class="py-2 px-2 text-center border-r-2 border-slate-900 font-bold align-middle bg-slate-100">
+                                                <td rowspan="2" class="py-2.5 px-2 text-center border-r-2 border-slate-900 font-bold align-middle bg-slate-100 text-sm">
                                                     3
                                                 </td>
-                                                <td class="py-2 px-3 tracking-wider uppercase font-black bg-slate-200/90 border-r border-slate-300" colspan="4">
+                                                <td class="py-2.5 px-3 tracking-wider uppercase font-black bg-slate-200/90 border-r border-slate-300">
                                                     WAKTU (Menit) <span class="text-[10px] text-slate-600 font-bold ml-1">(Skala 10 Interval Menit &bull; Maks 300 Poin)</span>
                                                 </td>
-                                                <td class="py-2 px-2 text-center font-mono text-emerald-900 font-black bg-emerald-200/80" id="display_subtotal_waktu">0</td>
+                                                <td colspan="3" class="py-2 px-3 text-right bg-emerald-100/90 font-mono font-black text-xs text-emerald-900">
+                                                    Poin Waktu: <span id="display_subtotal_waktu" class="text-emerald-700 text-sm font-black">0</span> / 300 Poin
+                                                </td>
                                             </tr>
                                             {{-- 10 Interval Rows (in grid/table format as per paper sheet) --}}
                                             <tr>
-                                                <td colspan="5" class="p-0 border-t border-slate-300">
+                                                <td colspan="4" class="p-0 border-t border-slate-300">
                                                     <div class="grid grid-cols-10 divide-x divide-slate-300 text-center font-mono text-[10px] bg-slate-50">
                                                         <div class="py-1.5 font-bold" id="mula_interval_lbl_1">0-1</div>
                                                         <div class="py-1.5 font-bold" id="mula_interval_lbl_2">1.1 - 2</div>
@@ -465,10 +492,10 @@
                                         </tbody>
                                         <tfoot>
                                             <tr class="bg-slate-900 text-white font-black text-sm border-t-2 border-slate-900">
-                                                <td colspan="5" class="py-3 px-4 text-right tracking-wider uppercase text-slate-300 text-xs">
+                                                <td colspan="4" class="py-3 px-4 text-right tracking-wider uppercase text-slate-300 text-xs">
                                                     TOTAL NILAI AKUMULASI (TEKNIS: <span id="display_footer_teknis">0</span> + WAKTU: <span id="display_footer_waktu">0</span>) :
                                                 </td>
-                                                <td class="py-3 px-2 bg-gradient-to-r from-red-600 to-rose-600 text-white font-mono text-xl tracking-tight" id="display_total_score">
+                                                <td class="py-3 px-2 bg-gradient-to-r from-red-600 to-rose-600 text-white font-mono text-xl tracking-tight text-center" id="display_total_score">
                                                     0
                                                 </td>
                                             </tr>
@@ -907,72 +934,37 @@
         recalculateAll();
     }
 
-    // Function for Mula range button click
-    function selectScoreMula(key, val, rangeIdx, btnElement) {
-        const hiddenInput = document.getElementById('input_' + key);
-        if (hiddenInput) {
-            hiddenInput.value = val;
-        }
+    // Function for Mula direct input typing in the 3 range columns
+    function handleMulaInput(key, colIdx, rawVal) {
+        const valStr = (rawVal || '').toString().trim();
+        const val = valStr === '' ? '' : parseInt(valStr, 10);
 
-        const scoreInput = document.getElementById('score_input_' + key);
-        if (scoreInput) {
-            scoreInput.value = val;
-        }
-
-        document.querySelectorAll('.btn-mula-' + key).forEach(btn => {
-            btn.classList.remove('selected-pill');
-            btn.classList.add('bg-slate-100', 'text-slate-700');
-        });
-
-        btnElement.classList.add('selected-pill');
-        btnElement.classList.remove('bg-slate-100', 'text-slate-700');
-
-        recalculateAll();
-    }
-
-    // Function for Mula manual input typing
-    function manualScoreInputMula(key, rawVal, maxVal) {
-        let val = rawVal.trim() === '' ? '' : parseInt(rawVal, 10);
-        if (isNaN(val)) val = '';
-        if (val !== '' && val > maxVal) {
-            val = maxVal;
-            const inputEl = document.getElementById('score_input_' + key);
-            if (inputEl) inputEl.value = val;
-        }
-        if (val !== '' && val < 0) {
-            val = 0;
-            const inputEl = document.getElementById('score_input_' + key);
-            if (inputEl) inputEl.value = val;
-        }
-
-        const hiddenInput = document.getElementById('input_' + key);
-        if (hiddenInput) {
-            hiddenInput.value = val !== '' ? val : '';
-        }
-
-        // Highlight matching button if any
-        document.querySelectorAll('.btn-mula-' + key).forEach(btn => {
-            btn.classList.remove('selected-pill');
-            btn.classList.add('bg-slate-100', 'text-slate-700');
-        });
-
-        if (val !== '') {
-            let activeIdx = -1;
-            if (key.startsWith('ketepatan_')) {
-                if (val <= 14) activeIdx = 0;
-                else if (val <= 28) activeIdx = 1;
-                else if (val <= 43) activeIdx = 2;
-            } else if (key.startsWith('kekuatan_')) {
-                if (val <= 44) activeIdx = 0;
-                else if (val <= 88) activeIdx = 1;
-                else if (val <= 133) activeIdx = 2;
-            }
-            if (activeIdx !== -1) {
-                const btn = document.querySelector(`.btn-mula-${key}-${activeIdx}`);
-                if (btn) {
-                    btn.classList.add('selected-pill');
-                    btn.classList.remove('bg-slate-100', 'text-slate-700');
+        if (val !== '' && !isNaN(val)) {
+            // Clear the other two columns in this row
+            [0, 1, 2].forEach(i => {
+                if (i !== colIdx) {
+                    const otherInput = document.getElementById(`input_col_${key}_${i}`);
+                    if (otherInput) otherInput.value = '';
                 }
+            });
+
+            // Update hidden input
+            const hiddenInput = document.getElementById(`input_${key}`);
+            if (hiddenInput) {
+                hiddenInput.value = val;
+            }
+        } else {
+            // If current column was cleared, check if another column has value
+            let activeVal = '';
+            [0, 1, 2].forEach(i => {
+                const el = document.getElementById(`input_col_${key}_${i}`);
+                if (el && el.value.trim() !== '' && !isNaN(parseInt(el.value, 10))) {
+                    activeVal = parseInt(el.value, 10);
+                }
+            });
+            const hiddenInput = document.getElementById(`input_${key}`);
+            if (hiddenInput) {
+                hiddenInput.value = activeVal;
             }
         }
 
