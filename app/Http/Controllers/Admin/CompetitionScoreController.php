@@ -1538,22 +1538,31 @@ class CompetitionScoreController extends Controller
 
             return max(0, min(300, $score));
         } else {
-            // Madya & Wira:
-            // <= 02:40 (160s) => 300
-            // 02:41 - 02:50 (161 - 170s) => 285
-            // Interval 10 detik, berkurang 15 poin per interval
-            // 05:21 - 05:30 (321 - 330s) => 45
-            // > 05:30 (> 330s) => 0
-            if ($seconds <= 160) {
-                return 300;
+            // Sesuai tabel resmi 6 interval LKTR Madya & Wira (Maksimal Toleransi 05:30 Menit):
+            // 0 - 1 Menit (0 - 60s)        => 251 - 300 Poin
+            // 1.1 - 2 Menit (61 - 120s)    => 201 - 250 Poin
+            // 2.1 - 3 Menit (121 - 180s)   => 151 - 200 Poin
+            // 3.1 - 4 Menit (181 - 240s)   => 101 - 150 Poin
+            // 4.1 - 5 Menit (241 - 300s)   => 51 - 100 Poin
+            // 5.1 - 5.30 Menit (301 - 330s)=> 0 - 51 Poin
+            // > 5.30 Menit (> 330s)        => 0 Poin
+            if ($seconds <= 0) {
+                return 0;
             }
             if ($seconds > 330) {
                 return 0;
             }
-            $step = (int) ceil(($seconds - 160) / 10);
-            $score = 300 - ($step * 15);
+            if ($seconds <= 300) {
+                $score = 300 - (int) round($seconds * (250 / 300));
 
-            return max($score, 45);
+                return max(51, min(300, $score));
+            } else {
+                // 301 - 330 detik (rentang 0 - 51)
+                $diff = $seconds - 300;
+                $score = 51 - (int) round($diff * (51 / 30));
+
+                return max(0, min(51, $score));
+            }
         }
     }
 
