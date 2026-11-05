@@ -410,12 +410,12 @@
                                 <tr class="bg-slate-900 text-white uppercase text-[10px] sm:text-[10.5px] tracking-wider font-black select-none">
                                     <th class="py-3.5 px-2 text-center w-14 sm:w-16 border-r border-slate-800">NO URUT</th>
                                     <th class="py-3.5 px-3.5 border-r border-slate-800 min-w-[190px]">NAMA PANGKALAN SEKOLAH / REGU</th>
-                                    <th class="py-3.5 px-2 text-center border-r border-slate-800 w-24 sm:w-28 bg-emerald-950/60 text-emerald-300">
+                                    <th class="py-3.5 px-2 text-center border-r border-slate-800 w-20 sm:w-24 bg-emerald-950/60 text-emerald-300">
                                         <div class="flex items-center justify-center gap-1">
                                             <i class="fa-solid fa-check text-[10px]"></i> BENAR (+1)
                                         </div>
                                     </th>
-                                    <th class="py-3.5 px-2 text-center border-r border-slate-800 w-24 sm:w-28 bg-rose-950/60 text-rose-300">
+                                    <th class="py-3.5 px-2 text-center border-r border-slate-800 w-20 sm:w-24 bg-rose-950/60 text-rose-300">
                                         <div class="flex items-center justify-center gap-1">
                                             <i class="fa-solid fa-xmark text-[10px]"></i> SALAH (&minus;1)
                                         </div>
@@ -487,54 +487,44 @@
                                         </td>
 
                                         <!-- 3. BENAR (1) -->
-                                        <td class="py-3 px-1.5 text-center">
-                                            <div class="inline-flex items-center gap-0.5 bg-white p-0.5 rounded-lg border border-slate-200 shadow-2xs">
-                                                <button type="button" onclick="adjustScoreInput('benar_{{ $t->id }}', -1)" class="w-5 h-5 rounded-md bg-slate-100 hover:bg-slate-200 text-slate-600 font-bold text-xs flex items-center justify-center cursor-pointer transition active:scale-95">&minus;</button>
-                                                <input type="number" 
-                                                       id="benar_{{ $t->id }}" 
-                                                       name="benar[{{ $t->id }}]" 
-                                                       value="{{ $t->has_score ? $bVal : '' }}" 
-                                                       min="0" 
-                                                       max="999" 
-                                                       placeholder="0"
-                                                       oninput="handleRowChange({{ $t->id }}, false)" 
-                                                       onblur="handleRowChange({{ $t->id }}, true)"
-                                                       class="input-benar w-10 sm:w-11 text-center font-mono font-black text-xs sm:text-sm text-emerald-700 bg-emerald-50/60 rounded-md py-0.5 border border-emerald-200/80 outline-none {{ $activeInputBorder }}">
-                                                <button type="button" onclick="adjustScoreInput('benar_{{ $t->id }}', 1)" class="w-5 h-5 rounded-md bg-slate-100 hover:bg-slate-200 text-slate-600 font-bold text-xs flex items-center justify-center cursor-pointer transition active:scale-95">+</button>
-                                            </div>
-                                        </td>
-
-                                        <!-- 4. SALAH (-1) -->
-                                        <td class="py-3 px-1.5 text-center">
-                                            <div class="inline-flex items-center gap-0.5 bg-white p-0.5 rounded-lg border border-slate-200 shadow-2xs">
-                                                <button type="button" onclick="adjustScoreInput('salah_{{ $t->id }}', -1)" class="w-5 h-5 rounded-md bg-slate-100 hover:bg-slate-200 text-slate-600 font-bold text-xs flex items-center justify-center cursor-pointer transition active:scale-95">&minus;</button>
-                                                <input type="number" 
-                                                       id="salah_{{ $t->id }}" 
-                                                       name="salah[{{ $t->id }}]" 
-                                                       value="{{ $t->has_score ? $sVal : '' }}" 
-                                                       min="0" 
-                                                       max="999" 
-                                                       placeholder="0"
-                                                       oninput="handleRowChange({{ $t->id }}, false)" 
-                                                       onblur="handleRowChange({{ $t->id }}, true)"
-                                                       class="input-salah w-10 sm:w-11 text-center font-mono font-black text-xs sm:text-sm text-rose-700 bg-rose-50/60 rounded-md py-0.5 border border-rose-200/80 outline-none {{ $activeInputBorder }}">
-                                                <button type="button" onclick="adjustScoreInput('salah_{{ $t->id }}', 1)" class="w-5 h-5 rounded-md bg-slate-100 hover:bg-slate-200 text-slate-600 font-bold text-xs flex items-center justify-center cursor-pointer transition active:scale-95">+</button>
-                                            </div>
-                                        </td>
-
-                                        <!-- 5. TIDAK DIJAWAB / KOSONG (0) - Ringkas & Fleksibel Input -->
-                                        <td class="py-3 px-1.5 text-center">
+                                        <td class="py-3 px-2 text-center">
                                             <input type="number" 
-                                                   id="kosong_{{ $t->id }}" 
-                                                   name="kosong[{{ $t->id }}]" 
-                                                   value="{{ $t->has_score ? ($t->kosong !== null ? $t->kosong : $kVal) : '' }}" 
+                                                   id="benar_{{ $t->id }}" 
+                                                   name="benar[{{ $t->id }}]" 
+                                                   value="{{ $t->has_score ? $bVal : '' }}" 
                                                    min="0" 
                                                    max="999" 
                                                    placeholder="0"
                                                    oninput="handleRowChange({{ $t->id }}, false)" 
                                                    onblur="handleRowChange({{ $t->id }}, true)"
-                                                   class="input-kosong w-11 sm:w-12 text-center font-mono font-bold text-xs text-slate-700 bg-slate-100/90 hover:bg-white focus:bg-white rounded-md py-1 border border-slate-200 focus:border-slate-400 outline-none transition"
-                                                   title="Dihitung otomatis: 50 - (Benar + Salah), atau bisa diinput manual">
+                                                   class="input-benar w-14 sm:w-16 text-center font-mono font-black text-xs sm:text-sm text-emerald-700 bg-emerald-50/70 focus:bg-white rounded-lg py-1 border border-emerald-300 outline-none {{ $activeInputBorder }} shadow-2xs transition">
+                                        </td>
+
+                                        <!-- 4. SALAH (-1) -->
+                                        <td class="py-3 px-2 text-center">
+                                            <input type="number" 
+                                                   id="salah_{{ $t->id }}" 
+                                                   name="salah[{{ $t->id }}]" 
+                                                   value="{{ $t->has_score ? $sVal : '' }}" 
+                                                   min="0" 
+                                                   max="999" 
+                                                   placeholder="0"
+                                                   oninput="handleRowChange({{ $t->id }}, false)" 
+                                                   onblur="handleRowChange({{ $t->id }}, true)"
+                                                   class="input-salah w-14 sm:w-16 text-center font-mono font-black text-xs sm:text-sm text-rose-700 bg-rose-50/70 focus:bg-white rounded-lg py-1 border border-rose-300 outline-none {{ $activeInputBorder }} shadow-2xs transition">
+                                        </td>
+
+                                        <!-- 5. TIDAK DIJAWAB / KOSONG (0) - Readonly / Otomatis -->
+                                        <td class="py-3 px-2 text-center">
+                                            <input type="text" 
+                                                   id="kosong_{{ $t->id }}" 
+                                                   name="kosong[{{ $t->id }}]" 
+                                                   value="{{ $t->has_score ? ($t->kosong !== null ? $t->kosong : $kVal) : '' }}" 
+                                                   readonly
+                                                   tabindex="-1"
+                                                   placeholder="50"
+                                                   class="input-kosong w-12 sm:w-14 text-center font-mono font-bold text-xs text-slate-500 bg-slate-100 rounded-lg py-1 border border-slate-200 cursor-not-allowed select-none shadow-2xs"
+                                                   title="Dihitung otomatis: 50 - (Benar + Salah)">
                                         </td>
 
                                         <!-- 6. WAKTU TEMPUH (MM:SS) -->
@@ -711,6 +701,8 @@
             const s = parseInt(sInput.value) || 0;
             if (bInput.value !== '' || sInput.value !== '') {
                 kInput.value = Math.max(0, 50 - (b + s));
+            } else {
+                kInput.value = '';
             }
         }
 
