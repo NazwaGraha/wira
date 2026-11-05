@@ -1516,22 +1516,27 @@ class CompetitionScoreController extends Controller
         }
 
         if (strcasecmp(trim($level), 'Mula') === 0) {
-            // Mula:
-            // <= 03:00 (180s) => 300
-            // 03:01 - 03:15 (181 - 195s) => 290
-            // Interval 15 detik, berkurang 10 poin per interval
-            // 09:46 - 10:00 (586 - 600s) => 20
-            // > 10:00 (> 600s) => 0
-            if ($seconds <= 180) {
-                return 300;
+            // Sesuai tabel resmi 10 interval LKTR Mula:
+            // 0 - 1 Menit (0 - 60s)       => 271 - 300 Poin
+            // 1.1 - 2 Menit (61 - 120s)   => 241 - 270 Poin
+            // 2.1 - 3 Menit (121 - 180s)  => 211 - 240 Poin
+            // 3.1 - 4 Menit (181 - 240s)  => 181 - 210 Poin
+            // 4.1 - 5 Menit (241 - 300s)  => 151 - 180 Poin
+            // 5.1 - 6 Menit (301 - 360s)  => 121 - 150 Poin
+            // 6.1 - 7 Menit (361 - 420s)  => 91 - 120 Poin
+            // 7.1 - 8 Menit (421 - 480s)  => 61 - 90 Poin
+            // 8.1 - 9 Menit (481 - 540s)  => 31 - 60 Poin
+            // 9.1 - 10 Menit (541 - 600s) => 0 - 30 Poin
+            // > 10 Menit (> 600s)         => 0 Poin
+            if ($seconds <= 0) {
+                return 0;
             }
             if ($seconds > 600) {
                 return 0;
             }
-            $step = (int) ceil(($seconds - 180) / 15);
-            $score = 300 - ($step * 10);
+            $score = 300 - (int) round($seconds * 0.5);
 
-            return max($score, 20);
+            return max(0, min(300, $score));
         } else {
             // Madya & Wira:
             // <= 02:40 (160s) => 300

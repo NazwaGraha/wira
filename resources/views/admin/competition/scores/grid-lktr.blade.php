@@ -169,7 +169,36 @@
 
                     $formatTitle = $isLevelMula ? 'FORMAT PENILAIAN LOMBA TANDU (MULA)' : 'FORMAT PENILAIAN LOMBA TANDU (MADYA & WIRA)';
                     
-                    // Initial values from DB or defaults
+                    // Initial values for MULA
+                    $vKetepatan1 = $rubricData['ketepatan_1'] ?? null;
+                    $vKetepatan2 = $rubricData['ketepatan_2'] ?? null;
+                    $vKetepatan3 = $rubricData['ketepatan_3'] ?? null;
+                    $vKetepatan4 = $rubricData['ketepatan_4'] ?? null;
+                    $vKetepatan5 = $rubricData['ketepatan_5'] ?? null;
+                    $vKetepatan6 = $rubricData['ketepatan_6'] ?? null;
+                    $vKetepatan7 = $rubricData['ketepatan_7'] ?? null;
+
+                    $vKekuatanMula1 = $rubricData['kekuatan_1'] ?? null;
+                    $vKekuatanMula2 = $rubricData['kekuatan_2'] ?? null;
+                    $vKekuatanMula3 = $rubricData['kekuatan_3'] ?? null;
+
+                    $mulaKetepatanItems = [
+                        ['num' => 1, 'key' => 'ketepatan_1', 'label' => 'Bentuk Simetris', 'opts' => [14, 28, 43], 'ranges' => ['0-14', '15-28', '29-43'], 'val' => $vKetepatan1, 'max' => 43],
+                        ['num' => 2, 'key' => 'ketepatan_2', 'label' => 'Jarak ikatan jangkar sejajar dengan sebrangnya', 'opts' => [14, 28, 43], 'ranges' => ['0-14', '15-28', '29-43'], 'val' => $vKetepatan2, 'max' => 43],
+                        ['num' => 3, 'key' => 'ketepatan_3', 'label' => 'Ikatan mati 4', 'opts' => [14, 28, 43], 'ranges' => ['0-14', '15-28', '29-43'], 'val' => $vKetepatan3, 'max' => 43],
+                        ['num' => 4, 'key' => 'ketepatan_4', 'label' => 'Ikatan jangkar 7', 'opts' => [14, 28, 43], 'ranges' => ['0-14', '15-28', '29-43'], 'val' => $vKetepatan4, 'max' => 43],
+                        ['num' => 5, 'key' => 'ketepatan_5', 'label' => 'Tali tubuh', 'opts' => [14, 28, 43], 'ranges' => ['0-14', '15-28', '29-43'], 'val' => $vKetepatan5, 'max' => 43],
+                        ['num' => 6, 'key' => 'ketepatan_6', 'label' => 'Sisa bambu pendek dan panjang', 'opts' => [14, 28, 43], 'ranges' => ['0-14', '15-28', '29-43'], 'val' => $vKetepatan6, 'max' => 43],
+                        ['num' => 7, 'key' => 'ketepatan_7', 'label' => 'Mitela Presisi rapih', 'opts' => [14, 28, 43], 'ranges' => ['0-14', '15-28', '29-43'], 'val' => $vKetepatan7, 'max' => 43],
+                    ];
+
+                    $mulaKekuatanItems = [
+                        ['num' => 1, 'key' => 'kekuatan_1', 'label' => 'Kekuatan Jaring / tali jangkar', 'opts' => [44, 88, 133], 'ranges' => ['0-44', '45-88', '89-133'], 'val' => $vKekuatanMula1, 'max' => 133],
+                        ['num' => 2, 'key' => 'kekuatan_2', 'label' => 'Kekuatan bambu pendek (diputar)', 'opts' => [44, 88, 133], 'ranges' => ['0-44', '45-88', '89-133'], 'val' => $vKekuatanMula2, 'max' => 133],
+                        ['num' => 3, 'key' => 'kekuatan_3', 'label' => 'Kekuatan bambu panjang (diputar) digoyang', 'opts' => [44, 88, 133], 'ranges' => ['0-44', '45-88', '89-133'], 'val' => $vKekuatanMula3, 'max' => 133],
+                    ];
+
+                    // Initial values for MADYA & WIRA
                     $vKekuatan1 = $rubricData['kekuatan_1'] ?? null;
                     $vKekuatan2 = $rubricData['kekuatan_2'] ?? null;
                     $vKekuatan3a = $rubricData['kekuatan_3a'] ?? null;
@@ -199,27 +228,45 @@
                     <input type="hidden" name="next_team_id" value="{{ $nextTeam?->id }}">
 
                     {{-- Hidden Inputs Rubrik Kriteria Teknis --}}
-                    <input type="hidden" name="rubric[kekuatan_1]" id="input_kekuatan_1" value="{{ $vKekuatan1 }}">
-                    <input type="hidden" name="rubric[kekuatan_2]" id="input_kekuatan_2" value="{{ $vKekuatan2 }}">
-                    <input type="hidden" name="rubric[kekuatan_3a]" id="input_kekuatan_3a" value="{{ $vKekuatan3a }}">
-                    <input type="hidden" name="rubric[kekuatan_3b]" id="input_kekuatan_3b" value="{{ $vKekuatan3b }}">
-                    <input type="hidden" name="rubric[kekuatan_4]" id="input_kekuatan_4" value="{{ $vKekuatan4 }}">
+                    @if($isLevelMula)
+                        <input type="hidden" name="rubric[ketepatan_1]" id="input_ketepatan_1" value="{{ $vKetepatan1 }}">
+                        <input type="hidden" name="rubric[ketepatan_2]" id="input_ketepatan_2" value="{{ $vKetepatan2 }}">
+                        <input type="hidden" name="rubric[ketepatan_3]" id="input_ketepatan_3" value="{{ $vKetepatan3 }}">
+                        <input type="hidden" name="rubric[ketepatan_4]" id="input_ketepatan_4" value="{{ $vKetepatan4 }}">
+                        <input type="hidden" name="rubric[ketepatan_5]" id="input_ketepatan_5" value="{{ $vKetepatan5 }}">
+                        <input type="hidden" name="rubric[ketepatan_6]" id="input_ketepatan_6" value="{{ $vKetepatan6 }}">
+                        <input type="hidden" name="rubric[ketepatan_7]" id="input_ketepatan_7" value="{{ $vKetepatan7 }}">
 
-                    <input type="hidden" name="rubric[kerapihan_1]" id="input_kerapihan_1" value="{{ $vKerapihan1 }}">
-                    <input type="hidden" name="rubric[kerapihan_2]" id="input_kerapihan_2" value="{{ $vKerapihan2 }}">
-                    <input type="hidden" name="rubric[kerapihan_3]" id="input_kerapihan_3" value="{{ $vKerapihan3 }}">
-                    <input type="hidden" name="rubric[kerapihan_4]" id="input_kerapihan_4" value="{{ $vKerapihan4 }}">
-                    <input type="hidden" name="rubric[kerapihan_5]" id="input_kerapihan_5" value="{{ $vKerapihan5 }}">
-                    <input type="hidden" name="rubric[kerapihan_6]" id="input_kerapihan_6" value="{{ $vKerapihan6 }}">
-                    <input type="hidden" name="rubric[kerapihan_7]" id="input_kerapihan_7" value="{{ $vKerapihan7 }}">
-                    <input type="hidden" name="rubric[kerapihan_8]" id="input_kerapihan_8" value="{{ $vKerapihan8 }}">
-                    <input type="hidden" name="rubric[kerapihan_9]" id="input_kerapihan_9" value="{{ $vKerapihan9 }}">
-                    <input type="hidden" name="rubric[kerapihan_10]" id="input_kerapihan_10" value="{{ $vKerapihan10 }}">
-                    <input type="hidden" name="rubric[kerapihan_11]" id="input_kerapihan_11" value="{{ $vKerapihan11 }}">
+                        <input type="hidden" name="rubric[kekuatan_1]" id="input_kekuatan_1" value="{{ $vKekuatanMula1 }}">
+                        <input type="hidden" name="rubric[kekuatan_2]" id="input_kekuatan_2" value="{{ $vKekuatanMula2 }}">
+                        <input type="hidden" name="rubric[kekuatan_3]" id="input_kekuatan_3" value="{{ $vKekuatanMula3 }}">
 
-                    {{-- Hidden Subtotals --}}
-                    <input type="hidden" name="subtotals[kekuatan]" id="input_subtotal_kekuatan" value="0">
-                    <input type="hidden" name="subtotals[kerapihan]" id="input_subtotal_kerapihan" value="0">
+                        <input type="hidden" name="subtotals[ketepatan]" id="input_subtotal_ketepatan" value="0">
+                        <input type="hidden" name="subtotals[kekuatan]" id="input_subtotal_kekuatan" value="0">
+                    @else
+                        <input type="hidden" name="rubric[kekuatan_1]" id="input_kekuatan_1" value="{{ $vKekuatan1 }}">
+                        <input type="hidden" name="rubric[kekuatan_2]" id="input_kekuatan_2" value="{{ $vKekuatan2 }}">
+                        <input type="hidden" name="rubric[kekuatan_3a]" id="input_kekuatan_3a" value="{{ $vKekuatan3a }}">
+                        <input type="hidden" name="rubric[kekuatan_3b]" id="input_kekuatan_3b" value="{{ $vKekuatan3b }}">
+                        <input type="hidden" name="rubric[kekuatan_4]" id="input_kekuatan_4" value="{{ $vKekuatan4 }}">
+
+                        <input type="hidden" name="rubric[kerapihan_1]" id="input_kerapihan_1" value="{{ $vKerapihan1 }}">
+                        <input type="hidden" name="rubric[kerapihan_2]" id="input_kerapihan_2" value="{{ $vKerapihan2 }}">
+                        <input type="hidden" name="rubric[kerapihan_3]" id="input_kerapihan_3" value="{{ $vKerapihan3 }}">
+                        <input type="hidden" name="rubric[kerapihan_4]" id="input_kerapihan_4" value="{{ $vKerapihan4 }}">
+                        <input type="hidden" name="rubric[kerapihan_5]" id="input_kerapihan_5" value="{{ $vKerapihan5 }}">
+                        <input type="hidden" name="rubric[kerapihan_6]" id="input_kerapihan_6" value="{{ $vKerapihan6 }}">
+                        <input type="hidden" name="rubric[kerapihan_7]" id="input_kerapihan_7" value="{{ $vKerapihan7 }}">
+                        <input type="hidden" name="rubric[kerapihan_8]" id="input_kerapihan_8" value="{{ $vKerapihan8 }}">
+                        <input type="hidden" name="rubric[kerapihan_9]" id="input_kerapihan_9" value="{{ $vKerapihan9 }}">
+                        <input type="hidden" name="rubric[kerapihan_10]" id="input_kerapihan_10" value="{{ $vKerapihan10 }}">
+                        <input type="hidden" name="rubric[kerapihan_11]" id="input_kerapihan_11" value="{{ $vKerapihan11 }}">
+
+                        <input type="hidden" name="subtotals[kekuatan]" id="input_subtotal_kekuatan" value="0">
+                        <input type="hidden" name="subtotals[kerapihan]" id="input_subtotal_kerapihan" value="0">
+                    @endif
+
+                    {{-- Hidden Subtotals Umum --}}
                     <input type="hidden" name="subtotals[teknis]" id="input_subtotal_teknis" value="0">
                     <input type="hidden" name="subtotals[waktu]" id="input_subtotal_waktu" value="0">
                     <input type="hidden" name="subtotals[total]" id="input_subtotal_total" value="0">
@@ -235,216 +282,453 @@
                                 <i class="fa-solid fa-hand-pointer"></i> 1-Click Checklist / Lingkari Nilai
                             </div>
 
-                            {{-- Header Kertas Lembar Juri --}}
-                            <div class="text-center border-b-2 border-slate-800 pb-3 mb-4 mt-2">
-                                <div class="flex items-center justify-center gap-1.5 text-rose-600 font-black text-xs uppercase tracking-widest mb-0.5">
-                                    <i class="fa-solid fa-circle-check"></i> LEMBAR PENILAIAN RESMI DEWAN JURI
+                            @if($isLevelMula)
+                                {{-- HEADER RESMI LKTR MULA (PERSIS LEMBAR FISIK JURI) --}}
+                                <div class="border-b-2 border-slate-900 pb-4 mb-4">
+                                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                                        <div class="flex items-center gap-3">
+                                            <div class="flex items-center gap-2">
+                                                <img src="{{ asset('images/logo-pmi.png') }}" alt="PMI" class="h-10 w-auto object-contain" onerror="this.style.display='none'">
+                                                <img src="{{ asset('images/logo.png') }}" alt="Logo" class="h-10 w-auto object-contain" onerror="this.style.display='none'">
+                                            </div>
+                                            <div>
+                                                <span class="text-[10px] font-black tracking-widest text-rose-600 uppercase block">FORMAT PENILAIAN LOMBA KETANGKASAN TANDU (LKTR)</span>
+                                                <h2 class="text-base sm:text-lg font-black text-slate-900 leading-tight">LEMBAR PENILAIAN RESMI DEWAN JURI</h2>
+                                            </div>
+                                        </div>
+                                        <div class="self-end sm:self-center">
+                                            <div class="border-2 border-slate-900 bg-white font-black text-base px-6 py-1.5 tracking-widest text-slate-900 shadow-sm rounded-lg text-center uppercase">
+                                                MULA
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    {{-- Metadata Baris Sesuai Lembar Fisik --}}
+                                    <div class="mt-4 bg-slate-50 border border-slate-300 rounded-xl p-3 text-xs font-bold text-slate-800 space-y-1.5">
+                                        <div class="flex items-center">
+                                            <span class="w-44 text-slate-500 uppercase tracking-wider text-[11px]">No. Urut Pendaftaran</span>
+                                            <span class="mr-2">:</span>
+                                            <span class="font-mono font-black text-slate-900 bg-white border border-slate-200 px-2.5 py-0.5 rounded text-sm text-rose-600">
+                                                {{ $teamCode }} &bull; {{ $currentTeam->team_label ?? $currentTeam->team_name }}
+                                            </span>
+                                        </div>
+                                        <div class="flex items-center">
+                                            <span class="w-44 text-slate-500 uppercase tracking-wider text-[11px]">Asal Sekolah</span>
+                                            <span class="mr-2">:</span>
+                                            <span class="font-black text-slate-900 text-sm">
+                                                {{ $schoolName }}
+                                            </span>
+                                        </div>
+                                    </div>
                                 </div>
-                                <h2 class="text-lg sm:text-xl font-black text-slate-900 tracking-tight">
-                                    {{ $formatTitle }}
-                                </h2>
-                            </div>
 
-                            {{-- Metadata Peserta --}}
-                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 bg-slate-50 p-3.5 rounded-2xl border border-slate-200 mb-4">
-                                <div>
-                                    <span class="text-[10px] font-black text-slate-400 uppercase tracking-wider block">NO. URUT PESERTA :</span>
-                                    <span class="text-sm font-black text-slate-900 flex items-center gap-1.5 mt-0.5">
-                                        <i class="fa-solid fa-hashtag text-rose-600"></i> {{ $teamCode }} &bull; {{ $currentTeam->team_label ?? $currentTeam->team_name }}
-                                    </span>
-                                </div>
-                                <div>
-                                    <span class="text-[10px] font-black text-slate-400 uppercase tracking-wider block">ASAL SEKOLAH :</span>
-                                    <span class="text-sm font-black text-slate-900 flex items-center gap-1.5 mt-0.5 truncate">
-                                        <i class="fa-solid fa-school text-sky-600"></i> {{ $schoolName }}
-                                    </span>
-                                </div>
-                            </div>
-
-                            {{-- Tabel Item Penilaian LKTR --}}
-                            <div class="rounded-2xl border-2 border-slate-800 mb-4 shadow-sm overflow-hidden overflow-x-auto">
-                                <table class="w-full text-center border-collapse min-w-[550px]">
-                                    <thead>
-                                        <tr class="bg-slate-900 text-white text-[11px] uppercase font-black tracking-wider">
-                                            <th class="py-2.5 px-2 w-10 border-r border-slate-700">NO</th>
-                                            <th class="py-2.5 px-3 text-left border-r border-slate-700">URAIAN KRITERIA</th>
-                                            <th colspan="4" class="py-2.5 px-2 bg-slate-800 border-r border-slate-700">PILIHAN NILAI (KLIK UNTUK MEMILIH)</th>
-                                            <th class="py-2.5 px-2 w-20 bg-slate-950 text-amber-300">SKOR</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody class="text-xs divide-y divide-slate-200 font-semibold text-slate-800">
-                                        
-                                        {{-- SECTION I: KEKUATAN --}}
-                                        <tr class="bg-sky-100 text-sky-950 font-black text-xs text-left">
-                                            <td class="py-2 px-2 text-center border-r border-sky-200 font-mono">I.</td>
-                                            <td colspan="5" class="py-2 px-3 tracking-wider uppercase border-r border-sky-200">
-                                                KEKUATAN <span class="text-[10px] text-sky-700 font-bold ml-2">(Maksimal: 400 Poin)</span>
-                                            </td>
-                                            <td class="py-2 px-2 text-center font-mono text-sky-900 font-black bg-sky-200/80" id="display_subtotal_kekuatan">0</td>
-                                        </tr>
-
-                                        {{-- 1. Kekencangan mitela --}}
-                                        <tr>
-                                            <td class="py-1.5 px-2 text-center border-r border-slate-200 text-slate-400">1</td>
-                                            <td class="py-1.5 px-3 text-left border-r border-slate-200">Kekencangan mitela</td>
-                                            @foreach([20, 40, 60, 80] as $opt)
-                                                <td class="p-1 border-r border-slate-200">
-                                                    <button type="button" onclick="selectScore('kekuatan_1', {{ $opt }}, this)" class="btn-rubric-kekuatan_1 w-full py-1.5 rounded-lg {{ $vKekuatan1 == $opt ? 'selected-pill' : 'bg-slate-100 hover:bg-slate-200 text-slate-700' }} font-bold text-xs border border-slate-200 transition">
-                                                        {{ $opt }}{{ $vKekuatan1 == $opt ? ' ✓' : '' }}
-                                                    </button>
+                                {{-- TABEL PENILAIAN RESMI MULA --}}
+                                <div class="rounded-2xl border-2 border-slate-900 mb-4 shadow-sm overflow-hidden overflow-x-auto">
+                                    <table class="w-full text-center border-collapse min-w-[620px]">
+                                        <thead>
+                                            <tr class="bg-slate-900 text-white text-[11px] uppercase font-black tracking-wider">
+                                                <th rowspan="2" class="py-2.5 px-2 w-10 border-r border-b border-slate-700">No</th>
+                                                <th rowspan="2" class="py-2.5 px-3 text-left border-r border-b border-slate-700">ASPEK PENILAIAN</th>
+                                                <th colspan="3" class="py-2 px-2 bg-slate-800 border-r border-b border-slate-700">Penilaian</th>
+                                                <th rowspan="2" class="py-2.5 px-3 w-28 bg-slate-950 text-amber-300 border-b border-slate-700">Nilai (Input)</th>
+                                            </tr>
+                                            <tr class="bg-slate-800 text-slate-300 text-[10px] font-black uppercase">
+                                                <th class="py-1 px-2 border-r border-slate-700 w-24">0-14</th>
+                                                <th class="py-1 px-2 border-r border-slate-700 w-24">15-28</th>
+                                                <th class="py-1 px-2 border-r border-slate-700 w-24">29-43</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody class="text-xs divide-y divide-slate-300 font-semibold text-slate-800">
+                                            
+                                            {{-- 1. KETEPATAN --}}
+                                            <tr class="bg-slate-200/90 text-slate-900 font-black text-xs text-left">
+                                                <td rowspan="{{ count($mulaKetepatanItems) + 1 }}" class="py-2 px-2 text-center border-r-2 border-slate-900 font-bold align-middle bg-slate-100">
+                                                    1
                                                 </td>
-                                            @endforeach
-                                            <td class="py-1.5 px-2 bg-slate-50 font-mono font-black text-xs text-slate-900" id="score_kekuatan_1">{{ $vKekuatan1 ?: '-' }}</td>
-                                        </tr>
-
-                                        {{-- 2. Kekuatan jaring --}}
-                                        <tr>
-                                            <td class="py-1.5 px-2 text-center border-r border-slate-200 text-slate-400">2</td>
-                                            <td class="py-1.5 px-3 text-left border-r border-slate-200">Kekuatan jaring</td>
-                                            @foreach([20, 40, 60, 80] as $opt)
-                                                <td class="p-1 border-r border-slate-200">
-                                                    <button type="button" onclick="selectScore('kekuatan_2', {{ $opt }}, this)" class="btn-rubric-kekuatan_2 w-full py-1.5 rounded-lg {{ $vKekuatan2 == $opt ? 'selected-pill' : 'bg-slate-100 hover:bg-slate-200 text-slate-700' }} font-bold text-xs border border-slate-200 transition">
-                                                        {{ $opt }}{{ $vKekuatan2 == $opt ? ' ✓' : '' }}
-                                                    </button>
+                                                <td class="py-2 px-3 tracking-wider uppercase font-black bg-slate-200/90 border-r border-slate-300" colspan="4">
+                                                    KETEPATAN <span class="text-[10px] text-slate-600 font-bold ml-1">(Maksimal: 301 Poin)</span>
                                                 </td>
-                                            @endforeach
-                                            <td class="py-1.5 px-2 bg-slate-50 font-mono font-black text-xs text-slate-900" id="score_kekuatan_2">{{ $vKekuatan2 ?: '-' }}</td>
-                                        </tr>
+                                                <td class="py-2 px-2 text-center font-mono text-slate-900 font-black bg-slate-300/90" id="display_subtotal_ketepatan">0</td>
+                                            </tr>
 
-                                        {{-- 3. Kekuatan bambu --}}
-                                        <tr class="bg-slate-50/80">
-                                            <td class="py-1.5 px-2 text-center border-r border-slate-200 text-slate-400">3</td>
-                                            <td colspan="6" class="py-1.5 px-3 text-left font-bold text-slate-700">Kekuatan bambu :</td>
-                                        </tr>
-                                        <tr>
-                                            <td class="py-1.5 px-2 text-center border-r border-slate-200 text-slate-400"></td>
-                                            <td class="py-1.5 px-3 text-left border-r border-slate-200 pl-6 text-slate-600">a. Diputar bambu kecil</td>
-                                            @foreach([15, 30, 45, 60] as $opt)
-                                                <td class="p-1 border-r border-slate-200">
-                                                    <button type="button" onclick="selectScore('kekuatan_3a', {{ $opt }}, this)" class="btn-rubric-kekuatan_3a w-full py-1.5 rounded-lg {{ $vKekuatan3a == $opt ? 'selected-pill' : 'bg-slate-100 hover:bg-slate-200 text-slate-700' }} font-bold text-xs border border-slate-200 transition">
-                                                        {{ $opt }}{{ $vKekuatan3a == $opt ? ' ✓' : '' }}
-                                                    </button>
+                                            @foreach($mulaKetepatanItems as $it)
+                                                <tr class="hover:bg-slate-50/60 transition">
+                                                    <td class="py-2 px-3 text-left border-r border-slate-300 font-medium text-slate-800">
+                                                        {{ $it['label'] }}
+                                                    </td>
+                                                    @foreach($it['ranges'] as $idx => $rText)
+                                                        @php
+                                                            $optVal = $it['opts'][$idx];
+                                                        @endphp
+                                                        <td class="p-1 border-r border-slate-300 w-24">
+                                                            <button type="button" 
+                                                                onclick="selectScoreMula('{{ $it['key'] }}', {{ $optVal }}, {{ $idx }}, this)" 
+                                                                class="btn-mula-{{ $it['key'] }} btn-mula-{{ $it['key'] }}-{{ $idx }} w-full py-1.5 rounded-lg {{ ($it['val'] !== null && $it['val'] == $optVal) ? 'selected-pill' : 'bg-slate-100 hover:bg-slate-200 text-slate-700' }} font-bold text-xs border border-slate-200 transition">
+                                                                {{ $rText }}
+                                                            </button>
+                                                        </td>
+                                                    @endforeach
+                                                    <td class="py-1 px-2 bg-slate-50/80">
+                                                        <input type="number" 
+                                                            min="0" 
+                                                            max="{{ $it['max'] }}" 
+                                                            id="score_input_{{ $it['key'] }}" 
+                                                            value="{{ $it['val'] !== null ? $it['val'] : '' }}" 
+                                                            placeholder="0-{{ $it['max'] }}"
+                                                            oninput="manualScoreInputMula('{{ $it['key'] }}', this.value, {{ $it['max'] }})" 
+                                                            class="w-full text-center font-mono font-black text-xs bg-white text-slate-900 border border-slate-300 rounded-lg py-1 px-1 focus:ring-2 focus:ring-rose-500 focus:outline-none">
+                                                    </td>
+                                                </tr>
+                                            @endforeach
+
+                                            {{-- 2. KEKUATAN --}}
+                                            <tr class="bg-slate-200/90 text-slate-900 font-black text-xs text-left border-t-2 border-slate-900">
+                                                <td rowspan="{{ count($mulaKekuatanItems) + 1 }}" class="py-2 px-2 text-center border-r-2 border-slate-900 font-bold align-middle bg-slate-100">
+                                                    2
                                                 </td>
-                                            @endforeach
-                                            <td class="py-1.5 px-2 bg-slate-50 font-mono font-black text-xs text-slate-900" id="score_kekuatan_3a">{{ $vKekuatan3a ?: '-' }}</td>
-                                        </tr>
-                                        <tr>
-                                            <td class="py-1.5 px-2 text-center border-r border-slate-200 text-slate-400"></td>
-                                            <td class="py-1.5 px-3 text-left border-r border-slate-200 pl-6 text-slate-600">b. Diinjak 4 sisi</td>
-                                            @foreach([25, 50, 75, 100] as $opt)
-                                                <td class="p-1 border-r border-slate-200">
-                                                    <button type="button" onclick="selectScore('kekuatan_3b', {{ $opt }}, this)" class="btn-rubric-kekuatan_3b w-full py-1.5 rounded-lg {{ $vKekuatan3b == $opt ? 'selected-pill' : 'bg-slate-100 hover:bg-slate-200 text-slate-700' }} font-bold text-xs border border-slate-200 transition">
-                                                        {{ $opt }}{{ $vKekuatan3b == $opt ? ' ✓' : '' }}
-                                                    </button>
+                                                <td class="py-2 px-3 tracking-wider uppercase font-black bg-slate-200/90 border-r border-slate-300" colspan="4">
+                                                    KEKUATAN <span class="text-[10px] text-slate-600 font-bold ml-1">(Maksimal: 399 Poin)</span>
                                                 </td>
-                                            @endforeach
-                                            <td class="py-1.5 px-2 bg-slate-50 font-mono font-black text-xs text-slate-900" id="score_kekuatan_3b">{{ $vKekuatan3b ?: '-' }}</td>
-                                        </tr>
+                                                <td class="py-2 px-2 text-center font-mono text-slate-900 font-black bg-slate-300/90" id="display_subtotal_kekuatan_mula">0</td>
+                                            </tr>
 
-                                        {{-- 4. Kekuatan tali pengaman --}}
-                                        <tr>
-                                            <td class="py-1.5 px-2 text-center border-r border-slate-200 text-slate-400">4</td>
-                                            <td class="py-1.5 px-3 text-left border-r border-slate-200">Kekuatan tali pengaman</td>
-                                            @foreach([20, 40, 60, 80] as $opt)
-                                                <td class="p-1 border-r border-slate-200">
-                                                    <button type="button" onclick="selectScore('kekuatan_4', {{ $opt }}, this)" class="btn-rubric-kekuatan_4 w-full py-1.5 rounded-lg {{ $vKekuatan4 == $opt ? 'selected-pill' : 'bg-slate-100 hover:bg-slate-200 text-slate-700' }} font-bold text-xs border border-slate-200 transition">
-                                                        {{ $opt }}{{ $vKekuatan4 == $opt ? ' ✓' : '' }}
-                                                    </button>
+                                            @foreach($mulaKekuatanItems as $it)
+                                                <tr class="hover:bg-slate-50/60 transition">
+                                                    <td class="py-2 px-3 text-left border-r border-slate-300 font-medium text-slate-800">
+                                                        {{ $it['label'] }}
+                                                    </td>
+                                                    @foreach($it['ranges'] as $idx => $rText)
+                                                        @php
+                                                            $optVal = $it['opts'][$idx];
+                                                        @endphp
+                                                        <td class="p-1 border-r border-slate-300 w-24">
+                                                            <button type="button" 
+                                                                onclick="selectScoreMula('{{ $it['key'] }}', {{ $optVal }}, {{ $idx }}, this)" 
+                                                                class="btn-mula-{{ $it['key'] }} btn-mula-{{ $it['key'] }}-{{ $idx }} w-full py-1.5 rounded-lg {{ ($it['val'] !== null && $it['val'] == $optVal) ? 'selected-pill' : 'bg-slate-100 hover:bg-slate-200 text-slate-700' }} font-bold text-xs border border-slate-200 transition">
+                                                                {{ $rText }}
+                                                            </button>
+                                                        </td>
+                                                    @endforeach
+                                                    <td class="py-1 px-2 bg-slate-50/80">
+                                                        <input type="number" 
+                                                            min="0" 
+                                                            max="{{ $it['max'] }}" 
+                                                            id="score_input_{{ $it['key'] }}" 
+                                                            value="{{ $it['val'] !== null ? $it['val'] : '' }}" 
+                                                            placeholder="0-{{ $it['max'] }}"
+                                                            oninput="manualScoreInputMula('{{ $it['key'] }}', this.value, {{ $it['max'] }})" 
+                                                            class="w-full text-center font-mono font-black text-xs bg-white text-slate-900 border border-slate-300 rounded-lg py-1 px-1 focus:ring-2 focus:ring-rose-500 focus:outline-none">
+                                                    </td>
+                                                </tr>
+                                            @endforeach
+
+                                            {{-- 3. WAKTU (Menit) --}}
+                                            <tr class="bg-slate-200/90 text-slate-900 font-black text-xs text-left border-t-2 border-slate-900">
+                                                <td rowspan="2" class="py-2 px-2 text-center border-r-2 border-slate-900 font-bold align-middle bg-slate-100">
+                                                    3
                                                 </td>
-                                            @endforeach
-                                            <td class="py-1.5 px-2 bg-slate-50 font-mono font-black text-xs text-slate-900" id="score_kekuatan_4">{{ $vKekuatan4 ?: '-' }}</td>
-                                        </tr>
-
-                                        {{-- SECTION II: KETEPATAN & KERAPIHAN --}}
-                                        <tr class="bg-amber-100 text-amber-950 font-black text-xs text-left">
-                                            <td class="py-2 px-2 text-center border-r border-amber-200 font-mono">II.</td>
-                                            <td colspan="5" class="py-2 px-3 tracking-wider uppercase border-r border-amber-200">
-                                                KETEPATAN & KERAPIHAN <span class="text-[10px] text-amber-700 font-bold ml-2">(Maksimal: 300 Poin)</span>
-                                            </td>
-                                            <td class="py-2 px-2 text-center font-mono text-amber-900 font-black bg-amber-200/80" id="display_subtotal_kerapihan">0</td>
-                                        </tr>
-
-                                        @php
-                                            $kerapihanItems = [
-                                                ['num' => 1, 'key' => 'kerapihan_1', 'label' => 'Garis tengah jaring', 'opts' => [5, 10, 15, 20], 'val' => $vKerapihan1],
-                                                ['num' => 2, 'key' => 'kerapihan_2', 'label' => 'Sisa bambu panjang', 'opts' => [5, 10, 15, 20], 'val' => $vKerapihan2],
-                                                ['num' => 3, 'key' => 'kerapihan_3', 'label' => 'Sisa bambu kecil', 'opts' => [5, 10, 15, 20], 'val' => $vKerapihan3],
-                                                ['num' => 4, 'key' => 'kerapihan_4', 'label' => 'Jumlah lilitan pangkal dan cincin', 'opts' => [20, 25, 30, 45], 'val' => $vKerapihan4],
-                                                ['num' => 5, 'key' => 'kerapihan_5', 'label' => 'Jumlah silangan', 'opts' => [10, 15, 20, 25], 'val' => $vKerapihan5],
-                                                ['num' => 6, 'key' => 'kerapihan_6', 'label' => 'Diameter tali 5mm', 'opts' => [10, 15, 20, 25], 'val' => $vKerapihan6],
-                                                ['num' => 7, 'key' => 'kerapihan_7', 'label' => 'Jarak antar jangkar', 'opts' => [15, 20, 25, 30], 'val' => $vKerapihan7],
-                                                ['num' => 8, 'key' => 'kerapihan_8', 'label' => 'Bentuk tandu', 'opts' => [10, 15, 20, 40], 'val' => $vKerapihan8],
-                                                ['num' => 9, 'key' => 'kerapihan_9', 'label' => 'Sisa tali', 'opts' => [10, 15, 20, 25], 'val' => $vKerapihan9],
-                                                ['num' => 10, 'key' => 'kerapihan_10', 'label' => 'Sunan tali', 'opts' => [10, 15, 20, 25], 'val' => $vKerapihan10],
-                                                ['num' => 11, 'key' => 'kerapihan_11', 'label' => 'Pemasangan mitela', 'opts' => [10, 15, 20, 25], 'val' => $vKerapihan11],
-                                            ];
-                                        @endphp
-
-                                        @foreach($kerapihanItems as $it)
+                                                <td class="py-2 px-3 tracking-wider uppercase font-black bg-slate-200/90 border-r border-slate-300" colspan="4">
+                                                    WAKTU (Menit) <span class="text-[10px] text-slate-600 font-bold ml-1">(Skala 10 Interval Menit &bull; Maks 300 Poin)</span>
+                                                </td>
+                                                <td class="py-2 px-2 text-center font-mono text-emerald-900 font-black bg-emerald-200/80" id="display_subtotal_waktu">0</td>
+                                            </tr>
+                                            {{-- 10 Interval Rows (in grid/table format as per paper sheet) --}}
                                             <tr>
-                                                <td class="py-1.5 px-2 text-center border-r border-slate-200 text-slate-400">{{ $it['num'] }}</td>
-                                                <td class="py-1.5 px-3 text-left border-r border-slate-200">{{ $it['label'] }}</td>
-                                                @foreach($it['opts'] as $opt)
+                                                <td colspan="5" class="p-0 border-t border-slate-300">
+                                                    <div class="grid grid-cols-10 divide-x divide-slate-300 text-center font-mono text-[10px] bg-slate-50">
+                                                        <div class="py-1.5 font-bold" id="mula_interval_lbl_1">0-1</div>
+                                                        <div class="py-1.5 font-bold" id="mula_interval_lbl_2">1.1 - 2</div>
+                                                        <div class="py-1.5 font-bold" id="mula_interval_lbl_3">2.1 - 3</div>
+                                                        <div class="py-1.5 font-bold" id="mula_interval_lbl_4">3.1 - 4</div>
+                                                        <div class="py-1.5 font-bold" id="mula_interval_lbl_5">4.1 - 5</div>
+                                                        <div class="py-1.5 font-bold" id="mula_interval_lbl_6">5.1 - 6</div>
+                                                        <div class="py-1.5 font-bold" id="mula_interval_lbl_7">6.1 - 7</div>
+                                                        <div class="py-1.5 font-bold" id="mula_interval_lbl_8">7.1 - 8</div>
+                                                        <div class="py-1.5 font-bold" id="mula_interval_lbl_9">8.1 - 9</div>
+                                                        <div class="py-1.5 font-bold" id="mula_interval_lbl_10">9.1-10</div>
+                                                    </div>
+                                                    <div class="grid grid-cols-10 divide-x divide-slate-300 text-center font-mono text-[10px] border-t border-slate-300 bg-white">
+                                                        <div class="py-1.5 font-black text-emerald-700 transition" id="mula_tier_cell_1">271-300</div>
+                                                        <div class="py-1.5 font-black text-emerald-700 transition" id="mula_tier_cell_2">241-270</div>
+                                                        <div class="py-1.5 font-black text-slate-700 transition" id="mula_tier_cell_3">211-240</div>
+                                                        <div class="py-1.5 font-black text-slate-700 transition" id="mula_tier_cell_4">181-210</div>
+                                                        <div class="py-1.5 font-black text-slate-700 transition" id="mula_tier_cell_5">151-180</div>
+                                                        <div class="py-1.5 font-black text-slate-700 transition" id="mula_tier_cell_6">121-150</div>
+                                                        <div class="py-1.5 font-black text-slate-700 transition" id="mula_tier_cell_7">91-120</div>
+                                                        <div class="py-1.5 font-black text-slate-700 transition" id="mula_tier_cell_8">61-90</div>
+                                                        <div class="py-1.5 font-black text-slate-700 transition" id="mula_tier_cell_9">31-60</div>
+                                                        <div class="py-1.5 font-black text-rose-600 transition" id="mula_tier_cell_10">0-30</div>
+                                                    </div>
+                                                </td>
+                                            </tr>
+
+                                        </tbody>
+                                        <tfoot>
+                                            <tr class="bg-slate-900 text-white font-black text-sm border-t-2 border-slate-900">
+                                                <td colspan="5" class="py-3 px-4 text-right tracking-wider uppercase text-slate-300 text-xs">
+                                                    TOTAL NILAI AKUMULASI (TEKNIS: <span id="display_footer_teknis">0</span> + WAKTU: <span id="display_footer_waktu">0</span>) :
+                                                </td>
+                                                <td class="py-3 px-2 bg-gradient-to-r from-red-600 to-rose-600 text-white font-mono text-xl tracking-tight" id="display_total_score">
+                                                    0
+                                                </td>
+                                            </tr>
+                                        </tfoot>
+                                    </table>
+                                </div>
+
+                                {{-- BOX WAKTU & TANDA TANGAN (PERSIS LEMBAR FISIK JURI) --}}
+                                <div class="mb-4 space-y-4">
+                                    {{-- Box Waktu Tengah --}}
+                                    <div class="max-w-md mx-auto bg-white border-2 border-slate-900 rounded-2xl p-4 text-center shadow-sm">
+                                        <h4 class="text-xs font-black uppercase text-slate-900 tracking-wider mb-2">Waktu</h4>
+                                        <div class="flex items-center justify-center gap-3">
+                                            <input type="text" 
+                                                name="time_recorded" 
+                                                id="time_recorded" 
+                                                value="{{ $vWaktu }}" 
+                                                placeholder="04:25" 
+                                                oninput="updateTimeScore()" 
+                                                class="w-36 text-center font-mono font-black text-xl bg-amber-50 text-amber-950 border-2 border-amber-400 rounded-xl px-3 py-1.5 focus:bg-white focus:outline-none focus:ring-2 focus:ring-amber-500 shadow-inner">
+                                            <div class="text-left font-mono">
+                                                <div class="text-xs font-black text-emerald-600" id="mula_waktu_badge_pts">0 Poin</div>
+                                                <div class="text-[10px] text-slate-500 font-bold" id="mula_waktu_badge_tier">Interval: -</div>
+                                            </div>
+                                        </div>
+                                        <span class="text-[10px] text-slate-500 mt-2 block">Format: Menit:Detik (contoh: 04:25) &bull; Konversi otomatis 10 Interval</span>
+                                    </div>
+
+                                    {{-- Catatan Dewan Juri --}}
+                                    <div class="pt-1">
+                                        <label class="block text-xs font-bold text-slate-700 uppercase mb-1 flex items-center gap-1.5">
+                                            <i class="fa-solid fa-comment-dots text-slate-400"></i> Catatan Khusus Dewan Juri:
+                                        </label>
+                                        <textarea name="notes" rows="2" placeholder="Tuliskan catatan teknis regu jika ada (opsional)..." class="w-full text-xs p-3 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-rose-500">{{ $existingNotes }}</textarea>
+                                    </div>
+
+                                    {{-- Tanda Tangan Juri & Peserta Sesuai Lembar Fisik --}}
+                                    <div class="grid grid-cols-2 gap-6 pt-4 pb-2">
+                                        <div class="text-center">
+                                            <div class="text-xs font-bold text-slate-800 uppercase tracking-wider mb-14">Tanda Tangan Juri</div>
+                                            <div class="font-bold text-xs text-slate-700">(................................................)</div>
+                                        </div>
+                                        <div class="text-center">
+                                            <div class="text-xs font-bold text-slate-800 uppercase tracking-wider mb-14">Tanda Tangan Peserta</div>
+                                            <div class="font-bold text-xs text-slate-700">(................................................)</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            @else
+                                {{-- HEADER RESMI LKTR MADYA & WIRA --}}
+                                <div class="text-center border-b-2 border-slate-800 pb-3 mb-4 mt-2">
+                                    <div class="flex items-center justify-center gap-1.5 text-rose-600 font-black text-xs uppercase tracking-widest mb-0.5">
+                                        <i class="fa-solid fa-circle-check"></i> LEMBAR PENILAIAN RESMI DEWAN JURI
+                                    </div>
+                                    <h2 class="text-lg sm:text-xl font-black text-slate-900 tracking-tight">
+                                        {{ $formatTitle }}
+                                    </h2>
+                                </div>
+
+                                {{-- Metadata Peserta --}}
+                                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 bg-slate-50 p-3.5 rounded-2xl border border-slate-200 mb-4">
+                                    <div>
+                                        <span class="text-[10px] font-black text-slate-400 uppercase tracking-wider block">NO. URUT PESERTA :</span>
+                                        <span class="text-sm font-black text-slate-900 flex items-center gap-1.5 mt-0.5">
+                                            <i class="fa-solid fa-hashtag text-rose-600"></i> {{ $teamCode }} &bull; {{ $currentTeam->team_label ?? $currentTeam->team_name }}
+                                        </span>
+                                    </div>
+                                    <div>
+                                        <span class="text-[10px] font-black text-slate-400 uppercase tracking-wider block">ASAL SEKOLAH :</span>
+                                        <span class="text-sm font-black text-slate-900 flex items-center gap-1.5 mt-0.5 truncate">
+                                            <i class="fa-solid fa-school text-sky-600"></i> {{ $schoolName }}
+                                        </span>
+                                    </div>
+                                </div>
+
+                                {{-- Tabel Item Penilaian LKTR Madya & Wira --}}
+                                <div class="rounded-2xl border-2 border-slate-800 mb-4 shadow-sm overflow-hidden overflow-x-auto">
+                                    <table class="w-full text-center border-collapse min-w-[550px]">
+                                        <thead>
+                                            <tr class="bg-slate-900 text-white text-[11px] uppercase font-black tracking-wider">
+                                                <th class="py-2.5 px-2 w-10 border-r border-slate-700">NO</th>
+                                                <th class="py-2.5 px-3 text-left border-r border-slate-700">URAIAN KRITERIA</th>
+                                                <th colspan="4" class="py-2.5 px-2 bg-slate-800 border-r border-slate-700">PILIHAN NILAI (KLIK UNTUK MEMILIH)</th>
+                                                <th class="py-2.5 px-2 w-20 bg-slate-950 text-amber-300">SKOR</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody class="text-xs divide-y divide-slate-200 font-semibold text-slate-800">
+                                            
+                                            {{-- SECTION I: KEKUATAN --}}
+                                            <tr class="bg-sky-100 text-sky-950 font-black text-xs text-left">
+                                                <td class="py-2 px-2 text-center border-r border-sky-200 font-mono">I.</td>
+                                                <td colspan="5" class="py-2 px-3 tracking-wider uppercase border-r border-sky-200">
+                                                    KEKUATAN <span class="text-[10px] text-sky-700 font-bold ml-2">(Maksimal: 400 Poin)</span>
+                                                </td>
+                                                <td class="py-2 px-2 text-center font-mono text-sky-900 font-black bg-sky-200/80" id="display_subtotal_kekuatan">0</td>
+                                            </tr>
+
+                                            {{-- 1. Kekencangan mitela --}}
+                                            <tr>
+                                                <td class="py-1.5 px-2 text-center border-r border-slate-200 text-slate-400">1</td>
+                                                <td class="py-1.5 px-3 text-left border-r border-slate-200">Kekencangan mitela</td>
+                                                @foreach([20, 40, 60, 80] as $opt)
                                                     <td class="p-1 border-r border-slate-200">
-                                                        <button type="button" onclick="selectScore('{{ $it['key'] }}', {{ $opt }}, this)" class="btn-rubric-{{ $it['key'] }} w-full py-1.5 rounded-lg {{ $it['val'] == $opt ? 'selected-pill' : 'bg-slate-100 hover:bg-slate-200 text-slate-700' }} font-bold text-xs border border-slate-200 transition">
-                                                            {{ $opt }}{{ $it['val'] == $opt ? ' ✓' : '' }}
+                                                        <button type="button" onclick="selectScore('kekuatan_1', {{ $opt }}, this)" class="btn-rubric-kekuatan_1 w-full py-1.5 rounded-lg {{ $vKekuatan1 == $opt ? 'selected-pill' : 'bg-slate-100 hover:bg-slate-200 text-slate-700' }} font-bold text-xs border border-slate-200 transition">
+                                                            {{ $opt }}{{ $vKekuatan1 == $opt ? ' ✓' : '' }}
                                                         </button>
                                                     </td>
                                                 @endforeach
-                                                <td class="py-1.5 px-2 bg-slate-50 font-mono font-black text-xs text-slate-900" id="score_{{ $it['key'] }}">{{ $it['val'] ?: '-' }}</td>
+                                                <td class="py-1.5 px-2 bg-slate-50 font-mono font-black text-xs text-slate-900" id="score_kekuatan_1">{{ $vKekuatan1 ?: '-' }}</td>
                                             </tr>
-                                        @endforeach
 
-                                        {{-- SECTION III: KECEPATAN (WAKTU TEMPUH) --}}
-                                        <tr class="bg-emerald-100 text-emerald-950 font-black text-xs text-left">
-                                            <td class="py-2 px-2 text-center border-r border-emerald-200 font-mono">III.</td>
-                                            <td colspan="4" class="py-2 px-3 tracking-wider uppercase border-r border-emerald-200">
-                                                KECEPATAN (WAKTU TEMPUH) <span class="text-[10px] text-emerald-700 font-bold ml-2">(Maksimal: 300 Poin)</span>
-                                            </td>
-                                            <td class="py-2 px-2 text-center bg-white border-r border-emerald-200">
-                                                <div class="flex items-center justify-center gap-1.5">
-                                                    <span class="text-[10px] font-bold text-slate-500 uppercase">Waktu:</span>
-                                                    <input type="text" name="time_recorded" id="time_recorded" value="{{ $vWaktu }}" placeholder="04:25" oninput="updateTimeScore()" class="w-20 text-center font-mono font-black text-xs bg-amber-50 text-amber-900 border border-amber-300 rounded-lg px-2 py-1 focus:bg-white focus:outline-none focus:ring-2 focus:ring-amber-500">
-                                                </div>
-                                            </td>
-                                            <td class="py-2 px-2 text-center font-mono text-emerald-900 font-black bg-emerald-200/80" id="display_subtotal_waktu">0</td>
-                                        </tr>
+                                            {{-- 2. Kekuatan jaring --}}
+                                            <tr>
+                                                <td class="py-1.5 px-2 text-center border-r border-slate-200 text-slate-400">2</td>
+                                                <td class="py-1.5 px-3 text-left border-r border-slate-200">Kekuatan jaring</td>
+                                                @foreach([20, 40, 60, 80] as $opt)
+                                                    <td class="p-1 border-r border-slate-200">
+                                                        <button type="button" onclick="selectScore('kekuatan_2', {{ $opt }}, this)" class="btn-rubric-kekuatan_2 w-full py-1.5 rounded-lg {{ $vKekuatan2 == $opt ? 'selected-pill' : 'bg-slate-100 hover:bg-slate-200 text-slate-700' }} font-bold text-xs border border-slate-200 transition">
+                                                            {{ $opt }}{{ $vKekuatan2 == $opt ? ' ✓' : '' }}
+                                                        </button>
+                                                    </td>
+                                                @endforeach
+                                                <td class="py-1.5 px-2 bg-slate-50 font-mono font-black text-xs text-slate-900" id="score_kekuatan_2">{{ $vKekuatan2 ?: '-' }}</td>
+                                            </tr>
 
-                                    </tbody>
-                                    <tfoot>
-                                        <tr class="bg-slate-900 text-white font-black text-sm border-t-2 border-slate-800">
-                                            <td colspan="6" class="py-3 px-4 text-right tracking-wider uppercase text-slate-300 text-xs">
-                                                TOTAL NILAI AKUMULASI (TEKNIS: <span id="display_footer_teknis">0</span> + WAKTU: <span id="display_footer_waktu">0</span>) :
-                                            </td>
-                                            <td class="py-3 px-2 bg-gradient-to-r from-red-600 to-rose-600 text-white font-mono text-xl tracking-tight" id="display_total_score">
-                                                0
-                                            </td>
-                                        </tr>
-                                    </tfoot>
-                                </table>
-                            </div>
+                                            {{-- 3. Kekuatan bambu --}}
+                                            <tr class="bg-slate-50/80">
+                                                <td class="py-1.5 px-2 text-center border-r border-slate-200 text-slate-400">3</td>
+                                                <td colspan="6" class="py-1.5 px-3 text-left font-bold text-slate-700">Kekuatan bambu :</td>
+                                            </tr>
+                                            <tr>
+                                                <td class="py-1.5 px-2 text-center border-r border-slate-200 text-slate-400"></td>
+                                                <td class="py-1.5 px-3 text-left border-r border-slate-200 pl-6 text-slate-600">a. Diputar bambu kecil</td>
+                                                @foreach([15, 30, 45, 60] as $opt)
+                                                    <td class="p-1 border-r border-slate-200">
+                                                        <button type="button" onclick="selectScore('kekuatan_3a', {{ $opt }}, this)" class="btn-rubric-kekuatan_3a w-full py-1.5 rounded-lg {{ $vKekuatan3a == $opt ? 'selected-pill' : 'bg-slate-100 hover:bg-slate-200 text-slate-700' }} font-bold text-xs border border-slate-200 transition">
+                                                            {{ $opt }}{{ $vKekuatan3a == $opt ? ' ✓' : '' }}
+                                                        </button>
+                                                    </td>
+                                                @endforeach
+                                                <td class="py-1.5 px-2 bg-slate-50 font-mono font-black text-xs text-slate-900" id="score_kekuatan_3a">{{ $vKekuatan3a ?: '-' }}</td>
+                                            </tr>
+                                            <tr>
+                                                <td class="py-1.5 px-2 text-center border-r border-slate-200 text-slate-400"></td>
+                                                <td class="py-1.5 px-3 text-left border-r border-slate-200 pl-6 text-slate-600">b. Diinjak 4 sisi</td>
+                                                @foreach([25, 50, 75, 100] as $opt)
+                                                    <td class="p-1 border-r border-slate-200">
+                                                        <button type="button" onclick="selectScore('kekuatan_3b', {{ $opt }}, this)" class="btn-rubric-kekuatan_3b w-full py-1.5 rounded-lg {{ $vKekuatan3b == $opt ? 'selected-pill' : 'bg-slate-100 hover:bg-slate-200 text-slate-700' }} font-bold text-xs border border-slate-200 transition">
+                                                            {{ $opt }}{{ $vKekuatan3b == $opt ? ' ✓' : '' }}
+                                                        </button>
+                                                    </td>
+                                                @endforeach
+                                                <td class="py-1.5 px-2 bg-slate-50 font-mono font-black text-xs text-slate-900" id="score_kekuatan_3b">{{ $vKekuatan3b ?: '-' }}</td>
+                                            </tr>
 
-                            {{-- Catatan Dewan Juri --}}
-                            <div class="mb-4">
-                                <label class="block text-xs font-bold text-slate-700 uppercase mb-1 flex items-center gap-1.5">
-                                    <i class="fa-solid fa-comment-dots text-slate-400"></i> Catatan Khusus Dewan Juri:
-                                </label>
-                                <textarea name="notes" rows="2" placeholder="Tuliskan catatan teknis regu jika ada (opsional)..." class="w-full text-xs p-3 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-rose-500">{{ $existingNotes }}</textarea>
-                            </div>
+                                            {{-- 4. Kekuatan tali pengaman --}}
+                                            <tr>
+                                                <td class="py-1.5 px-2 text-center border-r border-slate-200 text-slate-400">4</td>
+                                                <td class="py-1.5 px-3 text-left border-r border-slate-200">Kekuatan tali pengaman</td>
+                                                @foreach([20, 40, 60, 80] as $opt)
+                                                    <td class="p-1 border-r border-slate-200">
+                                                        <button type="button" onclick="selectScore('kekuatan_4', {{ $opt }}, this)" class="btn-rubric-kekuatan_4 w-full py-1.5 rounded-lg {{ $vKekuatan4 == $opt ? 'selected-pill' : 'bg-slate-100 hover:bg-slate-200 text-slate-700' }} font-bold text-xs border border-slate-200 transition">
+                                                            {{ $opt }}{{ $vKekuatan4 == $opt ? ' ✓' : '' }}
+                                                        </button>
+                                                    </td>
+                                                @endforeach
+                                                <td class="py-1.5 px-2 bg-slate-50 font-mono font-black text-xs text-slate-900" id="score_kekuatan_4">{{ $vKekuatan4 ?: '-' }}</td>
+                                            </tr>
 
-                            {{-- Tanda Tangan & Verifikasi Digital --}}
-                            <div class="grid grid-cols-2 gap-4 pt-1">
-                                <div class="bg-slate-50 p-3 rounded-2xl border border-slate-200 text-center">
-                                    <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-1">Dewan Juri LKTR</span>
-                                    <div class="text-xs font-black text-slate-900 mt-0.5">Juri Penilai Lapangan</div>
-                                    <span class="text-[9px] text-emerald-600 font-bold bg-emerald-50 px-2 py-0.5 rounded-full inline-block mt-1">✓ Terverifikasi Digital</span>
+                                            {{-- SECTION II: KETEPATAN & KERAPIHAN --}}
+                                            <tr class="bg-amber-100 text-amber-950 font-black text-xs text-left">
+                                                <td class="py-2 px-2 text-center border-r border-amber-200 font-mono">II.</td>
+                                                <td colspan="5" class="py-2 px-3 tracking-wider uppercase border-r border-amber-200">
+                                                    KETEPATAN & KERAPIHAN <span class="text-[10px] text-amber-700 font-bold ml-2">(Maksimal: 300 Poin)</span>
+                                                </td>
+                                                <td class="py-2 px-2 text-center font-mono text-amber-900 font-black bg-amber-200/80" id="display_subtotal_kerapihan">0</td>
+                                            </tr>
+
+                                            @php
+                                                $kerapihanItems = [
+                                                    ['num' => 1, 'key' => 'kerapihan_1', 'label' => 'Garis tengah jaring', 'opts' => [5, 10, 15, 20], 'val' => $vKerapihan1],
+                                                    ['num' => 2, 'key' => 'kerapihan_2', 'label' => 'Sisa bambu panjang', 'opts' => [5, 10, 15, 20], 'val' => $vKerapihan2],
+                                                    ['num' => 3, 'key' => 'kerapihan_3', 'label' => 'Sisa bambu kecil', 'opts' => [5, 10, 15, 20], 'val' => $vKerapihan3],
+                                                    ['num' => 4, 'key' => 'kerapihan_4', 'label' => 'Jumlah lilitan pangkal dan cincin', 'opts' => [20, 25, 30, 45], 'val' => $vKerapihan4],
+                                                    ['num' => 5, 'key' => 'kerapihan_5', 'label' => 'Jumlah silangan', 'opts' => [10, 15, 20, 25], 'val' => $vKerapihan5],
+                                                    ['num' => 6, 'key' => 'kerapihan_6', 'label' => 'Diameter tali 5mm', 'opts' => [10, 15, 20, 25], 'val' => $vKerapihan6],
+                                                    ['num' => 7, 'key' => 'kerapihan_7', 'label' => 'Jarak antar jangkar', 'opts' => [15, 20, 25, 30], 'val' => $vKerapihan7],
+                                                    ['num' => 8, 'key' => 'kerapihan_8', 'label' => 'Bentuk tandu', 'opts' => [10, 15, 20, 40], 'val' => $vKerapihan8],
+                                                    ['num' => 9, 'key' => 'kerapihan_9', 'label' => 'Sisa tali', 'opts' => [10, 15, 20, 25], 'val' => $vKerapihan9],
+                                                    ['num' => 10, 'key' => 'kerapihan_10', 'label' => 'Sunan tali', 'opts' => [10, 15, 20, 25], 'val' => $vKerapihan10],
+                                                    ['num' => 11, 'key' => 'kerapihan_11', 'label' => 'Pemasangan mitela', 'opts' => [10, 15, 20, 25], 'val' => $vKerapihan11],
+                                                ];
+                                            @endphp
+
+                                            @foreach($kerapihanItems as $it)
+                                                <tr>
+                                                    <td class="py-1.5 px-2 text-center border-r border-slate-200 text-slate-400">{{ $it['num'] }}</td>
+                                                    <td class="py-1.5 px-3 text-left border-r border-slate-200">{{ $it['label'] }}</td>
+                                                    @foreach($it['opts'] as $opt)
+                                                        <td class="p-1 border-r border-slate-200">
+                                                            <button type="button" onclick="selectScore('{{ $it['key'] }}', {{ $opt }}, this)" class="btn-rubric-{{ $it['key'] }} w-full py-1.5 rounded-lg {{ $it['val'] == $opt ? 'selected-pill' : 'bg-slate-100 hover:bg-slate-200 text-slate-700' }} font-bold text-xs border border-slate-200 transition">
+                                                                {{ $opt }}{{ $it['val'] == $opt ? ' ✓' : '' }}
+                                                            </button>
+                                                        </td>
+                                                    @endforeach
+                                                    <td class="py-1.5 px-2 bg-slate-50 font-mono font-black text-xs text-slate-900" id="score_{{ $it['key'] }}">{{ $it['val'] ?: '-' }}</td>
+                                                </tr>
+                                            @endforeach
+
+                                            {{-- SECTION III: KECEPATAN (WAKTU TEMPUH) --}}
+                                            <tr class="bg-emerald-100 text-emerald-950 font-black text-xs text-left">
+                                                <td class="py-2 px-2 text-center border-r border-emerald-200 font-mono">III.</td>
+                                                <td colspan="4" class="py-2 px-3 tracking-wider uppercase border-r border-emerald-200">
+                                                    KECEPATAN (WAKTU TEMPUH) <span class="text-[10px] text-emerald-700 font-bold ml-2">(Maksimal: 300 Poin)</span>
+                                                </td>
+                                                <td class="py-2 px-2 text-center bg-white border-r border-emerald-200">
+                                                    <div class="flex items-center justify-center gap-1.5">
+                                                        <span class="text-[10px] font-bold text-slate-500 uppercase">Waktu:</span>
+                                                        <input type="text" name="time_recorded" id="time_recorded" value="{{ $vWaktu }}" placeholder="04:25" oninput="updateTimeScore()" class="w-20 text-center font-mono font-black text-xs bg-amber-50 text-amber-900 border border-amber-300 rounded-lg px-2 py-1 focus:bg-white focus:outline-none focus:ring-2 focus:ring-amber-500">
+                                                    </div>
+                                                </td>
+                                                <td class="py-2 px-2 text-center font-mono text-emerald-900 font-black bg-emerald-200/80" id="display_subtotal_waktu">0</td>
+                                            </tr>
+
+                                        </tbody>
+                                        <tfoot>
+                                            <tr class="bg-slate-900 text-white font-black text-sm border-t-2 border-slate-800">
+                                                <td colspan="6" class="py-3 px-4 text-right tracking-wider uppercase text-slate-300 text-xs">
+                                                    TOTAL NILAI AKUMULASI (TEKNIS: <span id="display_footer_teknis">0</span> + WAKTU: <span id="display_footer_waktu">0</span>) :
+                                                </td>
+                                                <td class="py-3 px-2 bg-gradient-to-r from-red-600 to-rose-600 text-white font-mono text-xl tracking-tight" id="display_total_score">
+                                                    0
+                                                </td>
+                                            </tr>
+                                        </tfoot>
+                                    </table>
                                 </div>
-                                <div class="bg-slate-50 p-3 rounded-2xl border border-slate-200 text-center">
-                                    <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-1">Peserta Terdaftar</span>
-                                    <div class="text-xs font-black text-slate-900 mt-0.5 truncate">{{ $schoolName }}</div>
-                                    <span class="text-[9px] text-slate-500 font-medium inline-block mt-1">{{ $teamCode }} &bull; {{ $currentTeam->team_label ?? $currentTeam->team_name }}</span>
+
+                                {{-- Catatan Dewan Juri --}}
+                                <div class="mb-4">
+                                    <label class="block text-xs font-bold text-slate-700 uppercase mb-1 flex items-center gap-1.5">
+                                        <i class="fa-solid fa-comment-dots text-slate-400"></i> Catatan Khusus Dewan Juri:
+                                    </label>
+                                    <textarea name="notes" rows="2" placeholder="Tuliskan catatan teknis regu jika ada (opsional)..." class="w-full text-xs p-3 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-rose-500">{{ $existingNotes }}</textarea>
                                 </div>
-                            </div>
+
+                                {{-- Tanda Tangan & Verifikasi Digital --}}
+                                <div class="grid grid-cols-2 gap-4 pt-1">
+                                    <div class="bg-slate-50 p-3 rounded-2xl border border-slate-200 text-center">
+                                        <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-1">Dewan Juri LKTR</span>
+                                        <div class="text-xs font-black text-slate-900 mt-0.5">Juri Penilai Lapangan</div>
+                                        <span class="text-[9px] text-emerald-600 font-bold bg-emerald-50 px-2 py-0.5 rounded-full inline-block mt-1">✓ Terverifikasi Digital</span>
+                                    </div>
+                                    <div class="bg-slate-50 p-3 rounded-2xl border border-slate-200 text-center">
+                                        <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-1">Peserta Terdaftar</span>
+                                        <div class="text-xs font-black text-slate-900 mt-0.5 truncate">{{ $schoolName }}</div>
+                                        <span class="text-[9px] text-slate-500 font-medium inline-block mt-1">{{ $teamCode }} &bull; {{ $currentTeam->team_label ?? $currentTeam->team_name }}</span>
+                                    </div>
+                                </div>
+                            @endif
 
                         </div>
 
@@ -459,7 +743,7 @@
                                         <div>
                                             <h3 class="text-xs font-black text-slate-900 uppercase tracking-wider">Tabel Konversi Waktu Tempuh</h3>
                                             <span class="text-[10px] text-slate-500 font-medium">
-                                                {{ $isLevelMula ? 'Tingkat Mula (Interval 15 Detik)' : 'Tingkat Madya & Wira (Interval 10 Detik)' }}
+                                                {{ $isLevelMula ? 'Tingkat Mula (10 Interval Sesuai Lembar Resmi)' : 'Tingkat Madya & Wira (Interval 10 Detik)' }}
                                             </span>
                                         </div>
                                     </div>
@@ -499,36 +783,18 @@
                                                 <tr id="time_row_60" data-min="311" data-max="320"><td class="py-1.5 px-3 text-left text-slate-600">05.11 - 05.20</td><td class="py-1.5 px-3 text-right font-bold text-slate-700">60</td></tr>
                                                 <tr id="time_row_45" data-min="321" data-max="330"><td class="py-1.5 px-3 text-left text-slate-600">05.21 - 05.30</td><td class="py-1.5 px-3 text-right font-bold text-slate-700">45</td></tr>
                                             @else
-                                                {{-- MULA: Rentang Waktu (Interval 15s) --}}
-                                                <tr id="time_row_300" data-min="0" data-max="180"><td class="py-1.5 px-3 text-left text-slate-600">&lt; 03.00</td><td class="py-1.5 px-3 text-right font-black text-emerald-600">300</td></tr>
-                                                <tr id="time_row_290" data-min="181" data-max="195"><td class="py-1.5 px-3 text-left text-slate-600">03.01 - 03.15</td><td class="py-1.5 px-3 text-right font-bold text-slate-700">290</td></tr>
-                                                <tr id="time_row_280" data-min="196" data-max="210"><td class="py-1.5 px-3 text-left text-slate-600">03.16 - 03.30</td><td class="py-1.5 px-3 text-right font-bold text-slate-700">280</td></tr>
-                                                <tr id="time_row_270" data-min="211" data-max="225"><td class="py-1.5 px-3 text-left text-slate-600">03.31 - 03.45</td><td class="py-1.5 px-3 text-right font-bold text-slate-700">270</td></tr>
-                                                <tr id="time_row_260" data-min="226" data-max="240"><td class="py-1.5 px-3 text-left text-slate-600">03.46 - 04.00</td><td class="py-1.5 px-3 text-right font-bold text-slate-700">260</td></tr>
-                                                <tr id="time_row_250" data-min="241" data-max="255"><td class="py-1.5 px-3 text-left text-slate-600">04.01 - 04.15</td><td class="py-1.5 px-3 text-right font-bold text-slate-700">250</td></tr>
-                                                <tr id="time_row_240" data-min="256" data-max="270"><td class="py-1.5 px-3 text-left text-slate-600">04.16 - 04.30</td><td class="py-1.5 px-3 text-right font-bold text-slate-700">240</td></tr>
-                                                <tr id="time_row_230" data-min="271" data-max="285"><td class="py-1.5 px-3 text-left text-slate-600">04.31 - 04.45</td><td class="py-1.5 px-3 text-right font-bold text-slate-700">230</td></tr>
-                                                <tr id="time_row_220" data-min="286" data-max="300"><td class="py-1.5 px-3 text-left text-slate-600">04.46 - 05.00</td><td class="py-1.5 px-3 text-right font-bold text-slate-700">220</td></tr>
-                                                <tr id="time_row_210" data-min="301" data-max="315"><td class="py-1.5 px-3 text-left text-slate-600">05.01 - 05.15</td><td class="py-1.5 px-3 text-right font-bold text-slate-700">210</td></tr>
-                                                <tr id="time_row_200" data-min="316" data-max="330"><td class="py-1.5 px-3 text-left text-slate-600">05.16 - 05.30</td><td class="py-1.5 px-3 text-right font-bold text-slate-700">200</td></tr>
-                                                <tr id="time_row_190" data-min="331" data-max="345"><td class="py-1.5 px-3 text-left text-slate-600">05.31 - 05.45</td><td class="py-1.5 px-3 text-right font-bold text-slate-700">190</td></tr>
-                                                <tr id="time_row_180" data-min="346" data-max="360"><td class="py-1.5 px-3 text-left text-slate-600">05.46 - 06.00</td><td class="py-1.5 px-3 text-right font-bold text-slate-700">180</td></tr>
-                                                <tr id="time_row_170" data-min="361" data-max="375"><td class="py-1.5 px-3 text-left text-slate-600">06.01 - 06.15</td><td class="py-1.5 px-3 text-right font-bold text-slate-700">170</td></tr>
-                                                <tr id="time_row_160" data-min="376" data-max="390"><td class="py-1.5 px-3 text-left text-slate-600">06.16 - 06.30</td><td class="py-1.5 px-3 text-right font-bold text-slate-700">160</td></tr>
-                                                <tr id="time_row_150" data-min="391" data-max="405"><td class="py-1.5 px-3 text-left text-slate-600">06.31 - 06.45</td><td class="py-1.5 px-3 text-right font-bold text-slate-700">150</td></tr>
-                                                <tr id="time_row_140" data-min="406" data-max="420"><td class="py-1.5 px-3 text-left text-slate-600">06.46 - 07.00</td><td class="py-1.5 px-3 text-right font-bold text-slate-700">140</td></tr>
-                                                <tr id="time_row_130" data-min="421" data-max="435"><td class="py-1.5 px-3 text-left text-slate-600">07.01 - 07.15</td><td class="py-1.5 px-3 text-right font-bold text-slate-700">130</td></tr>
-                                                <tr id="time_row_120" data-min="436" data-max="450"><td class="py-1.5 px-3 text-left text-slate-600">07.16 - 07.30</td><td class="py-1.5 px-3 text-right font-bold text-slate-700">120</td></tr>
-                                                <tr id="time_row_110" data-min="451" data-max="465"><td class="py-1.5 px-3 text-left text-slate-600">07.31 - 07.45</td><td class="py-1.5 px-3 text-right font-bold text-slate-700">110</td></tr>
-                                                <tr id="time_row_100" data-min="466" data-max="480"><td class="py-1.5 px-3 text-left text-slate-600">07.46 - 08.00</td><td class="py-1.5 px-3 text-right font-bold text-slate-700">100</td></tr>
-                                                <tr id="time_row_90" data-min="481" data-max="495"><td class="py-1.5 px-3 text-left text-slate-600">08.01 - 08.15</td><td class="py-1.5 px-3 text-right font-bold text-slate-700">90</td></tr>
-                                                <tr id="time_row_80" data-min="496" data-max="510"><td class="py-1.5 px-3 text-left text-slate-600">08.16 - 08.30</td><td class="py-1.5 px-3 text-right font-bold text-slate-700">80</td></tr>
-                                                <tr id="time_row_70" data-min="511" data-max="525"><td class="py-1.5 px-3 text-left text-slate-600">08.31 - 08.45</td><td class="py-1.5 px-3 text-right font-bold text-slate-700">70</td></tr>
-                                                <tr id="time_row_60" data-min="526" data-max="540"><td class="py-1.5 px-3 text-left text-slate-600">08.46 - 09.00</td><td class="py-1.5 px-3 text-right font-bold text-slate-700">60</td></tr>
-                                                <tr id="time_row_50" data-min="541" data-max="555"><td class="py-1.5 px-3 text-left text-slate-600">09.01 - 09.15</td><td class="py-1.5 px-3 text-right font-bold text-slate-700">50</td></tr>
-                                                <tr id="time_row_40" data-min="556" data-max="570"><td class="py-1.5 px-3 text-left text-slate-600">09.16 - 09.30</td><td class="py-1.5 px-3 text-right font-bold text-slate-700">40</td></tr>
-                                                <tr id="time_row_30" data-min="571" data-max="585"><td class="py-1.5 px-3 text-left text-slate-600">09.31 - 09.45</td><td class="py-1.5 px-3 text-right font-bold text-slate-700">30</td></tr>
-                                                <tr id="time_row_20" data-min="586" data-max="600"><td class="py-1.5 px-3 text-left text-slate-600">09.46 - 10.00</td><td class="py-1.5 px-3 text-right font-bold text-slate-700">20</td></tr>
+                                                {{-- MULA: 10 Interval Menit Sesuai Kertas Juri --}}
+                                                <tr id="time_row_mula_1" data-min="0" data-max="60"><td class="py-2 px-3 text-left font-bold text-slate-700">0 - 1 Menit <span class="text-[10px] text-slate-400 font-normal block font-sans">00:00 - 01:00</span></td><td class="py-2 px-3 text-right font-black text-emerald-600">271 - 300</td></tr>
+                                                <tr id="time_row_mula_2" data-min="61" data-max="120"><td class="py-2 px-3 text-left font-bold text-slate-700">1.1 - 2 Menit <span class="text-[10px] text-slate-400 font-normal block font-sans">01:01 - 02:00</span></td><td class="py-2 px-3 text-right font-black text-emerald-600">241 - 270</td></tr>
+                                                <tr id="time_row_mula_3" data-min="121" data-max="180"><td class="py-2 px-3 text-left font-bold text-slate-700">2.1 - 3 Menit <span class="text-[10px] text-slate-400 font-normal block font-sans">02:01 - 03:00</span></td><td class="py-2 px-3 text-right font-bold text-slate-700">211 - 240</td></tr>
+                                                <tr id="time_row_mula_4" data-min="181" data-max="240"><td class="py-2 px-3 text-left font-bold text-slate-700">3.1 - 4 Menit <span class="text-[10px] text-slate-400 font-normal block font-sans">03:01 - 04:00</span></td><td class="py-2 px-3 text-right font-bold text-slate-700">181 - 210</td></tr>
+                                                <tr id="time_row_mula_5" data-min="241" data-max="300"><td class="py-2 px-3 text-left font-bold text-slate-700">4.1 - 5 Menit <span class="text-[10px] text-slate-400 font-normal block font-sans">04:01 - 05:00</span></td><td class="py-2 px-3 text-right font-bold text-slate-700">151 - 180</td></tr>
+                                                <tr id="time_row_mula_6" data-min="301" data-max="360"><td class="py-2 px-3 text-left font-bold text-slate-700">5.1 - 6 Menit <span class="text-[10px] text-slate-400 font-normal block font-sans">05:01 - 06:00</span></td><td class="py-2 px-3 text-right font-bold text-slate-700">121 - 150</td></tr>
+                                                <tr id="time_row_mula_7" data-min="361" data-max="420"><td class="py-2 px-3 text-left font-bold text-slate-700">6.1 - 7 Menit <span class="text-[10px] text-slate-400 font-normal block font-sans">06:01 - 07:00</span></td><td class="py-2 px-3 text-right font-bold text-slate-700">91 - 120</td></tr>
+                                                <tr id="time_row_mula_8" data-min="421" data-max="480"><td class="py-2 px-3 text-left font-bold text-slate-700">7.1 - 8 Menit <span class="text-[10px] text-slate-400 font-normal block font-sans">07:01 - 08:00</span></td><td class="py-2 px-3 text-right font-bold text-slate-700">61 - 90</td></tr>
+                                                <tr id="time_row_mula_9" data-min="481" data-max="540"><td class="py-2 px-3 text-left font-bold text-slate-700">8.1 - 9 Menit <span class="text-[10px] text-slate-400 font-normal block font-sans">08:01 - 09:00</span></td><td class="py-2 px-3 text-right font-bold text-slate-700">31 - 60</td></tr>
+                                                <tr id="time_row_mula_10" data-min="541" data-max="600"><td class="py-2 px-3 text-left font-bold text-slate-700">9.1 - 10 Menit <span class="text-[10px] text-slate-400 font-normal block font-sans">09:01 - 10:00</span></td><td class="py-2 px-3 text-right font-bold text-rose-600">0 - 30</td></tr>
+                                                <tr id="time_row_mula_over" data-min="601" data-max="99999"><td class="py-2 px-3 text-left font-bold text-rose-600">&gt; 10 Menit <span class="text-[10px] text-slate-400 font-normal block font-sans">&gt; 10:00</span></td><td class="py-2 px-3 text-right font-black text-rose-600">0</td></tr>
                                             @endif
                                         </tbody>
                                     </table>
@@ -616,18 +882,16 @@
         document.getElementById('actionAfterInput').value = action;
     }
 
+    // Function for Madya & Wira range button selection
     function selectScore(key, val, btnElement) {
-        // Update hidden input
         const hiddenInput = document.getElementById('input_' + key);
         if (hiddenInput) {
             hiddenInput.value = val;
         }
 
-        // Toggle button styling for this key
         document.querySelectorAll('.btn-rubric-' + key).forEach(btn => {
             btn.classList.remove('selected-pill');
             btn.classList.add('bg-slate-100', 'text-slate-700');
-            // Remove checkmark
             btn.innerHTML = btn.innerHTML.replace(' ✓', '').trim();
         });
 
@@ -635,13 +899,83 @@
         btnElement.classList.remove('bg-slate-100', 'text-slate-700');
         btnElement.innerHTML = val + ' ✓';
 
-        // Update row score cell
         const scoreCell = document.getElementById('score_' + key);
         if (scoreCell) {
             scoreCell.innerText = val;
         }
 
-        // Recalculate
+        recalculateAll();
+    }
+
+    // Function for Mula range button click
+    function selectScoreMula(key, val, rangeIdx, btnElement) {
+        const hiddenInput = document.getElementById('input_' + key);
+        if (hiddenInput) {
+            hiddenInput.value = val;
+        }
+
+        const scoreInput = document.getElementById('score_input_' + key);
+        if (scoreInput) {
+            scoreInput.value = val;
+        }
+
+        document.querySelectorAll('.btn-mula-' + key).forEach(btn => {
+            btn.classList.remove('selected-pill');
+            btn.classList.add('bg-slate-100', 'text-slate-700');
+        });
+
+        btnElement.classList.add('selected-pill');
+        btnElement.classList.remove('bg-slate-100', 'text-slate-700');
+
+        recalculateAll();
+    }
+
+    // Function for Mula manual input typing
+    function manualScoreInputMula(key, rawVal, maxVal) {
+        let val = rawVal.trim() === '' ? '' : parseInt(rawVal, 10);
+        if (isNaN(val)) val = '';
+        if (val !== '' && val > maxVal) {
+            val = maxVal;
+            const inputEl = document.getElementById('score_input_' + key);
+            if (inputEl) inputEl.value = val;
+        }
+        if (val !== '' && val < 0) {
+            val = 0;
+            const inputEl = document.getElementById('score_input_' + key);
+            if (inputEl) inputEl.value = val;
+        }
+
+        const hiddenInput = document.getElementById('input_' + key);
+        if (hiddenInput) {
+            hiddenInput.value = val !== '' ? val : '';
+        }
+
+        // Highlight matching button if any
+        document.querySelectorAll('.btn-mula-' + key).forEach(btn => {
+            btn.classList.remove('selected-pill');
+            btn.classList.add('bg-slate-100', 'text-slate-700');
+        });
+
+        if (val !== '') {
+            let activeIdx = -1;
+            if (key.startsWith('ketepatan_')) {
+                if (val <= 14) activeIdx = 0;
+                else if (val <= 28) activeIdx = 1;
+                else if (val <= 43) activeIdx = 2;
+            } else if (key.startsWith('kekuatan_')) {
+                if (val <= 44) activeIdx = 0;
+                else if (val <= 88) activeIdx = 1;
+                else if (val <= 133) activeIdx = 2;
+            }
+            if (activeIdx !== -1) {
+                const btn = document.querySelector(`.btn-mula-${key}-${activeIdx}`);
+                if (btn) {
+                    btn.classList.add('selected-pill');
+                    btn.classList.remove('bg-slate-100', 'text-slate-700');
+                }
+            }
+        }
+
         recalculateAll();
     }
 
@@ -661,24 +995,14 @@
         if (seconds <= 0) return 0;
 
         if (isLevelMula) {
-            // Mula:
-            // <= 03:00 (180s) => 300
-            // 03:01 - 03:15 (181 - 195s) => 290
-            // ...
-            // 09:46 - 10:00 (586 - 600s) => 20
-            // > 10:00 => 0
-            if (seconds <= 180) return 300;
+            // Mula 10 Interval Scale:
+            // 0 - 600s: 300 - round(seconds * 0.5)
+            // > 600s: 0
             if (seconds > 600) return 0;
-            const step = Math.ceil((seconds - 180) / 15);
-            const score = 300 - (step * 10);
-            return Math.max(score, 20);
+            const score = 300 - Math.round(seconds * 0.5);
+            return Math.max(0, Math.min(300, score));
         } else {
-            // Madya & Wira:
-            // <= 02:40 (160s) => 300
-            // 02:41 - 02:50 (161 - 170s) => 285
-            // ...
-            // 05:21 - 05:30 (321 - 330s) => 45
-            // > 05:30 => 0
+            // Madya & Wira 10-detik interval scale
             if (seconds <= 160) return 300;
             if (seconds > 330) return 0;
             const step = Math.ceil((seconds - 160) / 10);
@@ -687,13 +1011,28 @@
         }
     }
 
+    function getMulaTierInfo(seconds) {
+        if (seconds <= 0) return { tier: 0, text: '-', label: 'Belum Diisi' };
+        if (seconds <= 60) return { tier: 1, text: '271 - 300 Poin', label: '0-1 Menit' };
+        if (seconds <= 120) return { tier: 2, text: '241 - 270 Poin', label: '1.1 - 2 Menit' };
+        if (seconds <= 180) return { tier: 3, text: '211 - 240 Poin', label: '2.1 - 3 Menit' };
+        if (seconds <= 240) return { tier: 4, text: '181 - 210 Poin', label: '3.1 - 4 Menit' };
+        if (seconds <= 300) return { tier: 5, text: '151 - 180 Poin', label: '4.1 - 5 Menit' };
+        if (seconds <= 360) return { tier: 6, text: '121 - 150 Poin', label: '5.1 - 6 Menit' };
+        if (seconds <= 420) return { tier: 7, text: '91 - 120 Poin', label: '6.1 - 7 Menit' };
+        if (seconds <= 480) return { tier: 8, text: '61 - 90 Poin', label: '7.1 - 8 Menit' };
+        if (seconds <= 540) return { tier: 9, text: '31 - 60 Poin', label: '8.1 - 9 Menit' };
+        if (seconds <= 600) return { tier: 10, text: '0 - 30 Poin', label: '9.1 - 10 Menit' };
+        return { tier: 11, text: '0 Poin', label: '> 10 Menit' };
+    }
+
     function updateTimeScore() {
         const timeInput = document.getElementById('time_recorded');
         const timeStr = timeInput ? timeInput.value.trim() : '';
         const seconds = parseTimeToSeconds(timeStr);
         const timeScore = computeTimeScore(seconds);
 
-        // Highlight matching table row
+        // Highlight matching table row in right sidebar
         document.querySelectorAll('#tableTimeBody tr').forEach(row => {
             row.classList.remove('highlight-time-row');
             const min = parseInt(row.getAttribute('data-min'), 10) || 0;
@@ -701,10 +1040,36 @@
 
             if (seconds >= min && seconds <= max && seconds > 0) {
                 row.classList.add('highlight-time-row');
-                // Scroll row into view if needed
                 row.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
             }
         });
+
+        // If Mula, highlight interval cell on the paper sheet and update badge
+        if (isLevelMula) {
+            const tierInfo = getMulaTierInfo(seconds);
+            const badgePts = document.getElementById('mula_waktu_badge_pts');
+            const badgeTier = document.getElementById('mula_waktu_badge_tier');
+            if (badgePts) {
+                badgePts.innerText = `${timeScore} Poin`;
+            }
+            if (badgeTier) {
+                badgeTier.innerText = seconds > 0 ? `Interval: ${tierInfo.label}` : 'Interval: -';
+            }
+
+            for (let i = 1; i <= 10; i++) {
+                const cell = document.getElementById('mula_tier_cell_' + i);
+                const lbl = document.getElementById('mula_interval_lbl_' + i);
+                if (cell && lbl) {
+                    if (tierInfo.tier === i) {
+                        cell.classList.add('bg-amber-300', 'text-slate-950', 'ring-2', 'ring-amber-500', 'ring-inset');
+                        lbl.classList.add('bg-amber-200', 'text-slate-950');
+                    } else {
+                        cell.classList.remove('bg-amber-300', 'text-slate-950', 'ring-2', 'ring-amber-500', 'ring-inset');
+                        lbl.classList.remove('bg-amber-200', 'text-slate-950');
+                    }
+                }
+            }
+        }
 
         // Update info text
         const info = document.getElementById('time_lookup_info');
@@ -720,64 +1085,130 @@
     }
 
     function recalculateAll() {
-        if (!document.getElementById('display_subtotal_kekuatan')) {
-            return;
-        }
-        // 1. Kekuatan
-        const kekuatanKeys = ['kekuatan_1', 'kekuatan_2', 'kekuatan_3a', 'kekuatan_3b', 'kekuatan_4'];
-        let subtotalKekuatan = 0;
-        kekuatanKeys.forEach(k => {
-            const el = document.getElementById('input_' + k);
-            if (el && el.value) {
-                subtotalKekuatan += parseInt(el.value, 10) || 0;
-            }
-        });
-
-        // 2. Ketepatan & Kerapihan
-        const kerapihanKeys = [
-            'kerapihan_1', 'kerapihan_2', 'kerapihan_3', 'kerapihan_4',
-            'kerapihan_5', 'kerapihan_6', 'kerapihan_7', 'kerapihan_8',
-            'kerapihan_9', 'kerapihan_10', 'kerapihan_11'
-        ];
-        let subtotalKerapihan = 0;
-        kerapihanKeys.forEach(k => {
-            const el = document.getElementById('input_' + k);
-            if (el && el.value) {
-                subtotalKerapihan += parseInt(el.value, 10) || 0;
-            }
-        });
-
-        const technicalScore = subtotalKekuatan + subtotalKerapihan;
-
-        // 3. Waktu
         const timeInput = document.getElementById('time_recorded');
         const timeStr = timeInput ? timeInput.value.trim() : '';
         const seconds = parseTimeToSeconds(timeStr);
         const timeScore = computeTimeScore(seconds);
 
-        // 4. Total
-        const totalScore = technicalScore + timeScore;
+        if (isLevelMula) {
+            // MULA RECALCULATION
+            const ketepatanKeys = ['ketepatan_1', 'ketepatan_2', 'ketepatan_3', 'ketepatan_4', 'ketepatan_5', 'ketepatan_6', 'ketepatan_7'];
+            let subtotalKetepatan = 0;
+            ketepatanKeys.forEach(k => {
+                const el = document.getElementById('input_' + k);
+                if (el && el.value) {
+                    subtotalKetepatan += parseInt(el.value, 10) || 0;
+                }
+            });
 
-        // Update Displays
-        document.getElementById('display_subtotal_kekuatan').innerText = subtotalKekuatan;
-        document.getElementById('display_subtotal_kerapihan').innerText = subtotalKerapihan;
-        document.getElementById('display_subtotal_waktu').innerText = timeScore;
-        document.getElementById('display_footer_teknis').innerText = technicalScore;
-        document.getElementById('display_footer_waktu').innerText = timeScore;
-        document.getElementById('display_total_score').innerText = totalScore;
+            const kekuatanKeys = ['kekuatan_1', 'kekuatan_2', 'kekuatan_3'];
+            let subtotalKekuatan = 0;
+            kekuatanKeys.forEach(k => {
+                const el = document.getElementById('input_' + k);
+                if (el && el.value) {
+                    subtotalKekuatan += parseInt(el.value, 10) || 0;
+                }
+            });
 
-        // Update Live Sync Card
-        document.getElementById('live_card_teknis').innerText = technicalScore;
-        document.getElementById('live_card_time_label').innerText = `Waktu (${timeStr || '-'})`;
-        document.getElementById('live_card_waktu').innerText = `+${timeScore}`;
-        document.getElementById('live_card_total').innerText = totalScore;
+            const technicalScore = subtotalKetepatan + subtotalKekuatan;
+            const totalScore = technicalScore + timeScore;
 
-        // Update Hidden Inputs
-        document.getElementById('input_subtotal_kekuatan').value = subtotalKekuatan;
-        document.getElementById('input_subtotal_kerapihan').value = subtotalKerapihan;
-        document.getElementById('input_subtotal_teknis').value = technicalScore;
-        document.getElementById('input_subtotal_waktu').value = timeScore;
-        document.getElementById('input_subtotal_total').value = totalScore;
+            // Displays
+            const elSubKetepatan = document.getElementById('display_subtotal_ketepatan');
+            if (elSubKetepatan) elSubKetepatan.innerText = subtotalKetepatan;
+
+            const elSubKekuatan = document.getElementById('display_subtotal_kekuatan_mula');
+            if (elSubKekuatan) elSubKekuatan.innerText = subtotalKekuatan;
+
+            const elSubWaktu = document.getElementById('display_subtotal_waktu');
+            if (elSubWaktu) elSubWaktu.innerText = timeScore;
+
+            const elFootTeknis = document.getElementById('display_footer_teknis');
+            if (elFootTeknis) elFootTeknis.innerText = technicalScore;
+
+            const elFootWaktu = document.getElementById('display_footer_waktu');
+            if (elFootWaktu) elFootWaktu.innerText = timeScore;
+
+            const elTotal = document.getElementById('display_total_score');
+            if (elTotal) elTotal.innerText = totalScore;
+
+            // Live Card
+            const elCardTeknis = document.getElementById('live_card_teknis');
+            if (elCardTeknis) elCardTeknis.innerText = technicalScore;
+
+            const elCardTimeLbl = document.getElementById('live_card_time_label');
+            if (elCardTimeLbl) elCardTimeLbl.innerText = `Waktu (${timeStr || '-'})`;
+
+            const elCardWaktu = document.getElementById('live_card_waktu');
+            if (elCardWaktu) elCardWaktu.innerText = `+${timeScore}`;
+
+            const elCardTotal = document.getElementById('live_card_total');
+            if (elCardTotal) elCardTotal.innerText = totalScore;
+
+            // Hidden Inputs
+            const inSubKet = document.getElementById('input_subtotal_ketepatan');
+            if (inSubKet) inSubKet.value = subtotalKetepatan;
+
+            const inSubKek = document.getElementById('input_subtotal_kekuatan');
+            if (inSubKek) inSubKek.value = subtotalKekuatan;
+
+            const inSubTek = document.getElementById('input_subtotal_teknis');
+            if (inSubTek) inSubTek.value = technicalScore;
+
+            const inSubWak = document.getElementById('input_subtotal_waktu');
+            if (inSubWak) inSubWak.value = timeScore;
+
+            const inSubTot = document.getElementById('input_subtotal_total');
+            if (inSubTot) inSubTot.value = totalScore;
+
+        } else {
+            // MADYA & WIRA RECALCULATION
+            if (!document.getElementById('display_subtotal_kekuatan')) {
+                return;
+            }
+            const kekuatanKeys = ['kekuatan_1', 'kekuatan_2', 'kekuatan_3a', 'kekuatan_3b', 'kekuatan_4'];
+            let subtotalKekuatan = 0;
+            kekuatanKeys.forEach(k => {
+                const el = document.getElementById('input_' + k);
+                if (el && el.value) {
+                    subtotalKekuatan += parseInt(el.value, 10) || 0;
+                }
+            });
+
+            const kerapihanKeys = [
+                'kerapihan_1', 'kerapihan_2', 'kerapihan_3', 'kerapihan_4',
+                'kerapihan_5', 'kerapihan_6', 'kerapihan_7', 'kerapihan_8',
+                'kerapihan_9', 'kerapihan_10', 'kerapihan_11'
+            ];
+            let subtotalKerapihan = 0;
+            kerapihanKeys.forEach(k => {
+                const el = document.getElementById('input_' + k);
+                if (el && el.value) {
+                    subtotalKerapihan += parseInt(el.value, 10) || 0;
+                }
+            });
+
+            const technicalScore = subtotalKekuatan + subtotalKerapihan;
+            const totalScore = technicalScore + timeScore;
+
+            document.getElementById('display_subtotal_kekuatan').innerText = subtotalKekuatan;
+            document.getElementById('display_subtotal_kerapihan').innerText = subtotalKerapihan;
+            document.getElementById('display_subtotal_waktu').innerText = timeScore;
+            document.getElementById('display_footer_teknis').innerText = technicalScore;
+            document.getElementById('display_footer_waktu').innerText = timeScore;
+            document.getElementById('display_total_score').innerText = totalScore;
+
+            document.getElementById('live_card_teknis').innerText = technicalScore;
+            document.getElementById('live_card_time_label').innerText = `Waktu (${timeStr || '-'})`;
+            document.getElementById('live_card_waktu').innerText = `+${timeScore}`;
+            document.getElementById('live_card_total').innerText = totalScore;
+
+            document.getElementById('input_subtotal_kekuatan').value = subtotalKekuatan;
+            document.getElementById('input_subtotal_kerapihan').value = subtotalKerapihan;
+            document.getElementById('input_subtotal_teknis').value = technicalScore;
+            document.getElementById('input_subtotal_waktu').value = timeScore;
+            document.getElementById('input_subtotal_total').value = totalScore;
+        }
     }
 
     // Run on initial load
