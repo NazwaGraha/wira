@@ -181,7 +181,7 @@ class AllGridScoringNo500ErrorTest extends TestCase
         $this->assertDatabaseHas('competition_scores', [
             'competition_category_id' => $catLktr->id,
             'competition_participant_team_id' => $teamLktr->id,
-            'final_score' => 1000,
+            'final_score' => 867,
         ]);
 
         // 2. PP Madya
@@ -296,7 +296,7 @@ class AllGridScoringNo500ErrorTest extends TestCase
         $this->assertDatabaseHas('competition_scores', [
             'competition_category_id' => $catLktr->id,
             'competition_participant_team_id' => $teamLktr->id,
-            'final_score' => 1000,
+            'final_score' => 867,
             'time_recorded' => '02:40',
         ]);
     }

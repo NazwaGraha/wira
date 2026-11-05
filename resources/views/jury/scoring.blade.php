@@ -2,6 +2,14 @@
 
 @section('title', 'Form Penilaian: ' . $category->name . ' (' . $category->level . ')')
 
+@push('styles')
+<style>
+    .pill-active-theme {
+        {!! $pillActiveStyle ?? '' !!}
+    }
+</style>
+@endpush
+
 @section('content')
 @php
     $catName = strtolower($category->name);
@@ -22,6 +30,11 @@
         $activeDot = 'bg-emerald-400';
         $activeBorder = 'border-emerald-600/40';
         $subText = 'text-emerald-400';
+        $accentText = 'text-emerald-400';
+        $accentBorder = 'border-emerald-500';
+        $accentRing = 'focus:ring-emerald-500';
+        $accentBgSoft = 'bg-emerald-500/10 text-emerald-300 border-emerald-500/30';
+        $pillActiveStyle = 'background: linear-gradient(135deg, #059669 0%, #047857 100%) !important; color:#fff !important; box-shadow:0 3px 8px rgba(5,150,105,0.4); border-color:#10b981 !important;';
     } elseif ($catLevel === 'Wira') {
         $levelBadge = 'bg-amber-500 text-slate-950 shadow-md shadow-amber-950/50 font-black';
         $headerGradient = 'from-amber-950 via-yellow-950 to-slate-900 border-b border-amber-600/40';
@@ -29,6 +42,11 @@
         $activeDot = 'bg-amber-400';
         $activeBorder = 'border-amber-600/40';
         $subText = 'text-amber-400';
+        $accentText = 'text-amber-400';
+        $accentBorder = 'border-amber-500';
+        $accentRing = 'focus:ring-amber-500';
+        $accentBgSoft = 'bg-amber-500/10 text-amber-300 border-amber-500/30';
+        $pillActiveStyle = 'background: linear-gradient(135deg, #d97706 0%, #b45309 100%) !important; color:#fff !important; box-shadow:0 3px 8px rgba(217,119,6,0.4); border-color:#f59e0b !important;';
     } else { // Madya (Default Biru, Persis Screenshot User)
         $levelBadge = 'bg-blue-600 text-white shadow-md shadow-blue-950/50';
         $headerGradient = 'from-sky-950 via-blue-950 to-slate-900 border-b border-blue-600/40';
@@ -36,6 +54,11 @@
         $activeDot = 'bg-sky-400';
         $activeBorder = 'border-blue-600/40';
         $subText = 'text-sky-400';
+        $accentText = 'text-sky-400';
+        $accentBorder = 'border-blue-500';
+        $accentRing = 'focus:ring-blue-500';
+        $accentBgSoft = 'bg-sky-500/10 text-sky-300 border-sky-500/30';
+        $pillActiveStyle = 'background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%) !important; color:#fff !important; box-shadow:0 3px 8px rgba(37,99,235,0.4); border-color:#38bdf8 !important;';
     }
 
     $existingRubric = $existingRubric ?? [];
@@ -213,78 +236,168 @@
 
             @if ($isLKTR)
                 <!-- ========================================================================= -->
-                <!-- 1. RUBRIK KETANGKASAN TANDU REGULER (LKTR) -->
+                <!-- 1. RUBRIK KETANGKASAN TANDU REGULER (LKTR) - MOBILE OPTIMIZED -->
                 <!-- ========================================================================= -->
 
-                <!-- Stopwatch & Konversi Waktu LKTR -->
-                <div class="bg-slate-900 rounded-2xl p-3 border border-slate-800">
-                    <div class="flex items-center justify-between mb-2">
+                @php
+                    $ketepatanItems = [
+                        ['num' => 1, 'key' => 'ketepatan_1', 'label' => '1. Bentuk Simetris', 'desc' => 'Kerapihan bentuk tandu seimbang kiri & kanan', 'opts' => [14, 28, 43], 'ranges' => ['0-14', '15-28', '29-43'], 'max' => 43],
+                        ['num' => 2, 'key' => 'ketepatan_2', 'label' => '2. Jarak ikatan jangkar sejajar', 'desc' => 'Simetri posisi ikatan jangkar seberang palang', 'opts' => [14, 28, 43], 'ranges' => ['0-14', '15-28', '29-43'], 'max' => 43],
+                        ['num' => 3, 'key' => 'ketepatan_3', 'label' => '3. Ikatan mati 4', 'desc' => 'Ketepatan simpul mati pada 4 sudut bambu', 'opts' => [14, 28, 43], 'ranges' => ['0-14', '15-28', '29-43'], 'max' => 43],
+                        ['num' => 4, 'key' => 'ketepatan_4', 'label' => '4. Ikatan jangkar 7', 'desc' => 'Ketepatan 7 ikatan jangkar sepanjang tandu', 'opts' => [14, 28, 43], 'ranges' => ['0-14', '15-28', '29-43'], 'max' => 43],
+                        ['num' => 5, 'key' => 'ketepatan_5', 'label' => '5. Tali tubuh', 'desc' => 'Pemasangan tali tubuh pengaman korban', 'opts' => [14, 28, 43], 'ranges' => ['0-14', '15-28', '29-43'], 'max' => 43],
+                        ['num' => 6, 'key' => 'ketepatan_6', 'label' => '6. Sisa bambu pendek & panjang', 'desc' => 'Ketepatan ukuran sisa ujung bambu standar', 'opts' => [14, 28, 43], 'ranges' => ['0-14', '15-28', '29-43'], 'max' => 43],
+                        ['num' => 7, 'key' => 'ketepatan_7', 'label' => '7. Mitela Presisi rapih', 'desc' => 'Kerapihan lipatan & kekencangan mitela', 'opts' => [14, 28, 43], 'ranges' => ['0-14', '15-28', '29-43'], 'max' => 43],
+                    ];
+
+                    $kekuatanItems = [
+                        ['num' => 1, 'key' => 'kekuatan_1', 'label' => '1. Kekuatan Jaring / tali jangkar', 'desc' => 'Kekokohan anyaman jaring saat diuji beban', 'opts' => [44, 88, 133], 'ranges' => ['0-44', '45-88', '89-133'], 'max' => 133],
+                        ['num' => 2, 'key' => 'kekuatan_2', 'label' => '2. Kekuatan bambu pendek (diputar)', 'desc' => 'Uji puntir pada bambu palang pendek', 'opts' => [44, 88, 133], 'ranges' => ['0-44', '45-88', '89-133'], 'max' => 133],
+                        ['num' => 3, 'key' => 'kekuatan_3', 'label' => '3. Kekuatan bambu panjang (diputar/goyang)', 'desc' => 'Uji goyang & puntir pada bambu utama', 'opts' => [44, 88, 133], 'ranges' => ['0-44', '45-88', '89-133'], 'max' => 133],
+                    ];
+                @endphp
+
+                <!-- BANNER INFO: NILAI DAPAT DIKETIK LANGSUNG -->
+                <div class="bg-slate-900 border border-slate-800 rounded-2xl p-2.5 flex items-center gap-2.5 shadow-xs">
+                    <div class="w-7 h-7 rounded-xl bg-slate-800 flex items-center justify-center text-xs {{ $accentText }} shrink-0">
+                        <i class="fa-solid fa-keyboard"></i>
+                    </div>
+                    <div class="text-[9.5px] leading-tight text-slate-300">
+                        <strong class="text-white">Nilai Dapat Di-input Bebas:</strong> Ketik nilai langsung pada kotak input putih atau pilih tombol rentang rubrik untuk pengisian cepat.
+                    </div>
+                </div>
+
+                <!-- STOPWATCH WAKTU TEMPUH (MOBILE ERGONOMIC) -->
+                <div class="bg-slate-900 rounded-2xl p-3 border border-slate-800 space-y-2.5 shadow-sm">
+                    <div class="flex items-center justify-between">
                         <div class="flex items-center gap-1.5 text-slate-300 text-[10px] font-black uppercase">
-                            <i class="fa-solid fa-stopwatch text-sky-400"></i> STOPWATCH WAKTU TEMPUH
+                            <i class="fa-solid fa-stopwatch text-amber-400"></i> WAKTU TEMPUH TANDU
                         </div>
-                        <span class="text-[9px] font-bold px-2 py-0.5 rounded bg-slate-800 text-slate-400">
-                            {{ $catLevel === 'Mula' ? 'Standar Mula: Max 10 Menit' : 'Madya/Wira: Max 5:30 Menit' }}
+                        <span class="text-[8.5px] font-bold px-2 py-0.5 rounded-full {{ $accentBgSoft }} border">
+                            {{ $catLevel === 'Mula' ? '10 Interval: Max 10:00' : '6 Interval: Max 05:30' }}
                         </span>
                     </div>
-                    
-                    <div class="flex items-center justify-between bg-black/40 rounded-xl p-2.5 border border-slate-800">
+
+                    <!-- Digital Time Display Box & Live Points -->
+                    <div class="flex items-center justify-between bg-black/60 rounded-xl p-3 border border-slate-800">
                         <div>
-                            <div id="stopwatch-display" class="text-2xl font-black font-mono text-white">
+                            <div id="stopwatch-display" class="text-3xl font-black font-mono text-white tracking-widest leading-none">
                                 {{ sprintf('%02d:%02d', $recordedMinutes, $recordedSeconds) }}
                             </div>
-                            <div id="time-status-label" class="text-[8px] text-slate-400 mt-0.5 font-bold">Waktu Tempuh Tandu</div>
+                            <div class="text-[9px] text-slate-400 mt-1 font-bold">Menit : Detik</div>
                         </div>
                         <div class="text-right">
-                            <span class="text-[8px] text-slate-400 block font-semibold">Poin Waktu:</span>
-                            <span id="display-time-points" class="text-base font-black font-mono text-sky-400 bg-slate-800 px-2 py-0.5 rounded-lg border border-slate-700">
-                                +0
+                            <span class="text-[9px] text-slate-400 block font-bold uppercase">Poin Waktu:</span>
+                            <span id="display-time-points" class="text-lg font-black font-mono {{ $accentText }} bg-slate-950 px-2.5 py-1 rounded-xl border border-slate-800">
+                                +0 Pts
                             </span>
                         </div>
                     </div>
 
-                    <div class="flex items-center gap-1.5 mt-2">
-                        <button type="button" id="btn-timer-start" onclick="toggleStopwatch()" class="flex-1 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-500 text-white font-bold text-[10px] flex items-center justify-center gap-1 shadow active:scale-95 transition">
-                            <i class="fa-solid fa-play text-[8px]"></i> <span id="label-timer-btn">Start</span>
+                    <!-- Active Interval Highlight Badge -->
+                    <div class="bg-slate-950 p-2 rounded-xl border border-slate-800 flex items-center justify-between text-[10px]">
+                        <span class="text-slate-400 font-medium">Interval Terpilih:</span>
+                        <span id="time-tier-label" class="font-mono font-black {{ $accentText }} bg-slate-900 px-2 py-0.5 rounded border border-slate-800">
+                            -
+                        </span>
+                    </div>
+
+                    <!-- Manual Time Inputs (Bisa diketik menit & detik secara langsung) -->
+                    <div class="bg-slate-950/70 p-2.5 rounded-xl border border-slate-800 flex items-center justify-between text-xs">
+                        <span class="text-[10px] text-slate-300 font-bold flex items-center gap-1">
+                            <i class="fa-solid fa-pen text-[9px] text-slate-400"></i> Ketik Manual:
+                        </span>
+                        <div class="flex items-center gap-1 font-mono font-black">
+                            <input type="number" id="input-minutes-box" min="0" max="59" value="{{ $recordedMinutes }}" oninput="handleManualTimeChange()" class="w-12 h-7 text-center font-bold text-xs bg-slate-900 text-white border border-slate-700 rounded-lg focus:outline-none focus:border-blue-500" placeholder="00">
+                            <span class="text-slate-400">:</span>
+                            <input type="number" id="input-seconds-box" min="0" max="59" value="{{ $recordedSeconds }}" oninput="handleManualTimeChange()" class="w-12 h-7 text-center font-bold text-xs bg-slate-900 text-white border border-slate-700 rounded-lg focus:outline-none focus:border-blue-500" placeholder="00">
+                            <span class="text-[9px] text-slate-400 ml-1">m:d</span>
+                        </div>
+                    </div>
+
+                    <!-- Stopwatch Controls (Thumb Friendly) -->
+                    <div class="grid grid-cols-2 gap-2">
+                        <button type="button" id="btn-timer-start" onclick="toggleStopwatch()" class="py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-black text-xs flex items-center justify-center gap-1.5 shadow active:scale-95 transition">
+                            <i id="icon-timer-btn" class="fa-solid fa-play text-[9px]"></i> <span id="label-timer-btn">Mulai</span>
                         </button>
-                        <button type="button" onclick="resetStopwatch()" class="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold text-[10px] flex items-center gap-1 active:scale-95 transition">
-                            <i class="fa-solid fa-rotate-right text-[8px]"></i> Reset
+                        <button type="button" onclick="resetStopwatch()" class="py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold text-xs border border-slate-700 flex items-center justify-center gap-1.5 active:scale-95 transition">
+                            <i class="fa-solid fa-rotate-right text-[9px]"></i> Reset 00:00
                         </button>
                     </div>
                 </div>
 
-                <!-- Bagian I: Kekuatan Tandu (Maksimal: 400 Poin) -->
-                <div class="bg-slate-900 rounded-2xl p-3 border border-slate-800 space-y-2">
-                    <div class="flex items-center justify-between">
-                        <span class="text-[11px] font-black text-slate-200 uppercase tracking-wide">BAGIAN I: KEKUATAN TANDU</span>
-                        <span id="subtotal-kekuatan" class="text-[10px] font-mono font-bold text-sky-400 bg-slate-800 px-2 py-0.5 rounded">
-                            0 / 400
+                <!-- Hidden Inputs Subtotals -->
+                <input type="hidden" name="subtotals[ketepatan]" id="input-subtotal-ketepatan" value="0">
+                <input type="hidden" name="subtotals[kekuatan]" id="input-subtotal-kekuatan" value="0">
+                <input type="hidden" name="subtotals[teknis]" id="input-subtotal-teknis" value="0">
+                <input type="hidden" name="subtotals[waktu]" id="input-subtotal-waktu" value="0">
+
+                <!-- BAGIAN I: KETEPATAN (Maksimal: 301 Poin) -->
+                <div class="bg-slate-900 rounded-2xl p-3 border border-slate-800 space-y-2.5">
+                    <div class="flex items-center justify-between pb-1.5 border-b border-slate-800">
+                        <span class="text-[11px] font-black text-slate-200 uppercase tracking-wide flex items-center gap-1.5">
+                            <i class="fa-solid fa-compass-drafting text-rose-500"></i> I. KETEPATAN (7 BUTIR)
+                        </span>
+                        <span class="text-[10px] font-mono font-black {{ $accentText }} bg-slate-950 px-2 py-0.5 rounded border border-slate-800">
+                            <span id="subtotal-ketepatan">0</span> / 301 Pts
                         </span>
                     </div>
 
-                    @php
-                        $kekuatanItems = [
-                            'kekuatan_1' => ['1. Kekencangan mitela', [20, 40, 60, 80], 80],
-                            'kekuatan_2' => ['2. Kekuatan jaring', [20, 40, 60, 80], 80],
-                            'kekuatan_3a' => ['3a. Diputar bambu kecil', [15, 30, 45, 60], 60],
-                            'kekuatan_3b' => ['3b. Diinjak 4 sisi', [25, 50, 75, 100], 100],
-                            'kekuatan_4' => ['4. Kekuatan tali pengaman', [20, 40, 60, 80], 80],
-                        ];
-                    @endphp
-
-                    @foreach ($kekuatanItems as $key => [$label, $options, $def])
+                    @foreach ($ketepatanItems as $it)
                         @php
-                            $currVal = intval($existingRubric[$key] ?? $def);
+                            $currVal = isset($existingRubric[$it['key']]) ? (int)$existingRubric[$it['key']] : null;
+                            $hasVal = ($currVal !== null && $currVal !== '');
                         @endphp
-                        <input type="hidden" name="rubric[{{ $key }}]" id="rubric_{{ $key }}" value="{{ $currVal }}" class="rubric-lktr-kekuatan">
-                        <div class="p-2 rounded-xl bg-slate-950/60 border border-slate-800/80">
-                            <div class="flex items-center justify-between text-[10px] mb-1.5">
-                                <span class="text-slate-200 font-medium">{{ $label }}</span>
-                                <span id="display_{{ $key }}" class="font-mono font-bold text-sky-400">{{ $currVal }}</span>
+                        <input type="hidden" name="rubric[{{ $it['key'] }}]" id="rubric_{{ $it['key'] }}" value="{{ $hasVal ? $currVal : '' }}" class="rubric-lktr-ketepatan" data-key="{{ $it['key'] }}" data-max="{{ $it['max'] }}">
+
+                        <div class="p-2.5 rounded-2xl bg-slate-950/70 border border-slate-800/80 space-y-2">
+                            <div class="flex items-start justify-between gap-2">
+                                <div>
+                                    <span class="text-[11px] font-bold text-white leading-tight block">{{ $it['label'] }}</span>
+                                    <p class="text-[8.5px] text-slate-400 mt-0.5 leading-snug">{{ $it['desc'] }}</p>
+                                </div>
+                                <span class="text-[8.5px] font-bold text-slate-400 bg-slate-900 px-1.5 py-0.5 rounded shrink-0 border border-slate-800">Max {{ $it['max'] }}</span>
                             </div>
-                            <div class="grid grid-cols-4 gap-1">
-                                @foreach ($options as $opt)
-                                    <button type="button" onclick="setLktrKekuatan('{{ $key }}', {{ $opt }}, this)" class="btn-opt-{{ $key }} py-1 rounded text-[8.5px] font-bold transition {{ $currVal == $opt ? 'bg-blue-600 text-white shadow' : 'bg-slate-800 text-slate-400' }}">
-                                        {{ $opt }}
+
+                            <!-- ROW INPUT NILAI LANGSUNG (BISA DIKETIK BEBAS) -->
+                            <div class="flex items-center justify-between bg-slate-900/90 p-2 rounded-xl border border-slate-800">
+                                <span class="text-[9.5px] font-extrabold text-slate-300 flex items-center gap-1.5">
+                                    <i class="fa-solid fa-pen-to-square {{ $accentText }}"></i> Input Nilai:
+                                </span>
+                                <div class="flex items-center gap-1.5">
+                                    <button type="button" onclick="stepLktrValue('{{ $it['key'] }}', -1, {{ $it['max'] }})" class="w-7 h-7 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 font-black text-sm flex items-center justify-center border border-slate-700 active:scale-90 transition">-</button>
+                                    
+                                    <input type="number" 
+                                           id="input_box_{{ $it['key'] }}" 
+                                           min="0" 
+                                           max="{{ $it['max'] }}" 
+                                           value="{{ $hasVal ? $currVal : '' }}" 
+                                           placeholder="0" 
+                                           oninput="handleLktrDirectInput('{{ $it['key'] }}', {{ $it['max'] }}, this.value)" 
+                                           class="w-16 h-7 text-center font-mono font-black text-xs bg-white text-slate-950 border-2 {{ $accentBorder }} rounded-lg shadow-sm focus:outline-none focus:ring-2 transition">
+                                    
+                                    <button type="button" onclick="stepLktrValue('{{ $it['key'] }}', 1, {{ $it['max'] }})" class="w-7 h-7 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 font-black text-sm flex items-center justify-center border border-slate-700 active:scale-90 transition">+</button>
+                                    <span class="text-[9.5px] font-bold text-slate-400 ml-0.5">/ {{ $it['max'] }}</span>
+                                </div>
+                            </div>
+
+                            <!-- 3 TOMBOL PILIH CEPAT / RENTANG RUBRIK -->
+                            <div class="grid grid-cols-3 gap-1.5">
+                                @foreach ($it['ranges'] as $rIdx => $rLabel)
+                                    @php
+                                        $targetVal = $it['opts'][$rIdx];
+                                        $isBtnActive = false;
+                                        if ($hasVal) {
+                                            if ($rIdx === 0 && $currVal <= 14) $isBtnActive = true;
+                                            elseif ($rIdx === 1 && $currVal >= 15 && $currVal <= 28) $isBtnActive = true;
+                                            elseif ($rIdx === 2 && $currVal >= 29) $isBtnActive = true;
+                                        }
+                                    @endphp
+                                    <button type="button" 
+                                            id="btn_pill_{{ $it['key'] }}_{{ $rIdx }}" 
+                                            onclick="setLktrRubricPill('{{ $it['key'] }}', {{ $targetVal }}, {{ $it['max'] }})" 
+                                            class="btn-pill-{{ $it['key'] }} py-1.5 rounded-xl text-[9px] font-bold border transition text-center {{ $isBtnActive ? 'pill-active-theme text-white' : 'border-slate-800 bg-slate-900 text-slate-400 hover:bg-slate-800' }}">
+                                        {{ $rLabel }}
                                     </button>
                                 @endforeach
                             </div>
@@ -292,45 +405,72 @@
                     @endforeach
                 </div>
 
-                <!-- Bagian II: Kerapihan & Ketepatan (Maksimal: 300 Poin) -->
-                <div class="bg-slate-900 rounded-2xl p-3 border border-slate-800 space-y-2">
-                    <div class="flex items-center justify-between">
-                        <span class="text-[11px] font-black text-slate-200 uppercase tracking-wide">BAGIAN II: KERAPIHAN & KETEPATAN</span>
-                        <span id="subtotal-kerapihan" class="text-[10px] font-mono font-bold text-sky-400 bg-slate-800 px-2 py-0.5 rounded">
-                            0 / 300
+                <!-- BAGIAN II: KEKUATAN (Maksimal: 399 Poin) -->
+                <div class="bg-slate-900 rounded-2xl p-3 border border-slate-800 space-y-2.5">
+                    <div class="flex items-center justify-between pb-1.5 border-b border-slate-800">
+                        <span class="text-[11px] font-black text-slate-200 uppercase tracking-wide flex items-center gap-1.5">
+                            <i class="fa-solid fa-dumbbell text-amber-500"></i> II. KEKUATAN (3 BUTIR)
+                        </span>
+                        <span class="text-[10px] font-mono font-black {{ $accentText }} bg-slate-950 px-2 py-0.5 rounded border border-slate-800">
+                            <span id="subtotal-kekuatan">0</span> / 399 Pts
                         </span>
                     </div>
 
-                    @php
-                        $kerapihanItems = [
-                            'kerapihan_1' => ['1. Garis tengah jaring', [5, 10, 15, 20], 20],
-                            'kerapihan_2' => ['2. Sisa bambu panjang', [5, 10, 15, 20], 20],
-                            'kerapihan_3' => ['3. Sisa bambu kecil', [5, 10, 15, 20], 20],
-                            'kerapihan_4' => ['4. Jumlah lilitan pangkal & cincin', [20, 25, 30, 45], 45],
-                            'kerapihan_5' => ['5. Jumlah silangan', [10, 15, 20, 25], 25],
-                            'kerapihan_6' => ['6. Diameter tali 5mm', [10, 15, 20, 25], 25],
-                            'kerapihan_7' => ['7. Jarak antar jangkar', [15, 20, 25, 30], 30],
-                            'kerapihan_8' => ['8. Bentuk tandu', [10, 15, 20, 40], 40],
-                            'kerapihan_9' => ['9. Sisa tali', [10, 15, 20, 25], 25],
-                            'kerapihan_10' => ['10. Sunan tali', [10, 15, 20, 25], 25],
-                            'kerapihan_11' => ['11. Pemasangan mitela', [10, 15, 20, 25], 25],
-                        ];
-                    @endphp
-
-                    @foreach ($kerapihanItems as $key => [$label, $options, $def])
+                    @foreach ($kekuatanItems as $it)
                         @php
-                            $currVal = intval($existingRubric[$key] ?? $def);
+                            $currVal = isset($existingRubric[$it['key']]) ? (int)$existingRubric[$it['key']] : null;
+                            $hasVal = ($currVal !== null && $currVal !== '');
                         @endphp
-                        <input type="hidden" name="rubric[{{ $key }}]" id="rubric_{{ $key }}" value="{{ $currVal }}" class="rubric-lktr-kerapihan">
-                        <div class="p-2 rounded-xl bg-slate-950/60 border border-slate-800/80">
-                            <div class="flex items-center justify-between text-[10px] mb-1.5">
-                                <span class="text-slate-200 font-medium">{{ $label }}</span>
-                                <span id="display_{{ $key }}" class="font-mono font-bold text-sky-400">{{ $currVal }}</span>
+                        <input type="hidden" name="rubric[{{ $it['key'] }}]" id="rubric_{{ $it['key'] }}" value="{{ $hasVal ? $currVal : '' }}" class="rubric-lktr-kekuatan" data-key="{{ $it['key'] }}" data-max="{{ $it['max'] }}">
+
+                        <div class="p-2.5 rounded-2xl bg-slate-950/70 border border-slate-800/80 space-y-2">
+                            <div class="flex items-start justify-between gap-2">
+                                <div>
+                                    <span class="text-[11px] font-bold text-white leading-tight block">{{ $it['label'] }}</span>
+                                    <p class="text-[8.5px] text-slate-400 mt-0.5 leading-snug">{{ $it['desc'] }}</p>
+                                </div>
+                                <span class="text-[8.5px] font-bold text-slate-400 bg-slate-900 px-1.5 py-0.5 rounded shrink-0 border border-slate-800">Max {{ $it['max'] }}</span>
                             </div>
-                            <div class="grid grid-cols-4 gap-1">
-                                @foreach ($options as $opt)
-                                    <button type="button" onclick="setLktrKerapihan('{{ $key }}', {{ $opt }}, this)" class="btn-opt-{{ $key }} py-1 rounded text-[8.5px] font-bold transition {{ $currVal == $opt ? 'bg-blue-600 text-white shadow' : 'bg-slate-800 text-slate-400' }}">
-                                        {{ $opt }}
+
+                            <!-- ROW INPUT NILAI LANGSUNG (BISA DIKETIK BEBAS) -->
+                            <div class="flex items-center justify-between bg-slate-900/90 p-2 rounded-xl border border-slate-800">
+                                <span class="text-[9.5px] font-extrabold text-slate-300 flex items-center gap-1.5">
+                                    <i class="fa-solid fa-pen-to-square {{ $accentText }}"></i> Input Nilai:
+                                </span>
+                                <div class="flex items-center gap-1.5">
+                                    <button type="button" onclick="stepLktrValue('{{ $it['key'] }}', -1, {{ $it['max'] }})" class="w-7 h-7 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 font-black text-sm flex items-center justify-center border border-slate-700 active:scale-90 transition">-</button>
+                                    
+                                    <input type="number" 
+                                           id="input_box_{{ $it['key'] }}" 
+                                           min="0" 
+                                           max="{{ $it['max'] }}" 
+                                           value="{{ $hasVal ? $currVal : '' }}" 
+                                           placeholder="0" 
+                                           oninput="handleLktrDirectInput('{{ $it['key'] }}', {{ $it['max'] }}, this.value)" 
+                                           class="w-16 h-7 text-center font-mono font-black text-xs bg-white text-slate-950 border-2 {{ $accentBorder }} rounded-lg shadow-sm focus:outline-none focus:ring-2 transition">
+                                    
+                                    <button type="button" onclick="stepLktrValue('{{ $it['key'] }}', 1, {{ $it['max'] }})" class="w-7 h-7 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 font-black text-sm flex items-center justify-center border border-slate-700 active:scale-90 transition">+</button>
+                                    <span class="text-[9.5px] font-bold text-slate-400 ml-0.5">/ {{ $it['max'] }}</span>
+                                </div>
+                            </div>
+
+                            <!-- 3 TOMBOL PILIH CEPAT / RENTANG RUBRIK -->
+                            <div class="grid grid-cols-3 gap-1.5">
+                                @foreach ($it['ranges'] as $rIdx => $rLabel)
+                                    @php
+                                        $targetVal = $it['opts'][$rIdx];
+                                        $isBtnActive = false;
+                                        if ($hasVal) {
+                                            if ($rIdx === 0 && $currVal <= 44) $isBtnActive = true;
+                                            elseif ($rIdx === 1 && $currVal >= 45 && $currVal <= 88) $isBtnActive = true;
+                                            elseif ($rIdx === 2 && $currVal >= 89) $isBtnActive = true;
+                                        }
+                                    @endphp
+                                    <button type="button" 
+                                            id="btn_pill_{{ $it['key'] }}_{{ $rIdx }}" 
+                                            onclick="setLktrRubricPill('{{ $it['key'] }}', {{ $targetVal }}, {{ $it['max'] }})" 
+                                            class="btn-pill-{{ $it['key'] }} py-1.5 rounded-xl text-[9px] font-bold border transition text-center {{ $isBtnActive ? 'pill-active-theme text-white' : 'border-slate-800 bg-slate-900 text-slate-400 hover:bg-slate-800' }}">
+                                        {{ $rLabel }}
                                     </button>
                                 @endforeach
                             </div>
@@ -1181,69 +1321,164 @@
 
     // ================= KALKULASI & INTERAKSI SKOR LIVE =================
 
-    // 1. LKTR
-    function setLktrKekuatan(key, val, btn) {
-        document.getElementById('rubric_' + key).value = val;
-        document.getElementById('display_' + key).innerText = val;
-        document.querySelectorAll('.btn-opt-' + key).forEach(b => {
-            b.className = 'btn-opt-' + key + ' py-1 rounded text-[8.5px] font-bold transition bg-slate-800 text-slate-400';
-        });
-        btn.className = 'btn-opt-' + key + ' py-1 rounded text-[8.5px] font-bold transition bg-blue-600 text-white shadow';
+    // 1. LKTR (KETANGKASAN TANDU)
+    function handleLktrDirectInput(key, maxVal, rawVal) {
+        let val = (rawVal || '').toString().trim();
+        let numVal = val === '' ? null : parseInt(val, 10);
+        if (numVal !== null) {
+            if (numVal > maxVal) numVal = maxVal;
+            if (numVal < 0) numVal = 0;
+            const box = document.getElementById('input_box_' + key);
+            if (box && box.value != numVal) box.value = numVal;
+        }
+        const hiddenEl = document.getElementById('rubric_' + key);
+        if (hiddenEl) hiddenEl.value = numVal !== null ? numVal : '';
+        highlightLktrPill(key, numVal, maxVal);
         recalculateLktr();
     }
 
-    function setLktrKerapihan(key, val, btn) {
-        document.getElementById('rubric_' + key).value = val;
-        document.getElementById('display_' + key).innerText = val;
-        document.querySelectorAll('.btn-opt-' + key).forEach(b => {
-            b.className = 'btn-opt-' + key + ' py-1 rounded text-[8.5px] font-bold transition bg-slate-800 text-slate-400';
-        });
-        btn.className = 'btn-opt-' + key + ' py-1 rounded text-[8.5px] font-bold transition bg-blue-600 text-white shadow';
+    function setLktrRubricPill(key, targetVal, maxVal) {
+        const box = document.getElementById('input_box_' + key);
+        if (box) box.value = targetVal;
+        const hiddenEl = document.getElementById('rubric_' + key);
+        if (hiddenEl) hiddenEl.value = targetVal;
+        highlightLktrPill(key, targetVal, maxVal);
         recalculateLktr();
+    }
+
+    function stepLktrValue(key, delta, maxVal) {
+        const box = document.getElementById('input_box_' + key);
+        let curr = parseInt(box && box.value !== '' ? box.value : 0, 10) || 0;
+        let nextVal = curr + delta;
+        if (nextVal < 0) nextVal = 0;
+        if (nextVal > maxVal) nextVal = maxVal;
+        if (box) box.value = nextVal;
+        const hiddenEl = document.getElementById('rubric_' + key);
+        if (hiddenEl) hiddenEl.value = nextVal;
+        highlightLktrPill(key, nextVal, maxVal);
+        recalculateLktr();
+    }
+
+    function highlightLktrPill(key, val, maxVal) {
+        document.querySelectorAll('.btn-pill-' + key).forEach(btn => {
+            btn.classList.remove('pill-active-theme', 'text-white');
+            btn.classList.add('border-slate-800', 'bg-slate-900', 'text-slate-400');
+        });
+        if (val === null || val === undefined || isNaN(val)) return;
+
+        let activeIdx = -1;
+        if (maxVal === 43) {
+            if (val <= 14) activeIdx = 0;
+            else if (val <= 28) activeIdx = 1;
+            else activeIdx = 2;
+        } else if (maxVal === 133) {
+            if (val <= 44) activeIdx = 0;
+            else if (val <= 88) activeIdx = 1;
+            else activeIdx = 2;
+        }
+        if (activeIdx >= 0) {
+            const activeBtn = document.getElementById(`btn_pill_${key}_${activeIdx}`);
+            if (activeBtn) {
+                activeBtn.classList.remove('border-slate-800', 'bg-slate-900', 'text-slate-400');
+                activeBtn.classList.add('pill-active-theme', 'text-white');
+            }
+        }
+    }
+
+    function handleManualTimeChange() {
+        const m = parseInt(document.getElementById('input-minutes-box').value, 10) || 0;
+        const s = parseInt(document.getElementById('input-seconds-box').value, 10) || 0;
+        stopwatchSeconds = (m * 60) + s;
+        updateStopwatchUI();
     }
 
     function calculateLktrTimeScore(seconds) {
         if (seconds <= 0) return 0;
         if (CAT_LEVEL === 'Mula') {
-            if (seconds <= 180) return 300;
             if (seconds > 600) return 0;
-            const step = Math.ceil((seconds - 180) / 15);
-            return Math.max(300 - (step * 10), 20);
+            const score = 300 - Math.round(seconds * 0.5);
+            return Math.max(0, Math.min(300, score));
         } else {
-            if (seconds <= 160) return 300;
             if (seconds > 330) return 0;
-            const step = Math.ceil((seconds - 160) / 10);
-            return Math.max(300 - (step * 15), 45);
+            if (seconds <= 300) {
+                const score = 300 - Math.round(seconds * (250 / 300));
+                return Math.max(51, Math.min(300, score));
+            } else {
+                const diff = seconds - 300;
+                const score = 51 - Math.round(diff * (51 / 30));
+                return Math.max(0, Math.min(51, score));
+            }
+        }
+    }
+
+    function getLktrTierInfo(seconds) {
+        if (seconds <= 0) return { label: 'Belum Diisi' };
+        if (CAT_LEVEL === 'Mula') {
+            if (seconds <= 60) return { label: '0-1 Menit (271-300 Pts)' };
+            if (seconds <= 120) return { label: '1.1-2 Menit (241-270 Pts)' };
+            if (seconds <= 180) return { label: '2.1-3 Menit (211-240 Pts)' };
+            if (seconds <= 240) return { label: '3.1-4 Menit (181-210 Pts)' };
+            if (seconds <= 300) return { label: '4.1-5 Menit (151-180 Pts)' };
+            if (seconds <= 360) return { label: '5.1-6 Menit (121-150 Pts)' };
+            if (seconds <= 420) return { label: '6.1-7 Menit (91-120 Pts)' };
+            if (seconds <= 480) return { label: '7.1-8 Menit (61-90 Pts)' };
+            if (seconds <= 540) return { label: '8.1-9 Menit (31-60 Pts)' };
+            if (seconds <= 600) return { label: '9.1-10 Menit (0-30 Pts)' };
+            return { label: '> 10 Menit (0 Poin)' };
+        } else {
+            if (seconds <= 60) return { label: '0-1 Menit (251-300 Pts)' };
+            if (seconds <= 120) return { label: '1.1-2 Menit (201-250 Pts)' };
+            if (seconds <= 180) return { label: '2.1-3 Menit (151-200 Pts)' };
+            if (seconds <= 240) return { label: '3.1-4 Menit (101-150 Pts)' };
+            if (seconds <= 300) return { label: '4.1-5 Menit (51-100 Pts)' };
+            if (seconds <= 330) return { label: '5.1-5.30 Menit (0-51 Pts)' };
+            return { label: '> 05:30 Menit (0 Poin)' };
         }
     }
 
     function recalculateLktr() {
+        let subKetepatan = 0;
+        document.querySelectorAll('.rubric-lktr-ketepatan').forEach(el => {
+            subKetepatan += parseFloat(el.value) || 0;
+        });
+        const subKetEl = document.getElementById('subtotal-ketepatan');
+        if (subKetEl) subKetEl.innerText = subKetepatan;
+
         let subKekuatan = 0;
         document.querySelectorAll('.rubric-lktr-kekuatan').forEach(el => {
             subKekuatan += parseFloat(el.value) || 0;
         });
-        document.getElementById('subtotal-kekuatan').innerText = subKekuatan + ' / 400';
-
-        let subKerapihan = 0;
-        document.querySelectorAll('.rubric-lktr-kerapihan').forEach(el => {
-            subKerapihan += parseFloat(el.value) || 0;
-        });
-        document.getElementById('subtotal-kerapihan').innerText = subKerapihan + ' / 300';
+        const subKekEl = document.getElementById('subtotal-kekuatan');
+        if (subKekEl) subKekEl.innerText = subKekuatan;
 
         const mins = parseInt(document.getElementById('input-minutes').value) || 0;
         const secs = parseInt(document.getElementById('input-seconds').value) || 0;
         const totalSeconds = (mins * 60) + secs;
         const timeScore = calculateLktrTimeScore(totalSeconds);
+        const tierInfo = getLktrTierInfo(totalSeconds);
 
-        document.getElementById('display-time-points').innerText = '+' + timeScore;
+        const timePtsEl = document.getElementById('display-time-points');
+        if (timePtsEl) timePtsEl.innerText = '+' + timeScore + ' Pts';
 
-        const technicalScore = subKekuatan + subKerapihan;
+        const tierEl = document.getElementById('time-tier-label');
+        if (tierEl) tierEl.innerText = tierInfo.label;
+
+        const technicalScore = subKetepatan + subKekuatan;
         const grandTotal = technicalScore + timeScore;
+
+        const inSubKet = document.getElementById('input-subtotal-ketepatan');
+        if (inSubKet) inSubKet.value = subKetepatan;
+        const inSubKek = document.getElementById('input-subtotal-kekuatan');
+        if (inSubKek) inSubKek.value = subKekuatan;
+        const inSubTek = document.getElementById('input-subtotal-teknis');
+        if (inSubTek) inSubTek.value = technicalScore;
+        const inSubWak = document.getElementById('input-subtotal-waktu');
+        if (inSubWak) inSubWak.value = timeScore;
 
         document.getElementById('input-final-score').value = grandTotal;
         document.getElementById('bottom-bar-subtitle').innerText = `TEKNIS: ${technicalScore} + WAKTU: ${timeScore}`;
         document.getElementById('bottom-bar-score').innerText = grandTotal;
-        document.getElementById('bottom-bar-max').innerText = 'POIN';
+        document.getElementById('bottom-bar-max').innerText = '/ 1000 POIN';
     }
 
     // 2. PRS

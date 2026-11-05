@@ -322,8 +322,8 @@ class JuryPortalTest extends TestCase
         $response->assertSee('A-01');
         $response->assertSee('Buka Kamera');
         $response->assertSee('Pilih Galeri');
-        $response->assertSee('BAGIAN I: KEKUATAN TANDU');
-        $response->assertSee('BAGIAN II: KERAPIHAN');
+        $response->assertSee('I. KETEPATAN');
+        $response->assertSee('II. KEKUATAN');
     }
 
     public function test_jury_can_upload_photo_via_base64_from_camera(): void
