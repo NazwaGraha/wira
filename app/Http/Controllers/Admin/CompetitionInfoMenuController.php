@@ -342,8 +342,8 @@ class CompetitionInfoMenuController extends Controller
         $event->save();
 
         $statusText = $newStatus
-            ? 'DITAYANGKAN di halaman https://latihan.pmrwirasmanic.or.id/lomba (Pengunjung dapat mengakses tombol & dokumen panduan)'
-            : 'DISEMBUNYIKAN dari halaman https://latihan.pmrwirasmanic.or.id/lomba (Tombol & popup modal tidak tampil bagi publik)';
+            ? 'DITAYANGKAN di halaman lomba publik ('.route('lomba.index').') (Pengunjung dapat mengakses tombol & dokumen panduan)'
+            : 'DISEMBUNYIKAN dari halaman lomba publik ('.route('lomba.index').') (Tombol & popup modal tidak tampil bagi publik)';
 
         return redirect()->back()->with('success', 'Pengaturan berhasil disimpan! Menu Informasi Lomba saat ini '.$statusText);
     }

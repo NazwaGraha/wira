@@ -186,9 +186,9 @@
                     </h3>
                     <p class="text-xs text-slate-600 leading-relaxed max-w-3xl">
                         @if($isInfoMenuVisible)
-                            Tombol <strong>"Menu Informasi Lomba"</strong> dan jendela pop-up berkas saat ini <strong>DITAYANGKAN</strong> di halaman <a href="{{ route('lomba.index') }}" target="_blank" class="text-emerald-700 underline font-bold hover:text-emerald-800">https://latihan.pmrwirasmanic.or.id/lomba</a>. Pengunjung umum dan calon kontingen dapat melihat tombol serta mengunduh dokumen panduan.
+                            Tombol <strong>"Menu Informasi Lomba"</strong> dan jendela pop-up berkas saat ini <strong>DITAYANGKAN</strong> di halaman <a href="{{ route('lomba.index') }}" target="_blank" class="text-emerald-700 underline font-bold hover:text-emerald-800">{{ route('lomba.index') }}</a>. Pengunjung umum dan calon kontingen dapat melihat tombol serta mengunduh dokumen panduan.
                         @else
-                            Tombol <strong>"Menu Informasi Lomba"</strong> saat ini <strong>DISEMBUNYIKAN</strong> dari halaman <a href="{{ route('lomba.index') }}" target="_blank" class="text-amber-700 underline font-bold hover:text-amber-800">https://latihan.pmrwirasmanic.or.id/lomba</a>. Pengunjung umum tidak akan melihat tombol maupun pop-up berkas dokumen ini sampai Anda mengaktifkannya kembali.
+                            Tombol <strong>"Menu Informasi Lomba"</strong> saat ini <strong>DISEMBUNYIKAN</strong> dari halaman <a href="{{ route('lomba.index') }}" target="_blank" class="text-amber-700 underline font-bold hover:text-amber-800">{{ route('lomba.index') }}</a>. Pengunjung umum tidak akan melihat tombol maupun pop-up berkas dokumen ini sampai Anda mengaktifkannya kembali.
                         @endif
                     </p>
                 </div>
@@ -202,12 +202,12 @@
                         <input type="hidden" name="competition_event_id" value="{{ $selectedEvent->id }}">
                     @endif
                     @if($isInfoMenuVisible)
-                        <button type="submit" name="is_info_menu_visible" value="0" onclick="return confirm('Apakah Anda yakin ingin MENYEMBUNYIKAN Menu Informasi Lomba dari halaman https://latihan.pmrwirasmanic.or.id/lomba?');" class="w-full sm:w-auto px-5 py-3 rounded-2xl bg-amber-500 hover:bg-amber-600 active:scale-95 text-slate-950 font-black text-xs uppercase tracking-wider transition flex items-center justify-center gap-2 shadow-md shadow-amber-900/10 cursor-pointer">
+                        <button type="submit" name="is_info_menu_visible" value="0" onclick="return confirm('Apakah Anda yakin ingin MENYEMBUNYIKAN Menu Informasi Lomba dari halaman lomba?');" class="w-full sm:w-auto px-5 py-3 rounded-2xl bg-amber-500 hover:bg-amber-600 active:scale-95 text-slate-950 font-black text-xs uppercase tracking-wider transition flex items-center justify-center gap-2 shadow-md shadow-amber-900/10 cursor-pointer">
                             <i class="fa-solid fa-eye-slash text-sm"></i>
                             <span>Sembunyikan dari Web</span>
                         </button>
                     @else
-                        <button type="submit" name="is_info_menu_visible" value="1" onclick="return confirm('Apakah Anda yakin ingin MENAYANGKAN Menu Informasi Lomba ke halaman https://latihan.pmrwirasmanic.or.id/lomba?');" class="w-full sm:w-auto px-5 py-3 rounded-2xl bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white font-black text-xs uppercase tracking-wider transition flex items-center justify-center gap-2 shadow-md shadow-emerald-950/20 cursor-pointer">
+                        <button type="submit" name="is_info_menu_visible" value="1" onclick="return confirm('Apakah Anda yakin ingin MENAYANGKAN Menu Informasi Lomba ke halaman lomba?');" class="w-full sm:w-auto px-5 py-3 rounded-2xl bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white font-black text-xs uppercase tracking-wider transition flex items-center justify-center gap-2 shadow-md shadow-emerald-950/20 cursor-pointer">
                             <i class="fa-solid fa-eye text-sm"></i>
                             <span>Tayangkan ke Web</span>
                         </button>
