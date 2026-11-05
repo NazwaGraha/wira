@@ -407,31 +407,31 @@
                     <div class="overflow-x-auto">
                         <table id="olimpiade-table" class="w-full text-left text-xs border-collapse">
                             <thead>
-                                <tr class="bg-slate-900 text-white uppercase text-[10.5px] tracking-wider font-black select-none">
-                                    <th class="py-4 px-3.5 text-center w-20 border-r border-slate-800">NO URUT</th>
-                                    <th class="py-4 px-4 border-r border-slate-800 min-w-[260px]">NAMA PANGKALAN SEKOLAH / REGU</th>
-                                    <th class="py-4 px-3 text-center border-r border-slate-800 w-36 bg-emerald-950/60 text-emerald-300">
+                                <tr class="bg-slate-900 text-white uppercase text-[10px] sm:text-[10.5px] tracking-wider font-black select-none">
+                                    <th class="py-3.5 px-2 text-center w-14 sm:w-16 border-r border-slate-800">NO URUT</th>
+                                    <th class="py-3.5 px-3.5 border-r border-slate-800 min-w-[190px]">NAMA PANGKALAN SEKOLAH / REGU</th>
+                                    <th class="py-3.5 px-2 text-center border-r border-slate-800 w-24 sm:w-28 bg-emerald-950/60 text-emerald-300">
                                         <div class="flex items-center justify-center gap-1">
-                                            <i class="fa-solid fa-check"></i> BENAR (+1)
+                                            <i class="fa-solid fa-check text-[10px]"></i> BENAR (+1)
                                         </div>
                                     </th>
-                                    <th class="py-4 px-3 text-center border-r border-slate-800 w-36 bg-rose-950/60 text-rose-300">
+                                    <th class="py-3.5 px-2 text-center border-r border-slate-800 w-24 sm:w-28 bg-rose-950/60 text-rose-300">
                                         <div class="flex items-center justify-center gap-1">
-                                            <i class="fa-solid fa-xmark"></i> SALAH (&minus;1)
+                                            <i class="fa-solid fa-xmark text-[10px]"></i> SALAH (&minus;1)
                                         </div>
                                     </th>
-                                    <th class="py-4 px-3 text-center border-r border-slate-800 w-36 bg-slate-800 text-slate-300">
+                                    <th class="py-3.5 px-2 text-center border-r border-slate-800 w-16 sm:w-20 bg-slate-800 text-slate-300">
                                         KOSONG (0)
                                     </th>
-                                    <th class="py-4 px-3 text-center border-r border-slate-800 w-36 bg-slate-900 text-amber-300">
+                                    <th class="py-3.5 px-2 text-center border-r border-slate-800 w-24 sm:w-28 bg-slate-900 text-amber-300">
                                         <div class="flex items-center justify-center gap-1">
-                                            <i class="fa-solid fa-stopwatch"></i> WAKTU (MM:SS)
+                                            <i class="fa-solid fa-stopwatch text-[10px]"></i> WAKTU
                                         </div>
                                     </th>
-                                    <th class="py-4 px-3 text-center border-r border-slate-800 w-32 {{ $isMadya ? 'bg-blue-950 text-sky-300' : 'bg-amber-950 text-amber-300' }}">
+                                    <th class="py-3.5 px-2 text-center border-r border-slate-800 w-20 sm:w-24 {{ $isMadya ? 'bg-blue-950 text-sky-300' : 'bg-amber-950 text-amber-300' }}">
                                         NILAI AKHIR
                                     </th>
-                                    <th class="py-4 px-4 text-center w-60 bg-black text-slate-200">
+                                    <th class="py-3.5 px-2.5 text-center w-44 sm:w-48 bg-black text-slate-200">
                                         PREDIKAT JUARA &amp; RANKING
                                     </th>
                                 </tr>
@@ -468,18 +468,18 @@
                                         data-time-seconds="{{ $t->time_seconds }}">
                                         
                                         <!-- 1. NO URUT -->
-                                        <td class="py-3 px-3.5 text-center whitespace-nowrap">
-                                            <span class="px-2.5 py-1 rounded-lg bg-slate-100 border border-slate-200 font-mono font-bold text-xs text-slate-700">
+                                        <td class="py-3 px-2 text-center whitespace-nowrap">
+                                            <span class="px-2 py-0.5 rounded-md bg-slate-100 border border-slate-200 font-mono font-bold text-xs text-slate-700">
                                                 {{ $t->order_number ?: sprintf('%02d', $idx + 1) }}
                                             </span>
                                         </td>
 
                                         <!-- 2. NAMA SEKOLAH & REGU -->
-                                        <td class="py-3 px-4">
-                                            <div class="font-bold text-slate-900 text-xs sm:text-sm leading-tight flex items-center gap-1.5">
+                                        <td class="py-3 px-3.5">
+                                            <div class="font-bold text-slate-900 text-xs sm:text-[13px] leading-tight">
                                                 {{ $t->registration?->school_name ?? $t->team_name }}
                                             </div>
-                                            <div class="text-[11px] text-slate-500 font-medium mt-0.5 flex items-center gap-2">
+                                            <div class="text-[10.5px] text-slate-500 font-medium mt-0.5 flex items-center gap-1.5">
                                                 <span class="text-slate-600 font-semibold">{{ $t->team_label ?: $t->team_name }}</span>
                                                 <span class="text-slate-300">&bull;</span>
                                                 <span class="font-mono text-[10px] text-slate-400">ID: OLIM-{{ $t->id }}</span>
@@ -487,9 +487,9 @@
                                         </td>
 
                                         <!-- 3. BENAR (1) -->
-                                        <td class="py-3 px-3 text-center">
-                                            <div class="inline-flex items-center gap-1 bg-white p-1 rounded-xl border border-slate-200 shadow-2xs">
-                                                <button type="button" onclick="adjustScoreInput('benar_{{ $t->id }}', -1)" class="w-6 h-6 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs flex items-center justify-center cursor-pointer">-</button>
+                                        <td class="py-3 px-1.5 text-center">
+                                            <div class="inline-flex items-center gap-0.5 bg-white p-0.5 rounded-lg border border-slate-200 shadow-2xs">
+                                                <button type="button" onclick="adjustScoreInput('benar_{{ $t->id }}', -1)" class="w-5 h-5 rounded-md bg-slate-100 hover:bg-slate-200 text-slate-600 font-bold text-xs flex items-center justify-center cursor-pointer transition active:scale-95">&minus;</button>
                                                 <input type="number" 
                                                        id="benar_{{ $t->id }}" 
                                                        name="benar[{{ $t->id }}]" 
@@ -499,15 +499,15 @@
                                                        placeholder="0"
                                                        oninput="handleRowChange({{ $t->id }}, false)" 
                                                        onblur="handleRowChange({{ $t->id }}, true)"
-                                                       class="input-benar w-16 text-center font-mono font-black text-sm text-emerald-700 bg-emerald-50/50 rounded-lg py-1 border border-emerald-200 outline-none {{ $activeInputBorder }}">
-                                                <button type="button" onclick="adjustScoreInput('benar_{{ $t->id }}', 1)" class="w-6 h-6 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs flex items-center justify-center cursor-pointer">+</button>
+                                                       class="input-benar w-10 sm:w-11 text-center font-mono font-black text-xs sm:text-sm text-emerald-700 bg-emerald-50/60 rounded-md py-0.5 border border-emerald-200/80 outline-none {{ $activeInputBorder }}">
+                                                <button type="button" onclick="adjustScoreInput('benar_{{ $t->id }}', 1)" class="w-5 h-5 rounded-md bg-slate-100 hover:bg-slate-200 text-slate-600 font-bold text-xs flex items-center justify-center cursor-pointer transition active:scale-95">+</button>
                                             </div>
                                         </td>
 
                                         <!-- 4. SALAH (-1) -->
-                                        <td class="py-3 px-3 text-center">
-                                            <div class="inline-flex items-center gap-1 bg-white p-1 rounded-xl border border-slate-200 shadow-2xs">
-                                                <button type="button" onclick="adjustScoreInput('salah_{{ $t->id }}', -1)" class="w-6 h-6 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs flex items-center justify-center cursor-pointer">-</button>
+                                        <td class="py-3 px-1.5 text-center">
+                                            <div class="inline-flex items-center gap-0.5 bg-white p-0.5 rounded-lg border border-slate-200 shadow-2xs">
+                                                <button type="button" onclick="adjustScoreInput('salah_{{ $t->id }}', -1)" class="w-5 h-5 rounded-md bg-slate-100 hover:bg-slate-200 text-slate-600 font-bold text-xs flex items-center justify-center cursor-pointer transition active:scale-95">&minus;</button>
                                                 <input type="number" 
                                                        id="salah_{{ $t->id }}" 
                                                        name="salah[{{ $t->id }}]" 
@@ -517,93 +517,90 @@
                                                        placeholder="0"
                                                        oninput="handleRowChange({{ $t->id }}, false)" 
                                                        onblur="handleRowChange({{ $t->id }}, true)"
-                                                       class="input-salah w-16 text-center font-mono font-black text-sm text-rose-700 bg-rose-50/50 rounded-lg py-1 border border-rose-200 outline-none {{ $activeInputBorder }}">
-                                                <button type="button" onclick="adjustScoreInput('salah_{{ $t->id }}', 1)" class="w-6 h-6 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs flex items-center justify-center cursor-pointer">+</button>
+                                                       class="input-salah w-10 sm:w-11 text-center font-mono font-black text-xs sm:text-sm text-rose-700 bg-rose-50/60 rounded-md py-0.5 border border-rose-200/80 outline-none {{ $activeInputBorder }}">
+                                                <button type="button" onclick="adjustScoreInput('salah_{{ $t->id }}', 1)" class="w-5 h-5 rounded-md bg-slate-100 hover:bg-slate-200 text-slate-600 font-bold text-xs flex items-center justify-center cursor-pointer transition active:scale-95">+</button>
                                             </div>
                                         </td>
 
-                                        <!-- 5. TIDAK DIJAWAB / KOSONG (0) -->
-                                        <td class="py-3 px-3 text-center">
-                                            <div class="inline-flex items-center gap-1 bg-white p-1 rounded-xl border border-slate-200 shadow-2xs">
-                                                <button type="button" onclick="adjustScoreInput('kosong_{{ $t->id }}', -1)" class="w-6 h-6 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs flex items-center justify-center cursor-pointer">-</button>
-                                                <input type="number" 
-                                                       id="kosong_{{ $t->id }}" 
-                                                       name="kosong[{{ $t->id }}]" 
-                                                       value="{{ $t->has_score ? ($t->kosong !== null ? $t->kosong : $kVal) : '' }}" 
-                                                       min="0" 
-                                                       max="999" 
-                                                       placeholder="0"
-                                                       oninput="handleRowChange({{ $t->id }}, false)" 
-                                                       onblur="handleRowChange({{ $t->id }}, true)"
-                                                       class="input-kosong w-16 text-center font-mono font-bold text-sm text-slate-700 bg-slate-100/70 rounded-lg py-1 border border-slate-300 outline-none focus:border-slate-500">
-                                                <button type="button" onclick="adjustScoreInput('kosong_{{ $t->id }}', 1)" class="w-6 h-6 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs flex items-center justify-center cursor-pointer">+</button>
-                                            </div>
+                                        <!-- 5. TIDAK DIJAWAB / KOSONG (0) - Ringkas & Fleksibel Input -->
+                                        <td class="py-3 px-1.5 text-center">
+                                            <input type="number" 
+                                                   id="kosong_{{ $t->id }}" 
+                                                   name="kosong[{{ $t->id }}]" 
+                                                   value="{{ $t->has_score ? ($t->kosong !== null ? $t->kosong : $kVal) : '' }}" 
+                                                   min="0" 
+                                                   max="999" 
+                                                   placeholder="0"
+                                                   oninput="handleRowChange({{ $t->id }}, false)" 
+                                                   onblur="handleRowChange({{ $t->id }}, true)"
+                                                   class="input-kosong w-11 sm:w-12 text-center font-mono font-bold text-xs text-slate-700 bg-slate-100/90 hover:bg-white focus:bg-white rounded-md py-1 border border-slate-200 focus:border-slate-400 outline-none transition"
+                                                   title="Dihitung otomatis: 50 - (Benar + Salah), atau bisa diinput manual">
                                         </td>
 
                                         <!-- 6. WAKTU TEMPUH (MM:SS) -->
-                                        <td class="py-3 px-3 text-center whitespace-nowrap">
-                                            <div class="inline-flex items-center gap-1.5 bg-white border border-slate-300 hover:border-slate-400 focus-within:border-amber-500 focus-within:ring-2 focus-within:ring-amber-200 px-2.5 py-1.5 rounded-xl shadow-2xs transition">
-                                                <i class="fa-solid fa-stopwatch text-amber-500 text-xs"></i>
+                                        <td class="py-3 px-1.5 text-center whitespace-nowrap">
+                                            <div class="inline-flex items-center gap-1 bg-white border border-slate-200 hover:border-slate-300 focus-within:border-amber-500 focus-within:ring-1 focus-within:ring-amber-200 px-1.5 py-0.5 rounded-lg shadow-2xs transition">
+                                                <i class="fa-solid fa-stopwatch text-amber-500 text-[10px]"></i>
                                                 <input type="text" 
                                                        id="waktu_{{ $t->id }}" 
                                                        name="waktu[{{ $t->id }}]" 
                                                        value="{{ $t->waktu ?: '' }}" 
-                                                       placeholder="05:12" 
+                                                       placeholder="00:00" 
                                                        maxlength="5"
                                                        oninput="onTimeInput(this, {{ $t->id }})"
                                                        onblur="onTimeBlur(this, {{ $t->id }})"
-                                                       title="Format Waktu: Menit:Detik (contoh: 05:12)"
-                                                       class="input-waktu w-20 text-center font-mono font-black text-xs sm:text-sm text-slate-900 bg-transparent outline-none tracking-wider placeholder:text-slate-300">
+                                                       title="Format Waktu: Menit:Detik (contoh: 07:45)"
+                                                       class="input-waktu w-14 text-center font-mono font-black text-xs text-slate-900 bg-transparent outline-none tracking-wider placeholder:text-slate-300">
                                             </div>
                                         </td>
 
                                         <!-- 7. NILAI AKHIR -->
-                                        <td class="py-3 px-3 text-center">
+                                        <td class="py-3 px-1.5 text-center">
                                             <div class="inline-flex flex-col items-center">
-                                                <span id="score-display-{{ $t->id }}" class="font-mono font-black text-base {{ $scoreTextColor }} bg-white px-3 py-1 rounded-xl border border-slate-200 shadow-xs">
+                                                <span id="score-display-{{ $t->id }}" class="font-mono font-black text-sm {{ $scoreTextColor }} bg-white px-2.5 py-0.5 rounded-lg border border-slate-200 shadow-2xs">
                                                     {{ $t->has_score ? $scoreVal : '-' }}
                                                 </span>
-                                                <span id="score-formula-tag-{{ $t->id }}" class="text-[9px] font-mono text-slate-400 mt-0.5">
-                                                    {{ ($activeFormulaType ?? 'skema2') === 'skema2' ? '50 + B - S' : '(B - S) x 2' }}
+                                                <span id="score-formula-tag-{{ $t->id }}" class="text-[8.5px] font-mono text-slate-400 mt-0.5">
+                                                    {{ ($activeFormulaType ?? 'skema2') === 'skema2' ? '50+B-S' : '(B-S)x2' }}
                                                 </span>
                                             </div>
                                         </td>
 
                                         <!-- 8. PREDIKAT JUARA & RANKING -->
-                                        <td class="py-3 px-4 text-center whitespace-nowrap">
-                                            <div id="badge-container-{{ $t->id }}">
+                                        <td class="py-3 px-2 text-center whitespace-nowrap">
+                                            <div id="badge-container-{{ $t->id }}" class="flex justify-center">
                                                 @if($t->has_score && $rVal)
                                                     @if($rVal === 1)
-                                                        <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-amber-400 text-slate-950 font-black text-xs shadow-sm">
-                                                            <i class="fa-solid fa-crown text-amber-900"></i> JUARA 1 (EMAS)
+                                                        <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-amber-400 text-slate-950 font-black text-[11px] shadow-2xs">
+                                                            <i class="fa-solid fa-crown text-amber-900 text-[10px]"></i> JUARA 1 (EMAS)
                                                         </span>
                                                     @elseif($rVal === 2)
-                                                        <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-200 text-slate-900 font-black text-xs shadow-sm">
-                                                            <i class="fa-solid fa-medal text-slate-600"></i> JUARA 2 (PERAK)
+                                                        <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-slate-200 text-slate-900 font-black text-[11px] shadow-2xs">
+                                                            <i class="fa-solid fa-medal text-slate-600 text-[10px]"></i> JUARA 2 (PERAK)
                                                         </span>
                                                     @elseif($rVal === 3)
-                                                        <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-amber-700 text-amber-100 font-black text-xs shadow-sm">
-                                                            <i class="fa-solid fa-medal text-amber-300"></i> JUARA 3 (PERUNGGU)
+                                                        <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-amber-700 text-amber-100 font-black text-[11px] shadow-2xs">
+                                                            <i class="fa-solid fa-medal text-amber-300 text-[10px]"></i> JUARA 3 (PERUNGGU)
                                                         </span>
                                                     @elseif($rVal === 4)
-                                                        <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-sky-100 text-sky-900 border border-sky-300 font-black text-xs shadow-2xs">
-                                                            <i class="fa-solid fa-award text-sky-600"></i> JUARA HARAPAN 1
+                                                        <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-sky-100 text-sky-900 border border-sky-300 font-bold text-[11px]">
+                                                            <i class="fa-solid fa-award text-sky-600 text-[10px]"></i> JUARA HARAPAN 1
                                                         </span>
                                                     @elseif($rVal === 5)
-                                                        <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-sky-50 text-sky-900 border border-sky-200 font-bold text-xs">
-                                                            <i class="fa-solid fa-award text-sky-500"></i> JUARA HARAPAN 2
+                                                        <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-sky-50 text-sky-800 border border-sky-200 font-semibold text-[11px]">
+                                                            <i class="fa-solid fa-award text-sky-500 text-[10px]"></i> JUARA HARAPAN 2
                                                         </span>
                                                     @elseif($rVal === 6)
-                                                        <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-sky-50/70 text-sky-800 border border-sky-200/80 font-bold text-xs">
-                                                            <i class="fa-solid fa-award text-sky-400"></i> JUARA HARAPAN 3
+                                                        <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-sky-50/70 text-sky-700 border border-sky-200 font-semibold text-[11px]">
+                                                            <i class="fa-solid fa-award text-sky-400 text-[10px]"></i> JUARA HARAPAN 3
                                                         </span>
                                                     @else
-                                                        <span class="inline-flex items-center px-3 py-1.5 rounded-xl bg-slate-100 text-slate-600 border border-slate-200 font-medium text-xs">
+                                                        <span class="inline-flex items-center px-2.5 py-1 rounded-lg bg-slate-100 text-slate-600 border border-slate-200 font-medium text-[11px]">
                                                             Peringkat {{ $rVal }}
                                                         </span>
                                                     @endif
                                                 @else
-                                                    <span class="inline-flex items-center px-3 py-1.5 rounded-xl bg-slate-100 text-slate-400 font-semibold text-xs border border-slate-200">
+                                                    <span class="inline-flex items-center px-2.5 py-1 rounded-lg bg-slate-100 text-slate-400 font-medium text-[11px] border border-slate-200">
                                                         Belum Dinilai
                                                     </span>
                                                 @endif
@@ -754,19 +751,19 @@
 
     function getRankBadgeHtml(rankVal) {
         if (rankVal === 1) {
-            return '<span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-amber-400 text-slate-950 font-black text-xs shadow-sm"><i class="fa-solid fa-crown text-amber-900"></i> JUARA 1 (EMAS)</span>';
+            return '<span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-amber-400 text-slate-950 font-black text-[11px] shadow-2xs"><i class="fa-solid fa-crown text-amber-900 text-[10px]"></i> JUARA 1 (EMAS)</span>';
         } else if (rankVal === 2) {
-            return '<span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-200 text-slate-900 font-black text-xs shadow-sm"><i class="fa-solid fa-medal text-slate-600"></i> JUARA 2 (PERAK)</span>';
+            return '<span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-slate-200 text-slate-900 font-black text-[11px] shadow-2xs"><i class="fa-solid fa-medal text-slate-600 text-[10px]"></i> JUARA 2 (PERAK)</span>';
         } else if (rankVal === 3) {
-            return '<span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-amber-700 text-amber-100 font-black text-xs shadow-sm"><i class="fa-solid fa-medal text-amber-300"></i> JUARA 3 (PERUNGGU)</span>';
+            return '<span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-amber-700 text-amber-100 font-black text-[11px] shadow-2xs"><i class="fa-solid fa-medal text-amber-300 text-[10px]"></i> JUARA 3 (PERUNGGU)</span>';
         } else if (rankVal === 4) {
-            return '<span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-sky-100 text-sky-900 border border-sky-300 font-black text-xs shadow-2xs"><i class="fa-solid fa-award text-sky-600"></i> JUARA HARAPAN 1</span>';
+            return '<span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-sky-100 text-sky-900 border border-sky-300 font-bold text-[11px]"><i class="fa-solid fa-award text-sky-600 text-[10px]"></i> JUARA HARAPAN 1</span>';
         } else if (rankVal === 5) {
-            return '<span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-sky-50 text-sky-900 border border-sky-200 font-bold text-xs"><i class="fa-solid fa-award text-sky-500"></i> JUARA HARAPAN 2</span>';
+            return '<span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-sky-50 text-sky-800 border border-sky-200 font-semibold text-[11px]"><i class="fa-solid fa-award text-sky-500 text-[10px]"></i> JUARA HARAPAN 2</span>';
         } else if (rankVal === 6) {
-            return '<span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-sky-50/70 text-sky-800 border border-sky-200/80 font-bold text-xs"><i class="fa-solid fa-award text-sky-400"></i> JUARA HARAPAN 3</span>';
+            return '<span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-sky-50/70 text-sky-700 border border-sky-200 font-semibold text-[11px]"><i class="fa-solid fa-award text-sky-400 text-[10px]"></i> JUARA HARAPAN 3</span>';
         } else {
-            return '<span class="inline-flex items-center px-3 py-1.5 rounded-xl bg-slate-100 text-slate-600 border border-slate-200 font-medium text-xs">Peringkat ' + rankVal + '</span>';
+            return '<span class="inline-flex items-center px-2.5 py-1 rounded-lg bg-slate-100 text-slate-600 border border-slate-200 font-medium text-[11px]">Peringkat ' + rankVal + '</span>';
         }
     }
 
@@ -835,7 +832,7 @@
             row.className = 'team-row transition-colors duration-150 border-b border-slate-100 hover:bg-slate-50/80 border-l-4 border-l-transparent';
             const container = document.getElementById('badge-container-' + teamId);
             if (container) {
-                container.innerHTML = '<span class="inline-flex items-center px-3 py-1.5 rounded-xl bg-slate-100 text-slate-400 font-semibold text-xs border border-slate-200">Belum Dinilai</span>';
+                container.innerHTML = '<span class="inline-flex items-center px-2.5 py-1 rounded-lg bg-slate-100 text-slate-400 font-medium text-[11px] border border-slate-200">Belum Dinilai</span>';
             }
         });
 
