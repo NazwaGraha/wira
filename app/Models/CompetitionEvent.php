@@ -46,6 +46,10 @@ class CompetitionEvent extends Model
         'is_active',
         'is_info_menu_visible',
         'is_registration_open',
+        'is_btn_register_visible',
+        'is_btn_status_visible',
+        'is_btn_scoreboard_visible',
+        'is_btn_handbook_visible',
         'wave1_name',
         'wave1_start_date',
         'wave1_end_date',
@@ -117,6 +121,10 @@ class CompetitionEvent extends Model
         'is_active' => 'boolean',
         'is_info_menu_visible' => 'boolean',
         'is_registration_open' => 'boolean',
+        'is_btn_register_visible' => 'boolean',
+        'is_btn_status_visible' => 'boolean',
+        'is_btn_scoreboard_visible' => 'boolean',
+        'is_btn_handbook_visible' => 'boolean',
     ];
 
     /**
@@ -129,6 +137,56 @@ class CompetitionEvent extends Model
         }
 
         return (bool) $this->is_info_menu_visible;
+    }
+
+    /**
+     * Cek apakah Tombol 'Daftar Sekarang' di halaman publik diizinkan tampil.
+     */
+    public function isRegisterButtonVisible(): bool
+    {
+        if (! $this->is_active) {
+            return false;
+        }
+
+        $btnVisible = isset($this->attributes['is_btn_register_visible']) ? (bool) $this->is_btn_register_visible : true;
+
+        return $btnVisible && (bool) $this->is_registration_open;
+    }
+
+    /**
+     * Cek apakah Tombol 'Cek Status Pendaftaran' di halaman publik diizinkan tampil.
+     */
+    public function isStatusButtonVisible(): bool
+    {
+        if (! $this->is_active) {
+            return false;
+        }
+
+        return isset($this->attributes['is_btn_status_visible']) ? (bool) $this->is_btn_status_visible : true;
+    }
+
+    /**
+     * Cek apakah Tombol 'Live Klasemen Juara' di halaman publik diizinkan tampil.
+     */
+    public function isScoreboardButtonVisible(): bool
+    {
+        if (! $this->is_active) {
+            return false;
+        }
+
+        return isset($this->attributes['is_btn_scoreboard_visible']) ? (bool) $this->is_btn_scoreboard_visible : true;
+    }
+
+    /**
+     * Cek apakah Tombol 'Unduh Juklak Juknis' di halaman publik diizinkan tampil.
+     */
+    public function isHandbookButtonVisible(): bool
+    {
+        if (! $this->is_active) {
+            return false;
+        }
+
+        return isset($this->attributes['is_btn_handbook_visible']) ? (bool) $this->is_btn_handbook_visible : true;
     }
 
     /**

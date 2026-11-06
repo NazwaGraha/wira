@@ -76,6 +76,10 @@ class CompetitionEventController extends Controller
         $validated['is_active'] = $request->boolean('is_active');
         $validated['is_info_menu_visible'] = $request->boolean('is_info_menu_visible');
         $validated['is_registration_open'] = $request->boolean('is_registration_open');
+        $validated['is_btn_register_visible'] = $request->boolean('is_btn_register_visible');
+        $validated['is_btn_status_visible'] = $request->boolean('is_btn_status_visible');
+        $validated['is_btn_scoreboard_visible'] = $request->boolean('is_btn_scoreboard_visible');
+        $validated['is_btn_handbook_visible'] = $request->boolean('is_btn_handbook_visible');
         $validated['is_waves_enabled'] = $request->boolean('is_waves_enabled');
         $validated['display_mode'] = $request->input('display_mode', 'auto');
 
@@ -182,6 +186,10 @@ class CompetitionEventController extends Controller
         $validated['is_active'] = $request->boolean('is_active');
         $validated['is_info_menu_visible'] = $request->boolean('is_info_menu_visible');
         $validated['is_registration_open'] = $request->boolean('is_registration_open');
+        $validated['is_btn_register_visible'] = $request->boolean('is_btn_register_visible');
+        $validated['is_btn_status_visible'] = $request->boolean('is_btn_status_visible');
+        $validated['is_btn_scoreboard_visible'] = $request->boolean('is_btn_scoreboard_visible');
+        $validated['is_btn_handbook_visible'] = $request->boolean('is_btn_handbook_visible');
         $validated['is_waves_enabled'] = $request->boolean('is_waves_enabled');
         $validated['display_mode'] = $request->input('display_mode', 'auto');
 
@@ -227,6 +235,54 @@ class CompetitionEventController extends Controller
 
         return redirect()->route('admin.competition-event.index')
             ->with('success', 'Edisi "'.$event->title.'" sekarang telah diatur sebagai EVENT AKTIF di sistem!');
+    }
+
+    /**
+     * Toggle visibility status of action buttons on the public competition landing page (/lomba).
+     */
+    public function toggleActionButton(Request $request, CompetitionEvent $event)
+    {
+        $button = $request->input('button');
+        $validButtons = [
+            'register' => 'is_btn_register_visible',
+            'status' => 'is_btn_status_visible',
+            'scoreboard' => 'is_btn_scoreboard_visible',
+            'handbook' => 'is_btn_handbook_visible',
+        ];
+
+        if (! isset($validButtons[$button])) {
+            return redirect()->back()->with('error', 'Tombol aksi tidak valid.');
+        }
+
+        $column = $validButtons[$button];
+        $newStatus = $request->has('status') ? $request->boolean('status') : ! $event->$column;
+        $event->$column = $newStatus;
+
+        if ($button === 'register' && $newStatus) {
+            $event->is_registration_open = true;
+        }
+
+        $event->save();
+
+        $labels = [
+            'register' => 'Daftar Sekarang',
+            'status' => 'Cek Status Pendaftaran',
+            'scoreboard' => 'Live Klasemen Juara',
+            'handbook' => 'Unduh Juklak Juknis',
+        ];
+        $btnLabel = $labels[$button] ?? 'Tombol';
+        $statusLabel = $newStatus ? 'DIAKTIFKAN' : 'DINONAKTIFKAN';
+
+        if ($request->wantsJson()) {
+            return response()->json([
+                'success' => true,
+                'button' => $button,
+                'is_active' => $newStatus,
+                'message' => "Tombol '{$btnLabel}' berhasil {$statusLabel}!",
+            ]);
+        }
+
+        return redirect()->back()->with('success', "Pengaturan berhasil disimpan! Tombol '{$btnLabel}' sekarang {$statusLabel} di halaman lomba publik.");
     }
 
     /**

@@ -436,6 +436,96 @@
                     </div>
                 </div>
 
+                <!-- Kontrol Tombol Aksi Halaman Lomba (/lomba) -->
+                <div class="bg-white rounded-2xl p-6 shadow-xs border border-slate-200 space-y-4">
+                    <div class="flex items-center gap-2 pb-3 border-b border-slate-100">
+                        <div class="w-8 h-8 rounded-lg bg-red-50 text-red-600 flex items-center justify-center font-bold text-sm">
+                            <i class="fa-solid fa-shapes"></i>
+                        </div>
+                        <div>
+                            <h3 class="font-extrabold text-slate-900 text-sm">Tombol Aksi Halaman Lomba (/lomba)</h3>
+                            <p class="text-[11px] text-slate-500">Atur penayangan tombol utama di halaman muka peserta</p>
+                        </div>
+                    </div>
+
+                    <!-- 1. Tombol Daftar Sekarang -->
+                    <div class="p-3.5 rounded-xl border {{ $event->isRegisterButtonVisible() ? 'bg-red-50/70 border-red-200' : 'bg-slate-50 border-slate-200' }}">
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center gap-2.5">
+                                <span class="w-7 h-7 rounded-lg bg-red-600 text-white flex items-center justify-center text-xs shadow-xs">
+                                    <i class="fa-solid fa-file-pen"></i>
+                                </span>
+                                <div>
+                                    <div class="text-xs font-bold text-slate-900">Tombol Daftar Sekarang</div>
+                                    <div class="text-[10px] text-slate-500">Mengarahkan ke form registrasi peserta</div>
+                                </div>
+                            </div>
+                            <label class="relative inline-flex items-center cursor-pointer">
+                                <input type="checkbox" name="is_btn_register_visible" value="1" class="sr-only peer" {{ old('is_btn_register_visible', $event->is_btn_register_visible) ? 'checked' : '' }}>
+                                <div class="w-11 h-6 bg-slate-300 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-red-600"></div>
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- 2. Tombol Cek Status Pendaftaran -->
+                    <div class="p-3.5 rounded-xl border {{ $event->isStatusButtonVisible() ? 'bg-slate-100 border-slate-300' : 'bg-slate-50 border-slate-200' }}">
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center gap-2.5">
+                                <span class="w-7 h-7 rounded-lg bg-slate-800 text-slate-200 flex items-center justify-center text-xs shadow-xs">
+                                    <i class="fa-solid fa-magnifying-glass"></i>
+                                </span>
+                                <div>
+                                    <div class="text-xs font-bold text-slate-900">Tombol Cek Status</div>
+                                    <div class="text-[10px] text-slate-500">Pencarian &amp; cek berkas pendaftaran kontingen</div>
+                                </div>
+                            </div>
+                            <label class="relative inline-flex items-center cursor-pointer">
+                                <input type="checkbox" name="is_btn_status_visible" value="1" class="sr-only peer" {{ old('is_btn_status_visible', $event->is_btn_status_visible) ? 'checked' : '' }}>
+                                <div class="w-11 h-6 bg-slate-300 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-slate-800"></div>
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- 3. Tombol Live Klasemen Juara -->
+                    <div class="p-3.5 rounded-xl border {{ $event->isScoreboardButtonVisible() ? 'bg-amber-50/70 border-amber-200' : 'bg-slate-50 border-slate-200' }}">
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center gap-2.5">
+                                <span class="w-7 h-7 rounded-lg bg-amber-500 text-slate-950 flex items-center justify-center text-xs shadow-xs font-black">
+                                    <i class="fa-solid fa-trophy"></i>
+                                </span>
+                                <div>
+                                    <div class="text-xs font-bold text-slate-900">Tombol Live Klasemen</div>
+                                    <div class="text-[10px] text-slate-500">Papan peringkat nilai &amp; perolehan piala</div>
+                                </div>
+                            </div>
+                            <label class="relative inline-flex items-center cursor-pointer">
+                                <input type="checkbox" name="is_btn_scoreboard_visible" value="1" class="sr-only peer" {{ old('is_btn_scoreboard_visible', $event->is_btn_scoreboard_visible) ? 'checked' : '' }}>
+                                <div class="w-11 h-6 bg-slate-300 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-amber-500"></div>
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- 4. Tombol Unduh Juklak Juknis -->
+                    <div class="p-3.5 rounded-xl border {{ $event->isHandbookButtonVisible() ? 'bg-indigo-50/70 border-indigo-200' : 'bg-slate-50 border-slate-200' }}">
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center gap-2.5">
+                                <span class="w-7 h-7 rounded-lg bg-indigo-600 text-white flex items-center justify-center text-xs shadow-xs">
+                                    <i class="fa-solid fa-book-open"></i>
+                                </span>
+                                <div>
+                                    <div class="text-xs font-bold text-slate-900">Tombol Unduh Juklak Juknis</div>
+                                    <div class="text-[10px] text-slate-500">Download panduan teknis PDF lomba</div>
+                                </div>
+                            </div>
+                            <label class="relative inline-flex items-center cursor-pointer">
+                                <input type="checkbox" name="is_btn_handbook_visible" value="1" class="sr-only peer" {{ old('is_btn_handbook_visible', $event->is_btn_handbook_visible) ? 'checked' : '' }}>
+                                <div class="w-11 h-6 bg-slate-300 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-indigo-600"></div>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+                </div>
+
                 <!-- 5. Dokumen Juklak & Pamflet Banner -->
                 <div class="bg-white rounded-2xl p-6 shadow-xs border border-slate-200 space-y-4">
                     <h3 class="font-extrabold text-slate-900 text-base pb-3 border-b border-slate-100 flex items-center gap-2">

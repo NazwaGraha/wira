@@ -589,19 +589,32 @@
                 </p>
 
                 <div class="flex flex-col sm:flex-row flex-wrap justify-center gap-3 sm:gap-4 max-w-md sm:max-w-none mx-auto">
-                    @if($event && $event->is_registration_open)
+                    @if($event ? $event->isRegisterButtonVisible() : false)
                         <a href="{{ route('lomba.register') }}" class="w-full sm:w-auto bg-red-600 hover:bg-red-700 text-white px-8 py-3.5 rounded-xl font-bold shadow-lg shadow-red-900/40 transition flex items-center justify-center gap-2 text-sm sm:text-base">
                             <i class="fa-solid fa-file-pen"></i> <span>Daftar Sekarang</span>
                         </a>
                     @endif
-                    <a href="{{ route('lomba.status') }}" class="w-full sm:w-auto bg-slate-800 hover:bg-slate-700 border border-slate-700 text-white px-7 py-3.5 rounded-xl font-bold transition flex items-center justify-center gap-2 text-sm sm:text-base">
-                        <i class="fa-solid fa-magnifying-glass"></i> <span>Cek Status Pendaftaran</span>
-                    </a>
-                    <a href="{{ route('lomba.scoreboard') }}" class="w-full sm:w-auto bg-amber-500/20 hover:bg-amber-500/30 border border-amber-500/40 text-amber-300 px-7 py-3.5 rounded-xl font-bold transition flex items-center justify-center gap-2 text-sm sm:text-base">
-                        <i class="fa-solid fa-square-poll-vertical"></i> <span>Live Klasemen Juara</span>
-                    </a>
-                    @if($event && $event->handbook_file)
-                        <a href="{{ asset('storage/' . $event->handbook_file) }}" target="_blank" class="w-full sm:w-auto bg-indigo-600/20 hover:bg-indigo-600/30 border border-indigo-500/40 text-indigo-300 px-7 py-3.5 rounded-xl font-bold transition flex items-center justify-center gap-2 text-sm sm:text-base">
+                    @if($event ? $event->isStatusButtonVisible() : true)
+                        <a href="{{ route('lomba.status') }}" class="w-full sm:w-auto bg-slate-800 hover:bg-slate-700 border border-slate-700 text-white px-7 py-3.5 rounded-xl font-bold transition flex items-center justify-center gap-2 text-sm sm:text-base">
+                            <i class="fa-solid fa-magnifying-glass"></i> <span>Cek Status Pendaftaran</span>
+                        </a>
+                    @endif
+                    @if($event ? $event->isScoreboardButtonVisible() : true)
+                        <a href="{{ route('lomba.scoreboard') }}" class="w-full sm:w-auto bg-amber-500/20 hover:bg-amber-500/30 border border-amber-500/40 text-amber-300 px-7 py-3.5 rounded-xl font-bold transition flex items-center justify-center gap-2 text-sm sm:text-base">
+                            <i class="fa-solid fa-square-poll-vertical"></i> <span>Live Klasemen Juara</span>
+                        </a>
+                    @endif
+                    @if($event ? $event->isHandbookButtonVisible() : false)
+                        @php
+                            $handbookUrl = ($event && $event->handbook_file) ? asset('storage/' . $event->handbook_file) : null;
+                            if (!$handbookUrl && isset($infoMenus)) {
+                                $juklakItem = $infoMenus->first(fn($m) => in_array($m->title, ['Juklak Juknis', 'Buku Panduan Lomba']));
+                                if ($juklakItem && $juklakItem->file_path) {
+                                    $handbookUrl = asset('storage/' . $juklakItem->file_path);
+                                }
+                            }
+                        @endphp
+                        <a href="{{ $handbookUrl ?: '#menu-informasi' }}" {{ $handbookUrl ? 'target="_blank"' : 'onclick="openInfoMenuModal()"' }} class="w-full sm:w-auto bg-indigo-600/20 hover:bg-indigo-600/30 border border-indigo-500/40 text-indigo-300 px-7 py-3.5 rounded-xl font-bold transition flex items-center justify-center gap-2 text-sm sm:text-base">
                             <i class="fa-solid fa-file-pdf"></i> <span>Unduh Juklak Juknis</span>
                         </a>
                     @endif

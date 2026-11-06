@@ -260,6 +260,7 @@ Route::prefix('admin')->name('admin.')->group(function () {
             'competition-events' => 'event',
         ]);
         Route::post('/competition-events/{event}/activate', [CompetitionEventController::class, 'activate'])->name('competition-event.activate');
+        Route::post('/competition-events/{event}/toggle-button', [CompetitionEventController::class, 'toggleActionButton'])->name('competition-event.toggle-button');
         Route::post('/competition-events/{event}/categories', [CompetitionEventController::class, 'storeCategory'])->name('competition-event.categories.store');
         Route::put('/competition-events/{event}/categories/{category}', [CompetitionEventController::class, 'updateCategory'])->name('competition-event.categories.update');
         Route::delete('/competition-events/{event}/categories/{category}', [CompetitionEventController::class, 'destroyCategory'])->name('competition-event.categories.destroy');

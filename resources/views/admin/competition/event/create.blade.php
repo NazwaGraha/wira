@@ -207,6 +207,80 @@
             </div>
         </div>
 
+        <!-- 6. Pengaturan Tombol Aksi Halaman Publik (/lomba) -->
+        <div class="bg-white rounded-2xl p-6 shadow-xs border border-slate-200 space-y-4">
+            <h3 class="font-extrabold text-slate-900 text-base pb-3 border-b border-slate-100 flex items-center gap-2">
+                <i class="fa-solid fa-shapes text-red-500"></i>
+                <span>Tombol Aksi Halaman Publik (/lomba)</span>
+            </h3>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div class="p-4 rounded-xl border bg-slate-50 border-slate-200 flex items-center justify-between">
+                    <div class="flex items-center gap-2.5">
+                        <span class="w-7 h-7 rounded-lg bg-red-600 text-white flex items-center justify-center text-xs shadow-xs">
+                            <i class="fa-solid fa-file-pen"></i>
+                        </span>
+                        <div>
+                            <div class="text-xs font-bold text-slate-900">Tombol Daftar Sekarang</div>
+                            <div class="text-[11px] text-slate-500">Form pendaftaran peserta</div>
+                        </div>
+                    </div>
+                    <label class="relative inline-flex items-center cursor-pointer">
+                        <input type="checkbox" name="is_btn_register_visible" value="1" class="sr-only peer" checked>
+                        <div class="w-11 h-6 bg-slate-300 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-red-600"></div>
+                    </label>
+                </div>
+
+                <div class="p-4 rounded-xl border bg-slate-50 border-slate-200 flex items-center justify-between">
+                    <div class="flex items-center gap-2.5">
+                        <span class="w-7 h-7 rounded-lg bg-slate-800 text-white flex items-center justify-center text-xs shadow-xs">
+                            <i class="fa-solid fa-magnifying-glass"></i>
+                        </span>
+                        <div>
+                            <div class="text-xs font-bold text-slate-900">Tombol Cek Status</div>
+                            <div class="text-[11px] text-slate-500">Cek status & verifikasi berkas</div>
+                        </div>
+                    </div>
+                    <label class="relative inline-flex items-center cursor-pointer">
+                        <input type="checkbox" name="is_btn_status_visible" value="1" class="sr-only peer" checked>
+                        <div class="w-11 h-6 bg-slate-300 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-slate-800"></div>
+                    </label>
+                </div>
+
+                <div class="p-4 rounded-xl border bg-slate-50 border-slate-200 flex items-center justify-between">
+                    <div class="flex items-center gap-2.5">
+                        <span class="w-7 h-7 rounded-lg bg-amber-500 text-slate-950 flex items-center justify-center text-xs shadow-xs font-black">
+                            <i class="fa-solid fa-trophy"></i>
+                        </span>
+                        <div>
+                            <div class="text-xs font-bold text-slate-900">Tombol Live Klasemen</div>
+                            <div class="text-[11px] text-slate-500">Papan peringkat nilai publik</div>
+                        </div>
+                    </div>
+                    <label class="relative inline-flex items-center cursor-pointer">
+                        <input type="checkbox" name="is_btn_scoreboard_visible" value="1" class="sr-only peer" checked>
+                        <div class="w-11 h-6 bg-slate-300 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-amber-500"></div>
+                    </label>
+                </div>
+
+                <div class="p-4 rounded-xl border bg-slate-50 border-slate-200 flex items-center justify-between">
+                    <div class="flex items-center gap-2.5">
+                        <span class="w-7 h-7 rounded-lg bg-indigo-600 text-white flex items-center justify-center text-xs shadow-xs">
+                            <i class="fa-solid fa-book-open"></i>
+                        </span>
+                        <div>
+                            <div class="text-xs font-bold text-slate-900">Tombol Unduh Juklak</div>
+                            <div class="text-[11px] text-slate-500">Download panduan teknis lomba</div>
+                        </div>
+                    </div>
+                    <label class="relative inline-flex items-center cursor-pointer">
+                        <input type="checkbox" name="is_btn_handbook_visible" value="1" class="sr-only peer" checked>
+                        <div class="w-11 h-6 bg-slate-300 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-indigo-600"></div>
+                    </label>
+                </div>
+            </div>
+        </div>
+
         <!-- Submit Button -->
         <div class="flex justify-end gap-3 pt-2">
             <a href="{{ route('admin.competition-event.index') }}" class="px-5 py-3 rounded-xl border border-slate-300 text-slate-700 hover:bg-slate-100 font-bold text-xs transition">

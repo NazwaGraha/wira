@@ -139,6 +139,118 @@
                 <span>Atur Jadwal & Biaya Gelombang 1 & 2 &rarr;</span>
             </a>
         </div>
+
+        <!-- Kontrol Cepat Tombol Aksi Halaman Publik (/lomba) -->
+        <div class="bg-white rounded-2xl p-5 border border-slate-200 shadow-xs space-y-4">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-100">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-xl bg-slate-900 text-white flex items-center justify-center font-bold text-base shadow-xs">
+                        <i class="fa-solid fa-toggle-on text-rose-400"></i>
+                    </div>
+                    <div>
+                        <h3 class="font-extrabold text-slate-900 text-sm sm:text-base flex items-center gap-2">
+                            <span>Status Tombol Aksi Halaman Publik</span>
+                            <span class="text-[10px] bg-slate-100 text-slate-600 px-2 py-0.5 rounded-full font-mono font-bold">/lomba</span>
+                        </h3>
+                        <p class="text-xs text-slate-500">Klik tombol untuk mengaktifkan atau menonaktifkan penayangan masing-masing tombol secara instan</p>
+                    </div>
+                </div>
+                <a href="{{ route('admin.competition-event.edit', $activeEvent->id) }}#section-identity" class="text-xs font-bold text-red-600 hover:text-red-700 flex items-center gap-1.5 transition">
+                    <i class="fa-solid fa-pen-to-square"></i>
+                    <span>Pengaturan Lengkap &rarr;</span>
+                </a>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+                <!-- 1. Tombol Daftar Sekarang -->
+                <div class="p-3.5 rounded-xl border {{ $activeEvent->isRegisterButtonVisible() ? 'bg-red-50/70 border-red-200' : 'bg-slate-50 border-slate-200 opacity-75' }} flex items-center justify-between gap-3 transition">
+                    <div class="flex items-center gap-2.5 min-w-0">
+                        <div class="w-8 h-8 rounded-lg bg-red-600 text-white flex items-center justify-center text-xs shrink-0 shadow-xs">
+                            <i class="fa-solid fa-file-pen"></i>
+                        </div>
+                        <div class="min-w-0">
+                            <div class="text-xs font-black text-slate-900 truncate">Daftar Sekarang</div>
+                            <div class="text-[10px] font-bold {{ $activeEvent->isRegisterButtonVisible() ? 'text-red-700' : 'text-slate-500' }}">
+                                {{ $activeEvent->isRegisterButtonVisible() ? '🟢 Aktif / Tayang' : '⚪ Dinonaktifkan' }}
+                            </div>
+                        </div>
+                    </div>
+                    <form action="{{ route('admin.competition-event.toggle-button', $activeEvent->id) }}" method="POST">
+                        @csrf
+                        <input type="hidden" name="button" value="register">
+                        <button type="submit" class="px-2.5 py-1.5 rounded-lg text-[11px] font-black transition {{ $activeEvent->isRegisterButtonVisible() ? 'bg-red-600 hover:bg-red-700 text-white' : 'bg-slate-200 hover:bg-slate-300 text-slate-700' }}">
+                            {{ $activeEvent->isRegisterButtonVisible() ? 'Matikan' : 'Aktifkan' }}
+                        </button>
+                    </form>
+                </div>
+
+                <!-- 2. Tombol Cek Status -->
+                <div class="p-3.5 rounded-xl border {{ $activeEvent->isStatusButtonVisible() ? 'bg-slate-100 border-slate-300' : 'bg-slate-50 border-slate-200 opacity-75' }} flex items-center justify-between gap-3 transition">
+                    <div class="flex items-center gap-2.5 min-w-0">
+                        <div class="w-8 h-8 rounded-lg bg-slate-800 text-white flex items-center justify-center text-xs shrink-0 shadow-xs">
+                            <i class="fa-solid fa-magnifying-glass"></i>
+                        </div>
+                        <div class="min-w-0">
+                            <div class="text-xs font-black text-slate-900 truncate">Cek Status</div>
+                            <div class="text-[10px] font-bold {{ $activeEvent->isStatusButtonVisible() ? 'text-slate-800' : 'text-slate-500' }}">
+                                {{ $activeEvent->isStatusButtonVisible() ? '🟢 Aktif / Tayang' : '⚪ Dinonaktifkan' }}
+                            </div>
+                        </div>
+                    </div>
+                    <form action="{{ route('admin.competition-event.toggle-button', $activeEvent->id) }}" method="POST">
+                        @csrf
+                        <input type="hidden" name="button" value="status">
+                        <button type="submit" class="px-2.5 py-1.5 rounded-lg text-[11px] font-black transition {{ $activeEvent->isStatusButtonVisible() ? 'bg-slate-800 hover:bg-slate-900 text-white' : 'bg-slate-200 hover:bg-slate-300 text-slate-700' }}">
+                            {{ $activeEvent->isStatusButtonVisible() ? 'Matikan' : 'Aktifkan' }}
+                        </button>
+                    </form>
+                </div>
+
+                <!-- 3. Tombol Live Klasemen -->
+                <div class="p-3.5 rounded-xl border {{ $activeEvent->isScoreboardButtonVisible() ? 'bg-amber-50/70 border-amber-200' : 'bg-slate-50 border-slate-200 opacity-75' }} flex items-center justify-between gap-3 transition">
+                    <div class="flex items-center gap-2.5 min-w-0">
+                        <div class="w-8 h-8 rounded-lg bg-amber-500 text-slate-950 flex items-center justify-center text-xs shrink-0 shadow-xs font-black">
+                            <i class="fa-solid fa-trophy"></i>
+                        </div>
+                        <div class="min-w-0">
+                            <div class="text-xs font-black text-slate-900 truncate">Live Klasemen</div>
+                            <div class="text-[10px] font-bold {{ $activeEvent->isScoreboardButtonVisible() ? 'text-amber-800' : 'text-slate-500' }}">
+                                {{ $activeEvent->isScoreboardButtonVisible() ? '🟢 Aktif / Tayang' : '⚪ Dinonaktifkan' }}
+                            </div>
+                        </div>
+                    </div>
+                    <form action="{{ route('admin.competition-event.toggle-button', $activeEvent->id) }}" method="POST">
+                        @csrf
+                        <input type="hidden" name="button" value="scoreboard">
+                        <button type="submit" class="px-2.5 py-1.5 rounded-lg text-[11px] font-black transition {{ $activeEvent->isScoreboardButtonVisible() ? 'bg-amber-500 hover:bg-amber-600 text-slate-950' : 'bg-slate-200 hover:bg-slate-300 text-slate-700' }}">
+                            {{ $activeEvent->isScoreboardButtonVisible() ? 'Matikan' : 'Aktifkan' }}
+                        </button>
+                    </form>
+                </div>
+
+                <!-- 4. Tombol Unduh Juklak Juknis -->
+                <div class="p-3.5 rounded-xl border {{ $activeEvent->isHandbookButtonVisible() ? 'bg-indigo-50/70 border-indigo-200' : 'bg-slate-50 border-slate-200 opacity-75' }} flex items-center justify-between gap-3 transition">
+                    <div class="flex items-center gap-2.5 min-w-0">
+                        <div class="w-8 h-8 rounded-lg bg-indigo-600 text-white flex items-center justify-center text-xs shrink-0 shadow-xs">
+                            <i class="fa-solid fa-book-open"></i>
+                        </div>
+                        <div class="min-w-0">
+                            <div class="text-xs font-black text-slate-900 truncate">Juklak Juknis</div>
+                            <div class="text-[10px] font-bold {{ $activeEvent->isHandbookButtonVisible() ? 'text-indigo-800' : 'text-slate-500' }}">
+                                {{ $activeEvent->isHandbookButtonVisible() ? '🟢 Aktif / Tayang' : '⚪ Dinonaktifkan' }}
+                            </div>
+                        </div>
+                    </div>
+                    <form action="{{ route('admin.competition-event.toggle-button', $activeEvent->id) }}" method="POST">
+                        @csrf
+                        <input type="hidden" name="button" value="handbook">
+                        <button type="submit" class="px-2.5 py-1.5 rounded-lg text-[11px] font-black transition {{ $activeEvent->isHandbookButtonVisible() ? 'bg-indigo-600 hover:bg-indigo-700 text-white' : 'bg-slate-200 hover:bg-slate-300 text-slate-700' }}">
+                            {{ $activeEvent->isHandbookButtonVisible() ? 'Matikan' : 'Aktifkan' }}
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
     @endif
 
     <!-- 2. Tabel Database & History Seluruh Edisi SUA BHAKTI BERKARYA -->
