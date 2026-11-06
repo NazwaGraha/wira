@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\CompetitionEvent;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\File;
 
@@ -19,6 +20,8 @@ class CompetitionMascotController extends Controller
         if (! in_array($activeLevel, $levels)) {
             $activeLevel = 'Mula';
         }
+
+        $activeEvent = CompetitionEvent::where('is_active', true)->first();
 
         $mascots = [];
         $mascotDir = public_path('images/mascot');
@@ -67,7 +70,50 @@ class CompetitionMascotController extends Controller
             }
         }
 
-        return view('admin.competition.mascots.index', compact('mascots', 'levels', 'categories', 'activeLevel'));
+        return view('admin.competition.mascots.index', compact('mascots', 'levels', 'categories', 'activeLevel', 'activeEvent'));
+    }
+
+    /**
+     * Upload dan perbarui gambar maskot kartu hitung mundur (/lomba).
+     */
+    public function updateCountdown(Request $request)
+    {
+        $validated = $request->validate([
+            'is_countdown_mascot_visible' => 'nullable|boolean',
+            'countdown_mascot_left' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:5120',
+            'countdown_mascot_right' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:5120',
+        ], [
+            'countdown_mascot_left.image' => 'File maskot kiri harus berupa gambar.',
+            'countdown_mascot_right.image' => 'File maskot kanan harus berupa gambar.',
+        ]);
+
+        $activeEvent = CompetitionEvent::where('is_active', true)->first();
+        if (! $activeEvent) {
+            return redirect()->back()->with('error', 'Tidak ada event lomba aktif yang ditemukan.');
+        }
+
+        $activeEvent->is_countdown_mascot_visible = $request->boolean('is_countdown_mascot_visible');
+
+        $mascotDir = public_path('images/mascot');
+        File::ensureDirectoryExists($mascotDir, 0755, true);
+
+        if ($request->hasFile('countdown_mascot_left')) {
+            $file = $request->file('countdown_mascot_left');
+            $filename = 'countdown_mascot_left_'.time().'.'.$file->getClientOriginalExtension();
+            $file->move($mascotDir, $filename);
+            $activeEvent->countdown_mascot_left = 'images/mascot/'.$filename;
+        }
+
+        if ($request->hasFile('countdown_mascot_right')) {
+            $file = $request->file('countdown_mascot_right');
+            $filename = 'countdown_mascot_right_'.time().'.'.$file->getClientOriginalExtension();
+            $file->move($mascotDir, $filename);
+            $activeEvent->countdown_mascot_right = 'images/mascot/'.$filename;
+        }
+
+        $activeEvent->save();
+
+        return redirect()->back()->with('success', 'Pengaturan Maskot Kartu Hitung Mundur (/lomba) berhasil disimpan!');
     }
 
     /**

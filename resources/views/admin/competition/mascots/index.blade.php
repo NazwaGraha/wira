@@ -53,6 +53,105 @@
         </div>
     @endif
 
+    @if(isset($activeEvent) && $activeEvent)
+    <!-- Panel Pengaturan Maskot Kartu Hitung Mundur (/lomba) -->
+    <div class="bg-gradient-to-r from-slate-900 via-slate-800 to-slate-900 border-2 border-amber-500/40 rounded-2xl p-6 text-white shadow-lg space-y-5">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-slate-700/80">
+            <div class="flex items-center gap-3">
+                <div class="w-12 h-12 rounded-xl bg-amber-500 text-slate-950 flex items-center justify-center text-xl font-black shadow-md shadow-amber-500/20 shrink-0">
+                    <i class="fa-solid fa-fire"></i>
+                </div>
+                <div>
+                    <div class="flex items-center gap-2 flex-wrap">
+                        <h3 class="text-base sm:text-lg font-black tracking-tight text-white">
+                            Maskot Kartu Hitung Mundur Halaman Utama (/lomba)
+                        </h3>
+                        <span class="text-[10px] font-black uppercase tracking-wider px-2.5 py-0.5 rounded-full {{ $activeEvent->isCountdownMascotVisible() ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/40' : 'bg-slate-700 text-slate-300' }}">
+                            {{ $activeEvent->isCountdownMascotVisible() ? '🟢 Sedang Ditampilkan' : '⚪ Disembunyikan' }}
+                        </span>
+                    </div>
+                    <p class="text-xs text-slate-300 mt-0.5">
+                        Maskot ini tampil mengapit kartu jadwal &amp; hitung mundur gelombang di halaman depan (<a href="{{ route('lomba.index') }}" target="_blank" class="text-amber-400 underline font-bold">/lomba</a>).
+                    </p>
+                </div>
+            </div>
+
+            <!-- Quick Toggle -->
+            <form action="{{ route('admin.competition-event.toggle-button', $activeEvent->id) }}" method="POST">
+                @csrf
+                <input type="hidden" name="button" value="countdown_mascot">
+                <button type="submit" class="px-4 py-2 rounded-xl text-xs font-black transition {{ $activeEvent->isCountdownMascotVisible() ? 'bg-rose-600 hover:bg-rose-700 text-white' : 'bg-emerald-600 hover:bg-emerald-700 text-white' }} shadow-md cursor-pointer">
+                    {{ $activeEvent->isCountdownMascotVisible() ? 'Sembunyikan dari Web' : 'Aktifkan di Web' }}
+                </button>
+            </form>
+        </div>
+
+        <!-- Form Ubah Gambar Maskot Hitung Mundur -->
+        <form action="{{ route('admin.competition-mascots.update-countdown') }}" method="POST" enctype="multipart/form-data" class="space-y-4">
+            @csrf
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                <!-- Maskot Kiri (Putri) -->
+                <div class="bg-slate-800/80 border border-rose-500/30 rounded-xl p-4 flex flex-col justify-between gap-3">
+                    <div class="flex items-center justify-between">
+                        <span class="text-xs font-black text-rose-300 flex items-center gap-1.5 uppercase tracking-wider">
+                            <i class="fa-solid fa-venus"></i> Maskot Sisi Kiri (Putri)
+                        </span>
+                        <span class="text-[10px] font-bold text-rose-400 bg-rose-950/70 border border-rose-500/30 px-2 py-0.5 rounded-full">
+                            Tampil di Kiri Kartu
+                        </span>
+                    </div>
+
+                    <div class="flex items-center gap-4">
+                        <div class="w-20 h-24 bg-slate-900/90 rounded-xl p-1.5 border border-slate-700 flex items-center justify-center shrink-0 shadow-inner">
+                            <img src="{{ $activeEvent->getCountdownMascotLeftUrl() }}" alt="Maskot Kiri" class="max-h-full max-w-full object-contain">
+                        </div>
+                        <div class="space-y-1.5 min-w-0 flex-1">
+                            <label class="block text-xs font-bold text-slate-200">Ganti Gambar Maskot Kiri:</label>
+                            <input type="file" name="countdown_mascot_left" accept="image/*" class="w-full text-xs text-slate-400 file:mr-2 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-bold file:bg-rose-600 file:text-white hover:file:bg-rose-500 cursor-pointer">
+                            <p class="text-[10px] text-slate-400">Rekomendasi: Format PNG latar transparan.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Maskot Kanan (Putra) -->
+                <div class="bg-slate-800/80 border border-blue-500/30 rounded-xl p-4 flex flex-col justify-between gap-3">
+                    <div class="flex items-center justify-between">
+                        <span class="text-xs font-black text-blue-300 flex items-center gap-1.5 uppercase tracking-wider">
+                            <i class="fa-solid fa-mars"></i> Maskot Sisi Kanan (Putra)
+                        </span>
+                        <span class="text-[10px] font-bold text-blue-400 bg-blue-950/70 border border-blue-500/30 px-2 py-0.5 rounded-full">
+                            Tampil di Kanan Kartu
+                        </span>
+                    </div>
+
+                    <div class="flex items-center gap-4">
+                        <div class="w-20 h-24 bg-slate-900/90 rounded-xl p-1.5 border border-slate-700 flex items-center justify-center shrink-0 shadow-inner">
+                            <img src="{{ $activeEvent->getCountdownMascotRightUrl() }}" alt="Maskot Kanan" class="max-h-full max-w-full object-contain">
+                        </div>
+                        <div class="space-y-1.5 min-w-0 flex-1">
+                            <label class="block text-xs font-bold text-slate-200">Ganti Gambar Maskot Kanan:</label>
+                            <input type="file" name="countdown_mascot_right" accept="image/*" class="w-full text-xs text-slate-400 file:mr-2 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-bold file:bg-blue-600 file:text-white hover:file:bg-blue-500 cursor-pointer">
+                            <p class="text-[10px] text-slate-400">Rekomendasi: Format PNG latar transparan.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-2">
+                <label class="flex items-center gap-2 cursor-pointer text-xs font-bold text-slate-200">
+                    <input type="checkbox" name="is_countdown_mascot_visible" value="1" {{ $activeEvent->isCountdownMascotVisible() ? 'checked' : '' }} class="w-4 h-4 text-amber-500 rounded border-slate-600 focus:ring-amber-400 bg-slate-900">
+                    <span>Centang untuk mengaktifkan penayangan kedua maskot di kartu hitung mundur</span>
+                </label>
+
+                <button type="submit" class="bg-amber-500 hover:bg-amber-400 text-slate-950 font-black px-5 py-2.5 rounded-xl text-xs transition flex items-center justify-center gap-2 shadow-md cursor-pointer">
+                    <i class="fa-solid fa-floppy-disk"></i>
+                    <span>Simpan Perubahan Maskot Kartu</span>
+                </button>
+            </div>
+        </form>
+    </div>
+    @endif
+
     <!-- Level Tabs Switcher -->
     <div class="flex flex-wrap gap-2">
         <a href="{{ route('admin.competition-mascots.index', ['level' => 'Mula']) }}" class="px-6 py-3 rounded-xl font-extrabold text-sm transition {{ $activeLevel == 'Mula' ? 'bg-emerald-600 text-white shadow-md shadow-emerald-600/30 border border-emerald-600' : 'bg-white text-slate-700 hover:bg-emerald-50 hover:text-emerald-700 hover:border-emerald-300 border border-slate-200' }}">

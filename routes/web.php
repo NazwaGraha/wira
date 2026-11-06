@@ -333,6 +333,7 @@ Route::prefix('admin')->name('admin.')->group(function () {
         // Manajemen Gambar Maskot Lomba (Mula, Madya, Wira)
         Route::get('/competition-mascots', [CompetitionMascotController::class, 'index'])->name('competition-mascots.index');
         Route::post('/competition-mascots', [CompetitionMascotController::class, 'update'])->name('competition-mascots.update');
+        Route::post('/competition-mascots/countdown', [CompetitionMascotController::class, 'updateCountdown'])->name('competition-mascots.update-countdown');
 
         // Manajemen Akun Juri & Pemetaan Lomba
         Route::resource('competition-juries', CompetitionJuryController::class)

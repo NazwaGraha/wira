@@ -50,6 +50,9 @@ class CompetitionEvent extends Model
         'is_btn_status_visible',
         'is_btn_scoreboard_visible',
         'is_btn_handbook_visible',
+        'is_countdown_mascot_visible',
+        'countdown_mascot_left',
+        'countdown_mascot_right',
         'wave1_name',
         'wave1_start_date',
         'wave1_end_date',
@@ -125,6 +128,7 @@ class CompetitionEvent extends Model
         'is_btn_status_visible' => 'boolean',
         'is_btn_scoreboard_visible' => 'boolean',
         'is_btn_handbook_visible' => 'boolean',
+        'is_countdown_mascot_visible' => 'boolean',
     ];
 
     /**
@@ -187,6 +191,54 @@ class CompetitionEvent extends Model
         }
 
         return isset($this->attributes['is_btn_handbook_visible']) ? (bool) $this->is_btn_handbook_visible : true;
+    }
+
+    /**
+     * Cek apakah Maskot di Kartu Hitung Mundur (/lomba) diizinkan tampil.
+     */
+    public function isCountdownMascotVisible(): bool
+    {
+        if (! $this->is_active) {
+            return false;
+        }
+
+        return isset($this->attributes['is_countdown_mascot_visible']) ? (bool) $this->is_countdown_mascot_visible : true;
+    }
+
+    /**
+     * Dapatkan URL gambar Maskot Kiri untuk Kartu Hitung Mundur.
+     */
+    public function getCountdownMascotLeftUrl(): string
+    {
+        $path = $this->countdown_mascot_left ?: 'images/mascot/countdown_mascot_left.png';
+
+        if (str_starts_with($path, 'http://') || str_starts_with($path, 'https://')) {
+            return $path;
+        }
+
+        if (file_exists(public_path($path))) {
+            return asset($path).'?v='.filemtime(public_path($path));
+        }
+
+        return asset('images/mascot/countdown_mascot_left.png');
+    }
+
+    /**
+     * Dapatkan URL gambar Maskot Kanan untuk Kartu Hitung Mundur.
+     */
+    public function getCountdownMascotRightUrl(): string
+    {
+        $path = $this->countdown_mascot_right ?: 'images/mascot/countdown_mascot_right.png';
+
+        if (str_starts_with($path, 'http://') || str_starts_with($path, 'https://')) {
+            return $path;
+        }
+
+        if (file_exists(public_path($path))) {
+            return asset($path).'?v='.filemtime(public_path($path));
+        }
+
+        return asset('images/mascot/countdown_mascot_right.png');
     }
 
     /**

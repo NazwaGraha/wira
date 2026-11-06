@@ -629,8 +629,29 @@
             @endphp
 
             @if($event && ($isWavesEnabled || $event->wave1_end_date))
-                <!-- Countdown & Wave Schedule Card -->
-                <div class="mt-10 sm:mt-12 max-w-4xl mx-auto bg-gradient-to-br from-slate-800/95 via-slate-800/80 to-slate-900/95 border-2 border-red-500/40 rounded-3xl p-5 sm:p-7 shadow-2xl backdrop-blur relative overflow-hidden">
+                <!-- Countdown Card Wrapper with Mascots -->
+                <div class="mt-10 sm:mt-14 max-w-5xl mx-auto relative px-2 sm:px-4">
+
+                    @if($event->isCountdownMascotVisible())
+                        <!-- Mascot Kiri (Gambar 2: Putri / Siswi PMR) - Desktop -->
+                        <div class="hidden lg:block absolute -left-12 xl:-left-20 bottom-0 z-20 pointer-events-none select-none transition-transform hover:scale-105 duration-300">
+                            <img src="{{ $event->getCountdownMascotLeftUrl() }}" alt="Maskot PMR Putri" class="h-64 xl:h-72 w-auto drop-shadow-[0_15px_30px_rgba(0,0,0,0.7)] object-contain">
+                        </div>
+
+                        <!-- Mascot Kanan (Gambar 3: Putra / Siswa PMR) - Desktop -->
+                        <div class="hidden lg:block absolute -right-12 xl:-right-20 bottom-0 z-20 pointer-events-none select-none transition-transform hover:scale-105 duration-300">
+                            <img src="{{ $event->getCountdownMascotRightUrl() }}" alt="Maskot PMR Putra" class="h-64 xl:h-72 w-auto drop-shadow-[0_15px_30px_rgba(0,0,0,0.7)] object-contain">
+                        </div>
+
+                        <!-- Mascots Mobile & Tablet (Tampil di Kiri & Kanan Atas Kartu) -->
+                        <div class="flex lg:hidden items-end justify-between px-4 sm:px-6 -mb-4 relative z-20 pointer-events-none">
+                            <img src="{{ $event->getCountdownMascotLeftUrl() }}" alt="Maskot PMR Putri" class="w-16 sm:w-20 h-auto drop-shadow-[0_10px_20px_rgba(0,0,0,0.6)] object-contain -rotate-3">
+                            <img src="{{ $event->getCountdownMascotRightUrl() }}" alt="Maskot PMR Putra" class="w-16 sm:w-20 h-auto drop-shadow-[0_10px_20px_rgba(0,0,0,0.6)] object-contain rotate-3">
+                        </div>
+                    @endif
+
+                    <!-- Countdown & Wave Schedule Card -->
+                    <div class="max-w-4xl mx-auto bg-gradient-to-br from-slate-800/95 via-slate-800/80 to-slate-900/95 border-2 border-red-500/40 rounded-3xl p-5 sm:p-7 shadow-2xl backdrop-blur relative overflow-hidden">
                     <div class="absolute -right-16 -top-16 w-48 h-48 bg-red-600/10 rounded-full blur-3xl pointer-events-none"></div>
                     <div class="absolute -left-16 -bottom-16 w-48 h-48 bg-amber-500/10 rounded-full blur-3xl pointer-events-none"></div>
                     
@@ -744,6 +765,7 @@
                         </div>
                     </div>
                 </div>
+            </div>
             @endif
 
             <!-- Quick Info Banner -->

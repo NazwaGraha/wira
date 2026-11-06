@@ -181,6 +181,9 @@ class CompetitionEventController extends Controller
             'wave2_start_date' => 'nullable|date',
             'wave2_end_date' => 'nullable|date',
             'display_mode' => 'nullable|string|in:auto,active,teaser',
+            'is_countdown_mascot_visible' => 'nullable|boolean',
+            'countdown_mascot_left' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:5120',
+            'countdown_mascot_right' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:5120',
         ]);
 
         $validated['is_active'] = $request->boolean('is_active');
@@ -190,6 +193,7 @@ class CompetitionEventController extends Controller
         $validated['is_btn_status_visible'] = $request->boolean('is_btn_status_visible');
         $validated['is_btn_scoreboard_visible'] = $request->boolean('is_btn_scoreboard_visible');
         $validated['is_btn_handbook_visible'] = $request->boolean('is_btn_handbook_visible');
+        $validated['is_countdown_mascot_visible'] = $request->boolean('is_countdown_mascot_visible');
         $validated['is_waves_enabled'] = $request->boolean('is_waves_enabled');
         $validated['display_mode'] = $request->input('display_mode', 'auto');
 
@@ -212,6 +216,22 @@ class CompetitionEventController extends Controller
                 Storage::disk('public')->delete($event->handbook_file);
             }
             $validated['handbook_file'] = $request->file('handbook_file')->store('events/handbooks', 'public');
+        }
+
+        // Upload Maskot Kiri Hitung Mundur jika ada file baru
+        if ($request->hasFile('countdown_mascot_left')) {
+            $file = $request->file('countdown_mascot_left');
+            $filename = 'countdown_mascot_left_'.time().'.'.$file->getClientOriginalExtension();
+            $file->move(public_path('images/mascot'), $filename);
+            $validated['countdown_mascot_left'] = 'images/mascot/'.$filename;
+        }
+
+        // Upload Maskot Kanan Hitung Mundur jika ada file baru
+        if ($request->hasFile('countdown_mascot_right')) {
+            $file = $request->file('countdown_mascot_right');
+            $filename = 'countdown_mascot_right_'.time().'.'.$file->getClientOriginalExtension();
+            $file->move(public_path('images/mascot'), $filename);
+            $validated['countdown_mascot_right'] = 'images/mascot/'.$filename;
         }
 
         // If marked active, ensure others are deactivated
@@ -248,6 +268,7 @@ class CompetitionEventController extends Controller
             'status' => 'is_btn_status_visible',
             'scoreboard' => 'is_btn_scoreboard_visible',
             'handbook' => 'is_btn_handbook_visible',
+            'countdown_mascot' => 'is_countdown_mascot_visible',
         ];
 
         if (! isset($validButtons[$button])) {
@@ -269,6 +290,7 @@ class CompetitionEventController extends Controller
             'status' => 'Cek Status Pendaftaran',
             'scoreboard' => 'Live Klasemen Juara',
             'handbook' => 'Unduh Juklak Juknis',
+            'countdown_mascot' => 'Maskot Hitung Mundur',
         ];
         $btnLabel = $labels[$button] ?? 'Tombol';
         $statusLabel = $newStatus ? 'DIAKTIFKAN' : 'DINONAKTIFKAN';

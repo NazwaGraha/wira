@@ -161,7 +161,7 @@
                 </a>
             </div>
 
-            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
                 <!-- 1. Tombol Daftar Sekarang -->
                 <div class="p-3.5 rounded-xl border {{ $activeEvent->isRegisterButtonVisible() ? 'bg-red-50/70 border-red-200' : 'bg-slate-50 border-slate-200 opacity-75' }} flex items-center justify-between gap-3 transition">
                     <div class="flex items-center gap-2.5 min-w-0">
@@ -246,6 +246,28 @@
                         <input type="hidden" name="button" value="handbook">
                         <button type="submit" class="px-2.5 py-1.5 rounded-lg text-[11px] font-black transition {{ $activeEvent->isHandbookButtonVisible() ? 'bg-indigo-600 hover:bg-indigo-700 text-white' : 'bg-slate-200 hover:bg-slate-300 text-slate-700' }}">
                             {{ $activeEvent->isHandbookButtonVisible() ? 'Matikan' : 'Aktifkan' }}
+                        </button>
+                    </form>
+                </div>
+
+                <!-- 5. Maskot Hitung Mundur -->
+                <div class="p-3.5 rounded-xl border {{ $activeEvent->isCountdownMascotVisible() ? 'bg-amber-50/70 border-amber-200' : 'bg-slate-50 border-slate-200 opacity-75' }} flex items-center justify-between gap-3 transition">
+                    <div class="flex items-center gap-2.5 min-w-0">
+                        <div class="w-8 h-8 rounded-lg bg-amber-500 text-slate-950 flex items-center justify-center text-xs shrink-0 shadow-xs font-black">
+                            <i class="fa-solid fa-cat"></i>
+                        </div>
+                        <div class="min-w-0">
+                            <div class="text-xs font-black text-slate-900 truncate">Maskot Kartu</div>
+                            <div class="text-[10px] font-bold {{ $activeEvent->isCountdownMascotVisible() ? 'text-amber-800' : 'text-slate-500' }}">
+                                {{ $activeEvent->isCountdownMascotVisible() ? '🟢 Aktif / Tayang' : '⚪ Dinonaktifkan' }}
+                            </div>
+                        </div>
+                    </div>
+                    <form action="{{ route('admin.competition-event.toggle-button', $activeEvent->id) }}" method="POST">
+                        @csrf
+                        <input type="hidden" name="button" value="countdown_mascot">
+                        <button type="submit" class="px-2.5 py-1.5 rounded-lg text-[11px] font-black transition {{ $activeEvent->isCountdownMascotVisible() ? 'bg-amber-500 hover:bg-amber-600 text-slate-950' : 'bg-slate-200 hover:bg-slate-300 text-slate-700' }}">
+                            {{ $activeEvent->isCountdownMascotVisible() ? 'Matikan' : 'Aktifkan' }}
                         </button>
                     </form>
                 </div>

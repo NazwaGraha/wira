@@ -561,6 +561,70 @@
                     </div>
                 </div>
 
+                <!-- Maskot Kartu Hitung Mundur (/lomba) -->
+                <div class="bg-white rounded-2xl p-6 shadow-xs border border-slate-200 space-y-5">
+                    <div class="flex items-center justify-between pb-3 border-b border-slate-100 flex-wrap gap-2">
+                        <div class="flex items-center gap-2">
+                            <div class="w-8 h-8 rounded-lg bg-amber-50 text-amber-600 flex items-center justify-center font-bold text-sm">
+                                <i class="fa-solid fa-cat"></i>
+                            </div>
+                            <div>
+                                <h3 class="font-extrabold text-slate-900 text-sm">Maskot Kartu Hitung Mundur (/lomba)</h3>
+                                <p class="text-[11px] text-slate-500">Karakter maskot di samping kiri &amp; kanan kartu jadwal/countdown</p>
+                            </div>
+                        </div>
+
+                        <!-- Toggle ON/OFF -->
+                        <div class="flex items-center gap-2">
+                            <span class="text-xs font-bold text-slate-700">Tampilkan:</span>
+                            <label class="relative inline-flex items-center cursor-pointer">
+                                <input type="checkbox" name="is_countdown_mascot_visible" value="1" class="sr-only peer" {{ old('is_countdown_mascot_visible', $event->isCountdownMascotVisible()) ? 'checked' : '' }}>
+                                <div class="w-11 h-6 bg-slate-300 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-amber-500"></div>
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <!-- Maskot Kiri (Putri) -->
+                        <div class="bg-rose-50/50 border border-rose-200/80 rounded-xl p-3.5 space-y-3">
+                            <div class="flex items-center justify-between">
+                                <span class="text-xs font-extrabold text-rose-900 flex items-center gap-1.5">
+                                    <i class="fa-solid fa-venus text-rose-500"></i> Maskot Kiri (Putri)
+                                </span>
+                                <span class="text-[10px] font-bold text-rose-600 bg-rose-100 px-2 py-0.5 rounded-full">Sisi Kiri</span>
+                            </div>
+
+                            <div class="flex items-center gap-3">
+                                <img src="{{ $event->getCountdownMascotLeftUrl() }}" alt="Preview Maskot Kiri" class="w-14 h-18 object-contain rounded-lg border border-rose-200 bg-white shadow-2xs p-1">
+                                <div class="flex-1 min-w-0">
+                                    <label class="block text-[11px] font-bold text-slate-700 mb-1">Ganti Gambar Kiri</label>
+                                    <input type="file" name="countdown_mascot_left" accept="image/*" class="w-full text-[11px] text-slate-500 file:mr-2 file:py-1 file:px-2.5 file:rounded-lg file:border-0 file:text-[11px] file:font-bold file:bg-rose-600 file:text-white hover:file:bg-rose-700 cursor-pointer">
+                                    <p class="text-[10px] text-slate-400 mt-1">PNG transparan direkomendasikan</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Maskot Kanan (Putra) -->
+                        <div class="bg-blue-50/50 border border-blue-200/80 rounded-xl p-3.5 space-y-3">
+                            <div class="flex items-center justify-between">
+                                <span class="text-xs font-extrabold text-blue-900 flex items-center gap-1.5">
+                                    <i class="fa-solid fa-mars text-blue-500"></i> Maskot Kanan (Putra)
+                                </span>
+                                <span class="text-[10px] font-bold text-blue-600 bg-blue-100 px-2 py-0.5 rounded-full">Sisi Kanan</span>
+                            </div>
+
+                            <div class="flex items-center gap-3">
+                                <img src="{{ $event->getCountdownMascotRightUrl() }}" alt="Preview Maskot Kanan" class="w-14 h-18 object-contain rounded-lg border border-blue-200 bg-white shadow-2xs p-1">
+                                <div class="flex-1 min-w-0">
+                                    <label class="block text-[11px] font-bold text-slate-700 mb-1">Ganti Gambar Kanan</label>
+                                    <input type="file" name="countdown_mascot_right" accept="image/*" class="w-full text-[11px] text-slate-500 file:mr-2 file:py-1 file:px-2.5 file:rounded-lg file:border-0 file:text-[11px] file:font-bold file:bg-blue-600 file:text-white hover:file:bg-blue-700 cursor-pointer">
+                                    <p class="text-[10px] text-slate-400 mt-1">PNG transparan direkomendasikan</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
                 <!-- Submit Button -->
                 <div class="pt-2">
                     <button type="submit" class="w-full bg-red-600 hover:bg-red-700 text-white font-black py-3.5 px-6 rounded-2xl shadow-lg shadow-red-900/30 transition flex items-center justify-center gap-2 text-sm">
