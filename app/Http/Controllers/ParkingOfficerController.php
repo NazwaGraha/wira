@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\CompetitionRegistration;
 use App\Models\ParkingLocation;
 use App\Models\ParkingTicket;
 use Illuminate\Http\JsonResponse;
@@ -152,5 +153,17 @@ class ParkingOfficerController extends Controller
             ->firstOrFail();
 
         return view('parking.public-ticket', compact('ticket'));
+    }
+
+    public function schoolTicketsPrint(string $code): View
+    {
+        $registration = CompetitionRegistration::with(['parkingTickets.location', 'event'])
+            ->where('registration_code', $code)
+            ->orWhere('id', $code)
+            ->firstOrFail();
+
+        $tickets = $registration->parkingTickets;
+
+        return view('parking.school-tickets-print', compact('registration', 'tickets'));
     }
 }

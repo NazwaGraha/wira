@@ -35,6 +35,9 @@ class CompetitionRegistration extends Model
         'custom_quota_r4',
         'custom_quota_r2',
         'parking_notes',
+        'parking_priority_score',
+        'parking_priority_rank',
+        'parking_priority_criteria',
     ];
 
     protected $casts = [
@@ -45,6 +48,9 @@ class CompetitionRegistration extends Model
         'checked_in_at' => 'datetime',
         'custom_quota_r4' => 'integer',
         'custom_quota_r2' => 'integer',
+        'parking_priority_score' => 'decimal:2',
+        'parking_priority_rank' => 'integer',
+        'parking_priority_criteria' => 'array',
     ];
 
     public function event(): BelongsTo

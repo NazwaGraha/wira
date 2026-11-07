@@ -10,6 +10,8 @@ use App\Models\CompetitionParticipantTeam;
 use App\Models\CompetitionRegistration;
 use App\Models\CompetitionScore;
 use App\Models\Gallery;
+use App\Models\ParkingLocation;
+use App\Models\ParkingTicket;
 use App\Services\CompetitionSpreadsheetService;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Http\Request;
@@ -494,11 +496,113 @@ class CompetitionController extends Controller
 
         if ($code) {
             $registration = CompetitionRegistration::where('registration_code', $code)
-                ->with(['event', 'teams.category'])
+                ->with(['event', 'teams.category', 'parkingTickets.parkingLocation'])
                 ->first();
         }
 
         return view('pages.lomba.status', compact('registration', 'code'));
+    }
+
+    /**
+     * Mendaftarkan data kendaraan kontingen dari Halaman Cek Status
+     */
+    public function registerVehicles(Request $request)
+    {
+        $validated = $request->validate([
+            'registration_code' => 'required|string|max:50',
+            'vehicles' => 'required|array|min:1',
+            'vehicles.*.vehicle_type' => 'required|in:r4_car,r4_elf,r4_bus,r2_motor',
+            'vehicles.*.license_plate' => 'required|string|max:30',
+            'vehicles.*.vehicle_brand' => 'nullable|string|max:100',
+            'vehicles.*.vehicle_color' => 'nullable|string|max:50',
+            'vehicles.*.driver_name' => 'nullable|string|max:100',
+            'vehicles.*.driver_phone' => 'nullable|string|max:30',
+        ]);
+
+        $code = trim($validated['registration_code']);
+        $registration = CompetitionRegistration::where('registration_code', $code)->first();
+
+        if (! $registration) {
+            return back()->with('error', 'Nomor pendaftaran tidak ditemukan.');
+        }
+
+        if ($registration->status !== 'verified') {
+            return back()->with('error', 'Pendaftaran kendaraan hanya dapat dilakukan setelah status pendaftaran dinyatakan TERVERIFIKASI / LUNAS.');
+        }
+
+        $vehicles = $validated['vehicles'];
+        $newR4Count = 0;
+        $newR2Count = 0;
+
+        foreach ($vehicles as $v) {
+            if (str_starts_with($v['vehicle_type'], 'r2')) {
+                $newR2Count++;
+            } else {
+                $newR4Count++;
+            }
+        }
+
+        // Validasi kuota tersisa
+        if ($newR4Count > $registration->remaining_quota_r4) {
+            return back()->with('error', "Jumlah kendaraan Roda 4 ({$newR4Count}) melebihi sisa kuota yang diizinkan ({$registration->remaining_quota_r4} mobil). Silakan sesuaikan.");
+        }
+
+        if ($newR2Count > $registration->remaining_quota_r2) {
+            return back()->with('error', "Jumlah kendaraan Roda 2 ({$newR2Count}) melebihi sisa kuota yang diizinkan ({$registration->remaining_quota_r2} motor). Silakan sesuaikan.");
+        }
+
+        // Tentukan lokasi parkir yang dialokasikan (jika sudah ada plot prioritas atau tiket sebelumnya)
+        $assignedLocationId = $registration->parkingTickets()->whereNotNull('parking_location_id')->value('parking_location_id');
+
+        // Jika belum ada lokasi tapi sudah pernah di-kalkulasi prioritasnya, cek criteria
+        if (! $assignedLocationId && ! empty($registration->parking_priority_criteria['assigned_location_code'])) {
+            $assignedLocationId = ParkingLocation::where('code', $registration->parking_priority_criteria['assigned_location_code'])->value('id');
+        }
+
+        $createdCount = 0;
+        foreach ($vehicles as $v) {
+            ParkingTicket::create([
+                'competition_registration_id' => $registration->id,
+                'parking_location_id' => $assignedLocationId,
+                'vehicle_type' => $v['vehicle_type'],
+                'license_plate' => strtoupper(trim($v['license_plate'])),
+                'vehicle_brand' => trim($v['vehicle_brand'] ?? ''),
+                'vehicle_color' => trim($v['vehicle_color'] ?? ''),
+                'driver_name' => trim($v['driver_name'] ?? ''),
+                'driver_phone' => trim($v['driver_phone'] ?? ''),
+                'status' => 'booked',
+            ]);
+            $createdCount++;
+        }
+
+        return redirect()->route('lomba.status', ['code' => $code])
+            ->with('success', "Alhamdulillah! Berhasil mendaftarkan {$createdCount} kendaraan kontingen untuk {$registration->school_name}. E-Tiket parkir resmi telah diterbitkan!");
+    }
+
+    /**
+     * Hapus tiket kendaraan kontingen oleh sekolah (selama belum check-in)
+     */
+    public function deleteVehicleTicket(Request $request)
+    {
+        $validated = $request->validate([
+            'registration_code' => 'required|string',
+            'ticket_id' => 'required|exists:parking_tickets,id',
+        ]);
+
+        $registration = CompetitionRegistration::where('registration_code', $validated['registration_code'])->firstOrFail();
+        $ticket = ParkingTicket::where('id', $validated['ticket_id'])
+            ->where('competition_registration_id', $registration->id)
+            ->firstOrFail();
+
+        if ($ticket->status === 'parked') {
+            return back()->with('error', 'Tiket tidak dapat dihapus karena kendaraan telah check-in di lokasi parkir.');
+        }
+
+        $plate = $ticket->license_plate;
+        $ticket->delete();
+
+        return redirect()->route('lomba.status', ['code' => $registration->registration_code])
+            ->with('success', "Kendaraan dengan nomor polisi {$plate} berhasil dihapus dari daftar parkir.");
     }
 
     /**

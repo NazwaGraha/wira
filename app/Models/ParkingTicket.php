@@ -44,13 +44,23 @@ class ParkingTicket extends Model
             }
             if (empty($ticket->ticket_code)) {
                 $prefix = str_starts_with($ticket->vehicle_type ?? '', 'r2') ? 'PKR2' : 'PKR4';
-                $count = static::where('vehicle_type', $ticket->vehicle_type)->count() + 1;
-                $ticket->ticket_code = sprintf('%s-SBB4-%04d', $prefix, $count);
+                $nextSeq = (static::max('id') ?? 0) + 1;
+                $code = sprintf('%s-SBB4-%04d', $prefix, $nextSeq);
+                while (static::where('ticket_code', $code)->exists()) {
+                    $nextSeq++;
+                    $code = sprintf('%s-SBB4-%04d', $prefix, $nextSeq);
+                }
+                $ticket->ticket_code = $code;
             }
         });
     }
 
     public function location(): BelongsTo
+    {
+        return $this->belongsTo(ParkingLocation::class, 'parking_location_id');
+    }
+
+    public function parkingLocation(): BelongsTo
     {
         return $this->belongsTo(ParkingLocation::class, 'parking_location_id');
     }

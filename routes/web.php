@@ -397,6 +397,7 @@ Route::prefix('admin')->name('admin.')->group(function () {
             Route::post('/quotas/settings', [ParkingManagementController::class, 'updateQuotaSettings'])->name('quotas.settings');
             Route::post('/quotas/school/{registration}', [ParkingManagementController::class, 'updateSchoolQuota'])->name('quotas.school');
             Route::post('/quotas/reset-all', [ParkingManagementController::class, 'resetAllSchoolQuotas'])->name('quotas.reset-all');
+            Route::post('/auto-allocate-priority', [ParkingManagementController::class, 'autoAllocatePriority'])->name('auto-allocate-priority');
         });
         Route::get('/parking-management', fn () => redirect()->route('admin.parking.index'));
 
@@ -667,6 +668,10 @@ Route::prefix('lomba')->name('lomba.')->group(function () {
     Route::post('/download-mass-template', [CompetitionController::class, 'downloadMassParticipantTemplate'])->name('download-mass-template');
     Route::post('/parse-mass-excel', [CompetitionController::class, 'parseMassExcelPeserta'])->name('parse-mass-excel');
     Route::get('/status', [CompetitionController::class, 'status'])->name('status');
+    Route::post('/status/register-vehicles', [CompetitionController::class, 'registerVehicles'])->name('register-vehicles');
+    Route::post('/status/delete-vehicle-ticket', [CompetitionController::class, 'deleteVehicleTicket'])->name('delete-vehicle-ticket');
+    Route::get('/tiket-parkir/{token}', [ParkingOfficerController::class, 'publicTicket'])->name('parking-ticket');
+    Route::get('/tiket-parkir-sekolah/{code}', [ParkingOfficerController::class, 'schoolTicketsPrint'])->name('school-parking-tickets');
     Route::get('/kwitansi/{code}', [CompetitionController::class, 'receipt'])->name('receipt');
     Route::get('/kwitansi/{code}', [CompetitionController::class, 'receipt'])->name('kwitansi');
     Route::get('/kartu-peserta/{code}', [CompetitionController::class, 'participantCards'])->name('cards');
@@ -697,4 +702,5 @@ Route::prefix('parkir')->name('parking.')->group(function () {
     Route::post('/check-in', [ParkingOfficerController::class, 'checkIn'])->name('check-in');
     Route::post('/check-out', [ParkingOfficerController::class, 'checkOut'])->name('check-out');
     Route::get('/tiket/{token}', [ParkingOfficerController::class, 'publicTicket'])->name('public-ticket');
+    Route::get('/tiket-sekolah/{code}', [ParkingOfficerController::class, 'schoolTicketsPrint'])->name('school-tickets');
 });

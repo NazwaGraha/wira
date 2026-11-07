@@ -2,7 +2,9 @@
 
 namespace Tests\Feature;
 
+use App\Models\CompetitionCategory;
 use App\Models\CompetitionEvent;
+use App\Models\CompetitionParticipantTeam;
 use App\Models\CompetitionRegistration;
 use App\Models\ParkingLocation;
 use App\Models\ParkingTicket;
@@ -381,5 +383,223 @@ class ParkingManagementTest extends TestCase
         ]);
         $resp2->assertSessionHasErrors(['license_plate']);
         $this->assertDatabaseMissing('parking_tickets', ['license_plate' => 'F 1002 BLOCKED']);
+    }
+
+    public function test_public_vehicle_registration_respects_quota_and_creates_tickets(): void
+    {
+        $this->registration->update([
+            'parking_quota_mode' => 'custom',
+            'custom_quota_r4' => 2,
+            'custom_quota_r2' => 2,
+        ]);
+
+        $response = $this->post(route('lomba.register-vehicles'), [
+            'registration_code' => $this->registration->registration_code,
+            'vehicles' => [
+                [
+                    'vehicle_type' => 'r4_car',
+                    'license_plate' => 'f 1845 ea',
+                    'vehicle_brand' => 'Toyota HiAce',
+                    'vehicle_color' => 'Putih',
+                    'driver_name' => 'Pak Hendra',
+                    'driver_phone' => '08123456789',
+                ],
+                [
+                    'vehicle_type' => 'r2_motor',
+                    'license_plate' => 'b 6543 zzz',
+                    'vehicle_brand' => 'Honda Vario',
+                    'vehicle_color' => 'Hitam',
+                    'driver_name' => 'Kak Rian',
+                    'driver_phone' => '08987654321',
+                ],
+            ],
+        ]);
+
+        $response->assertRedirect(route('lomba.status', ['code' => $this->registration->registration_code]));
+        $response->assertSessionHas('success');
+
+        $this->assertDatabaseHas('parking_tickets', [
+            'competition_registration_id' => $this->registration->id,
+            'license_plate' => 'F 1845 EA',
+            'vehicle_type' => 'r4_car',
+            'driver_name' => 'Pak Hendra',
+        ]);
+
+        $this->assertDatabaseHas('parking_tickets', [
+            'competition_registration_id' => $this->registration->id,
+            'license_plate' => 'B 6543 ZZZ',
+            'vehicle_type' => 'r2_motor',
+            'driver_name' => 'Kak Rian',
+        ]);
+    }
+
+    public function test_public_vehicle_registration_blocks_submission_exceeding_quota(): void
+    {
+        $this->registration->update([
+            'parking_quota_mode' => 'custom',
+            'custom_quota_r4' => 1,
+            'custom_quota_r2' => 0,
+        ]);
+
+        // Submit 2 cars when quota is only 1
+        $response = $this->post(route('lomba.register-vehicles'), [
+            'registration_code' => $this->registration->registration_code,
+            'vehicles' => [
+                [
+                    'vehicle_type' => 'r4_car',
+                    'license_plate' => 'F 1111 AA',
+                ],
+                [
+                    'vehicle_type' => 'r4_elf',
+                    'license_plate' => 'F 2222 BB',
+                ],
+            ],
+        ]);
+
+        $response->assertSessionHas('error');
+        $this->assertDatabaseMissing('parking_tickets', ['license_plate' => 'F 1111 AA']);
+        $this->assertDatabaseMissing('parking_tickets', ['license_plate' => 'F 2222 BB']);
+    }
+
+    public function test_public_delete_vehicle_ticket(): void
+    {
+        $ticket = ParkingTicket::create([
+            'competition_registration_id' => $this->registration->id,
+            'vehicle_type' => 'r4_car',
+            'license_plate' => 'F 9999 DEL',
+            'status' => 'booked',
+        ]);
+
+        $response = $this->post(route('lomba.delete-vehicle-ticket'), [
+            'registration_code' => $this->registration->registration_code,
+            'ticket_id' => $ticket->id,
+        ]);
+
+        $response->assertRedirect(route('lomba.status', ['code' => $this->registration->registration_code]));
+        $this->assertDatabaseMissing('parking_tickets', ['id' => $ticket->id]);
+    }
+
+    public function test_auto_allocate_priority_calculates_spps_and_allocates_top_ranker_to_kantong_a(): void
+    {
+        $this->actingAs($this->admin);
+
+        // Mark Location A as priority
+        $this->locationA->update(['is_priority' => true, 'priority_order' => 1, 'capacity_r4' => 5]);
+        $this->locationB->update(['is_priority' => false, 'priority_order' => 2, 'capacity_r4' => 5]);
+
+        // Create 2nd school with fewer teams
+        $schoolB = CompetitionRegistration::create([
+            'competition_event_id' => $this->registration->competition_event_id,
+            'school_name' => 'SMAN 2 BOGOR',
+            'registration_code' => 'REG-SMAN2BOGOR',
+            'level' => 'Wira',
+            'status' => 'verified',
+            'advisor_name' => 'Pembina B',
+            'advisor_phone' => '08129999999',
+            'created_at' => now()->addHour(),
+        ]);
+
+        // Create categories and teams for school A (full commitment)
+        $cat1 = CompetitionCategory::create([
+            'competition_event_id' => $this->registration->competition_event_id,
+            'name' => 'LKTR Wira Pa',
+            'level' => 'Wira',
+            'is_active' => true,
+        ]);
+        $cat2 = CompetitionCategory::create([
+            'competition_event_id' => $this->registration->competition_event_id,
+            'name' => 'PP Wira Pa',
+            'level' => 'Wira',
+            'is_active' => true,
+        ]);
+
+        CompetitionParticipantTeam::create([
+            'competition_registration_id' => $this->registration->id,
+            'competition_category_id' => $cat1->id,
+            'team_name' => 'Tim 1',
+        ]);
+        CompetitionParticipantTeam::create([
+            'competition_registration_id' => $this->registration->id,
+            'competition_category_id' => $cat2->id,
+            'team_name' => 'Tim 2',
+        ]);
+
+        // Add tickets for school A and B
+        $ticketA = ParkingTicket::create([
+            'competition_registration_id' => $this->registration->id,
+            'vehicle_type' => 'r4_car',
+            'license_plate' => 'F 1000 PRIO',
+        ]);
+
+        $ticketB = ParkingTicket::create([
+            'competition_registration_id' => $schoolB->id,
+            'vehicle_type' => 'r4_car',
+            'license_plate' => 'F 2000 LATE',
+        ]);
+
+        // Trigger Auto Allocate Priority
+        $response = $this->post(route('admin.parking.auto-allocate-priority'));
+        $response->assertRedirect();
+        $response->assertSessionHas('success');
+
+        // Check School A has priority rank 1 and assigned to location A (Kantong Parkir A)
+        $this->assertEquals(1, $this->registration->fresh()->parking_priority_rank);
+        $this->assertTrue($this->registration->fresh()->parking_priority_criteria['is_top_priority']);
+        $this->assertEquals($this->locationA->id, $ticketA->fresh()->parking_location_id);
+
+        // Check School B has priority rank 2
+        $this->assertEquals(2, $schoolB->fresh()->parking_priority_rank);
+    }
+
+    public function test_school_parking_tickets_print_page(): void
+    {
+        ParkingTicket::create([
+            'competition_registration_id' => $this->registration->id,
+            'vehicle_type' => 'r4_car',
+            'license_plate' => 'F 8888 PRINT',
+        ]);
+
+        $response = $this->get(route('parking.school-tickets', $this->registration->registration_code));
+        $response->assertOk();
+        $response->assertSee('F 8888 PRINT');
+        $response->assertSee($this->registration->school_name);
+    }
+
+    public function test_status_page_renders_parking_section_and_priority_banner_for_verified_school(): void
+    {
+        // 1. Without tickets -> shows notice and register button
+        $resp1 = $this->get(route('lomba.status', ['code' => $this->registration->registration_code]));
+        $resp1->assertOk();
+        $resp1->assertSee('FASILITAS PARKIR KONTINGEN RESMI');
+        $resp1->assertSee('Daftarkan Kendaraan');
+
+        // 2. With tickets and top priority
+        $ticket = ParkingTicket::create([
+            'competition_registration_id' => $this->registration->id,
+            'parking_location_id' => $this->locationA->id,
+            'vehicle_type' => 'r4_car',
+            'license_plate' => 'F 1234 SBB',
+            'driver_name' => 'Pak Hendra',
+        ]);
+
+        $this->registration->update([
+            'parking_priority_score' => 95.0,
+            'parking_priority_rank' => 1,
+            'parking_priority_criteria' => [
+                'all_events_participated' => true,
+                'categories_count' => 5,
+                'categories_total' => 5,
+                'teams_count' => 6,
+                'is_top_priority' => true,
+                'assigned_location_name' => 'Kantong Parkir A (Lapangan Depan)',
+            ],
+        ]);
+
+        $resp2 = $this->get(route('lomba.status', ['code' => $this->registration->registration_code]));
+        $resp2->assertOk();
+        $resp2->assertSee('PRIORITAS PARKIR UTAMA DISETUJUI');
+        $resp2->assertSee('F 1234 SBB');
+        $resp2->assertSee('Pak Hendra');
+        $resp2->assertSee('Cetak Semua E-Tiket Sekaligus (PDF)');
     }
 }

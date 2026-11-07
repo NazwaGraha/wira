@@ -19,6 +19,8 @@ class ParkingLocation extends Model
         'gmaps_url',
         'capacity_r4',
         'capacity_r2',
+        'is_priority',
+        'priority_order',
         'officer_name',
         'officer_phone',
         'status',
@@ -28,6 +30,8 @@ class ParkingLocation extends Model
     protected $casts = [
         'capacity_r4' => 'integer',
         'capacity_r2' => 'integer',
+        'is_priority' => 'boolean',
+        'priority_order' => 'integer',
     ];
 
     public function tickets(): HasMany

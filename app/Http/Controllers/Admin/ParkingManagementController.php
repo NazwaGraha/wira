@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\CompetitionCategory;
 use App\Models\CompetitionRegistration;
 use App\Models\ParkingLocation;
 use App\Models\ParkingQuotaSetting;
@@ -421,5 +422,194 @@ class ParkingManagementController extends Controller
         };
 
         return response()->stream($callback, 200, $headers);
+    }
+
+    /**
+     * Algoritma Alokasi Prioritas Parkir Cerdas (Smart Priority Parking Score - SPPS)
+     * Mengkalkulasi 3 Kriteria:
+     * 1. Keikutsertaan Cabang Lomba (40%)
+     * 2. Pemanfaatan Kuota Regu Maksimal (30%)
+     * 3. Kecepatan Waktu Pendaftaran (30%)
+     * Menetapkan sekolah peringkat teratas ke Kantong Parkir Utama (Kantong A SMANIC).
+     */
+    public function autoAllocatePriority(Request $request): RedirectResponse
+    {
+        $verifiedRegistrations = CompetitionRegistration::where('status', 'verified')
+            ->with(['teams.category', 'parkingTickets', 'event'])
+            ->get();
+
+        if ($verifiedRegistrations->isEmpty()) {
+            return back()->with('error', 'Belum ada kontingen sekolah berstatus Terverifikasi / Lunas.');
+        }
+
+        $locations = ParkingLocation::where('status', '!=', 'closed')
+            ->orderBy('priority_order')
+            ->orderBy('id')
+            ->get();
+
+        if ($locations->isEmpty()) {
+            return back()->with('error', 'Belum ada kantong parkir aktif yang tersedia.');
+        }
+
+        $priorityLocation = $locations->firstWhere('is_priority', true) ?: $locations->first();
+
+        // 1. Hitung total cabang aktif per level
+        $categoriesCountByLevel = [];
+        foreach (['mula', 'madya', 'wira'] as $lvl) {
+            $categoriesCountByLevel[$lvl] = CompetitionCategory::where('is_active', true)
+                ->where(function ($q) use ($lvl) {
+                    $q->where('level', $lvl)->orWhere('level', 'semua');
+                })->count();
+            if ($categoriesCountByLevel[$lvl] === 0) {
+                $categoriesCountByLevel[$lvl] = 5;
+            }
+        }
+
+        // 2. Maksimal regu yang dikirimkan oleh sekolah mana pun dalam event
+        $maxTeamsInEvent = max(6, (int) $verifiedRegistrations->max('total_teams_count'));
+
+        // 3. Peringkat kecepatan waktu pendaftaran (created_at ASC)
+        $sortedBySpeed = $verifiedRegistrations->sortBy('created_at')->values();
+        $totalVerified = $sortedBySpeed->count();
+        $speedRanks = [];
+        foreach ($sortedBySpeed as $idx => $reg) {
+            $speedRanks[$reg->id] = $idx + 1;
+        }
+
+        // 4. Hitung Skor Prioritas Parkir (PPS) tiap sekolah
+        $scoredSchools = [];
+        foreach ($verifiedRegistrations as $reg) {
+            $level = strtolower($reg->level ?? 'wira');
+            $totalCats = $categoriesCountByLevel[$level] ?? 5;
+
+            // Kriteria 1: Keikutsertaan Cabang Lomba (Bobot 40%)
+            $distinctCatCount = $reg->teams->pluck('competition_category_id')->filter()->unique()->count();
+            $catRatio = min(1.0, $distinctCatCount / max(1, $totalCats));
+            $scoreCat = round($catRatio * 100, 2);
+
+            // Kriteria 2: Kuota Regu Maksimal (Bobot 30%)
+            $teamsCount = $reg->total_teams_count;
+            $teamRatio = min(1.0, $teamsCount / max(1, $maxTeamsInEvent));
+            $scoreTeam = round($teamRatio * 100, 2);
+
+            // Kriteria 3: Kecepatan Waktu Pendaftaran (Bobot 30%)
+            $speedRank = $speedRanks[$reg->id] ?? $totalVerified;
+            if ($totalVerified <= 1) {
+                $scoreSpeed = 100.0;
+            } else {
+                $scoreSpeed = round(max(20.0, 100.0 - (($speedRank - 1) / ($totalVerified - 1)) * 80.0), 2);
+            }
+
+            // Total Bobot PPS
+            $totalPps = round(($scoreCat * 0.40) + ($scoreTeam * 0.30) + ($scoreSpeed * 0.30), 2);
+
+            $scoredSchools[] = [
+                'registration' => $reg,
+                'pps' => $totalPps,
+                'score_cat' => $scoreCat,
+                'score_team' => $scoreTeam,
+                'score_speed' => $scoreSpeed,
+                'distinct_cats' => $distinctCatCount,
+                'total_cats' => $totalCats,
+                'all_events' => ($distinctCatCount >= $totalCats),
+                'teams_count' => $teamsCount,
+                'max_teams' => $maxTeamsInEvent,
+                'speed_rank' => $speedRank,
+                'created_at' => $reg->created_at,
+            ];
+        }
+
+        // Urutkan skor PPS tertinggi -> terendah, lalu created_at tercepat
+        usort($scoredSchools, function ($a, $b) {
+            if ($b['pps'] != $a['pps']) {
+                return $b['pps'] <=> $a['pps'];
+            }
+
+            return $a['created_at'] <=> $b['created_at'];
+        });
+
+        // 5. Inisialisasi kapasitas tracker tiap kantong
+        $capacityTracker = [];
+        foreach ($locations as $loc) {
+            $capacityTracker[$loc->id] = [
+                'location' => $loc,
+                'rem_r4' => (int) $loc->capacity_r4,
+                'rem_r2' => (int) $loc->capacity_r2,
+            ];
+        }
+
+        // 6. Alokasi slot kantong parkir sesuai urutan prioritas
+        $topPriorityCount = 0;
+        foreach ($scoredSchools as $idx => $item) {
+            $reg = $item['registration'];
+            $rankNum = $idx + 1;
+
+            $tickets = $reg->parkingTickets;
+            $r4Needed = $tickets->whereIn('vehicle_type', ['r4_car', 'r4_elf', 'r4_bus'])->count();
+            $r2Needed = $tickets->where('vehicle_type', 'r2_motor')->count();
+
+            if ($tickets->isEmpty()) {
+                $r4Needed = $reg->allocated_quota_r4;
+                $r2Needed = $reg->allocated_quota_r2;
+            }
+
+            $chosenLocId = null;
+            $isTopPriority = false;
+
+            // Coba masukkan ke lokasi prioritas tertinggi yang masih muat
+            foreach ($locations as $loc) {
+                $cap = &$capacityTracker[$loc->id];
+                if ($cap['rem_r4'] >= $r4Needed && $cap['rem_r2'] >= $r2Needed) {
+                    $chosenLocId = $loc->id;
+                    $cap['rem_r4'] -= $r4Needed;
+                    $cap['rem_r2'] -= $r2Needed;
+
+                    if ($loc->id === $priorityLocation->id) {
+                        $isTopPriority = true;
+                        $topPriorityCount++;
+                    }
+                    break;
+                }
+            }
+
+            // Jika semua kantong penuh, fallback ke lokasi prioritas atau yang sisa slotnya terbanyak
+            if (! $chosenLocId) {
+                $chosenLocId = $priorityLocation->id;
+            }
+
+            $chosenLocation = $locations->firstWhere('id', $chosenLocId);
+
+            // Simpan skor dan detail kriteria evaluasi ke registrasi
+            $reg->update([
+                'parking_priority_score' => $item['pps'],
+                'parking_priority_rank' => $rankNum,
+                'parking_priority_criteria' => [
+                    'all_events_participated' => $item['all_events'],
+                    'categories_count' => $item['distinct_cats'],
+                    'categories_total' => $item['total_cats'],
+                    'teams_count' => $item['teams_count'],
+                    'max_teams' => $item['max_teams'],
+                    'speed_rank' => $item['speed_rank'],
+                    'total_verified' => $totalVerified,
+                    'score_categories' => $item['score_cat'],
+                    'score_teams' => $item['score_team'],
+                    'score_speed' => $item['score_speed'],
+                    'total_pps' => $item['pps'],
+                    'is_top_priority' => $isTopPriority,
+                    'assigned_location_id' => $chosenLocId,
+                    'assigned_location_name' => $chosenLocation?->name,
+                    'assigned_location_code' => $chosenLocation?->code,
+                    'calculated_at' => now()->toIso8601String(),
+                ],
+            ]);
+
+            // Update lokasi pada semua tiket milik sekolah ini
+            if ($tickets->isNotEmpty()) {
+                ParkingTicket::where('competition_registration_id', $reg->id)
+                    ->update(['parking_location_id' => $chosenLocId]);
+            }
+        }
+
+        return back()->with('success', "Kalkulasi Prioritas Parkir Cerdas berhasil! {$totalVerified} sekolah dievaluasi. {$topPriorityCount} kontingen berhasil mendapatkan Prioritas Utama di {$priorityLocation->name}.");
     }
 }

@@ -52,11 +52,17 @@
                 <p class="text-xs text-slate-500 mt-0.5">Tentukan bagaimana kuota tiket parkir (R4 Mobil & R2 Motor) otomatis dibagikan kepada setiap sekolah peserta lomba.</p>
             </div>
             
-            <div class="flex items-center gap-2 shrink-0">
+            <div class="flex items-center gap-2 shrink-0 flex-wrap">
+                <form action="{{ route('admin.parking.auto-allocate-priority') }}" method="POST" onsubmit="return confirm('Jalankan Algoritma Prioritas Cerdas (SPPS)?\n\nSistem akan mengevaluasi 3 kriteria:\n1. Keikutsertaan Cabang Lomba (40%)\n2. Pemanfaatan Kuota Regu Maksimal (30%)\n3. Kecepatan Waktu Pendaftaran (30%)\n\nSekolah peringkat teratas akan otomatis dialokasikan ke Kantong Parkir Utama (Kantong A SMANIC). Lanjutkan?')">
+                    @csrf
+                    <button type="submit" class="px-4 py-2 rounded-xl bg-gradient-to-r from-amber-500 to-yellow-600 hover:from-amber-600 hover:to-yellow-700 text-white font-extrabold text-xs transition flex items-center gap-2 shadow-xs">
+                        <i class="fa-solid fa-wand-magic-sparkles"></i> Kalkulasi Prioritas Cerdas (SPPS)
+                    </button>
+                </form>
                 <form action="{{ route('admin.parking.quotas.reset-all') }}" method="POST" onsubmit="return confirm('Apakah Anda yakin ingin me-reset kuota seluruh sekolah kembali ke mode otomatis berdasarkan jumlah regu?')">
                     @csrf
                     <button type="submit" class="px-3.5 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs transition flex items-center gap-1.5" title="Reset semua kuota custom ke mode otomatis">
-                        <i class="fa-solid fa-rotate-left text-slate-500"></i> Reset Semua ke Otomatis
+                        <i class="fa-solid fa-rotate-left text-slate-500"></i> Reset Kuota
                     </button>
                 </form>
                 <button type="button" onclick="openModal('modalEditSetting')" class="px-4 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs transition flex items-center gap-2 shadow-xs">
@@ -266,7 +272,7 @@
                     <tr>
                         <th class="p-3.5">Asal Sekolah & Kode</th>
                         <th class="p-3.5">Tingkat & Jumlah Regu</th>
-                        <th class="p-3.5">Sumber Kuota</th>
+                        <th class="p-3.5">Prioritas & Alokasi</th>
                         <th class="p-3.5 text-center">Kuota R4 (Mobil)</th>
                         <th class="p-3.5 text-center">Kuota R2 (Motor)</th>
                         <th class="p-3.5 text-center">Status Tiket Terbit</th>
@@ -298,7 +304,26 @@
                                 </div>
                             </td>
                             <td class="p-3.5">
-                                @if($isCustom)
+                                @if($sch->parking_priority_score)
+                                    <div class="space-y-1">
+                                        <div class="flex items-center gap-1.5 flex-wrap">
+                                            @if($sch->parking_priority_criteria['is_top_priority'] ?? false)
+                                                <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-black bg-amber-100 text-amber-900 border border-amber-300">
+                                                    <i class="fa-solid fa-star text-amber-500"></i> Peringkat #{{ $sch->parking_priority_rank }} ({{ $sch->parking_priority_score }})
+                                                </span>
+                                            @else
+                                                <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-bold bg-slate-100 text-slate-700 border border-slate-200">
+                                                    Peringkat #{{ $sch->parking_priority_rank }} ({{ $sch->parking_priority_score }})
+                                                </span>
+                                            @endif
+                                        </div>
+                                        @if(!empty($sch->parking_priority_criteria['assigned_location_name']))
+                                            <span class="text-[10px] font-extrabold text-emerald-800 block truncate max-w-[160px]" title="{{ $sch->parking_priority_criteria['assigned_location_name'] }}">
+                                                <i class="fa-solid fa-square-parking text-emerald-600"></i> {{ $sch->parking_priority_criteria['assigned_location_name'] }}
+                                            </span>
+                                        @endif
+                                    </div>
+                                @elseif($isCustom)
                                     <span class="text-[10px] font-black text-purple-700 bg-purple-50 px-2 py-0.5 rounded-md border border-purple-200 block truncate max-w-[150px]">
                                         <i class="fa-solid fa-star text-[9px]"></i> Kustom Admin
                                     </span>
@@ -306,8 +331,8 @@
                                         <span class="text-[9px] text-slate-400 italic block mt-0.5 truncate max-w-[160px]">{{ $sch->parking_notes }}</span>
                                     @endif
                                 @else
-                                    <span class="text-[10px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-md border border-emerald-200 block truncate max-w-[150px]">
-                                        <i class="fa-solid fa-robot text-[9px]"></i> {{ $sch->quota_source_label }}
+                                    <span class="text-[10px] font-bold text-slate-500 bg-slate-100 px-2 py-0.5 rounded-md border border-slate-200 block truncate max-w-[150px]">
+                                        Belum Dikalkulasi
                                     </span>
                                 @endif
                             </td>
