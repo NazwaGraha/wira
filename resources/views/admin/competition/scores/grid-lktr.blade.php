@@ -67,8 +67,8 @@
         $intervalCardActiveStyle = 'background: linear-gradient(135deg, #e0f2fe 0%, #bae6fd 100%) !important; border-color:#0284c7 !important; box-shadow:0 4px 14px rgba(2,132,199,0.3) !important;';
     }
 
-    $schoolName = $currentTeam->registration->school_name ?? $currentTeam->team_name;
-    $teamCode = 'No. Urut ' . str_pad($currentTeam->order_number ?? '1', 2, '0', STR_PAD_LEFT);
+    $schoolName = $currentTeam?->registration?->school_name ?? ($currentTeam?->team_name ?? 'Belum Ada Regu Terdaftar');
+    $teamCode = 'No. Urut ' . str_pad((string) ($currentTeam?->order_number ?? '1'), 2, '0', STR_PAD_LEFT);
     $rubricData = is_array($existingRubric) ? $existingRubric : [];
 
     $vKetepatan1 = $rubricData['ketepatan_1'] ?? null;
@@ -215,7 +215,7 @@
                 <div class="relative flex-1 md:w-64">
                     <select onchange="window.location.href=this.value" 
                             class="w-full text-xs font-bold bg-slate-50 border border-slate-300 rounded-2xl px-3 py-2 text-slate-800 focus:ring-2 focus:ring-rose-500 focus:outline-none transition cursor-pointer">
-                        @foreach($teams as $idx => $t)
+                        @forelse($teams as $idx => $t)
                             @php
                                 $tScore = $scores->get($t->id);
                                 $hasScore = !empty($tScore && $tScore->final_score > 0);
@@ -224,7 +224,9 @@
                                     {{ ($currentTeam && $currentTeam->id == $t->id) ? 'selected' : '' }}>
                                 {{ $t->order_number ?? ($idx + 1) }}. {{ $t->registration->school_name ?? $t->team_name }} ({{ $hasScore ? '✓ ' . number_format($tScore->final_score, 0) . ' pt' : 'Belum Dinilai' }})
                             </option>
-                        @endforeach
+                        @empty
+                            <option disabled selected>-- Belum ada regu peserta terdaftar --</option>
+                        @endforelse
                     </select>
                 </div>
 
@@ -897,10 +899,26 @@
 
             </form>
         @else
-            <div class="bg-white rounded-3xl p-10 text-center text-slate-500 border border-slate-200 shadow-sm">
-                <i class="fa-solid fa-bed text-4xl mb-3 text-slate-300"></i>
-                <h3 class="font-bold text-base text-slate-800">Tidak Ada Regu yang Dipilih</h3>
-                <p class="text-xs text-slate-400 mt-1">Silakan pilih salah satu regu peserta pada daftar di atas untuk mulai menginput nilai.</p>
+            <div class="bg-white rounded-3xl p-12 text-center text-slate-500 border border-slate-200 shadow-sm">
+                <div class="w-16 h-16 mx-auto mb-4 rounded-2xl bg-slate-100 flex items-center justify-center text-slate-400 text-2xl">
+                    <i class="fa-solid fa-users-slash"></i>
+                </div>
+                <h3 class="font-bold text-lg text-slate-800">Tidak Ada Regu yang Dipilih</h3>
+                <p class="text-xs text-slate-500 mt-1 max-w-md mx-auto">
+                    @if($teams->isEmpty())
+                        Kategori ini belum memiliki regu peserta yang terdaftar atau terverifikasi.
+                    @else
+                        Silakan pilih salah satu regu peserta pada daftar dropdown di atas untuk mulai menginput nilai.
+                    @endif
+                </p>
+                <div class="mt-6 flex items-center justify-center gap-3">
+                    <a href="{{ route('admin.competition-scores.input', $category->id) }}" class="px-4 py-2.5 rounded-xl bg-slate-900 text-white font-bold text-xs hover:bg-slate-800 transition flex items-center gap-2">
+                        <i class="fa-solid fa-arrow-left"></i> Kembali ke Lembar Nilai
+                    </a>
+                    <a href="{{ route('admin.competition-participants.index') }}" class="px-4 py-2.5 rounded-xl bg-blue-600 text-white font-bold text-xs hover:bg-blue-500 transition flex items-center gap-2">
+                        <i class="fa-solid fa-users-viewfinder"></i> Kelola Peserta
+                    </a>
+                </div>
             </div>
         @endif
 

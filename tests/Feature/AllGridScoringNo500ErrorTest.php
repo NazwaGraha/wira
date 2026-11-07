@@ -133,6 +133,52 @@ class AllGridScoringNo500ErrorTest extends TestCase
     }
 
     /**
+     * Test GET Admin Grid Score when category has 0 teams registered/verified (Ensure NO HTTP 500)
+     */
+    public function test_admin_grid_scoring_pages_render_without_500_when_category_has_no_teams(): void
+    {
+        $this->actingAs($this->admin);
+
+        $testCategories = [
+            // LKTR
+            ['LKTR-MULA-EMPTY', 'Ketangkasan Tandu Reguler', 'Mula'],
+            ['LKTR-MADYA-EMPTY', 'Ketangkasan Tandu Reguler', 'Madya'],
+            ['LKTR-WIRA-EMPTY', 'Ketangkasan Tandu Reguler', 'Wira'],
+
+            // Pertolongan Pertama (PP)
+            ['LPP-MULA-EMPTY', 'Pertolongan Pertama', 'Mula'],
+            ['LPP-MADYA-EMPTY', 'Pertolongan Pertama', 'Madya'],
+            ['LPP-WIRA-EMPTY', 'Pertolongan Pertama', 'Wira'],
+
+            // Pendidikan Remaja Sebaya (PRS)
+            ['PRS-MADYA-EMPTY', 'Pendidikan Remaja Sebaya', 'Madya'],
+            ['PRS-WIRA-EMPTY', 'Pendidikan Remaja Sebaya', 'Wira'],
+
+            // Mewarnai
+            ['MEWARNAI-MULA-EMPTY', 'Lomba Mewarnai', 'Mula'],
+        ];
+
+        foreach ($testCategories as [$code, $name, $level]) {
+            $category = CompetitionCategory::create([
+                'competition_event_id' => $this->event->id,
+                'code' => $code,
+                'name' => $name,
+                'level' => $level,
+                'gender_category' => 'Umum',
+                'scoring_type' => 'standard_time',
+                'point_tier' => 'tier_2',
+                'order_position' => 1,
+                'is_active' => true,
+            ]);
+
+            $response = $this->get("/admin/competition-scores/{$category->id}/grid");
+
+            $this->assertNotEquals(500, $response->getStatusCode(), "GET /admin/competition-scores/{$category->id}/grid returned 500 when empty for {$name} ({$level})");
+            $response->assertOk();
+        }
+    }
+
+    /**
      * Test POST Admin Save Grid Score for all categories (Ensure NO HTTP 500)
      */
     public function test_all_admin_grid_scoring_save_without_500(): void
