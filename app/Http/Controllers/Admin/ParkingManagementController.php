@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\CompetitionRegistration;
 use App\Models\ParkingLocation;
+use App\Models\ParkingQuotaSetting;
 use App\Models\ParkingTicket;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -156,11 +157,134 @@ class ParkingManagementController extends Controller
             'notes' => 'nullable|string',
         ]);
 
+        // Enforcement Kuota Parkir Khusus Sekolah
+        if (! empty($validated['competition_registration_id'])) {
+            $registration = CompetitionRegistration::find($validated['competition_registration_id']);
+            if ($registration) {
+                $isR4 = in_array($validated['vehicle_type'], ['r4_car', 'r4_elf', 'r4_bus']);
+                if ($isR4 && $registration->remaining_quota_r4 <= 0) {
+                    return back()->withInput()->withErrors([
+                        'license_plate' => "Kuota tiket Roda 4 untuk {$registration->school_name} sudah habis (Maksimal {$registration->allocated_quota_r4} slot). Silakan ubah kuota sekolah pada menu Pengaturan Kuota jika ingin menambah dispensasi tiket.",
+                    ]);
+                }
+                if (! $isR4 && $registration->remaining_quota_r2 <= 0) {
+                    return back()->withInput()->withErrors([
+                        'license_plate' => "Kuota tiket Roda 2 (Motor) untuk {$registration->school_name} sudah habis (Maksimal {$registration->allocated_quota_r2} slot). Silakan ubah kuota sekolah jika ingin menambah dispensasi tiket.",
+                    ]);
+                }
+            }
+        }
+
         $validated['license_plate'] = strtoupper(trim($validated['license_plate']));
 
         ParkingTicket::create($validated);
 
         return back()->with('success', 'Tiket parkir kendaraan berhasil diterbitkan!');
+    }
+
+    /**
+     * Halaman Pengaturan Kuota Parkir Sekolah & Matriks Proporsional Regu
+     */
+    public function quotas(Request $request): View
+    {
+        $setting = ParkingQuotaSetting::current();
+
+        $query = CompetitionRegistration::where('status', 'verified')
+            ->with(['teams', 'parkingTickets'])
+            ->orderBy('school_name');
+
+        if ($request->filled('search')) {
+            $search = trim($request->query('search'));
+            $query->where(function ($q) use ($search) {
+                $q->where('school_name', 'like', "%{$search}%")
+                    ->orWhere('registration_code', 'like', "%{$search}%");
+            });
+        }
+
+        if ($request->filled('level')) {
+            $query->where('level', $request->query('level'));
+        }
+
+        $schools = $query->paginate(20)->withQueryString();
+
+        // Calculate KPI summaries
+        $allVerified = CompetitionRegistration::where('status', 'verified')
+            ->with(['teams', 'parkingTickets'])
+            ->get();
+
+        $totalVerifiedSchools = $allVerified->count();
+        $totalAllocatedR4 = $allVerified->sum('allocated_quota_r4');
+        $totalAllocatedR2 = $allVerified->sum('allocated_quota_r2');
+        $totalIssuedR4 = $allVerified->sum('issued_tickets_r4_count');
+        $totalIssuedR2 = $allVerified->sum('issued_tickets_r2_count');
+        $customQuotaCount = $allVerified->where('parking_quota_mode', 'custom')->count();
+
+        // Total capacity of all parking locations for comparison
+        $totalLocationCapacityR4 = ParkingLocation::sum('capacity_r4');
+        $totalLocationCapacityR2 = ParkingLocation::sum('capacity_r2');
+
+        return view('admin.parking.quotas', compact(
+            'setting',
+            'schools',
+            'totalVerifiedSchools',
+            'totalAllocatedR4',
+            'totalAllocatedR2',
+            'totalIssuedR4',
+            'totalIssuedR2',
+            'customQuotaCount',
+            'totalLocationCapacityR4',
+            'totalLocationCapacityR2'
+        ));
+    }
+
+    public function updateQuotaSettings(Request $request): RedirectResponse
+    {
+        $validated = $request->validate([
+            'mode' => 'required|in:proportional_teams,flat',
+            'flat_default_r4' => 'required|integer|min:0',
+            'flat_default_r2' => 'required|integer|min:0',
+            'matrix_rules' => 'nullable|array',
+            'matrix_rules.*.min_teams' => 'required|integer|min:1',
+            'matrix_rules.*.max_teams' => 'required|integer|min:1',
+            'matrix_rules.*.quota_r4' => 'required|integer|min:0',
+            'matrix_rules.*.quota_r2' => 'required|integer|min:0',
+            'matrix_rules.*.label' => 'required|string|max:100',
+        ]);
+
+        $setting = ParkingQuotaSetting::current();
+        $setting->update($validated);
+
+        return back()->with('success', 'Konfigurasi aturan kuota parkir berhasil diperbarui!');
+    }
+
+    public function updateSchoolQuota(Request $request, CompetitionRegistration $registration): RedirectResponse
+    {
+        $validated = $request->validate([
+            'parking_quota_mode' => 'required|in:auto,custom',
+            'custom_quota_r4' => 'nullable|integer|min:0',
+            'custom_quota_r2' => 'nullable|integer|min:0',
+            'parking_notes' => 'nullable|string|max:500',
+        ]);
+
+        if ($validated['parking_quota_mode'] === 'auto') {
+            $validated['custom_quota_r4'] = null;
+            $validated['custom_quota_r2'] = null;
+        }
+
+        $registration->update($validated);
+
+        return back()->with('success', "Kuota parkir untuk {$registration->school_name} berhasil diperbarui!");
+    }
+
+    public function resetAllSchoolQuotas(): RedirectResponse
+    {
+        CompetitionRegistration::where('status', 'verified')->update([
+            'parking_quota_mode' => 'auto',
+            'custom_quota_r4' => null,
+            'custom_quota_r2' => null,
+        ]);
+
+        return back()->with('success', 'Seluruh kuota sekolah berhasil di-reset ke mode otomatis!');
     }
 
     public function updateTicket(Request $request, ParkingTicket $ticket): RedirectResponse

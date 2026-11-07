@@ -4,6 +4,9 @@
 @section('page_title', 'Pengelolaan Kantong Parkir & Tiket')
 
 @section('top_actions')
+    <a href="{{ route('admin.parking.quotas') }}" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2.5 rounded-xl font-bold text-xs shadow-xs transition flex items-center gap-2">
+        <i class="fa-solid fa-sliders"></i> Pengaturan Kuota Sekolah
+    </a>
     <a href="{{ route('parking.scanner') }}" target="_blank" class="bg-slate-900 hover:bg-slate-800 text-white px-4 py-2.5 rounded-xl font-bold text-xs shadow-xs transition flex items-center gap-2">
         <i class="fa-solid fa-camera-viewfinder text-rose-400"></i> Buka Web Scanner Lapangan
     </a>
@@ -572,7 +575,9 @@
                 <select name="competition_registration_id" class="w-full text-xs bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 text-slate-800 font-bold focus:outline-none">
                     <option value="">-- Umum / Bukan Kontingen Sekolah --</option>
                     @foreach($schools as $sch)
-                        <option value="{{ $sch->id }}">{{ $sch->school_name }} ({{ $sch->level }}) - {{ $sch->registration_code }}</option>
+                        <option value="{{ $sch->id }}">
+                            {{ $sch->school_name }} ({{ $sch->level }}) • Sisa R4: {{ $sch->remaining_quota_r4 }} | R2: {{ $sch->remaining_quota_r2 }}
+                        </option>
                     @endforeach
                 </select>
             </div>

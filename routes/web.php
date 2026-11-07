@@ -391,6 +391,12 @@ Route::prefix('admin')->name('admin.')->group(function () {
             Route::post('/tickets/{ticket}/status', [ParkingManagementController::class, 'updateStatus'])->name('tickets.update-status');
             Route::get('/tickets/{ticket}/print', [ParkingManagementController::class, 'printTicket'])->name('tickets.print');
             Route::get('/export-excel', [ParkingManagementController::class, 'exportExcel'])->name('export-excel');
+
+            // Pengaturan Kuota Parkir Sekolah & Matriks Proporsional Regu
+            Route::get('/quotas', [ParkingManagementController::class, 'quotas'])->name('quotas');
+            Route::post('/quotas/settings', [ParkingManagementController::class, 'updateQuotaSettings'])->name('quotas.settings');
+            Route::post('/quotas/school/{registration}', [ParkingManagementController::class, 'updateSchoolQuota'])->name('quotas.school');
+            Route::post('/quotas/reset-all', [ParkingManagementController::class, 'resetAllSchoolQuotas'])->name('quotas.reset-all');
         });
         Route::get('/parking-management', fn () => redirect()->route('admin.parking.index'));
 

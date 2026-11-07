@@ -299,4 +299,87 @@ class ParkingManagementTest extends TestCase
         $this->assertEquals('checked_out', $ticket->fresh()->status);
         $this->assertNotNull($ticket->fresh()->check_out_at);
     }
+
+    public function test_admin_can_view_parking_quotas_page(): void
+    {
+        $this->actingAs($this->admin);
+
+        $response = $this->get(route('admin.parking.quotas'));
+        $response->assertOk();
+        $response->assertSee('Pengaturan Kuota Parkir Sekolah');
+        $response->assertSee('SMAN 1 BOGOR');
+    }
+
+    public function test_admin_can_update_quota_settings(): void
+    {
+        $this->actingAs($this->admin);
+
+        $response = $this->post(route('admin.parking.quotas.settings'), [
+            'mode' => 'flat',
+            'flat_default_r4' => 2,
+            'flat_default_r2' => 3,
+        ]);
+        $response->assertRedirect();
+
+        $this->assertDatabaseHas('parking_quota_settings', [
+            'mode' => 'flat',
+            'flat_default_r4' => 2,
+            'flat_default_r2' => 3,
+        ]);
+    }
+
+    public function test_admin_can_override_and_reset_school_quota(): void
+    {
+        $this->actingAs($this->admin);
+
+        // 1. Override custom
+        $respCustom = $this->post(route('admin.parking.quotas.school', $this->registration->id), [
+            'parking_quota_mode' => 'custom',
+            'custom_quota_r4' => 4,
+            'custom_quota_r2' => 3,
+            'parking_notes' => 'Dispensasi kontingen membawa bus & rombongan kepala sekolah',
+        ]);
+        $respCustom->assertRedirect();
+
+        $this->assertEquals(4, $this->registration->fresh()->allocated_quota_r4);
+        $this->assertEquals(3, $this->registration->fresh()->allocated_quota_r2);
+        $this->assertEquals('custom', $this->registration->fresh()->parking_quota_mode);
+
+        // 2. Reset all
+        $respReset = $this->post(route('admin.parking.quotas.reset-all'));
+        $respReset->assertRedirect();
+
+        $this->assertEquals('auto', $this->registration->fresh()->parking_quota_mode);
+        $this->assertNull($this->registration->fresh()->custom_quota_r4);
+    }
+
+    public function test_quota_enforcement_blocks_ticket_issuance_when_quota_exceeded(): void
+    {
+        $this->actingAs($this->admin);
+
+        // Set custom quota R4=1 for this registration
+        $this->registration->update([
+            'parking_quota_mode' => 'custom',
+            'custom_quota_r4' => 1,
+            'custom_quota_r2' => 1,
+        ]);
+
+        // Issue 1st ticket (should succeed)
+        $resp1 = $this->post(route('admin.parking.tickets.store'), [
+            'competition_registration_id' => $this->registration->id,
+            'vehicle_type' => 'r4_car',
+            'license_plate' => 'F 1001 OK',
+        ]);
+        $resp1->assertRedirect();
+        $this->assertDatabaseHas('parking_tickets', ['license_plate' => 'F 1001 OK']);
+
+        // Issue 2nd ticket (should be blocked by validation error because quota R4=1 is exhausted)
+        $resp2 = $this->post(route('admin.parking.tickets.store'), [
+            'competition_registration_id' => $this->registration->id,
+            'vehicle_type' => 'r4_car',
+            'license_plate' => 'F 1002 BLOCKED',
+        ]);
+        $resp2->assertSessionHasErrors(['license_plate']);
+        $this->assertDatabaseMissing('parking_tickets', ['license_plate' => 'F 1002 BLOCKED']);
+    }
 }

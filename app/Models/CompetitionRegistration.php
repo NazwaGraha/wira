@@ -31,6 +31,10 @@ class CompetitionRegistration extends Model
         'checked_in_at',
         'checked_in_by',
         'checkin_notes',
+        'parking_quota_mode',
+        'custom_quota_r4',
+        'custom_quota_r2',
+        'parking_notes',
     ];
 
     protected $casts = [
@@ -39,6 +43,8 @@ class CompetitionRegistration extends Model
         'verified_at' => 'datetime',
         'is_checked_in' => 'boolean',
         'checked_in_at' => 'datetime',
+        'custom_quota_r4' => 'integer',
+        'custom_quota_r2' => 'integer',
     ];
 
     public function event(): BelongsTo
@@ -54,6 +60,66 @@ class CompetitionRegistration extends Model
     public function parkingTickets(): HasMany
     {
         return $this->hasMany(ParkingTicket::class, 'competition_registration_id');
+    }
+
+    public function getTotalTeamsCountAttribute(): int
+    {
+        return $this->teams()->where(function ($q) {
+            $q->where('is_active', true)->orWhereNull('is_active');
+        })->count();
+    }
+
+    public function getAllocatedQuotaR4Attribute(): int
+    {
+        if ($this->parking_quota_mode === 'custom' && ! is_null($this->custom_quota_r4)) {
+            return (int) $this->custom_quota_r4;
+        }
+
+        return ParkingQuotaSetting::current()->calculateQuota($this->total_teams_count)['quota_r4'];
+    }
+
+    public function getAllocatedQuotaR2Attribute(): int
+    {
+        if ($this->parking_quota_mode === 'custom' && ! is_null($this->custom_quota_r2)) {
+            return (int) $this->custom_quota_r2;
+        }
+
+        return ParkingQuotaSetting::current()->calculateQuota($this->total_teams_count)['quota_r2'];
+    }
+
+    public function getIssuedTicketsR4CountAttribute(): int
+    {
+        return $this->parkingTickets()
+            ->whereIn('vehicle_type', ['r4_car', 'r4_elf', 'r4_bus'])
+            ->whereIn('status', ['booked', 'parked'])
+            ->count();
+    }
+
+    public function getIssuedTicketsR2CountAttribute(): int
+    {
+        return $this->parkingTickets()
+            ->where('vehicle_type', 'r2_motor')
+            ->whereIn('status', ['booked', 'parked'])
+            ->count();
+    }
+
+    public function getRemainingQuotaR4Attribute(): int
+    {
+        return max(0, $this->allocated_quota_r4 - $this->issued_tickets_r4_count);
+    }
+
+    public function getRemainingQuotaR2Attribute(): int
+    {
+        return max(0, $this->allocated_quota_r2 - $this->issued_tickets_r2_count);
+    }
+
+    public function getQuotaSourceLabelAttribute(): string
+    {
+        if ($this->parking_quota_mode === 'custom' && ! is_null($this->custom_quota_r4)) {
+            return 'Kustom Admin (Dispensasi)';
+        }
+
+        return ParkingQuotaSetting::current()->calculateQuota($this->total_teams_count)['tier_label'];
     }
 
     /**
