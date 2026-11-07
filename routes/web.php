@@ -33,6 +33,7 @@ use App\Http\Controllers\Admin\MemberController;
 use App\Http\Controllers\Admin\MemberRegistrationController;
 use App\Http\Controllers\Admin\OrganizationController;
 use App\Http\Controllers\Admin\OrganizationGuidelineController;
+use App\Http\Controllers\Admin\ParkingManagementController;
 use App\Http\Controllers\Admin\PopupBannerController;
 use App\Http\Controllers\Admin\UksHotlineController;
 use App\Http\Controllers\Admin\WiraAgentKnowledgeController;
@@ -41,6 +42,7 @@ use App\Http\Controllers\CompetitionController;
 use App\Http\Controllers\Jury\JuryPortalController;
 use App\Http\Controllers\MemberAreaController;
 use App\Http\Controllers\PageController;
+use App\Http\Controllers\ParkingOfficerController;
 use App\Http\Controllers\WiraAgentController;
 use App\Models\CompetitionInfoMenu;
 use App\Services\OrganizationSyncService;
@@ -375,6 +377,23 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::post('/competition-info-menus/{id}/quick-upload', [CompetitionInfoMenuController::class, 'quickUpload'])->name('competition-info-menus.quick-upload');
         Route::post('/competition-info-menus-reset-defaults', [CompetitionInfoMenuController::class, 'resetDefaults'])->name('competition-info-menus.reset-defaults');
 
+        // Pengelolaan Tiket & Kantong Parkir Kendaraan Kontingen
+        Route::prefix('parking')->name('parking.')->group(function () {
+            Route::get('/', [ParkingManagementController::class, 'index'])->name('index');
+            Route::post('/locations', [ParkingManagementController::class, 'storeLocation'])->name('locations.store');
+            Route::put('/locations/{location}', [ParkingManagementController::class, 'updateLocation'])->name('locations.update');
+            Route::delete('/locations/{location}', [ParkingManagementController::class, 'destroyLocation'])->name('locations.destroy');
+
+            Route::post('/tickets', [ParkingManagementController::class, 'storeTicket'])->name('tickets.store');
+            Route::put('/tickets/{ticket}', [ParkingManagementController::class, 'updateTicket'])->name('tickets.update');
+            Route::delete('/tickets/{ticket}', [ParkingManagementController::class, 'destroyTicket'])->name('tickets.destroy');
+            Route::post('/tickets/assign-location', [ParkingManagementController::class, 'assignLocation'])->name('tickets.assign-location');
+            Route::post('/tickets/{ticket}/status', [ParkingManagementController::class, 'updateStatus'])->name('tickets.update-status');
+            Route::get('/tickets/{ticket}/print', [ParkingManagementController::class, 'printTicket'])->name('tickets.print');
+            Route::get('/export-excel', [ParkingManagementController::class, 'exportExcel'])->name('export-excel');
+        });
+        Route::get('/parking-management', fn () => redirect()->route('admin.parking.index'));
+
         // Otak & Pengetahuan Wira Agent AI (Sinkronisasi Konten Website)
         Route::post('/wira-agent/sync-knowledge', [WiraAgentKnowledgeController::class, 'sync'])->name('wira-agent.sync-knowledge');
         Route::get('/wira-agent/knowledge-status', [WiraAgentKnowledgeController::class, 'status'])->name('wira-agent.knowledge-status');
@@ -663,4 +682,13 @@ Route::middleware(['auth'])->prefix('juri')->name('jury.')->group(function () {
     Route::post('/kategori/{category}/regu/{team}/simpan', [JuryPortalController::class, 'saveScore'])->name('save-score');
     Route::post('/upload-foto', [JuryPortalController::class, 'uploadPhoto'])->name('upload-photo');
     Route::delete('/foto/{photo}', [JuryPortalController::class, 'deletePhoto'])->name('delete-photo');
+});
+
+// ================= SISTEM PENGELOLAAN PARKIR & SCANNER LAPANGAN =================
+Route::prefix('parkir')->name('parking.')->group(function () {
+    Route::get('/scanner', [ParkingOfficerController::class, 'scanner'])->name('scanner');
+    Route::post('/verify', [ParkingOfficerController::class, 'verifyTicket'])->name('verify');
+    Route::post('/check-in', [ParkingOfficerController::class, 'checkIn'])->name('check-in');
+    Route::post('/check-out', [ParkingOfficerController::class, 'checkOut'])->name('check-out');
+    Route::get('/tiket/{token}', [ParkingOfficerController::class, 'publicTicket'])->name('public-ticket');
 });

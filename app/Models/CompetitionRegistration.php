@@ -51,6 +51,11 @@ class CompetitionRegistration extends Model
         return $this->hasMany(CompetitionParticipantTeam::class);
     }
 
+    public function parkingTickets(): HasMany
+    {
+        return $this->hasMany(ParkingTicket::class, 'competition_registration_id');
+    }
+
     /**
      * URL Resolusi Bukti Pembayaran yang aman (menggunakan named route backoffice atau asset lokal).
      */

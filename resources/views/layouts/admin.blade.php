@@ -281,6 +281,10 @@
                 <i class="fa-solid fa-folder-open w-5 text-center text-pink-400"></i>
                 <span class="truncate">Informasi Lomba</span>
             </a>
+            <a href="{{ route('admin.parking.index') }}" class="flex items-center gap-3 px-3 py-2.5 rounded-xl font-medium text-sm transition {{ request()->routeIs('admin.parking.*') ? 'bg-pmr-primary text-white shadow-md shadow-red-950/40' : 'hover:bg-slate-800 text-slate-300' }}" title="Kelola Kantong Parkir & Tiket Kendaraan Kontingen">
+                <i class="fa-solid fa-square-parking w-5 text-center text-amber-400"></i>
+                <span class="truncate">Tiket & Kantong Parkir</span>
+            </a>
 
             <!-- Submenu Donor Darah -->
             <div class="pt-4 pb-1 text-[11px] font-bold uppercase text-slate-500 tracking-wider px-3">Kelola Donor Darah</div>
