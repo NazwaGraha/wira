@@ -104,18 +104,17 @@ class CompetitionCategory extends Model
     }
 
     /**
-     * Cek apakah cabang lomba memiliki kuota regu tak terbatas (khusus Mewarnai).
+     * Cek apakah cabang lomba memiliki kuota regu tak terbatas.
+     * Sesuai ketentuan terbaru, semua cabang (termasuk Mewarnai) dibatasi maksimal 2 regu per sekolah.
      */
     public function isUnlimitedTeams(): bool
     {
-        $name = strtolower($this->name ?? '');
-
-        return str_contains($name, 'mewarnai');
+        return false;
     }
 
     /**
      * Cek apakah cabang lomba memperbolehkan pendaftaran lebih dari 1 regu.
-     * Semua cabang lomba kini mengizinkan multi regu (2 regu untuk cabang umum, 3 regu untuk olimpiade, tak terbatas untuk mewarnai).
+     * Semua cabang lomba kini mengizinkan multi regu (2 regu untuk cabang umum & mewarnai, 3 regu untuk olimpiade).
      */
     public function isMultiTeamAllowed(): bool
     {

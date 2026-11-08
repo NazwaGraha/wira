@@ -115,7 +115,7 @@ class CompetitionRegistrationFeeTest extends TestCase
         $receiptResponse->assertSee('Rp 210.000');
     }
 
-    public function test_registration_page_shows_unlimited_teams_badge(): void
+    public function test_registration_page_shows_mewarnai_and_lktr_mula_rules(): void
     {
         $event = CompetitionEvent::create([
             'name' => 'Sua Bhakti Berkarya IV',
@@ -132,7 +132,7 @@ class CompetitionRegistrationFeeTest extends TestCase
         CompetitionCategory::create([
             'competition_event_id' => $event->id,
             'name' => 'Lomba Mewarnai',
-            'code' => 'LMW-MULA',
+            'code' => 'MEWARNAI-MULA',
             'level' => 'Mula',
             'gender_category' => 'Umum',
             'scoring_type' => 'score_based',
@@ -141,10 +141,27 @@ class CompetitionRegistrationFeeTest extends TestCase
             'is_active' => true,
         ]);
 
+        CompetitionCategory::create([
+            'competition_event_id' => $event->id,
+            'name' => 'Ketangkasan Tandu Reguler',
+            'code' => 'LKTR-MULA',
+            'level' => 'Mula',
+            'gender_category' => 'Umum',
+            'scoring_type' => 'standard_time',
+            'registration_fee' => 63000,
+            'quota' => 50,
+            'is_active' => true,
+        ]);
+
         $response = $this->get(route('lomba.register', ['level' => 'Mula']));
 
         $response->assertStatus(200);
-        $response->assertSee('Kuota Regu Per Sekolah Tidak Dibatasi');
-        $response->assertDontSee('Jatah Sekolah: Bebas');
+        // Mewarnai dibatasi 2 regu per sekolah
+        $response->assertSee('Lomba Mewarnai');
+        $response->assertSee('Batas Sekolah: 2 Regu');
+        // LKTR-MULA tidak ada kategori Putra/Putri melainkan Umum / Campuran
+        $response->assertSee('Ketangkasan Tandu Reguler');
+        $response->assertSee('Umum / Campuran');
+        $response->assertDontSee('Kategori Putra');
     }
 }

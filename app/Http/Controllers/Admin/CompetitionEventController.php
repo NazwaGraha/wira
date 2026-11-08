@@ -445,8 +445,7 @@ class CompetitionEventController extends Controller
             'mula' => [
                 ['code' => 'LPP-MULA-PA', 'name' => 'Pertolongan Pertama', 'level' => 'Mula', 'gender_category' => 'Putra', 'scoring_type' => 'practical_time', 'point_tier' => 'tier_1'],
                 ['code' => 'LPP-MULA-PI', 'name' => 'Pertolongan Pertama', 'level' => 'Mula', 'gender_category' => 'Putri', 'scoring_type' => 'practical_time', 'point_tier' => 'tier_1'],
-                ['code' => 'LKTR-MULA-PA', 'name' => 'Ketangkasan Tandu Reguler', 'level' => 'Mula', 'gender_category' => 'Putra', 'scoring_type' => 'standard_time', 'point_tier' => 'tier_2'],
-                ['code' => 'LKTR-MULA-PI', 'name' => 'Ketangkasan Tandu Reguler', 'level' => 'Mula', 'gender_category' => 'Putri', 'scoring_type' => 'standard_time', 'point_tier' => 'tier_2'],
+                ['code' => 'LKTR-MULA', 'name' => 'Ketangkasan Tandu Reguler', 'level' => 'Mula', 'gender_category' => 'Umum', 'scoring_type' => 'standard_time', 'point_tier' => 'tier_2'],
                 ['code' => 'LKCT-MULA', 'name' => 'Ketangkasan Cuci Tangan', 'level' => 'Mula', 'gender_category' => 'Umum', 'scoring_type' => 'standard_time', 'point_tier' => 'tier_2'],
                 ['code' => 'MEWARNAI-MULA', 'name' => 'Lomba Mewarnai', 'level' => 'Mula', 'gender_category' => 'Umum', 'scoring_type' => 'multi_criteria', 'point_tier' => 'tier_2'],
                 ['code' => 'MADING-MULA', 'name' => 'Mading Kreasi', 'level' => 'Mula', 'gender_category' => 'Umum', 'scoring_type' => 'multi_criteria', 'point_tier' => 'tier_1'],
