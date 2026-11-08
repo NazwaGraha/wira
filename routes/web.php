@@ -88,7 +88,25 @@ Route::get('/login', function () {
 | Backoffice / Admin Routes (CMS Pengelola Artikel & Konten)
 |--------------------------------------------------------------------------
 */
+// Alias / Shortcut Akses URL /backoffice
+Route::get('/backoffice', function () {
+    if (auth()->check()) {
+        return auth()->user()->canAccessBackoffice()
+            ? redirect()->route('admin.dashboard')
+            : redirect()->route('member.profile');
+    }
+
+    return redirect()->route('admin.login');
+})->name('backoffice');
+
+Route::redirect('/backoffice/login', '/admin/login');
+Route::redirect('/backoffice/dashboard', '/admin/dashboard');
+
 Route::prefix('admin')->name('admin.')->group(function () {
+    Route::get('/', function () {
+        return redirect()->route('admin.dashboard');
+    })->name('index');
+
     // Auth
     Route::get('/login', [AuthController::class, 'showLogin'])->name('login');
     Route::post('/login', [AuthController::class, 'login'])->name('login.submit');

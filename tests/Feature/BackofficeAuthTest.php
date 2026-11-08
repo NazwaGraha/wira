@@ -269,4 +269,27 @@ class BackofficeAuthTest extends TestCase
         $blockedResponse->assertRedirect(route('admin.articles.index'));
         $blockedResponse->assertSessionHas('error');
     }
+
+    /**
+     * Test /backoffice alias route redirects guest to /admin/login and auth user to /admin/dashboard.
+     */
+    public function test_backoffice_shortcut_routes_correctly(): void
+    {
+        // Guest visiting /backoffice
+        $guestResponse = $this->get('/backoffice');
+        $guestResponse->assertRedirect(route('admin.login'));
+
+        // Guest visiting /admin
+        $adminResponse = $this->get('/admin');
+        $adminResponse->assertRedirect(route('admin.dashboard'));
+
+        // Superuser visiting /backoffice
+        $this->post('/admin/login', [
+            'login_id' => 'admin',
+            'password' => 'pmrwirasmanic',
+        ]);
+
+        $authResponse = $this->get('/backoffice');
+        $authResponse->assertRedirect(route('admin.dashboard'));
+    }
 }
