@@ -729,10 +729,10 @@
                                                 <div>
                                                     <label class="text-[11px] font-bold text-slate-700 block mb-1">Jenis Kendaraan *</label>
                                                     <select :name="'vehicles[' + index + '][vehicle_type]'" x-model="veh.vehicle_type" required class="w-full text-xs font-bold bg-white border border-slate-300 rounded-xl px-3 py-2.5 text-slate-800 focus:outline-none focus:border-red-500 focus:ring-1 focus:ring-red-500">
-                                                        <option value="r2_motor">Roda 2 — Sepeda Motor (Matic, Bebek, Sport)</option>
-                                                        <option value="r4_car">Roda 4 — Mobil Pribadi / MPV / SUV (Avanza, Innova, Brio, dll)</option>
-                                                        <option value="r4_elf">Roda 4+ Minibus — Minibus (Elf / HiAce)</option>
-                                                        <option value="r4_bus">Roda 6+ Bus — Bus Besar Pariwisata (40–60 Kursi)</option>
+                                                        <option value="r4_car">Roda 4 Mobil Pribadi / MPV / SUV</option>
+                                                        <option value="r4_elf">Roda 4+ Minibus (Elf / HiAce)</option>
+                                                        <option value="r4_bus">Roda 6+ Bus Besar Pariwisata</option>
+                                                        <option value="r2_motor">Roda 2 Sepeda Motor</option>
                                                     </select>
                                                 </div>
 

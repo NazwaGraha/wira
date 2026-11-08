@@ -736,10 +736,10 @@
                 <div>
                     <label class="text-xs font-bold text-slate-700 block mb-1">Jenis Kendaraan <span class="text-rose-500">*</span></label>
                     <select name="vehicle_type" required class="w-full text-xs bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 text-slate-800 font-bold focus:outline-none">
-                        <option value="r2_motor">Roda 2 — Sepeda Motor (Matic, Bebek, Sport)</option>
-                        <option value="r4_car">Roda 4 — Mobil Pribadi / MPV / SUV (Avanza, Innova, Brio, dll)</option>
-                        <option value="r4_elf">Roda 4+ Minibus — Minibus (Elf / HiAce)</option>
-                        <option value="r4_bus">Roda 6+ Bus — Bus Besar Pariwisata (40–60 Kursi)</option>
+                        <option value="r2_motor">Roda 2 Sepeda Motor</option>
+                        <option value="r4_car">Roda 4 Mobil Pribadi / MPV / SUV</option>
+                        <option value="r4_elf">Roda 4+ Minibus (Elf / HiAce)</option>
+                        <option value="r4_bus">Roda 6+ Bus Besar Pariwisata</option>
                     </select>
                 </div>
             </div>
@@ -826,10 +826,10 @@
                 <div>
                     <label class="text-xs font-bold text-slate-700 block mb-1">Jenis Kendaraan <span class="text-rose-500">*</span></label>
                     <select name="vehicle_type" id="edit_ticket_vtype" required class="w-full text-xs bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 text-slate-800 font-bold focus:outline-none">
-                        <option value="r2_motor">Roda 2 — Sepeda Motor (Matic, Bebek, Sport)</option>
-                        <option value="r4_car">Roda 4 — Mobil Pribadi / MPV / SUV (Avanza, Innova, Brio, dll)</option>
-                        <option value="r4_elf">Roda 4+ Minibus — Minibus (Elf / HiAce)</option>
-                        <option value="r4_bus">Roda 6+ Bus — Bus Besar Pariwisata (40–60 Kursi)</option>
+                        <option value="r2_motor">Roda 2 Sepeda Motor</option>
+                        <option value="r4_car">Roda 4 Mobil Pribadi / MPV / SUV</option>
+                        <option value="r4_elf">Roda 4+ Minibus (Elf / HiAce)</option>
+                        <option value="r4_bus">Roda 6+ Bus Besar Pariwisata</option>
                     </select>
                 </div>
             </div>
