@@ -18,6 +18,22 @@
             50% { top: 88%; opacity: 1; }
             100% { top: 12%; opacity: 0.3; }
         }
+        #qr-reader {
+            border: none !important;
+            background: #000;
+        }
+        #qr-reader video {
+            width: 100% !important;
+            height: 100% !important;
+            object-fit: cover !important;
+            border-radius: 1.5rem !important;
+        }
+        #qr-reader__scan_region {
+            background: transparent !important;
+        }
+        #qr-reader__dashboard {
+            display: none !important;
+        }
     </style>
 </head>
 <body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col font-sans select-none pb-20">
@@ -38,7 +54,10 @@
 
         <!-- Location Dropdown Selector & Quick Actions -->
         <div class="flex items-center gap-1.5">
-            <button type="button" onclick="toggleTorch()" id="btnTorch" class="w-8 h-8 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-yellow-400 flex items-center justify-center text-xs transition border border-slate-700" title="Senter / Flashlight">
+            <button type="button" onclick="switchCameraFacing()" class="w-8 h-8 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-rose-400 flex items-center justify-center text-xs transition border border-slate-700 active:scale-95" title="Ganti Kamera Depan / Belakang">
+                <i class="fa-solid fa-camera-rotate"></i>
+            </button>
+            <button type="button" onclick="toggleTorch()" id="btnTorch" class="w-8 h-8 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-yellow-400 flex items-center justify-center text-xs transition border border-slate-700 active:scale-95" title="Senter / Flashlight">
                 <i class="fa-solid fa-bolt"></i>
             </button>
             <select onchange="window.location.href='?location_id=' + this.value" class="text-[11px] font-bold bg-slate-800 border border-slate-700 text-slate-200 rounded-xl px-2.5 py-1.5 focus:outline-none focus:ring-1 focus:ring-rose-500">
@@ -98,8 +117,47 @@
     <main class="flex-1 p-3 sm:p-4 max-w-lg mx-auto w-full">
 
         <!-- ================= MODE 1: SCAN & CHECK-IN ================= -->
-        <div id="view-scan" class="space-y-4">
+        <div id="view-scan" class="space-y-3.5">
             
+            <!-- Camera Toolbar (Switcher Depan/Belakang & Status) -->
+            <div class="flex items-center justify-between gap-2 bg-slate-900/90 border border-slate-800 rounded-2xl p-2 px-3 shadow-md">
+                <div class="flex items-center gap-2 min-w-0 flex-1">
+                    <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse shrink-0"></span>
+                    <div class="min-w-0">
+                        <span class="text-[9px] uppercase font-black text-slate-400 block tracking-wider leading-none">Kamera Aktif</span>
+                        <span id="cameraLabel" class="text-xs font-bold text-slate-200 truncate block">Kamera Belakang</span>
+                    </div>
+                </div>
+
+                <div class="flex items-center gap-1.5 shrink-0">
+                    <!-- Dropdown pilihan kamera jika terdeteksi banyak kamera (multi-lens smartphone / webcam) -->
+                    <select id="cameraSelect" onchange="onCameraSelectChange(this.value)" class="hidden text-[11px] font-bold bg-slate-800 border border-slate-700 text-slate-200 rounded-xl px-2 py-1.5 focus:outline-none focus:ring-1 focus:ring-rose-500 max-w-[130px] truncate">
+                    </select>
+
+                    <!-- Tombol Cepat Ganti Kamera (Depan / Belakang) -->
+                    <button type="button" onclick="switchCameraFacing()" id="btnSwitchCamera" class="px-2.5 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 active:scale-95 text-slate-200 text-xs font-bold transition flex items-center gap-1.5 border border-slate-700 shadow-xs" title="Ganti Kamera Depan / Belakang">
+                        <i class="fa-solid fa-camera-rotate text-rose-400 text-xs"></i>
+                        <span class="text-[10px] font-bold hidden sm:inline">Ganti</span>
+                    </button>
+
+                    <!-- Tombol Flashlight / Senter -->
+                    <button type="button" onclick="toggleTorch()" class="btn-torch-toggle w-8 h-8 rounded-xl bg-slate-800 hover:bg-slate-700 active:scale-95 text-slate-400 hover:text-yellow-400 flex items-center justify-center text-xs transition border border-slate-700" title="Senter / Flashlight">
+                        <i class="fa-solid fa-bolt"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Notice jika kamera belum diizinkan / error -->
+            <div id="cameraNotice" class="hidden p-3 bg-rose-500/10 border border-rose-500/30 rounded-2xl flex items-start gap-2.5 text-xs text-rose-300">
+                <i class="fa-solid fa-triangle-exclamation text-rose-400 mt-0.5 shrink-0"></i>
+                <div class="flex-1">
+                    <span id="cameraNoticeText">Kamera tidak aktif. Pastikan izin kamera browser telah diberikan.</span>
+                    <button type="button" onclick="initScanner()" class="mt-1 block text-[11px] font-bold text-rose-400 underline hover:text-rose-200">
+                        Coba Hubungkan Ulang Kamera
+                    </button>
+                </div>
+            </div>
+
             <!-- Live Camera Container -->
             <div class="w-full aspect-square max-w-[340px] mx-auto bg-black rounded-3xl overflow-hidden border-2 border-slate-800 relative shadow-2xl flex items-center justify-center">
                 <div id="qr-reader" class="w-full h-full object-cover"></div>
@@ -113,6 +171,13 @@
                     <div class="absolute -top-1 -right-1 w-6 h-6 border-t-4 border-r-4 border-rose-500 rounded-tr-lg"></div>
                     <div class="absolute -bottom-1 -left-1 w-6 h-6 border-b-4 border-l-4 border-rose-500 rounded-bl-lg"></div>
                     <div class="absolute -bottom-1 -right-1 w-6 h-6 border-b-4 border-r-4 border-rose-500 rounded-br-lg"></div>
+                </div>
+
+                <!-- Floating Quick Switch Button in Corner -->
+                <div class="absolute top-3 right-3 flex items-center gap-1.5 z-10">
+                    <button type="button" onclick="switchCameraFacing()" class="w-9 h-9 rounded-full bg-black/60 hover:bg-black/80 backdrop-blur-md text-white flex items-center justify-center text-xs border border-white/20 active:scale-95 transition shadow-lg" title="Ganti Kamera Depan / Belakang">
+                        <i class="fa-solid fa-camera-rotate text-rose-400"></i>
+                    </button>
                 </div>
 
                 <!-- Hint text -->
@@ -462,7 +527,11 @@
         const activeLocationId = {{ $activeLocation?->id ?? 'null' }};
         let html5QrCode = null;
         let isProcessing = false;
+        let isScanning = false;
         let isTorchOn = false;
+        let currentFacingMode = "environment"; // 'environment' (belakang) atau 'user' (depan/webcam)
+        let currentCameraId = null;
+        let availableCameras = [];
         let selectedPosType = 'r4_car';
         let selectedPosFare = {{ $fareSetting->fare_r4_car ?? 10000 }};
         let selectedPosPayment = 'cash';
@@ -524,39 +593,232 @@
             }
         }
 
-        // Camera Scanner Initialization
-        function initScanner() {
-            html5QrCode = new Html5Qrcode("qr-reader");
-            const config = { fps: 12, qrbox: { width: 230, height: 230 } };
+        // Inisialisasi Scanner dengan Deteksi Kamera Depan & Belakang (Smartphone & Laptop)
+        async function initScanner() {
+            if (!html5QrCode) {
+                html5QrCode = new Html5Qrcode("qr-reader");
+            }
 
-            html5QrCode.start(
-                { facingMode: "environment" },
-                config,
-                (decodedText) => {
-                    if (!isProcessing) {
-                        isProcessing = true;
-                        verifyCode(decodedText);
-                    }
-                },
-                (errorMessage) => {
-                    // Frame scan skip
+            // Ambil daftar kamera jika sudah diizinkan sebelumnya
+            try {
+                const devices = await Html5Qrcode.getCameras();
+                if (devices && devices.length > 0) {
+                    availableCameras = devices;
+                    populateCameraSelect(devices);
                 }
-            ).catch(err => {
-                console.warn("Camera start failed, fallback to manual input", err);
-            });
+            } catch (e) {
+                console.log("Daftar kamera belum terbaca sebelum izin aktif:", e);
+            }
+
+            // Jalankan stream kamera utama
+            await startCameraScanner();
+
+            // Refresh kembali daftar kamera setelah izin kamera disetujui pengguna
+            try {
+                const devices = await Html5Qrcode.getCameras();
+                if (devices && devices.length > 0) {
+                    availableCameras = devices;
+                    populateCameraSelect(devices);
+                    updateCameraUI();
+                }
+            } catch (e) {
+                // ignore
+            }
         }
 
-        // Toggle Camera Flashlight
-        async function toggleTorch() {
+        function populateCameraSelect(devices) {
+            const selectEl = document.getElementById('cameraSelect');
+            if (!selectEl) return;
+            selectEl.innerHTML = '';
+
+            devices.forEach((cam, idx) => {
+                const opt = document.createElement('option');
+                opt.value = cam.id;
+                let lbl = cam.label || '';
+                if (!lbl) {
+                    lbl = `Kamera ${idx + 1}`;
+                }
+                opt.textContent = lbl;
+                if (currentCameraId === cam.id) {
+                    opt.selected = true;
+                }
+                selectEl.appendChild(opt);
+            });
+
+            if (devices.length > 1) {
+                selectEl.classList.remove('hidden');
+            }
+        }
+
+        async function startCameraScanner(targetCamera = null) {
+            if (!html5QrCode) {
+                html5QrCode = new Html5Qrcode("qr-reader");
+            }
+
+            // Hentikan scanner aktif sebelumnya bila ada
+            if (isScanning) {
+                try {
+                    await html5QrCode.stop();
+                    isScanning = false;
+                } catch (e) {
+                    console.warn("Stop scanner error:", e);
+                }
+            }
+
+            const config = {
+                fps: 12,
+                qrbox: function(viewfinderWidth, viewfinderHeight) {
+                    const minEdge = Math.min(viewfinderWidth, viewfinderHeight);
+                    const boxSize = Math.floor(minEdge * 0.72);
+                    return { width: boxSize, height: boxSize };
+                },
+                aspectRatio: 1.0
+            };
+
+            const onScanSuccess = (decodedText) => {
+                if (!isProcessing) {
+                    isProcessing = true;
+                    verifyCode(decodedText);
+                }
+            };
+
+            const onScanError = (errorMessage) => {
+                // Frame skip
+            };
+
+            // Target kamera: prioritaskan target spesifik -> currentCameraId -> facingMode
+            let target = targetCamera;
+            if (!target) {
+                if (currentCameraId) {
+                    target = currentCameraId;
+                } else {
+                    target = { facingMode: currentFacingMode };
+                }
+            }
+
+            try {
+                await html5QrCode.start(target, config, onScanSuccess, onScanError);
+                isScanning = true;
+                const notice = document.getElementById('cameraNotice');
+                if (notice) notice.classList.add('hidden');
+                updateCameraUI();
+            } catch (err) {
+                console.warn("Percobaan kamera pertama gagal:", target, err);
+
+                // Fallback 1: Jika kamera belakang gagal (Laptop hanya punya webcam depan/user)
+                if (!currentCameraId && currentFacingMode === "environment") {
+                    try {
+                        console.log("Kamera belakang tidak ditemukan, beralih otomatis ke kamera depan/laptop (user)...");
+                        currentFacingMode = "user";
+                        await html5QrCode.start({ facingMode: "user" }, config, onScanSuccess, onScanError);
+                        isScanning = true;
+                        const notice = document.getElementById('cameraNotice');
+                        if (notice) notice.classList.add('hidden');
+                        updateCameraUI();
+                        return;
+                    } catch (fallbackErr) {
+                        console.warn("Fallback kamera depan gagal:", fallbackErr);
+                    }
+                }
+
+                // Fallback 2: Jika ada camera device ID dari list, coba device pertama
+                if (availableCameras.length > 0) {
+                    try {
+                        currentCameraId = availableCameras[0].id;
+                        await html5QrCode.start(currentCameraId, config, onScanSuccess, onScanError);
+                        isScanning = true;
+                        const notice = document.getElementById('cameraNotice');
+                        if (notice) notice.classList.add('hidden');
+                        updateCameraUI();
+                        return;
+                    } catch (devErr) {
+                        console.warn("Fallback device camera gagal:", devErr);
+                    }
+                }
+
+                // Tampilkan pesan panduan bila seluruh upaya inisialisasi kamera gagal
+                const notice = document.getElementById('cameraNotice');
+                if (notice) notice.classList.remove('hidden');
+                const noticeText = document.getElementById('cameraNoticeText');
+                if (noticeText) {
+                    noticeText.innerText = 'Kamera tidak dapat diakses (' + (err.name || err.message || 'Izin ditolak') + '). Pastikan izin akses kamera telah diberikan pada browser.';
+                }
+            }
+        }
+
+        // Beralih Kamera (Depan <-> Belakang untuk smartphone & webcam laptop)
+        async function switchCameraFacing() {
             if (!html5QrCode) return;
+
+            // Jika daftar kamera terdeteksi lebih dari 1, rotasi ke kamera berikutnya
+            if (availableCameras && availableCameras.length > 1) {
+                let currentIndex = availableCameras.findIndex(c => c.id === currentCameraId);
+                let nextIndex = (currentIndex + 1) % availableCameras.length;
+                currentCameraId = availableCameras[nextIndex].id;
+
+                const lbl = (availableCameras[nextIndex].label || '').toLowerCase();
+                if (lbl.includes('front') || lbl.includes('user') || lbl.includes('facetime') || lbl.includes('selfie') || lbl.includes('depan')) {
+                    currentFacingMode = 'user';
+                } else {
+                    currentFacingMode = 'environment';
+                }
+
+                const selectEl = document.getElementById('cameraSelect');
+                if (selectEl) selectEl.value = currentCameraId;
+
+                await startCameraScanner(currentCameraId);
+            } else {
+                // Toggle mode facingMode standar: environment <-> user
+                currentCameraId = null;
+                currentFacingMode = (currentFacingMode === "environment") ? "user" : "environment";
+                await startCameraScanner({ facingMode: currentFacingMode });
+            }
+        }
+
+        // Pilihan Kamera dari Dropdown Device
+        async function onCameraSelectChange(cameraId) {
+            currentCameraId = cameraId;
+            const selected = availableCameras.find(c => c.id === cameraId);
+            if (selected) {
+                const lbl = (selected.label || '').toLowerCase();
+                if (lbl.includes('front') || lbl.includes('user') || lbl.includes('facetime') || lbl.includes('selfie') || lbl.includes('depan')) {
+                    currentFacingMode = 'user';
+                } else {
+                    currentFacingMode = 'environment';
+                }
+            }
+            await startCameraScanner(cameraId);
+        }
+
+        function updateCameraUI() {
+            const badge = document.getElementById('cameraLabel');
+            if (!badge) return;
+
+            let text = (currentFacingMode === 'user') ? 'Kamera Depan / Laptop' : 'Kamera Belakang';
+            if (currentCameraId && availableCameras.length) {
+                const found = availableCameras.find(c => c.id === currentCameraId);
+                if (found && found.label) {
+                    text = found.label;
+                }
+            }
+            badge.innerText = text;
+        }
+
+        // Toggle Lampu Senter / Flashlight
+        async function toggleTorch() {
+            if (!html5QrCode || !isScanning) return;
             try {
                 isTorchOn = !isTorchOn;
                 await html5QrCode.applyVideoConstraints({
                     advanced: [{ torch: isTorchOn }]
                 });
-                document.getElementById('btnTorch').classList.toggle('text-yellow-400', isTorchOn);
+                document.querySelectorAll('.btn-torch-toggle, #btnTorch').forEach(el => {
+                    el.classList.toggle('text-yellow-400', isTorchOn);
+                    el.classList.toggle('border-yellow-400/50', isTorchOn);
+                });
             } catch (err) {
-                console.warn("Torch not supported on this device", err);
+                console.warn("Torch not supported on this device/camera", err);
+                alert("Lampu senter (torch) hanya didukung pada kamera belakang smartphone.");
             }
         }
 

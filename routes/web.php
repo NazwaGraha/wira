@@ -700,6 +700,7 @@ Route::middleware(['auth'])->prefix('juri')->name('jury.')->group(function () {
 
 // ================= SISTEM PENGELOLAAN PARKIR & SCANNER LAPANGAN =================
 Route::prefix('parkir')->name('parking.')->group(function () {
+    Route::get('/', [ParkingOfficerController::class, 'scanner'])->name('index');
     Route::get('/scanner', [ParkingOfficerController::class, 'scanner'])->name('scanner');
     Route::post('/verify', [ParkingOfficerController::class, 'verifyTicket'])->name('verify');
     Route::post('/check-in', [ParkingOfficerController::class, 'checkIn'])->name('check-in');

@@ -258,7 +258,11 @@ class ParkingManagementTest extends TestCase
             'status' => 'booked',
         ]);
 
-        // 1. Scanner view
+        // 1. Scanner view & /parkir root access
+        $respRoot = $this->get('/parkir');
+        $respRoot->assertOk();
+        $respRoot->assertSee('PETUGAS PARKIR LAPANGAN');
+
         $respScanner = $this->get(route('parking.scanner', ['location_id' => $this->locationA->id]));
         $respScanner->assertOk();
         $respScanner->assertSee('PETUGAS PARKIR LAPANGAN');
