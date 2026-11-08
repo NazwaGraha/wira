@@ -264,8 +264,11 @@ class ParkingManagementTest extends TestCase
         $respRoot->assertSee('PETUGAS PARKIR LAPANGAN');
 
         $respScanner = $this->get(route('parking.scanner', ['location_id' => $this->locationA->id]));
-        $respScanner->assertOk();
-        $respScanner->assertSee('PETUGAS PARKIR LAPANGAN');
+        $respScanner->assertRedirect(route('parking.index', ['location_id' => $this->locationA->id]));
+
+        $respIndex = $this->get(route('parking.index', ['location_id' => $this->locationA->id]));
+        $respIndex->assertOk();
+        $respIndex->assertSee('PETUGAS PARKIR LAPANGAN');
 
         // 2. Verify with matching location (Location A)
         $respVerifyMatch = $this->postJson(route('parking.verify'), [

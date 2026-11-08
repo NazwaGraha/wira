@@ -7,8 +7,8 @@
     <a href="{{ route('admin.parking.index') }}" class="bg-white hover:bg-slate-50 text-slate-700 border border-slate-300 px-4 py-2.5 rounded-xl font-bold text-xs shadow-2xs transition flex items-center gap-2">
         <i class="fa-solid fa-arrow-left"></i> Dashboard & Kantong Parkir
     </a>
-    <a href="{{ route('parking.scanner') }}" target="_blank" class="bg-slate-900 hover:bg-slate-800 text-white px-4 py-2.5 rounded-xl font-bold text-xs shadow-xs transition flex items-center gap-2">
-        <i class="fa-solid fa-camera-viewfinder text-rose-400"></i> Scanner Lapangan
+    <a href="{{ route('parking.index') }}" target="_blank" class="bg-slate-900 hover:bg-slate-800 text-white px-4 py-2.5 rounded-xl font-bold text-xs shadow-xs transition flex items-center gap-2">
+        <i class="fa-solid fa-camera-viewfinder text-rose-400"></i> Buka Web Petugas Parkir (/parkir)
     </a>
 @endsection
 

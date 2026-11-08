@@ -10,8 +10,8 @@
     <button type="button" onclick="openModal('modalFareSettings')" class="bg-gradient-to-r from-amber-500 to-yellow-600 hover:from-amber-600 hover:to-yellow-700 text-white px-4 py-2.5 rounded-xl font-extrabold text-xs shadow-xs transition flex items-center gap-2">
         <i class="fa-solid fa-coins"></i> Setup Tarif Parkir Umum
     </button>
-    <a href="{{ route('parking.scanner') }}" target="_blank" class="bg-slate-900 hover:bg-slate-800 text-white px-4 py-2.5 rounded-xl font-bold text-xs shadow-xs transition flex items-center gap-2">
-        <i class="fa-solid fa-camera-viewfinder text-rose-400"></i> Buka Web Scanner Lapangan
+    <a href="{{ route('parking.index') }}" target="_blank" class="bg-slate-900 hover:bg-slate-800 text-white px-4 py-2.5 rounded-xl font-bold text-xs shadow-xs transition flex items-center gap-2">
+        <i class="fa-solid fa-camera-viewfinder text-rose-400"></i> Buka Web Petugas Parkir (/parkir)
     </a>
     <a href="{{ route('admin.parking.export-excel') }}" class="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2.5 rounded-xl font-bold text-xs shadow-xs transition flex items-center gap-2">
         <i class="fa-solid fa-file-excel"></i> Ekspor Laporan (.CSV)

@@ -46,6 +46,7 @@ use App\Http\Controllers\ParkingOfficerController;
 use App\Http\Controllers\WiraAgentController;
 use App\Models\CompetitionInfoMenu;
 use App\Services\OrganizationSyncService;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Route;
@@ -719,7 +720,9 @@ Route::middleware(['auth'])->prefix('juri')->name('jury.')->group(function () {
 // ================= SISTEM PENGELOLAAN PARKIR & SCANNER LAPANGAN =================
 Route::prefix('parkir')->name('parking.')->group(function () {
     Route::get('/', [ParkingOfficerController::class, 'scanner'])->name('index');
-    Route::get('/scanner', [ParkingOfficerController::class, 'scanner'])->name('scanner');
+    Route::get('/scanner', function (Request $request) {
+        return redirect()->route('parking.index', $request->query(), 301);
+    })->name('scanner');
     Route::post('/verify', [ParkingOfficerController::class, 'verifyTicket'])->name('verify');
     Route::post('/check-in', [ParkingOfficerController::class, 'checkIn'])->name('check-in');
     Route::post('/check-out', [ParkingOfficerController::class, 'checkOut'])->name('check-out');
