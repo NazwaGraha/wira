@@ -69,6 +69,14 @@ class CompetitionRegistration extends Model
         return $this->hasMany(ParkingTicket::class, 'competition_registration_id');
     }
 
+    /**
+     * Alias accessor untuk total biaya pendaftaran lomba yang dibayarkan ke panitia.
+     */
+    public function getTotalFeeAttribute(): float
+    {
+        return (float) ($this->total_payment ?? 0);
+    }
+
     public function getTotalTeamsCountAttribute(): int
     {
         return $this->teams()->where(function ($q) {

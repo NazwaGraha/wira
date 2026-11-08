@@ -261,7 +261,7 @@
                             <div class="flex flex-wrap items-center gap-2.5 sm:gap-4 text-xs text-slate-600 mt-2">
                                 <div><i class="fa-solid fa-user-tie text-slate-400 mr-1.5"></i> Pembina: <strong class="text-slate-800" x-text="activeCandidate.advisor_name"></strong></div>
                                 <div><i class="fa-solid fa-phone text-slate-400 mr-1.5"></i> <span x-text="activeCandidate.advisor_phone"></span></div>
-                                <div><i class="fa-solid fa-money-bill-wave text-slate-400 mr-1.5"></i> Biaya: <strong class="text-emerald-700" x-text="'Rp ' + activeCandidate.total_fee"></strong></div>
+                                <div><i class="fa-solid fa-money-bill-wave text-slate-400 mr-1.5"></i> Biaya: <strong class="text-emerald-700 font-mono" x-text="'Rp ' + (activeCandidate.total_payment || activeCandidate.total_fee)"></strong></div>
                             </div>
                         </div>
 
@@ -433,7 +433,7 @@
                             </td>
                             <td class="py-3.5 px-4">
                                 <div class="font-bold text-slate-900 text-sm">{{ $reg->school_name }}</div>
-                                <div class="text-[11px] text-slate-500 mt-0.5">Biaya: Rp {{ number_format($reg->total_fee, 0, ',', '.') }}</div>
+                                <div class="text-[11px] text-slate-500 mt-0.5">Biaya: <strong class="text-slate-700 font-mono">Rp {{ number_format($reg->total_payment, 0, ',', '.') }}</strong></div>
                             </td>
                             <td class="py-3.5 px-4">
                                 <span class="px-2 py-1 rounded text-[10px] font-black uppercase
