@@ -12,6 +12,9 @@
 
     RewriteEngine On
 
+    # Redirect /backoffice to /admin/login
+    RewriteRule ^backoffice/?$ /admin/login [R=302,L]
+
     # Force HTTPS Redirect
     RewriteCond %{HTTPS} off
     RewriteCond %{HTTP:X-Forwarded-Proto} !https
