@@ -633,7 +633,7 @@ class CompetitionController extends Controller
             $methodLabel = $paymentMethod === 'qris' ? 'QRIS Digital' : 'Tunai saat tiba di gerbang';
 
             return redirect()->route('lomba.status', ['code' => $code])
-                ->with('success', "Pendaftaran kendaraan kontingen berhasil! Karena didaftarkan melewati batas akhir kuota gratis (H+1 penutupan Gelombang 2), {$createdCount} kendaraan dikenakan Tarif Parkir Umum (Floating Parkir) sebesar {$formattedTotal} ({$methodLabel}). E-Tiket parkir resmi telah diterbitkan!");
+                ->with('success', "Pendaftaran kendaraan kontingen berhasil! Karena pendaftaran kendaraan dilakukan setelah batas waktu yang ditentukan (melewati batas waktu 1 hari setelah penutupan pendaftaran lomba Gelombang ke-2), {$createdCount} kendaraan dikenakan Tarif Parkir Umum dengan sistem Floating Parkir sebesar {$formattedTotal} ({$methodLabel}). E-Tiket parkir resmi telah diterbitkan!");
         }
     }
 

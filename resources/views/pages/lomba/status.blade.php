@@ -483,11 +483,11 @@
                                         </div>
                                         <div class="flex-1">
                                             <div class="flex items-center gap-2 flex-wrap">
-                                                <span class="font-black uppercase tracking-wider text-[10px] bg-blue-200 text-blue-800 px-2 py-0.5 rounded">KETENTUAN KUOTA GRATIS KONTINGEN</span>
-                                                <span class="text-blue-700 font-bold">Batas Akhir: {{ $parkingDeadline->translatedFormat('l, d F Y - H:i') }} WIB</span>
+                                                <span class="font-black uppercase tracking-wider text-[10px] bg-blue-200 text-blue-800 px-2 py-0.5 rounded">KETENTUAN PENDAFTARAN PARKIR KONTINGEN</span>
+                                                <span class="text-blue-700 font-bold">Batas Akhir Kuota Gratis: {{ $parkingDeadline->translatedFormat('l, d F Y - H:i') }} WIB</span>
                                             </div>
                                             <p class="text-[11px] text-blue-800 mt-1 leading-relaxed">
-                                                Pendaftaran kendaraan kontingen untuk klaim <strong>kuota parkir resmi gratis</strong> paling lambat dilakukan <strong>1 hari setelah penutupan pendaftaran lomba Gelombang ke-2</strong>. Setelah batas waktu tersebut, pendaftaran kendaraan akan dikenakan <strong>Tarif Parkir Umum</strong> dengan sistem <strong>Floating Parkir</strong>.
+                                                Pendaftaran kendaraan untuk parkir paling lambat dilakukan <strong>1 hari setelah penutupan pendaftaran lomba Gelombang ke-2</strong>. Bila pendaftaran dilakukan sebelum batas waktu tersebut, sekolah berhak atas <strong>fasilitas kuota parkir kontingen resmi gratis</strong>. Namun bila pendaftaran kendaraan dilakukan <strong>setelah batas waktu yang ditentukan (melewati batas waktu 1 hari setelah penutupan Gelombang 2)</strong>, maka akan dikenakan <strong>Tarif Parkir Umum</strong> dan penempatan lokasi menggunakan sistem <strong>Floating Parkir</strong> (disesuaikan dengan ketersediaan kuota parkir di masing-masing kantong parkir).
                                             </p>
                                         </div>
                                     </div>
@@ -498,11 +498,11 @@
                                         </div>
                                         <div class="flex-1">
                                             <div class="flex items-center gap-2 flex-wrap">
-                                                <span class="font-black uppercase tracking-wider text-[10px] bg-amber-200 text-amber-900 px-2 py-0.5 rounded">BATAS KUOTA GRATIS BERAKHIR</span>
-                                                <span class="text-amber-800 font-bold">Ditutup: {{ $parkingDeadline?->translatedFormat('d F Y, H:i') ?? 'H+1 Gelombang 2' }} WIB</span>
+                                                <span class="font-black uppercase tracking-wider text-[10px] bg-amber-200 text-amber-900 px-2 py-0.5 rounded">KETENTUAN SETELAH BATAS WAKTU</span>
+                                                <span class="text-amber-800 font-bold">Batas Waktu Ditutup: {{ $parkingDeadline?->translatedFormat('d F Y, H:i') ?? 'H+1 Gelombang 2' }} WIB</span>
                                             </div>
                                             <p class="text-[11px] text-amber-900 mt-1 leading-relaxed">
-                                                Batas waktu pendaftaran kendaraan kuota gratis resmi telah berakhir (1 hari setelah penutupan pendaftaran Gelombang 2). Sekolah Anda tetap dapat mendaftarkan kendaraan kontingen dengan ketentuan <strong>Tarif Parkir Umum</strong> dan penempatan kantong parkir menggunakan sistem <strong>Floating Parkir</strong> (disesuaikan dengan sisa ketersediaan slot di masing-masing lokasi parkir).
+                                                Pendaftaran kendaraan parkir kontingen dilakukan <strong>setelah batas waktu yang ditentukan (melewati batas waktu 1 hari setelah penutupan pendaftaran lomba Gelombang ke-2)</strong>. Sesuai ketentuan panitia, pendaftaran kendaraan kini dikenakan <strong>Tarif Parkir Umum</strong> dan alokasi kantong parkir dialihkan ke sistem <strong>Floating Parkir</strong> (disesuaikan secara otomatis dengan ketersediaan kuota parkir di masing-masing kantong parkir).
                                             </p>
                                         </div>
                                     </div>
@@ -790,10 +790,10 @@
                                             <i class="fa-solid fa-triangle-exclamation text-amber-600 text-base mt-0.5 shrink-0"></i>
                                             <div>
                                                 <h4 class="font-black text-xs uppercase tracking-wide text-amber-950">
-                                                    Batas Waktu Kuota Parkir Gratis Kontingen Telah Berakhir
+                                                    Pendaftaran Melewati Batas Waktu (H+1 Penutupan Gelombang 2)
                                                 </h4>
                                                 <p class="text-[11px] text-amber-900 mt-0.5 leading-relaxed">
-                                                    Batas pendaftaran kuota gratis resmi ditutup pada <strong>{{ $parkingDeadline?->translatedFormat('d F Y, H:i') ?? 'H+1 Gelombang 2' }} WIB</strong>. Pendaftaran saat ini dialihkan ke <strong>Tarif Parkir Umum</strong> dengan sistem <strong>Floating Parkir</strong> (penempatan kantong parkir menyesuaikan sisa slot kosong yang tersedia).
+                                                    Pendaftaran kendaraan dilakukan setelah batas waktu yang ditentukan (melewati batas waktu 1 hari setelah penutupan pendaftaran lomba Gelombang ke-2 pada <strong>{{ $parkingDeadline?->translatedFormat('d F Y, H:i') ?? 'H+1 Gelombang 2' }} WIB</strong>). Maka pendaftaran dikenakan <strong>Tarif Parkir Umum</strong> dan penempatan lokasi menggunakan sistem <strong>Floating Parkir</strong> (disesuaikan dengan ketersediaan kuota parkir di masing-masing kantong parkir).
                                                 </p>
                                             </div>
                                         </div>
