@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Scanner Petugas Parkir Lapangan - SBB IV 2026</title>
+    <title>Aplikasi Petugas Parkir Lapangan - SBB IV 2026</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <!-- HTML5 QR Code Scanner Library -->
@@ -14,46 +14,51 @@
             animation: laserScan 2s infinite ease-in-out;
         }
         @keyframes laserScan {
-            0% { top: 10%; opacity: 0.3; }
-            50% { top: 90%; opacity: 1; }
-            100% { top: 10%; opacity: 0.3; }
+            0% { top: 12%; opacity: 0.3; }
+            50% { top: 88%; opacity: 1; }
+            100% { top: 12%; opacity: 0.3; }
         }
     </style>
 </head>
-<body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col font-sans select-none">
+<body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col font-sans select-none pb-20">
 
     <!-- Top App Bar -->
-    <header class="bg-slate-900 border-b border-slate-800 px-4 py-3 shrink-0 flex items-center justify-between sticky top-0 z-30">
-        <div class="flex items-center gap-3">
-            <div class="w-9 h-9 rounded-xl bg-rose-600 flex items-center justify-center text-white text-base shadow-md">
+    <header class="bg-slate-900 border-b border-slate-800 px-4 py-3 shrink-0 flex items-center justify-between sticky top-0 z-30 shadow-md">
+        <div class="flex items-center gap-2.5">
+            <div class="w-9 h-9 rounded-xl bg-gradient-to-br from-red-600 to-rose-700 flex items-center justify-center text-white text-base shadow-md">
                 <i class="fa-solid fa-square-parking"></i>
             </div>
             <div>
-                <span class="text-[9px] font-bold text-rose-400 uppercase tracking-wider block">PETUGAS PARKIR LAPANGAN</span>
-                <h1 class="text-xs font-black text-white truncate max-w-[200px]">
+                <span class="text-[9px] font-black text-rose-400 uppercase tracking-wider block">PETUGAS PARKIR LAPANGAN</span>
+                <h1 class="text-xs font-black text-white truncate max-w-[170px] sm:max-w-[240px]">
                     {{ $activeLocation?->name ?? 'Pilih Kantong Parkir' }}
                 </h1>
             </div>
         </div>
 
-        <!-- Location Dropdown Selector -->
-        <select onchange="window.location.href='?location_id=' + this.value" class="text-[11px] font-bold bg-slate-800 border border-slate-700 text-slate-200 rounded-xl px-2.5 py-1.5 focus:outline-none focus:ring-1 focus:ring-rose-500">
-            @foreach($locations as $loc)
-                <option value="{{ $loc->id }}" {{ $activeLocation?->id == $loc->id ? 'selected' : '' }}>
-                    {{ $loc->code ?: $loc->name }}
-                </option>
-            @endforeach
-        </select>
+        <!-- Location Dropdown Selector & Quick Actions -->
+        <div class="flex items-center gap-1.5">
+            <button type="button" onclick="toggleTorch()" id="btnTorch" class="w-8 h-8 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-yellow-400 flex items-center justify-center text-xs transition border border-slate-700" title="Senter / Flashlight">
+                <i class="fa-solid fa-bolt"></i>
+            </button>
+            <select onchange="window.location.href='?location_id=' + this.value" class="text-[11px] font-bold bg-slate-800 border border-slate-700 text-slate-200 rounded-xl px-2.5 py-1.5 focus:outline-none focus:ring-1 focus:ring-rose-500">
+                @foreach($locations as $loc)
+                    <option value="{{ $loc->id }}" {{ $activeLocation?->id == $loc->id ? 'selected' : '' }}>
+                        {{ $loc->code ?: $loc->name }}
+                    </option>
+                @endforeach
+            </select>
+        </div>
     </header>
 
     @if($activeLocation)
         <!-- Live Occupancy Slot Counter Bar -->
-        <div class="bg-slate-900/80 border-b border-slate-800/80 px-4 py-2.5 grid grid-cols-2 gap-3 shrink-0">
+        <div class="bg-slate-900/90 border-b border-slate-800/80 px-4 py-2.5 grid grid-cols-2 gap-3 shrink-0 backdrop-blur-md">
             <!-- Slot R4 (Mobil/Elf/Bus) -->
-            <div class="bg-slate-950/70 p-2.5 rounded-2xl border border-slate-800">
+            <div class="bg-slate-950/80 p-2.5 rounded-2xl border border-slate-800 shadow-inner">
                 <div class="flex items-center justify-between text-[10px] mb-1">
                     <span class="font-bold text-slate-300 flex items-center gap-1">
-                        <i class="fa-solid fa-car-side text-blue-400"></i> Mobil/Elf (R4)
+                        <i class="fa-solid fa-car-side text-blue-400"></i> Mobil (R4)
                     </span>
                     <span class="font-mono font-black text-slate-200" id="slot-count-r4">
                         {{ $activeLocation->parked_r4_count }} / {{ $activeLocation->capacity_r4 }}
@@ -69,7 +74,7 @@
             </div>
 
             <!-- Slot R2 (Motor) -->
-            <div class="bg-slate-950/70 p-2.5 rounded-2xl border border-slate-800">
+            <div class="bg-slate-950/80 p-2.5 rounded-2xl border border-slate-800 shadow-inner">
                 <div class="flex items-center justify-between text-[10px] mb-1">
                     <span class="font-bold text-slate-300 flex items-center gap-1">
                         <i class="fa-solid fa-motorcycle text-purple-400"></i> Motor (R2)
@@ -89,64 +94,269 @@
         </div>
     @endif
 
-    <!-- Main Scanner Viewport Area -->
-    <main class="flex-1 p-4 flex flex-col items-center justify-center relative overflow-hidden">
-        
-        <!-- Live Camera Container -->
-        <div class="w-full max-w-sm aspect-square bg-black rounded-3xl overflow-hidden border-2 border-slate-800 relative shadow-2xl flex items-center justify-center">
+    <!-- Main Content Area with 3 Modes -->
+    <main class="flex-1 p-3 sm:p-4 max-w-lg mx-auto w-full">
+
+        <!-- ================= MODE 1: SCAN & CHECK-IN ================= -->
+        <div id="view-scan" class="space-y-4">
             
-            <div id="qr-reader" class="w-full h-full object-cover"></div>
+            <!-- Live Camera Container -->
+            <div class="w-full aspect-square max-w-[340px] mx-auto bg-black rounded-3xl overflow-hidden border-2 border-slate-800 relative shadow-2xl flex items-center justify-center">
+                <div id="qr-reader" class="w-full h-full object-cover"></div>
 
-            <!-- Scanning Overlay Frame -->
-            <div class="absolute inset-4 pointer-events-none border-2 border-dashed border-rose-500/60 rounded-2xl flex items-center justify-center">
-                <!-- Laser line -->
-                <div class="absolute left-0 right-0 h-0.5 bg-rose-500 shadow-[0_0_12px_#f43f5e] laser-line"></div>
-                <!-- Corner brackets -->
-                <div class="absolute -top-1 -left-1 w-6 h-6 border-t-4 border-l-4 border-rose-500 rounded-tl-lg"></div>
-                <div class="absolute -top-1 -right-1 w-6 h-6 border-t-4 border-r-4 border-rose-500 rounded-tr-lg"></div>
-                <div class="absolute -bottom-1 -left-1 w-6 h-6 border-b-4 border-l-4 border-rose-500 rounded-bl-lg"></div>
-                <div class="absolute -bottom-1 -right-1 w-6 h-6 border-b-4 border-r-4 border-rose-500 rounded-br-lg"></div>
-            </div>
+                <!-- Scanning Overlay Frame -->
+                <div class="absolute inset-4 pointer-events-none border-2 border-dashed border-rose-500/60 rounded-2xl flex items-center justify-center">
+                    <!-- Laser line -->
+                    <div class="absolute left-0 right-0 h-0.5 bg-rose-500 shadow-[0_0_12px_#f43f5e] laser-line"></div>
+                    <!-- Corner brackets -->
+                    <div class="absolute -top-1 -left-1 w-6 h-6 border-t-4 border-l-4 border-rose-500 rounded-tl-lg"></div>
+                    <div class="absolute -top-1 -right-1 w-6 h-6 border-t-4 border-r-4 border-rose-500 rounded-tr-lg"></div>
+                    <div class="absolute -bottom-1 -left-1 w-6 h-6 border-b-4 border-l-4 border-rose-500 rounded-bl-lg"></div>
+                    <div class="absolute -bottom-1 -right-1 w-6 h-6 border-b-4 border-r-4 border-rose-500 rounded-br-lg"></div>
+                </div>
 
-            <!-- Hint text -->
-            <div class="absolute bottom-3 left-0 right-0 text-center pointer-events-none">
-                <span class="px-3 py-1 bg-black/70 backdrop-blur-xs text-slate-300 text-[10px] font-bold rounded-full border border-slate-700">
-                    Arahkan kamera ke QR Code Tiket Kendaraan
-                </span>
-            </div>
-        </div>
-
-        <!-- Manual Input Fallback -->
-        <div class="w-full max-w-sm mt-4 flex gap-2">
-            <input type="text" id="manualCodeInput" placeholder="Ketik Plat No / Kode Tiket..." class="flex-1 bg-slate-900 border border-slate-800 rounded-2xl px-4 py-2.5 text-xs text-white font-mono uppercase focus:outline-none focus:ring-2 focus:ring-rose-500">
-            <button type="button" onclick="handleManualVerify()" class="px-4 py-2.5 bg-rose-600 hover:bg-rose-500 text-white font-bold text-xs rounded-2xl transition shadow-xs active:scale-95">
-                Cari Tiket
-            </button>
-        </div>
-
-        <!-- Recent Check-Ins List -->
-        @if($recentTickets->isNotEmpty())
-            <div class="w-full max-w-sm mt-4">
-                <span class="text-[10px] font-bold text-slate-500 uppercase tracking-wider block mb-1.5">Check-in Terakhir di Lokasi Ini:</span>
-                <div class="space-y-1.5">
-                    @foreach($recentTickets as $rt)
-                        <div class="bg-slate-900/70 p-2 rounded-xl border border-slate-800/80 flex items-center justify-between text-xs">
-                            <div class="flex items-center gap-2">
-                                <span class="px-2 py-0.5 rounded bg-slate-800 font-mono font-bold text-[10px] text-white">
-                                    {{ $rt->license_plate }}
-                                </span>
-                                <span class="text-[11px] text-slate-300 truncate max-w-[150px]">{{ $rt->school_name }}</span>
-                            </div>
-                            <span class="text-[10px] font-mono text-emerald-400">{{ $rt->check_in_at?->format('H:i') }}</span>
-                        </div>
-                    @endforeach
+                <!-- Hint text -->
+                <div class="absolute bottom-3 left-0 right-0 text-center pointer-events-none">
+                    <span class="px-3 py-1 bg-black/75 backdrop-blur-xs text-slate-300 text-[10px] font-bold rounded-full border border-slate-700">
+                        Arahkan ke QR Code Tiket Digital / Karcis
+                    </span>
                 </div>
             </div>
-        @endif
+
+            <!-- Manual Input Fallback -->
+            <div class="flex gap-2">
+                <input type="text" id="manualCodeInput" placeholder="Ketik Plat No / Kode Tiket..." class="flex-1 bg-slate-900 border border-slate-800 rounded-2xl px-4 py-3 text-xs text-white font-mono uppercase focus:outline-none focus:ring-2 focus:ring-rose-500 shadow-inner">
+                <button type="button" onclick="handleManualVerify()" class="px-4 py-3 bg-gradient-to-r from-red-600 to-rose-600 hover:from-red-500 hover:to-rose-500 text-white font-black text-xs rounded-2xl transition shadow-md active:scale-95 shrink-0">
+                    <i class="fa-solid fa-magnifying-glass mr-1"></i> Cari Tiket
+                </button>
+            </div>
+
+            <!-- Hint Karcis Dadakan -->
+            <div class="p-3 bg-amber-500/10 border border-amber-500/30 rounded-2xl flex items-center justify-between text-xs">
+                <div class="flex items-center gap-2 text-amber-300">
+                    <i class="fa-solid fa-circle-info text-amber-400"></i>
+                    <span>Kendaraan belum terdaftar / umum?</span>
+                </div>
+                <button type="button" onclick="switchTab('pos')" class="px-3 py-1 bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-[11px] rounded-xl transition shadow-xs">
+                    Karcis Dadakan &rarr;
+                </button>
+            </div>
+
+        </div>
+
+        <!-- ================= MODE 2: KARCIS DADAKAN (POS ON-THE-SPOT) ================= -->
+        <div id="view-pos" class="hidden space-y-4">
+            
+            <div class="bg-slate-900/90 border border-slate-800 rounded-3xl p-5 shadow-xl space-y-4">
+                <div class="flex items-center justify-between pb-3 border-b border-slate-800">
+                    <div>
+                        <span class="text-[10px] font-black uppercase tracking-wider text-amber-400 block">KASIR GERBANG MASUK</span>
+                        <h3 class="text-sm font-black text-white">Penerbitan Karcis On-The-Spot</h3>
+                    </div>
+                    <span class="text-[10px] px-2.5 py-0.5 rounded-full bg-emerald-500/15 text-emerald-300 border border-emerald-500/30 font-bold">
+                        Langsung Check-In
+                    </span>
+                </div>
+
+                <form id="formOnTheSpot" onsubmit="handleOnTheSpotSubmit(event)" class="space-y-4">
+                    <!-- 1-Tap 4 Vehicle Categories Grid -->
+                    <div>
+                        <label class="text-[11px] font-bold text-slate-300 block mb-2">1. Pilih Kategori Kendaraan:</label>
+                        <div class="grid grid-cols-2 gap-2.5">
+                            <!-- Motor -->
+                            <label class="pos-vehicle-card p-3 rounded-2xl border-2 border-slate-800 bg-slate-950/70 hover:border-purple-400 flex flex-col justify-between cursor-pointer transition relative" onclick="selectPosVehicle('r2_motor', {{ $fareSetting->fare_r2_motor ?? 5000 }})">
+                                <input type="radio" name="pos_vehicle_type" value="r2_motor" class="sr-only">
+                                <div class="flex items-center justify-between mb-1.5">
+                                    <i class="fa-solid fa-motorcycle text-purple-400 text-base"></i>
+                                    <span class="text-[9px] font-black text-purple-300 bg-purple-500/20 px-1.5 py-0.5 rounded">RODA 2</span>
+                                </div>
+                                <div class="font-black text-xs text-white">Sepeda Motor</div>
+                                <div class="text-xs font-mono font-black text-purple-300 mt-1">Rp {{ number_format($fareSetting->fare_r2_motor ?? 5000, 0, ',', '.') }}</div>
+                            </label>
+
+                            <!-- Mobil -->
+                            <label class="pos-vehicle-card p-3 rounded-2xl border-2 border-blue-500 bg-slate-950/70 flex flex-col justify-between cursor-pointer transition relative" onclick="selectPosVehicle('r4_car', {{ $fareSetting->fare_r4_car ?? 10000 }})">
+                                <input type="radio" name="pos_vehicle_type" value="r4_car" checked class="sr-only">
+                                <div class="flex items-center justify-between mb-1.5">
+                                    <i class="fa-solid fa-car text-blue-400 text-base"></i>
+                                    <span class="text-[9px] font-black text-blue-300 bg-blue-500/20 px-1.5 py-0.5 rounded">RODA 4</span>
+                                </div>
+                                <div class="font-black text-xs text-white">Mobil / MPV / SUV</div>
+                                <div class="text-xs font-mono font-black text-blue-300 mt-1">Rp {{ number_format($fareSetting->fare_r4_car ?? 10000, 0, ',', '.') }}</div>
+                            </label>
+
+                            <!-- Minibus Elf -->
+                            <label class="pos-vehicle-card p-3 rounded-2xl border-2 border-slate-800 bg-slate-950/70 hover:border-amber-400 flex flex-col justify-between cursor-pointer transition relative" onclick="selectPosVehicle('r4_elf', {{ $fareSetting->fare_r4_minibus ?? 25000 }})">
+                                <input type="radio" name="pos_vehicle_type" value="r4_elf" class="sr-only">
+                                <div class="flex items-center justify-between mb-1.5">
+                                    <i class="fa-solid fa-van-shuttle text-amber-400 text-base"></i>
+                                    <span class="text-[9px] font-black text-amber-300 bg-amber-500/20 px-1.5 py-0.5 rounded">RODA 4+</span>
+                                </div>
+                                <div class="font-black text-xs text-white">Minibus (Elf/HiAce)</div>
+                                <div class="text-xs font-mono font-black text-amber-300 mt-1">Rp {{ number_format($fareSetting->fare_r4_minibus ?? 25000, 0, ',', '.') }}</div>
+                            </label>
+
+                            <!-- Bus Besar -->
+                            <label class="pos-vehicle-card p-3 rounded-2xl border-2 border-slate-800 bg-slate-950/70 hover:border-rose-400 flex flex-col justify-between cursor-pointer transition relative" onclick="selectPosVehicle('r4_bus', {{ $fareSetting->fare_r6_bus ?? 50000 }})">
+                                <input type="radio" name="pos_vehicle_type" value="r4_bus" class="sr-only">
+                                <div class="flex items-center justify-between mb-1.5">
+                                    <i class="fa-solid fa-bus text-rose-400 text-base"></i>
+                                    <span class="text-[9px] font-black text-rose-300 bg-rose-500/20 px-1.5 py-0.5 rounded">RODA 6+</span>
+                                </div>
+                                <div class="font-black text-xs text-white">Bus Besar Wisata</div>
+                                <div class="text-xs font-mono font-black text-rose-300 mt-1">Rp {{ number_format($fareSetting->fare_r6_bus ?? 50000, 0, ',', '.') }}</div>
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- Input Nomor Polisi -->
+                    <div>
+                        <label class="text-[11px] font-bold text-slate-300 block mb-1">2. Nomor Polisi (Plat Nomor) *</label>
+                        <input type="text" id="pos_license_plate" required placeholder="CONTOH: F 1845 EA" class="w-full py-3.5 px-4 bg-black border border-slate-700 focus:border-amber-500 rounded-2xl font-mono font-black text-base text-white tracking-widest uppercase focus:outline-none text-center">
+                    </div>
+
+                    <!-- Pilihan Pembayaran -->
+                    <div>
+                        <label class="text-[11px] font-bold text-slate-300 block mb-1.5">3. Metode Pembayaran Kasir:</label>
+                        <div class="grid grid-cols-2 gap-2">
+                            <label class="p-3 rounded-2xl border-2 border-emerald-500 bg-emerald-500/10 flex items-center gap-2.5 cursor-pointer" id="label-pay-cash" onclick="setPosPayment('cash')">
+                                <input type="radio" name="pos_payment_method" value="cash" checked class="sr-only">
+                                <i class="fa-solid fa-money-bill-wave text-emerald-400 text-base"></i>
+                                <div>
+                                    <span class="font-black text-xs text-white block">Uang Tunai</span>
+                                    <span class="text-[9px] text-slate-400">Kasir terima uang fisik</span>
+                                </div>
+                            </label>
+
+                            <label class="p-3 rounded-2xl border-2 border-slate-800 bg-slate-950 flex items-center gap-2.5 cursor-pointer" id="label-pay-qris" onclick="setPosPayment('qris')">
+                                <input type="radio" name="pos_payment_method" value="qris" class="sr-only">
+                                <i class="fa-solid fa-qrcode text-amber-400 text-base"></i>
+                                <div>
+                                    <span class="font-black text-xs text-white block">QRIS Digital</span>
+                                    <span class="text-[9px] text-slate-400">Tampilkan QR di HP</span>
+                                </div>
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- Action Button -->
+                    <button type="submit" id="btnSubmitPos" class="w-full py-4 bg-gradient-to-r from-amber-500 via-yellow-500 to-amber-600 hover:from-amber-400 hover:to-yellow-500 text-slate-950 font-black text-sm rounded-2xl shadow-xl shadow-amber-950/40 transition active:scale-95 flex items-center justify-center gap-2 cursor-pointer">
+                        <i class="fa-solid fa-bolt"></i>
+                        <span>Terbitkan Karcis & Check-In (<span id="pos-fare-badge">Rp 10.000</span>)</span>
+                    </button>
+                </form>
+            </div>
+
+            <!-- Ringkasan Kas Tunai Terkumpul -->
+            <div class="p-3.5 bg-slate-900 border border-slate-800 rounded-2xl flex items-center justify-between text-xs">
+                <span class="text-slate-400 flex items-center gap-2">
+                    <i class="fa-solid fa-cash-register text-amber-400"></i> Kas Tunai Dipegang:
+                </span>
+                <span class="font-mono font-black text-emerald-400 text-sm" id="pos-cash-summary">
+                    Rp {{ number_format($todayCashTotal ?? 0, 0, ',', '.') }}
+                </span>
+            </div>
+
+        </div>
+
+        <!-- ================= MODE 3: REKAP KAS & LOG RIWAYAT ================= -->
+        <div id="view-log" class="hidden space-y-4">
+            
+            <!-- Kas & Tiket Summary Cards -->
+            <div class="grid grid-cols-2 gap-3">
+                <div class="bg-slate-900 border border-slate-800 p-4 rounded-2xl">
+                    <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Kas Tunai Hari Ini</span>
+                    <div class="text-lg font-black text-emerald-400 font-mono mt-1">
+                        Rp {{ number_format($todayCashTotal ?? 0, 0, ',', '.') }}
+                    </div>
+                    <span class="text-[10px] text-slate-500 block mt-0.5">Uang fisik di pos gerbang</span>
+                </div>
+
+                <div class="bg-slate-900 border border-slate-800 p-4 rounded-2xl">
+                    <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Karcis Diterbitkan</span>
+                    <div class="text-lg font-black text-amber-300 font-mono mt-1">
+                        {{ $todayTicketsCount ?? 0 }} <span class="text-xs font-normal text-slate-400">Kendaraan</span>
+                    </div>
+                    <span class="text-[10px] text-slate-500 block mt-0.5">Di kantong parkir ini</span>
+                </div>
+            </div>
+
+            <!-- Activity Log List -->
+            <div class="bg-slate-900 border border-slate-800 rounded-3xl p-5 shadow-lg space-y-3">
+                <div class="flex items-center justify-between pb-2 border-b border-slate-800">
+                    <h4 class="font-black text-xs text-white uppercase tracking-wider flex items-center gap-1.5">
+                        <i class="fa-solid fa-clock-rotate-left text-rose-500"></i> Riwayat Kendaraan Terbaru
+                    </h4>
+                    <button type="button" onclick="window.location.reload()" class="text-[10px] text-slate-400 hover:text-white">
+                        <i class="fa-solid fa-rotate mr-1"></i> Refresh
+                    </button>
+                </div>
+
+                <div class="space-y-2 max-h-[360px] overflow-y-auto pr-1">
+                    @forelse($recentTickets as $rt)
+                        <div class="bg-slate-950/80 p-3 rounded-2xl border border-slate-800/80 flex items-center justify-between text-xs">
+                            <div class="space-y-0.5">
+                                <div class="flex items-center gap-2">
+                                    <span class="px-2 py-0.5 rounded-lg bg-black font-mono font-black text-xs text-white border border-slate-800">
+                                        {{ $rt->license_plate }}
+                                    </span>
+                                    <span class="text-[10px] font-bold {{ $rt->is_public ? 'text-amber-400' : 'text-emerald-400' }}">
+                                        {{ $rt->is_public ? 'Umum' : 'Kontingen' }}
+                                    </span>
+                                </div>
+                                <div class="text-[11px] text-slate-400 truncate max-w-[180px]">
+                                    {{ $rt->school_name }} &bull; {{ $rt->vehicle_type_label }}
+                                </div>
+                            </div>
+                            <div class="text-right">
+                                <span class="text-[10px] font-mono text-slate-300 block font-bold">
+                                    {{ $rt->check_in_at?->format('H:i') }}
+                                </span>
+                                <span class="text-[9px] px-2 py-0.5 rounded-full {{ $rt->status === 'checked_out' ? 'bg-slate-800 text-slate-400' : 'bg-emerald-500/20 text-emerald-300' }}">
+                                    {{ $rt->status === 'checked_out' ? 'Keluar' : 'Terparkir' }}
+                                </span>
+                            </div>
+                        </div>
+                    @empty
+                        <div class="py-8 text-center text-slate-500 text-xs">
+                            Belum ada aktivitas kendaraan di kantong parkir ini.
+                        </div>
+                    @endforelse
+                </div>
+            </div>
+
+        </div>
 
     </main>
 
-    <!-- Slide-Up Result Modal (Card Validasi Tiket) -->
+    <!-- Bottom Navigation Bar (Thumb-Friendly 3 Tabs) -->
+    <nav class="fixed bottom-0 inset-x-0 bg-slate-900 border-t border-slate-800 px-4 py-2 z-40 flex items-center justify-around shadow-2xl backdrop-blur-md">
+        <!-- Tab 1: Scan QR -->
+        <button type="button" onclick="switchTab('scan')" id="tab-btn-scan" class="flex flex-col items-center gap-1 text-rose-500 font-bold transition py-1">
+            <div class="w-10 h-7 rounded-xl flex items-center justify-center text-base">
+                <i class="fa-solid fa-qrcode"></i>
+            </div>
+            <span class="text-[10px]">Scan & In</span>
+        </button>
+
+        <!-- Tab 2: Karcis Dadakan (POS) -->
+        <button type="button" onclick="switchTab('pos')" id="tab-btn-pos" class="flex flex-col items-center gap-1 text-slate-400 hover:text-amber-400 font-bold transition py-1">
+            <div class="w-10 h-7 rounded-xl flex items-center justify-center text-base">
+                <i class="fa-solid fa-receipt"></i>
+            </div>
+            <span class="text-[10px]">Karcis Dadakan</span>
+        </button>
+
+        <!-- Tab 3: Rekap Kas & Slot -->
+        <button type="button" onclick="switchTab('log')" id="tab-btn-log" class="flex flex-col items-center gap-1 text-slate-400 hover:text-blue-400 font-bold transition py-1">
+            <div class="w-10 h-7 rounded-xl flex items-center justify-center text-base">
+                <i class="fa-solid fa-chart-pie"></i>
+            </div>
+            <span class="text-[10px]">Kas & Slot</span>
+        </button>
+    </nav>
+
+    <!-- ================= SLIDE-UP SHEET HASIL SCAN ================= -->
     <div id="modalResult" class="fixed inset-0 bg-black/80 backdrop-blur-xs z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 hidden">
         <div class="bg-slate-900 border border-slate-800 rounded-t-3xl sm:rounded-3xl w-full max-w-md p-6 shadow-2xl animate-in slide-in-from-bottom duration-200">
             
@@ -170,7 +380,7 @@
                     </span>
                 </div>
                 <div class="flex items-center justify-between">
-                    <span class="text-slate-400">Asal Kontingen:</span>
+                    <span class="text-slate-400">Asal Kontingen / Tipe:</span>
                     <span id="resSchool" class="font-bold text-white text-right truncate max-w-[220px]">
                         SMAN 1 Bogor
                     </span>
@@ -179,9 +389,9 @@
                     <span class="text-slate-400">Jenis Kendaraan:</span>
                     <span id="resVType" class="font-bold text-slate-200">Roda 4 (Minibus HiAce)</span>
                 </div>
-                <div class="flex items-center justify-between">
-                    <span class="text-slate-400">Merek & Warna:</span>
-                    <span id="resBrand" class="font-bold text-slate-200">Toyota Putih Metalik</span>
+                <div class="flex items-center justify-between" id="rowResFee">
+                    <span class="text-slate-400">Biaya / Tarif:</span>
+                    <span id="resFee" class="font-bold text-amber-300 font-mono">Gratis</span>
                 </div>
                 <div class="flex items-center justify-between">
                     <span class="text-slate-400">Kantong Parkir Resmi:</span>
@@ -196,7 +406,7 @@
             <!-- Action Buttons -->
             <div class="pt-3 border-t border-slate-800 space-y-2">
                 <input type="hidden" id="currentTicketId">
-                <button type="button" id="btnCheckIn" onclick="submitCheckIn()" class="w-full py-3 bg-emerald-600 hover:bg-emerald-500 text-white font-extrabold text-sm rounded-2xl shadow-lg transition active:scale-95 flex items-center justify-center gap-2">
+                <button type="button" id="btnCheckIn" onclick="submitCheckIn()" class="w-full py-3.5 bg-emerald-600 hover:bg-emerald-500 text-white font-extrabold text-sm rounded-2xl shadow-lg transition active:scale-95 flex items-center justify-center gap-2">
                     <i class="fa-solid fa-right-to-bracket"></i> Check-In Masuk (Parkir)
                 </button>
                 <div class="grid grid-cols-2 gap-2">
@@ -212,19 +422,112 @@
         </div>
     </div>
 
+    <!-- ================= MODAL SUKSES TIKET DADAKAN ================= -->
+    <div id="modalPosSuccess" class="fixed inset-0 bg-black/80 backdrop-blur-xs z-50 flex items-center justify-center p-4 hidden">
+        <div class="bg-slate-900 border border-slate-800 rounded-3xl w-full max-w-sm p-6 shadow-2xl text-center space-y-4">
+            <div class="w-14 h-14 mx-auto rounded-full bg-emerald-500/20 text-emerald-400 flex items-center justify-center text-2xl">
+                <i class="fa-solid fa-circle-check"></i>
+            </div>
+            <div>
+                <span class="text-[10px] font-black uppercase tracking-wider text-emerald-400 block">KARCIS BERHASIL DITERBITKAN</span>
+                <h4 class="text-base font-black text-white mt-0.5" id="posSuccessPlate">F 1845 EA</h4>
+                <p class="text-xs text-slate-400 mt-1" id="posSuccessMsg">Kendaraan langsung Check-In di lokasi ini.</p>
+            </div>
+
+            <div class="p-3 bg-slate-950 rounded-2xl border border-slate-800 text-xs space-y-1 text-left">
+                <div class="flex justify-between">
+                    <span class="text-slate-400">Kode Karcis:</span>
+                    <span class="font-mono font-bold text-white" id="posSuccessCode">PKR4-SBB4-0012</span>
+                </div>
+                <div class="flex justify-between">
+                    <span class="text-slate-400">Tarif Diterima:</span>
+                    <span class="font-mono font-black text-emerald-400" id="posSuccessFee">Rp 10.000</span>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-2 gap-2 pt-2">
+                <a id="posSuccessPrintBtn" href="#" target="_blank" class="py-2.5 bg-slate-800 hover:bg-slate-700 text-white font-bold text-xs rounded-xl transition flex items-center justify-center gap-1.5 border border-slate-700">
+                    <i class="fa-solid fa-print"></i> Cetak Struk
+                </a>
+                <button type="button" onclick="closePosSuccessModal()" class="py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs rounded-xl transition">
+                    Karcis Baru &rarr;
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Script App Logic -->
     <script>
         const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
         const activeLocationId = {{ $activeLocation?->id ?? 'null' }};
         let html5QrCode = null;
         let isProcessing = false;
+        let isTorchOn = false;
+        let selectedPosType = 'r4_car';
+        let selectedPosFare = {{ $fareSetting->fare_r4_car ?? 10000 }};
+        let selectedPosPayment = 'cash';
+
+        // Web Audio API Synthesizer (Beep & Buzzer)
+        function playBeep(type = 'success') {
+            try {
+                const ctx = new (window.AudioContext || window.webkitAudioContext)();
+                const osc = ctx.createOscillator();
+                const gain = ctx.createGain();
+                osc.connect(gain);
+                gain.connect(ctx.destination);
+
+                if (type === 'success') {
+                    osc.frequency.setValueAtTime(800, ctx.currentTime);
+                    osc.frequency.exponentialRampToValueAtTime(1200, ctx.currentTime + 0.15);
+                    gain.gain.setValueAtTime(0.3, ctx.currentTime);
+                    gain.gain.linearRampToValueAtTime(0.01, ctx.currentTime + 0.15);
+                    osc.start(ctx.currentTime);
+                    osc.stop(ctx.currentTime + 0.15);
+                } else {
+                    osc.type = 'sawtooth';
+                    osc.frequency.setValueAtTime(300, ctx.currentTime);
+                    osc.frequency.linearRampToValueAtTime(200, ctx.currentTime + 0.35);
+                    gain.gain.setValueAtTime(0.4, ctx.currentTime);
+                    gain.gain.linearRampToValueAtTime(0.01, ctx.currentTime + 0.35);
+                    osc.start(ctx.currentTime);
+                    osc.stop(ctx.currentTime + 0.35);
+                }
+            } catch (e) {
+                // Ignore audio context error
+            }
+        }
 
         document.addEventListener('DOMContentLoaded', () => {
             initScanner();
         });
 
+        // Tab Navigation Switcher
+        function switchTab(tab) {
+            document.getElementById('view-scan').classList.add('hidden');
+            document.getElementById('view-pos').classList.add('hidden');
+            document.getElementById('view-log').classList.add('hidden');
+
+            document.getElementById('tab-btn-scan').className = 'flex flex-col items-center gap-1 text-slate-400 hover:text-rose-400 font-bold transition py-1';
+            document.getElementById('tab-btn-pos').className = 'flex flex-col items-center gap-1 text-slate-400 hover:text-amber-400 font-bold transition py-1';
+            document.getElementById('tab-btn-log').className = 'flex flex-col items-center gap-1 text-slate-400 hover:text-blue-400 font-bold transition py-1';
+
+            if (tab === 'scan') {
+                document.getElementById('view-scan').classList.remove('hidden');
+                document.getElementById('tab-btn-scan').className = 'flex flex-col items-center gap-1 text-rose-500 font-bold transition py-1';
+            } else if (tab === 'pos') {
+                document.getElementById('view-pos').classList.remove('hidden');
+                document.getElementById('tab-btn-pos').className = 'flex flex-col items-center gap-1 text-amber-400 font-bold transition py-1';
+                document.getElementById('pos_license_plate').focus();
+            } else if (tab === 'log') {
+                document.getElementById('view-log').classList.remove('hidden');
+                document.getElementById('tab-btn-log').className = 'flex flex-col items-center gap-1 text-blue-400 font-bold transition py-1';
+            }
+        }
+
+        // Camera Scanner Initialization
         function initScanner() {
             html5QrCode = new Html5Qrcode("qr-reader");
-            const config = { fps: 10, qrbox: { width: 220, height: 220 } };
+            const config = { fps: 12, qrbox: { width: 230, height: 230 } };
 
             html5QrCode.start(
                 { facingMode: "environment" },
@@ -236,11 +539,25 @@
                     }
                 },
                 (errorMessage) => {
-                    // Ignore frame scanning errors
+                    // Frame scan skip
                 }
             ).catch(err => {
                 console.warn("Camera start failed, fallback to manual input", err);
             });
+        }
+
+        // Toggle Camera Flashlight
+        async function toggleTorch() {
+            if (!html5QrCode) return;
+            try {
+                isTorchOn = !isTorchOn;
+                await html5QrCode.applyVideoConstraints({
+                    advanced: [{ torch: isTorchOn }]
+                });
+                document.getElementById('btnTorch').classList.toggle('text-yellow-400', isTorchOn);
+            } catch (err) {
+                console.warn("Torch not supported on this device", err);
+            }
         }
 
         function handleManualVerify() {
@@ -269,13 +586,16 @@
 
                 const data = await res.json();
                 if (!data.success) {
+                    playBeep('error');
                     alert(data.message || 'Tiket tidak ditemukan!');
                     isProcessing = false;
                     return;
                 }
 
+                playBeep('success');
                 showResultModal(data);
             } catch (err) {
+                playBeep('error');
                 alert('Gagal memverifikasi tiket: ' + err.message);
                 isProcessing = false;
             }
@@ -287,9 +607,18 @@
             document.getElementById('resPlate').innerText = t.license_plate;
             document.getElementById('resSchool').innerText = t.school_name;
             document.getElementById('resVType').innerText = t.vehicle_type_label;
-            document.getElementById('resBrand').innerText = `${t.vehicle_brand} (${t.vehicle_color})`;
             document.getElementById('resAssignedLoc').innerText = t.assigned_location_name;
             document.getElementById('resDriver').innerText = `${t.driver_name} • ${t.driver_phone}`;
+
+            // Fee row
+            const feeEl = document.getElementById('resFee');
+            if (t.is_public) {
+                feeEl.innerText = `${t.formatted_fee} (${t.payment_status_label} - ${t.payment_method_label})`;
+                feeEl.className = t.payment_status === 'paid' ? 'font-mono font-black text-emerald-400' : 'font-mono font-black text-amber-400';
+            } else {
+                feeEl.innerText = "Gratis (Kuota Resmi Kontingen)";
+                feeEl.className = "font-bold text-emerald-400";
+            }
 
             const badge = document.getElementById('resStatusBadge');
             const icon = document.getElementById('resIcon');
@@ -312,7 +641,7 @@
                 badge.innerText = "TIKET VALID ✓ SESUAI KANTONG";
                 icon.className = "w-14 h-14 mx-auto rounded-full bg-emerald-500/20 text-emerald-400 flex items-center justify-center text-2xl mb-2";
                 icon.innerHTML = '<i class="fa-solid fa-check"></i>';
-                msg.innerText = "Alokasi tempat parkir sudah tepat.";
+                msg.innerText = t.is_public ? "Karcis pengunjung umum terdaftar resmi." : "Alokasi tempat parkir kontingen sudah tepat.";
             }
 
             document.getElementById('modalResult').classList.remove('hidden');
@@ -345,13 +674,16 @@
 
                 const data = await res.json();
                 if (data.success) {
+                    playBeep('success');
                     alert(data.message);
                     closeResultModal();
                     window.location.reload();
                 } else {
+                    playBeep('error');
                     alert(data.message || 'Gagal check-in');
                 }
             } catch (err) {
+                playBeep('error');
                 alert('Gagal check-in: ' + err.message);
             }
         }
@@ -377,15 +709,106 @@
 
                 const data = await res.json();
                 if (data.success) {
+                    playBeep('success');
                     alert(data.message);
                     closeResultModal();
                     window.location.reload();
                 } else {
+                    playBeep('error');
                     alert(data.message || 'Gagal check-out');
                 }
             } catch (err) {
+                playBeep('error');
                 alert('Gagal check-out: ' + err.message);
             }
+        }
+
+        // ================= POS ON-THE-SPOT FUNCTIONS =================
+        function selectPosVehicle(type, fare) {
+            selectedPosType = type;
+            selectedPosFare = fare;
+
+            document.querySelectorAll('.pos-vehicle-card').forEach(card => {
+                card.classList.remove('border-purple-400', 'border-blue-500', 'border-amber-400', 'border-rose-400');
+                card.classList.add('border-slate-800');
+            });
+
+            event.currentTarget.classList.remove('border-slate-800');
+            const colorClass = type === 'r2_motor' ? 'border-purple-400' : (type === 'r4_car' ? 'border-blue-500' : (type === 'r4_elf' ? 'border-amber-400' : 'border-rose-400'));
+            event.currentTarget.classList.add(colorClass);
+
+            document.getElementById('pos-fare-badge').innerText = 'Rp ' + Number(fare).toLocaleString('id-ID');
+        }
+
+        function setPosPayment(method) {
+            selectedPosPayment = method;
+            const cashLabel = document.getElementById('label-pay-cash');
+            const qrisLabel = document.getElementById('label-pay-qris');
+
+            if (method === 'cash') {
+                cashLabel.className = 'p-3 rounded-2xl border-2 border-emerald-500 bg-emerald-500/10 flex items-center gap-2.5 cursor-pointer';
+                qrisLabel.className = 'p-3 rounded-2xl border-2 border-slate-800 bg-slate-950 flex items-center gap-2.5 cursor-pointer';
+            } else {
+                cashLabel.className = 'p-3 rounded-2xl border-2 border-slate-800 bg-slate-950 flex items-center gap-2.5 cursor-pointer';
+                qrisLabel.className = 'p-3 rounded-2xl border-2 border-amber-500 bg-amber-500/10 flex items-center gap-2.5 cursor-pointer';
+            }
+        }
+
+        async function handleOnTheSpotSubmit(e) {
+            e.preventDefault();
+            const plate = document.getElementById('pos_license_plate').value.trim();
+            if (!plate) {
+                alert('Silakan masukkan nomor polisi (plat nomor).');
+                return;
+            }
+
+            const btn = document.getElementById('btnSubmitPos');
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-1"></i> Menerbitkan Karcis...';
+
+            try {
+                const res = await fetch("{{ route('parking.on-the-spot') }}", {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': csrfToken,
+                        'Accept': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        parking_location_id: activeLocationId,
+                        vehicle_type: selectedPosType,
+                        license_plate: plate,
+                        payment_method: selectedPosPayment
+                    })
+                });
+
+                const data = await res.json();
+                if (data.success) {
+                    playBeep('success');
+                    document.getElementById('posSuccessPlate').innerText = data.ticket.license_plate;
+                    document.getElementById('posSuccessCode').innerText = data.ticket.ticket_code;
+                    document.getElementById('posSuccessFee').innerText = data.ticket.formatted_fee;
+                    document.getElementById('posSuccessPrintBtn').href = data.ticket.print_url;
+                    document.getElementById('modalPosSuccess').classList.remove('hidden');
+
+                    // Reset form
+                    document.getElementById('pos_license_plate').value = '';
+                } else {
+                    playBeep('error');
+                    alert(data.message || 'Gagal menerbitkan karcis.');
+                }
+            } catch (err) {
+                playBeep('error');
+                alert('Gagal: ' + err.message);
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = `<i class="fa-solid fa-bolt"></i> <span>Terbitkan Karcis & Check-In (<span id="pos-fare-badge">Rp ${Number(selectedPosFare).toLocaleString('id-ID')}</span>)</span>`;
+            }
+        }
+
+        function closePosSuccessModal() {
+            document.getElementById('modalPosSuccess').classList.add('hidden');
+            window.location.reload();
         }
     </script>
 </body>

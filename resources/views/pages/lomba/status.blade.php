@@ -702,10 +702,10 @@
                                     </div>
                                     <div class="flex items-center gap-2">
                                         <span class="px-3 py-1.5 rounded-xl bg-blue-100 text-blue-900 border border-blue-200 font-bold text-xs flex items-center gap-1.5">
-                                            <i class="fa-solid fa-car"></i> Sisa Mobil: <span class="font-black text-sm" x-text="r4Remaining"></span>
+                                            <i class="fa-solid fa-car"></i> Sisa Mobil: <span class="font-black text-sm" x-text="dynamicR4Remaining"></span>
                                         </span>
                                         <span class="px-3 py-1.5 rounded-xl bg-purple-100 text-purple-900 border border-purple-200 font-bold text-xs flex items-center gap-1.5">
-                                            <i class="fa-solid fa-motorcycle"></i> Sisa Motor: <span class="font-black text-sm" x-text="r2Remaining"></span>
+                                            <i class="fa-solid fa-motorcycle"></i> Sisa Motor: <span class="font-black text-sm" x-text="dynamicR2Remaining"></span>
                                         </span>
                                     </div>
                                 </div>
@@ -729,10 +729,10 @@
                                                 <div>
                                                     <label class="text-[11px] font-bold text-slate-700 block mb-1">Jenis Kendaraan *</label>
                                                     <select :name="'vehicles[' + index + '][vehicle_type]'" x-model="veh.vehicle_type" required class="w-full text-xs font-bold bg-white border border-slate-300 rounded-xl px-3 py-2.5 text-slate-800 focus:outline-none focus:border-red-500 focus:ring-1 focus:ring-red-500">
+                                                        <option value="r2_motor">Roda 2 Sepeda Motor</option>
                                                         <option value="r4_car">Roda 4 Mobil Pribadi / MPV / SUV</option>
                                                         <option value="r4_elf">Roda 4+ Minibus (Elf / HiAce)</option>
                                                         <option value="r4_bus">Roda 6+ Bus Besar Pariwisata</option>
-                                                        <option value="r2_motor">Roda 2 Sepeda Motor</option>
                                                     </select>
                                                 </div>
 
@@ -870,8 +870,20 @@
                     });
                 }
             },
+            get r4Count() {
+                return this.vehicles.filter(v => v.vehicle_type && v.vehicle_type !== 'r2_motor').length;
+            },
+            get r2Count() {
+                return this.vehicles.filter(v => v.vehicle_type === 'r2_motor').length;
+            },
+            get dynamicR4Remaining() {
+                return Math.max(0, this.r4Remaining - this.r4Count);
+            },
+            get dynamicR2Remaining() {
+                return Math.max(0, this.r2Remaining - this.r2Count);
+            },
             get canAddMore() {
-                return this.vehicles.length < (this.r4Remaining + this.r2Remaining);
+                return (this.dynamicR4Remaining + this.dynamicR2Remaining) > 0;
             },
             openModal() {
                 this.showModal = true;
@@ -882,7 +894,7 @@
             addVehicle() {
                 if (this.canAddMore) {
                     this.vehicles.push({
-                        vehicle_type: (this.r4Remaining > 0 ? 'r4_car' : 'r2_motor'),
+                        vehicle_type: (this.dynamicR4Remaining > 0 ? 'r4_car' : 'r2_motor'),
                         license_plate: '',
                         vehicle_brand: '',
                         vehicle_color: '',

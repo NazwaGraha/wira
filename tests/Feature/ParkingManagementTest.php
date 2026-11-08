@@ -730,4 +730,44 @@ class ParkingManagementTest extends TestCase
         $response->assertSessionHas('error');
         $this->assertDatabaseMissing('parking_tickets', ['license_plate' => 'F 9999 AA']);
     }
+
+    public function test_parking_officer_can_issue_on_the_spot_ticket(): void
+    {
+        $officer = User::factory()->create(['role' => 'user']);
+        $location = ParkingLocation::create([
+            'name' => 'Lapangan Utama',
+            'code' => 'LAP-UTAMA',
+            'capacity_r4' => 50,
+            'capacity_r2' => 100,
+            'is_active' => true,
+        ]);
+
+        $response = $this->actingAs($officer)->post(route('parking.on-the-spot'), [
+            'parking_location_id' => $location->id,
+            'vehicle_type' => 'r4_car',
+            'license_plate' => 'D 1234 SPOT',
+            'driver_name' => 'Pak Hendra',
+            'driver_phone' => '08123456789',
+            'payment_method' => 'cash',
+        ]);
+
+        $response->assertOk()
+            ->assertJson([
+                'success' => true,
+                'ticket' => [
+                    'license_plate' => 'D 1234 SPOT',
+                    'fee_amount' => 10000,
+                    'status' => 'parked',
+                ],
+            ]);
+
+        $this->assertDatabaseHas('parking_tickets', [
+            'license_plate' => 'D 1234 SPOT',
+            'parking_location_id' => $location->id,
+            'vehicle_type' => 'r4_car',
+            'fee_amount' => 10000,
+            'status' => 'parked',
+            'is_public' => true,
+        ]);
+    }
 }

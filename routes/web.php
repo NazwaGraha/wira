@@ -704,6 +704,7 @@ Route::prefix('parkir')->name('parking.')->group(function () {
     Route::post('/verify', [ParkingOfficerController::class, 'verifyTicket'])->name('verify');
     Route::post('/check-in', [ParkingOfficerController::class, 'checkIn'])->name('check-in');
     Route::post('/check-out', [ParkingOfficerController::class, 'checkOut'])->name('check-out');
+    Route::post('/on-the-spot', [ParkingOfficerController::class, 'issueOnTheSpotTicket'])->name('on-the-spot');
     Route::get('/tiket/{token}', [ParkingOfficerController::class, 'publicTicket'])->name('public-ticket');
     Route::get('/tiket-sekolah/{code}', [ParkingOfficerController::class, 'schoolTicketsPrint'])->name('school-tickets');
 });
