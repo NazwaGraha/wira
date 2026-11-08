@@ -87,21 +87,13 @@
                 <a href="{{ route('donor-darah') }}" class="hover:text-red-400 transition flex items-center gap-1 font-medium">
                     <i class="fa-solid fa-droplet text-red-500"></i> <span class="hidden xs:inline">Info </span>Donor Darah
                 </a>
-                <span class="text-stone-600">|</span>
                 @auth
-                    @if(auth()->user()->canAccessBackoffice())
-                        <a href="{{ route('admin.dashboard') }}" class="text-emerald-400 hover:text-emerald-300 transition flex items-center gap-1 text-[11px] sm:text-xs font-bold">
-                            <i class="fa-solid fa-gauge-high"></i> Backoffice
-                        </a>
-                    @else
+                    @if(!auth()->user()->canAccessBackoffice())
+                        <span class="text-stone-600">|</span>
                         <a href="{{ route('member.profile') }}" class="text-amber-300 hover:text-white transition flex items-center gap-1 text-[11px] sm:text-xs font-bold">
                             <i class="fa-solid fa-user-circle"></i> Area Anggota
                         </a>
                     @endif
-                @else
-                    <a href="{{ route('admin.login') }}" class="hover:text-white transition flex items-center gap-1 text-[11px] sm:text-xs font-medium">
-                        <i class="fa-solid fa-lock"></i> Backoffice
-                    </a>
                 @endauth
             </div>
         </div>
