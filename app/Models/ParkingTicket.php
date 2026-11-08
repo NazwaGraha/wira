@@ -84,9 +84,9 @@ class ParkingTicket extends Model
     public function getVehicleTypeLabelAttribute(): string
     {
         return match ($this->vehicle_type) {
-            'r4_elf' => 'Roda 4 (Minibus Elf / HiAce)',
-            'r4_bus' => 'Roda 4 (Bus Besar)',
-            'r4_car' => 'Roda 4 (Mobil Pribadi / MPV)',
+            'r4_elf' => 'Roda 4+ Minibus (Elf / HiAce)',
+            'r4_bus' => 'Roda 6+ Bus (Bus Besar Pariwisata)',
+            'r4_car' => 'Roda 4 (Mobil Pribadi / MPV / SUV)',
             'r2_motor' => 'Roda 2 (Sepeda Motor)',
             default => 'Kendaraan',
         };

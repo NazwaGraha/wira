@@ -540,7 +540,15 @@
                                             <div class="bg-white border border-slate-200 hover:border-slate-300 rounded-2xl p-4 shadow-2xs transition flex flex-col justify-between">
                                                 <div>
                                                     <div class="flex items-center justify-between gap-2 mb-2">
-                                                        <span class="px-2.5 py-0.5 rounded-full text-[10px] font-black {{ str_starts_with($ticket->vehicle_type, 'r2') ? 'bg-purple-100 text-purple-800' : 'bg-blue-100 text-blue-800' }}">
+                                                        @php
+                                                            $vBadgeColor = match($ticket->vehicle_type) {
+                                                                'r2_motor' => 'bg-purple-100 text-purple-800 border-purple-200',
+                                                                'r4_elf' => 'bg-amber-100 text-amber-800 border-amber-200',
+                                                                'r4_bus' => 'bg-rose-100 text-rose-800 border-rose-200',
+                                                                default => 'bg-blue-100 text-blue-800 border-blue-200',
+                                                            };
+                                                        @endphp
+                                                        <span class="px-2.5 py-0.5 rounded-full text-[10px] font-black border {{ $vBadgeColor }}">
                                                             {{ $ticket->vehicle_type_label }}
                                                         </span>
                                                         <span class="font-mono text-xs font-black text-slate-600 bg-slate-100 px-2 py-0.5 rounded">
@@ -720,11 +728,11 @@
                                                 <!-- Jenis Kendaraan -->
                                                 <div>
                                                     <label class="text-[11px] font-bold text-slate-700 block mb-1">Jenis Kendaraan *</label>
-                                                    <select :name="'vehicles[' + index + '][vehicle_type]'" x-model="veh.vehicle_type" required class="w-full text-xs font-semibold bg-white border border-slate-300 rounded-xl px-3 py-2 text-slate-800 focus:outline-none focus:border-red-500">
-                                                        <option value="r4_car">Roda 4 - Mobil Pribadi / MPV (Avanza, Innova, dll)</option>
-                                                        <option value="r4_elf">Roda 4 - Minibus Elf / Toyota HiAce</option>
-                                                        <option value="r4_bus">Roda 4 - Bus Besar Pariwisata</option>
-                                                        <option value="r2_motor">Roda 2 - Sepeda Motor Pembina/Pendamping</option>
+                                                    <select :name="'vehicles[' + index + '][vehicle_type]'" x-model="veh.vehicle_type" required class="w-full text-xs font-bold bg-white border border-slate-300 rounded-xl px-3 py-2.5 text-slate-800 focus:outline-none focus:border-red-500 focus:ring-1 focus:ring-red-500">
+                                                        <option value="r2_motor">Roda 2 — Sepeda Motor (Matic, Bebek, Sport)</option>
+                                                        <option value="r4_car">Roda 4 — Mobil Pribadi / MPV / SUV (Avanza, Innova, Brio, dll)</option>
+                                                        <option value="r4_elf">Roda 4+ Minibus — Minibus (Elf / HiAce)</option>
+                                                        <option value="r4_bus">Roda 6+ Bus — Bus Besar Pariwisata (40–60 Kursi)</option>
                                                     </select>
                                                 </div>
 
@@ -737,7 +745,7 @@
                                                 <!-- Merek & Tipe -->
                                                 <div>
                                                     <label class="text-[11px] font-bold text-slate-700 block mb-1">Merek & Tipe Kendaraan</label>
-                                                    <input type="text" :name="'vehicles[' + index + '][vehicle_brand]'" x-model="veh.vehicle_brand" placeholder="Contoh: Toyota HiAce Commuter" class="w-full text-xs bg-white border border-slate-300 rounded-xl px-3 py-2 text-slate-800 focus:outline-none focus:border-red-500">
+                                                    <input type="text" :name="'vehicles[' + index + '][vehicle_brand]'" x-model="veh.vehicle_brand" placeholder="Contoh: Toyota Avanza / Isuzu Elf / Vario" class="w-full text-xs bg-white border border-slate-300 rounded-xl px-3 py-2 text-slate-800 focus:outline-none focus:border-red-500">
                                                 </div>
 
                                                 <!-- Warna Kendaraan -->

@@ -486,7 +486,9 @@
                                         @if(str_starts_with($t->vehicle_type, 'r2'))
                                             <i class="fa-solid fa-motorcycle text-purple-600"></i>
                                         @elseif($t->vehicle_type === 'r4_bus')
-                                            <i class="fa-solid fa-bus text-amber-600"></i>
+                                            <i class="fa-solid fa-bus text-rose-600"></i>
+                                        @elseif($t->vehicle_type === 'r4_elf')
+                                            <i class="fa-solid fa-van-shuttle text-amber-600"></i>
                                         @else
                                             <i class="fa-solid fa-car-side text-blue-600"></i>
                                         @endif
@@ -734,10 +736,10 @@
                 <div>
                     <label class="text-xs font-bold text-slate-700 block mb-1">Jenis Kendaraan <span class="text-rose-500">*</span></label>
                     <select name="vehicle_type" required class="w-full text-xs bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 text-slate-800 font-bold focus:outline-none">
-                        <option value="r4_elf">Roda 4 - Minibus Elf / HiAce</option>
-                        <option value="r4_car">Roda 4 - Mobil Pribadi / MPV</option>
-                        <option value="r4_bus">Roda 4 - Bus Pariwisata</option>
-                        <option value="r2_motor">Roda 2 - Sepeda Motor</option>
+                        <option value="r2_motor">Roda 2 — Sepeda Motor (Matic, Bebek, Sport)</option>
+                        <option value="r4_car">Roda 4 — Mobil Pribadi / MPV / SUV (Avanza, Innova, Brio, dll)</option>
+                        <option value="r4_elf">Roda 4+ Minibus — Minibus (Elf / HiAce)</option>
+                        <option value="r4_bus">Roda 6+ Bus — Bus Besar Pariwisata (40–60 Kursi)</option>
                     </select>
                 </div>
             </div>
@@ -824,10 +826,10 @@
                 <div>
                     <label class="text-xs font-bold text-slate-700 block mb-1">Jenis Kendaraan <span class="text-rose-500">*</span></label>
                     <select name="vehicle_type" id="edit_ticket_vtype" required class="w-full text-xs bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 text-slate-800 font-bold focus:outline-none">
-                        <option value="r4_elf">Roda 4 - Minibus Elf / HiAce</option>
-                        <option value="r4_car">Roda 4 - Mobil Pribadi / MPV</option>
-                        <option value="r4_bus">Roda 4 - Bus Pariwisata</option>
-                        <option value="r2_motor">Roda 2 - Sepeda Motor</option>
+                        <option value="r2_motor">Roda 2 — Sepeda Motor (Matic, Bebek, Sport)</option>
+                        <option value="r4_car">Roda 4 — Mobil Pribadi / MPV / SUV (Avanza, Innova, Brio, dll)</option>
+                        <option value="r4_elf">Roda 4+ Minibus — Minibus (Elf / HiAce)</option>
+                        <option value="r4_bus">Roda 6+ Bus — Bus Besar Pariwisata (40–60 Kursi)</option>
                     </select>
                 </div>
             </div>
