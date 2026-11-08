@@ -906,6 +906,16 @@
                 </div>
             </div>
 
+            @if($category->scoring_type == 'social_engagement')
+                <div class="p-3.5 bg-gradient-to-r from-rose-50 via-purple-50 to-pink-50 border-b border-slate-200 flex flex-wrap items-center justify-between gap-2 text-xs">
+                    <div class="flex items-center gap-2">
+                        <span class="px-2.5 py-0.5 rounded font-black text-[10px] bg-rose-600 text-white uppercase tracking-wider">Formula PMR Favorit</span>
+                        <span class="font-bold text-slate-800">Total Poin = (Jumlah Like &times; 1) + (Jumlah Stiker &times; 2)</span>
+                    </div>
+                    <span class="text-slate-600 font-medium text-[11px]"><i class="fa-solid fa-circle-check text-purple-600"></i> Bobot Stiker: 2 Poin &bull; Like: 1 Poin &bull; Hasil Bilangan Bulat</span>
+                </div>
+            @endif
+
             <div class="overflow-x-auto">
                 <table class="w-full text-left text-xs text-slate-700">
                     <thead class="bg-slate-100 text-slate-800 uppercase font-black border-b border-slate-200">
@@ -940,8 +950,8 @@
                                 @endif
                             @elseif($category->scoring_type == 'social_engagement')
                                 <!-- PMR Favorite -->
-                                <th class="px-4 py-3 w-28">Jumlah Likes</th>
-                                <th class="px-4 py-3 w-28">Jumlah Stickers</th>
+                                <th class="px-4 py-3 w-32 text-center bg-rose-50/70 text-rose-900 border-r border-slate-200">Jumlah Likes (x1)</th>
+                                <th class="px-4 py-3 w-32 text-center bg-purple-50/70 text-purple-900 border-r border-slate-200">Jumlah Stiker (x2)</th>
                             @elseif($isTandu)
                                 <!-- Ketangkasan Tandu Reguler (Excel Formula) -->
                                 <th class="px-4 py-3 w-32">Nilai Teknis (Juri)</th>
@@ -1057,10 +1067,16 @@
                                     @endif
                                 @elseif($category->scoring_type == 'social_engagement')
                                     <td class="px-4 py-3">
-                                        <input type="number" name="scores[{{ $team->id }}][likes]" value="{{ $details['likes'] ?? '' }}" placeholder="Likes" class="input-likes w-full p-2 bg-slate-50 border border-slate-200 rounded-lg text-xs focus:bg-white focus:outline-none focus:border-red-500 font-semibold">
+                                        <div class="relative">
+                                            <input type="number" min="0" step="1" name="scores[{{ $team->id }}][likes]" value="{{ $details['likes'] ?? '' }}" placeholder="0" class="input-likes w-full p-2 bg-slate-50 border border-slate-200 rounded-lg text-xs focus:bg-white focus:outline-none focus:border-red-500 font-bold font-mono text-center">
+                                            <span class="text-[9px] text-slate-400 block text-center mt-0.5 font-semibold">1 like = 1 poin</span>
+                                        </div>
                                     </td>
                                     <td class="px-4 py-3">
-                                        <input type="number" name="scores[{{ $team->id }}][stickers]" value="{{ $details['stickers'] ?? '' }}" placeholder="Stickers" class="input-stickers w-full p-2 bg-slate-50 border border-slate-200 rounded-lg text-xs focus:bg-white focus:outline-none focus:border-red-500 font-semibold">
+                                        <div class="relative">
+                                            <input type="number" min="0" step="1" name="scores[{{ $team->id }}][stickers]" value="{{ $details['stickers'] ?? '' }}" placeholder="0" class="input-stickers w-full p-2 bg-slate-50 border border-slate-200 rounded-lg text-xs focus:bg-white focus:outline-none focus:border-red-500 font-bold font-mono text-center">
+                                            <span class="text-[9px] text-purple-600 block text-center mt-0.5 font-bold">1 stiker = 2 poin</span>
+                                        </div>
                                     </td>
                                 @elseif($isTandu)
                                     <!-- Ketangkasan Tandu Specific Inputs -->
@@ -1871,8 +1887,8 @@ document.addEventListener('DOMContentLoaded', function() {
             function updateSocialRow() {
                 const l = parseInt(likesInput?.value || 0, 10);
                 const s = parseInt(stickersInput?.value || 0, 10);
-                const score = l + (s * 1.5);
-                if (finalInput) finalInput.value = score.toFixed(2);
+                const score = (l * 1) + (s * 2);
+                if (finalInput) finalInput.value = score;
                 window.recalculateAllRanks();
             }
 

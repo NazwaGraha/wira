@@ -227,7 +227,7 @@
                                             @elseif(isset($sc->score_details['criteria_1']))
                                                 <span>Kriteria 1: <strong>{{ $sc->score_details['criteria_1'] }}</strong> &bull; Kriteria 2: <strong>{{ $sc->score_details['criteria_2'] }}</strong> @if(isset($sc->score_details['criteria_3'])) &bull; Kriteria 3: <strong>{{ $sc->score_details['criteria_3'] }}</strong> @endif</span>
                                             @elseif(isset($sc->score_details['likes']))
-                                                <span>Likes: <strong>{{ $sc->score_details['likes'] }}</strong> &bull; Stickers: <strong>{{ $sc->score_details['stickers'] }}</strong></span>
+                                                <span>Likes: <strong>{{ $sc->score_details['likes'] }}</strong> &bull; Stiker: <strong>{{ $sc->score_details['stickers'] }}</strong> ({{ intval($sc->score_details['stickers'] ?? 0) * 2 }} Poin)</span>
                                             @else
                                                 <span class="text-slate-400">Nilai Murni</span>
                                             @endif

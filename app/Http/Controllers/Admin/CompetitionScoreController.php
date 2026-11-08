@@ -519,13 +519,13 @@ class CompetitionScoreController extends Controller
                     break;
 
                 case 'social_engagement':
-                    // PMR Favorite: likes & stickers
+                    // PMR Favorite: likes (1 poin) & stickers (2 poin)
                     $likes = intval($data['likes'] ?? 0);
                     $stickers = intval($data['stickers'] ?? 0);
                     if (isset($data['manual_final_score']) && $data['manual_final_score'] !== '') {
                         $finalScore = floatval($data['manual_final_score']);
                     } else {
-                        $finalScore = round($likes + ($stickers * 1.5), 2);
+                        $finalScore = floatval(($likes * 1) + ($stickers * 2));
                     }
                     break;
 
