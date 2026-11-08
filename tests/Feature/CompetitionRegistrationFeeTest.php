@@ -114,4 +114,37 @@ class CompetitionRegistrationFeeTest extends TestCase
         $receiptResponse->assertStatus(200);
         $receiptResponse->assertSee('Rp 210.000');
     }
+
+    public function test_registration_page_shows_unlimited_teams_badge(): void
+    {
+        $event = CompetitionEvent::create([
+            'name' => 'Sua Bhakti Berkarya IV',
+            'title' => 'Sua Bhakti Berkarya IV 2026',
+            'slug' => 'sua-bhakti-berkarya-iv-mula',
+            'start_date' => '2026-10-24',
+            'end_date' => '2026-10-25',
+            'registration_fee' => 150000,
+            'is_active' => true,
+            'is_registration_open' => true,
+            'is_waves_enabled' => false,
+        ]);
+
+        CompetitionCategory::create([
+            'competition_event_id' => $event->id,
+            'name' => 'Lomba Mewarnai',
+            'code' => 'LMW-MULA',
+            'level' => 'Mula',
+            'gender_category' => 'Umum',
+            'scoring_type' => 'score_based',
+            'registration_fee' => 65000,
+            'quota' => 50,
+            'is_active' => true,
+        ]);
+
+        $response = $this->get(route('lomba.register', ['level' => 'Mula']));
+
+        $response->assertStatus(200);
+        $response->assertSee('Kuota Regu Per Sekolah Tidak Dibatasi');
+        $response->assertDontSee('Jatah Sekolah: Bebas');
+    }
 }

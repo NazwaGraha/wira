@@ -307,7 +307,7 @@
 
                                                     @if($cat->isUnlimitedTeams())
                                                         <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-black uppercase tracking-wider bg-purple-100 text-purple-800 border border-purple-300" title="Kuota regu per sekolah tidak dibatasi">
-                                                            <i class="fa-solid fa-infinity text-purple-600"></i> Jatah Sekolah: Bebas
+                                                            <i class="fa-solid fa-infinity text-purple-600"></i> Kuota Regu Per Sekolah Tidak Dibatasi
                                                         </span>
                                                     @elseif($isCritical)
                                                         <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-black uppercase tracking-wider bg-amber-100 text-amber-900 border border-amber-400" title="Kuota tersisa 1 regu, dibatasi 1 regu untuk sekolah">
