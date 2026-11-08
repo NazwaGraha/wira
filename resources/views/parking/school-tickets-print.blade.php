@@ -89,18 +89,28 @@
                     </div>
 
                     <!-- Assigned Location Banner -->
-                    <div class="bg-emerald-50 border border-emerald-300 rounded-xl p-2.5 text-center mb-4">
-                        <span class="text-[9px] font-black uppercase tracking-wider text-emerald-700 block">LOKASI KANTONG PARKIR:</span>
-                        <div class="text-xs font-black text-emerald-950 mt-0.5">
+                    <div class="{{ $ticket->is_public ? 'bg-amber-50 border-amber-300' : 'bg-emerald-50 border-emerald-300' }} border rounded-xl p-2.5 text-center mb-4">
+                        <span class="text-[9px] font-black uppercase tracking-wider {{ $ticket->is_public ? 'text-amber-800' : 'text-emerald-700' }} block">
+                            {{ $ticket->is_public ? 'LOKASI FLOATING PARKIR (TARIF UMUM):' : 'LOKASI KANTONG PARKIR RESMI:' }}
+                        </span>
+                        <div class="text-xs font-black {{ $ticket->is_public ? 'text-amber-950' : 'text-emerald-950' }} mt-0.5">
                             {{ $ticket->location?->name ?? 'BEBAS / MENUNGGU ARAHAN PETUGAS' }}
                         </div>
                         @if($ticket->location?->address)
-                            <p class="text-[9px] text-emerald-700 mt-0.5">{{ $ticket->location->address }}</p>
+                            <p class="text-[9px] {{ $ticket->is_public ? 'text-amber-700' : 'text-emerald-700' }} mt-0.5">{{ $ticket->location->address }}</p>
                         @endif
                     </div>
 
                     <!-- Detail Spec -->
                     <div class="space-y-1.5 text-[11px] border-t border-b border-slate-100 py-2.5 mb-3">
+                        <div class="flex justify-between items-center">
+                            <span class="text-slate-400">Tarif & Status:</span>
+                            @if($ticket->is_public)
+                                <span class="font-bold text-amber-700">Rp {{ number_format($ticket->fee_amount, 0, ',', '.') }} (Tarif Umum Floating)</span>
+                            @else
+                                <span class="font-bold text-emerald-700">GRATIS (Kuota Resmi Kontingen)</span>
+                            @endif
+                        </div>
                         <div class="flex justify-between items-center">
                             <span class="text-slate-400">Nomor Polisi (Plat):</span>
                             <span class="font-mono font-black text-slate-900 px-2 py-0.5 bg-slate-100 rounded border border-slate-200">{{ $ticket->license_plate }}</span>

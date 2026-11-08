@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -96,6 +97,7 @@ class CompetitionRegistration extends Model
     public function getIssuedTicketsR4CountAttribute(): int
     {
         return $this->parkingTickets()
+            ->where('is_public', false)
             ->whereIn('vehicle_type', ['r4_car', 'r4_elf', 'r4_bus'])
             ->whereIn('status', ['booked', 'parked'])
             ->count();
@@ -104,18 +106,66 @@ class CompetitionRegistration extends Model
     public function getIssuedTicketsR2CountAttribute(): int
     {
         return $this->parkingTickets()
+            ->where('is_public', false)
             ->where('vehicle_type', 'r2_motor')
             ->whereIn('status', ['booked', 'parked'])
             ->count();
     }
 
+    /**
+     * Batas akhir klaim kuota parkir resmi gratis kontingen (H+1 penutupan pendaftaran gelombang 2).
+     */
+    public function getParkingRegistrationDeadlineAttribute(): ?Carbon
+    {
+        $event = $this->event ?: CompetitionEvent::where('is_active', true)->first();
+        if (! $event) {
+            return null;
+        }
+
+        if ($event->is_waves_enabled && $event->wave2_end_date) {
+            return $event->wave2_end_date->copy()->addDay()->endOfDay();
+        }
+
+        if ($event->wave2_end_date) {
+            return $event->wave2_end_date->copy()->addDay()->endOfDay();
+        }
+
+        if ($event->wave1_end_date) {
+            return $event->wave1_end_date->copy()->addDay()->endOfDay();
+        }
+
+        if ($event->end_date) {
+            return $event->end_date->copy()->addDay()->endOfDay();
+        }
+
+        return null;
+    }
+
+    /**
+     * Cek apakah batas waktu pendaftaran parkir gratis kontingen telah terlewati.
+     */
+    public function getIsParkingRegistrationExpiredAttribute(): bool
+    {
+        $deadline = $this->parking_registration_deadline;
+
+        return $deadline ? now()->gt($deadline) : false;
+    }
+
     public function getRemainingQuotaR4Attribute(): int
     {
+        if ($this->is_parking_registration_expired) {
+            return 0;
+        }
+
         return max(0, $this->allocated_quota_r4 - $this->issued_tickets_r4_count);
     }
 
     public function getRemainingQuotaR2Attribute(): int
     {
+        if ($this->is_parking_registration_expired) {
+            return 0;
+        }
+
         return max(0, $this->allocated_quota_r2 - $this->issued_tickets_r2_count);
     }
 

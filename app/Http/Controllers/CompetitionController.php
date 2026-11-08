@@ -504,7 +504,9 @@ class CompetitionController extends Controller
                 ->first();
         }
 
-        return view('pages.lomba.status', compact('registration', 'code'));
+        $fareSetting = ParkingFareSetting::current();
+
+        return view('pages.lomba.status', compact('registration', 'code', 'fareSetting'));
     }
 
     /**
@@ -521,6 +523,7 @@ class CompetitionController extends Controller
             'vehicles.*.vehicle_color' => 'nullable|string|max:50',
             'vehicles.*.driver_name' => 'nullable|string|max:100',
             'vehicles.*.driver_phone' => 'nullable|string|max:30',
+            'payment_method' => 'nullable|in:cash,qris',
         ]);
 
         $code = trim($validated['registration_code']);
@@ -535,52 +538,103 @@ class CompetitionController extends Controller
         }
 
         $vehicles = $validated['vehicles'];
-        $newR4Count = 0;
-        $newR2Count = 0;
+        $isExpired = $registration->is_parking_registration_expired;
+        $fareSetting = ParkingFareSetting::current();
 
-        foreach ($vehicles as $v) {
-            if (str_starts_with($v['vehicle_type'], 'r2')) {
-                $newR2Count++;
-            } else {
-                $newR4Count++;
+        if (! $isExpired) {
+            // ================= JALUR 1: SEBELUM BATAS WAKTU (KUOTA GRATIS KONTINGEN RESMI) =================
+            $newR4Count = 0;
+            $newR2Count = 0;
+
+            foreach ($vehicles as $v) {
+                if (str_starts_with($v['vehicle_type'], 'r2')) {
+                    $newR2Count++;
+                } else {
+                    $newR4Count++;
+                }
             }
+
+            // Validasi kuota tersisa
+            if ($newR4Count > $registration->remaining_quota_r4) {
+                return back()->with('error', "Jumlah kendaraan Roda 4 ({$newR4Count}) melebihi sisa kuota gratis yang diizinkan ({$registration->remaining_quota_r4} mobil). Silakan sesuaikan.");
+            }
+
+            if ($newR2Count > $registration->remaining_quota_r2) {
+                return back()->with('error', "Jumlah kendaraan Roda 2 ({$newR2Count}) melebihi sisa kuota gratis yang diizinkan ({$registration->remaining_quota_r2} motor). Silakan sesuaikan.");
+            }
+
+            // Tentukan lokasi parkir yang dialokasikan (sesuai prioritas kontingen)
+            $assignedLocationId = $registration->parkingTickets()->whereNotNull('parking_location_id')->value('parking_location_id');
+            if (! $assignedLocationId && ! empty($registration->parking_priority_criteria['assigned_location_code'])) {
+                $assignedLocationId = ParkingLocation::where('code', $registration->parking_priority_criteria['assigned_location_code'])->value('id');
+            }
+
+            $createdCount = 0;
+            foreach ($vehicles as $v) {
+                ParkingTicket::create([
+                    'competition_registration_id' => $registration->id,
+                    'parking_location_id' => $assignedLocationId,
+                    'vehicle_type' => $v['vehicle_type'],
+                    'license_plate' => strtoupper(trim($v['license_plate'])),
+                    'vehicle_brand' => trim($v['vehicle_brand'] ?? ''),
+                    'vehicle_color' => trim($v['vehicle_color'] ?? ''),
+                    'driver_name' => trim($v['driver_name'] ?? ''),
+                    'driver_phone' => trim($v['driver_phone'] ?? ''),
+                    'is_public' => false,
+                    'fee_amount' => 0,
+                    'payment_method' => 'free_contingent',
+                    'payment_status' => 'free',
+                    'status' => 'booked',
+                ]);
+                $createdCount++;
+            }
+
+            return redirect()->route('lomba.status', ['code' => $code])
+                ->with('success', "Alhamdulillah! Berhasil mendaftarkan {$createdCount} kendaraan kontingen resmi (Gratis). E-Tiket parkir telah diterbitkan!");
+        } else {
+            // ================= JALUR 2: SETELAH BATAS WAKTU (TARIF PARKIR UMUM & FLOATING PARKIR) =================
+            $paymentMethod = $validated['payment_method'] ?? 'cash';
+            $paymentStatus = ($paymentMethod === 'qris') ? 'paid' : 'unpaid';
+            $totalFee = 0;
+            $createdCount = 0;
+
+            foreach ($vehicles as $v) {
+                $vType = $v['vehicle_type'];
+                $isR4 = in_array($vType, ['r4_car', 'r4_elf', 'r4_bus']);
+                $fare = $fareSetting->getFareForVehicleType($vType);
+                $totalFee += $fare;
+
+                // Floating parkir disesuaikan dengan ketersediaan kuota slot di masing-masing kantong parkir
+                $floatingLocation = ParkingLocation::where('status', 'open')
+                    ->get()
+                    ->first(function ($loc) use ($isR4) {
+                        return $isR4 ? ($loc->remaining_r4 > 0) : ($loc->remaining_r2 > 0);
+                    }) ?: ParkingLocation::where('status', 'open')->first();
+
+                ParkingTicket::create([
+                    'competition_registration_id' => $registration->id,
+                    'parking_location_id' => $floatingLocation?->id,
+                    'vehicle_type' => $vType,
+                    'license_plate' => strtoupper(trim($v['license_plate'])),
+                    'vehicle_brand' => trim($v['vehicle_brand'] ?? ''),
+                    'vehicle_color' => trim($v['vehicle_color'] ?? ''),
+                    'driver_name' => trim($v['driver_name'] ?? ''),
+                    'driver_phone' => trim($v['driver_phone'] ?? ''),
+                    'is_public' => true,
+                    'fee_amount' => $fare,
+                    'payment_method' => $paymentMethod,
+                    'payment_status' => $paymentStatus,
+                    'status' => 'booked',
+                ]);
+                $createdCount++;
+            }
+
+            $formattedTotal = 'Rp '.number_format($totalFee, 0, ',', '.');
+            $methodLabel = $paymentMethod === 'qris' ? 'QRIS Digital' : 'Tunai saat tiba di gerbang';
+
+            return redirect()->route('lomba.status', ['code' => $code])
+                ->with('success', "Pendaftaran kendaraan kontingen berhasil! Karena didaftarkan melewati batas akhir kuota gratis (H+1 penutupan Gelombang 2), {$createdCount} kendaraan dikenakan Tarif Parkir Umum (Floating Parkir) sebesar {$formattedTotal} ({$methodLabel}). E-Tiket parkir resmi telah diterbitkan!");
         }
-
-        // Validasi kuota tersisa
-        if ($newR4Count > $registration->remaining_quota_r4) {
-            return back()->with('error', "Jumlah kendaraan Roda 4 ({$newR4Count}) melebihi sisa kuota yang diizinkan ({$registration->remaining_quota_r4} mobil). Silakan sesuaikan.");
-        }
-
-        if ($newR2Count > $registration->remaining_quota_r2) {
-            return back()->with('error', "Jumlah kendaraan Roda 2 ({$newR2Count}) melebihi sisa kuota yang diizinkan ({$registration->remaining_quota_r2} motor). Silakan sesuaikan.");
-        }
-
-        // Tentukan lokasi parkir yang dialokasikan (jika sudah ada plot prioritas atau tiket sebelumnya)
-        $assignedLocationId = $registration->parkingTickets()->whereNotNull('parking_location_id')->value('parking_location_id');
-
-        // Jika belum ada lokasi tapi sudah pernah di-kalkulasi prioritasnya, cek criteria
-        if (! $assignedLocationId && ! empty($registration->parking_priority_criteria['assigned_location_code'])) {
-            $assignedLocationId = ParkingLocation::where('code', $registration->parking_priority_criteria['assigned_location_code'])->value('id');
-        }
-
-        $createdCount = 0;
-        foreach ($vehicles as $v) {
-            ParkingTicket::create([
-                'competition_registration_id' => $registration->id,
-                'parking_location_id' => $assignedLocationId,
-                'vehicle_type' => $v['vehicle_type'],
-                'license_plate' => strtoupper(trim($v['license_plate'])),
-                'vehicle_brand' => trim($v['vehicle_brand'] ?? ''),
-                'vehicle_color' => trim($v['vehicle_color'] ?? ''),
-                'driver_name' => trim($v['driver_name'] ?? ''),
-                'driver_phone' => trim($v['driver_phone'] ?? ''),
-                'status' => 'booked',
-            ]);
-            $createdCount++;
-        }
-
-        return redirect()->route('lomba.status', ['code' => $code])
-            ->with('success', "Alhamdulillah! Berhasil mendaftarkan {$createdCount} kendaraan kontingen untuk {$registration->school_name}. E-Tiket parkir resmi telah diterbitkan!");
     }
 
     /**

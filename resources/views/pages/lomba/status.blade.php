@@ -63,6 +63,9 @@
                 $r2Remaining = $registration->remaining_quota_r2;
                 $r4Allocated = $registration->allocated_quota_r4;
                 $r2Allocated = $registration->allocated_quota_r2;
+                $isExpired = $registration->is_parking_registration_expired;
+                $parkingDeadline = $registration->parking_registration_deadline;
+                $fareSetting = $fareSetting ?? \App\Models\ParkingFareSetting::current();
                 $hasRemainingQuota = ($r4Remaining + $r2Remaining) > 0;
                 $autoOpenModal = $isVerified && $parkingTickets->isEmpty() && !session()->has('hide_vehicle_modal');
             @endphp
@@ -70,7 +73,14 @@
             <div x-data="statusPortalApp({
                 autoOpenModal: {{ $autoOpenModal ? 'true' : 'false' }},
                 r4Remaining: {{ $r4Remaining }},
-                r2Remaining: {{ $r2Remaining }}
+                r2Remaining: {{ $r2Remaining }},
+                isExpired: {{ $isExpired ? 'true' : 'false' }},
+                fares: {
+                    r2_motor: {{ $fareSetting->fare_r2_motor ?? 5000 }},
+                    r4_car: {{ $fareSetting->fare_r4_car ?? 10000 }},
+                    r4_elf: {{ $fareSetting->fare_r4_minibus ?? 25000 }},
+                    r4_bus: {{ $fareSetting->fare_r6_bus ?? 50000 }}
+                }
             })" class="space-y-6">
 
                 <!-- ================= 1. KARTU UTAMA RANGKUMAN KONTINGEN (HERO DASHBOARD CARD) ================= -->
@@ -453,13 +463,50 @@
                                                 <i class="fa-solid fa-print"></i> Cetak Semua E-Tiket Sekaligus (PDF)
                                             </a>
                                         @endif
-                                        @if($hasRemainingQuota)
-                                            <button type="button" @click="openModal()" class="px-3.5 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs shadow-xs transition flex items-center gap-1.5">
-                                                <i class="fa-solid fa-plus text-rose-400"></i> Tambah Kendaraan
+                                        @if(!$isExpired && $hasRemainingQuota)
+                                            <button type="button" @click="openModal()" class="px-3.5 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs shadow-xs transition flex items-center gap-1.5 cursor-pointer">
+                                                <i class="fa-solid fa-plus text-rose-400"></i> Tambah Kendaraan (Gratis)
+                                            </button>
+                                        @elseif($isExpired)
+                                            <button type="button" @click="openModal()" class="px-3.5 py-2 rounded-xl bg-gradient-to-r from-amber-600 to-yellow-600 hover:from-amber-700 hover:to-yellow-700 text-white font-black text-xs shadow-xs transition flex items-center gap-1.5 cursor-pointer">
+                                                <i class="fa-solid fa-ticket text-yellow-200"></i> Tambah Kendaraan (Tarif Umum Floating)
                                             </button>
                                         @endif
                                     </div>
                                 </div>
+
+                                <!-- POLICY NOTICE: DEADLINE & FLOATING PARKIR -->
+                                @if(!$isExpired && $parkingDeadline)
+                                    <div class="bg-blue-50/90 border border-blue-200 rounded-2xl p-4 flex items-start gap-3 text-xs text-blue-900">
+                                        <div class="w-8 h-8 rounded-xl bg-blue-100 text-blue-600 flex items-center justify-center shrink-0 text-sm">
+                                            <i class="fa-solid fa-clock"></i>
+                                        </div>
+                                        <div class="flex-1">
+                                            <div class="flex items-center gap-2 flex-wrap">
+                                                <span class="font-black uppercase tracking-wider text-[10px] bg-blue-200 text-blue-800 px-2 py-0.5 rounded">KETENTUAN KUOTA GRATIS KONTINGEN</span>
+                                                <span class="text-blue-700 font-bold">Batas Akhir: {{ $parkingDeadline->translatedFormat('l, d F Y - H:i') }} WIB</span>
+                                            </div>
+                                            <p class="text-[11px] text-blue-800 mt-1 leading-relaxed">
+                                                Pendaftaran kendaraan kontingen untuk klaim <strong>kuota parkir resmi gratis</strong> paling lambat dilakukan <strong>1 hari setelah penutupan pendaftaran lomba Gelombang ke-2</strong>. Setelah batas waktu tersebut, pendaftaran kendaraan akan dikenakan <strong>Tarif Parkir Umum</strong> dengan sistem <strong>Floating Parkir</strong>.
+                                            </p>
+                                        </div>
+                                    </div>
+                                @elseif($isExpired)
+                                    <div class="bg-amber-50 border-2 border-amber-300 rounded-2xl p-4 flex items-start gap-3 text-xs text-amber-950 shadow-2xs">
+                                        <div class="w-8 h-8 rounded-xl bg-amber-100 text-amber-700 flex items-center justify-center shrink-0 text-sm">
+                                            <i class="fa-solid fa-triangle-exclamation"></i>
+                                        </div>
+                                        <div class="flex-1">
+                                            <div class="flex items-center gap-2 flex-wrap">
+                                                <span class="font-black uppercase tracking-wider text-[10px] bg-amber-200 text-amber-900 px-2 py-0.5 rounded">BATAS KUOTA GRATIS BERAKHIR</span>
+                                                <span class="text-amber-800 font-bold">Ditutup: {{ $parkingDeadline?->translatedFormat('d F Y, H:i') ?? 'H+1 Gelombang 2' }} WIB</span>
+                                            </div>
+                                            <p class="text-[11px] text-amber-900 mt-1 leading-relaxed">
+                                                Batas waktu pendaftaran kendaraan kuota gratis resmi telah berakhir (1 hari setelah penutupan pendaftaran Gelombang 2). Sekolah Anda tetap dapat mendaftarkan kendaraan kontingen dengan ketentuan <strong>Tarif Parkir Umum</strong> dan penempatan kantong parkir menggunakan sistem <strong>Floating Parkir</strong> (disesuaikan dengan sisa ketersediaan slot di masing-masing lokasi parkir).
+                                            </p>
+                                        </div>
+                                    </div>
+                                @endif
 
                                 <!-- PRIORITY ALLOCATION HIGHLIGHT BANNER -->
                                 @if($isTopPriority || (isset($criteria['is_top_priority']) && $criteria['is_top_priority']))
@@ -548,9 +595,20 @@
                                                                 default => 'bg-blue-100 text-blue-800 border-blue-200',
                                                             };
                                                         @endphp
-                                                        <span class="px-2.5 py-0.5 rounded-full text-[10px] font-black border {{ $vBadgeColor }}">
-                                                            {{ $ticket->vehicle_type_label }}
-                                                        </span>
+                                                        <div class="flex items-center gap-1.5 flex-wrap">
+                                                            <span class="px-2.5 py-0.5 rounded-full text-[10px] font-black border {{ $vBadgeColor }}">
+                                                                {{ $ticket->vehicle_type_label }}
+                                                            </span>
+                                                            @if($ticket->is_public)
+                                                                <span class="px-2 py-0.5 rounded-full text-[9px] font-extrabold bg-amber-100 text-amber-900 border border-amber-200">
+                                                                    Tarif Umum: {{ $ticket->formatted_fee }} (Floating)
+                                                                </span>
+                                                            @else
+                                                                <span class="px-2 py-0.5 rounded-full text-[9px] font-extrabold bg-emerald-100 text-emerald-900 border border-emerald-200">
+                                                                    Gratis (Kuota Resmi)
+                                                                </span>
+                                                            @endif
+                                                        </div>
                                                         <span class="font-mono text-xs font-black text-slate-600 bg-slate-100 px-2 py-0.5 rounded">
                                                             {{ $ticket->ticket_code }}
                                                         </span>
@@ -613,12 +671,21 @@
                                     <div class="text-center py-10 bg-slate-50 rounded-2xl border border-dashed border-slate-300">
                                         <i class="fa-solid fa-car-side text-4xl text-slate-300 mb-2"></i>
                                         <h4 class="font-bold text-sm text-slate-700">Belum Ada Kendaraan yang Didaftarkan</h4>
-                                        <p class="text-xs text-slate-500 mt-1 max-w-sm mx-auto">
-                                            Sekolah Anda memiliki kuota {{ $r4Allocated }} Mobil dan {{ $r2Allocated }} Motor. Daftarkan sekarang untuk mendapatkan tiket resmi.
-                                        </p>
-                                        <button type="button" @click="openModal()" class="mt-4 px-5 py-2.5 bg-rose-600 hover:bg-rose-700 text-white font-black text-xs rounded-xl shadow transition">
-                                            Daftarkan Kendaraan Sekarang
-                                        </button>
+                                        @if(!$isExpired)
+                                            <p class="text-xs text-slate-500 mt-1 max-w-sm mx-auto">
+                                                Sekolah Anda memiliki kuota resmi {{ $r4Allocated }} Mobil dan {{ $r2Allocated }} Motor. Daftarkan sebelum batas akhir ({{ $parkingDeadline?->translatedFormat('d F Y, H:i') ?? 'H+1 Gelombang 2' }} WIB) untuk mendapatkan tiket gratis.
+                                            </p>
+                                            <button type="button" @click="openModal()" class="mt-4 px-5 py-2.5 bg-rose-600 hover:bg-rose-700 text-white font-black text-xs rounded-xl shadow transition cursor-pointer">
+                                                <i class="fa-solid fa-plus mr-1"></i> Daftarkan Kendaraan Sekarang (Gratis)
+                                            </button>
+                                        @else
+                                            <p class="text-xs text-amber-800 font-medium mt-1 max-w-md mx-auto leading-relaxed">
+                                                Batas waktu pendaftaran kuota gratis resmi telah berakhir pada {{ $parkingDeadline?->translatedFormat('d F Y, H:i') ?? 'H+1 Gelombang 2' }} WIB. Anda dapat mendaftarkan kendaraan kontingen dengan <strong>Tarif Parkir Umum</strong> dan penempatan sistem <strong>Floating Parkir</strong>.
+                                            </p>
+                                            <button type="button" @click="openModal()" class="mt-4 px-5 py-2.5 bg-gradient-to-r from-amber-600 to-yellow-600 hover:from-amber-700 hover:to-yellow-700 text-white font-black text-xs rounded-xl shadow transition cursor-pointer">
+                                                <i class="fa-solid fa-ticket mr-1"></i> Daftarkan Kendaraan (Tarif Umum Floating)
+                                            </button>
+                                        @endif
                                     </div>
                                 @endif
                             </div>
@@ -676,7 +743,9 @@
                                         </div>
                                         <div>
                                             <span class="text-[9px] font-black uppercase tracking-widest text-rose-200 block">SUA BHAKTI BERKARYA IV 2026</span>
-                                            <h3 class="font-black text-base text-white leading-tight">Registrasi Kendaraan & E-Tiket Parkir</h3>
+                                            <h3 class="font-black text-base text-white leading-tight">
+                                                {{ $isExpired ? 'Pendaftaran Kendaraan Kontingen (Tarif Umum Floating)' : 'Registrasi Kendaraan & E-Tiket Parkir' }}
+                                            </h3>
                                         </div>
                                     </div>
                                     <button type="button" @click="closeModal()" class="w-8 h-8 rounded-full bg-white/20 hover:bg-white/30 text-white flex items-center justify-center transition">✕</button>
@@ -692,23 +761,85 @@
                                 @csrf
                                 <input type="hidden" name="registration_code" value="{{ $registration->registration_code }}">
 
-                                <!-- Quota Alert -->
-                                <div class="bg-slate-50 border border-slate-200 rounded-2xl p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
-                                    <div>
-                                        <span class="text-[10px] font-black uppercase tracking-wider text-slate-500 block">HAK KUOTA PARKIR KONTINGEN:</span>
-                                        <p class="text-xs text-slate-700 mt-0.5">
-                                            Berdasarkan <strong>{{ $registration->total_teams_count }} regu</strong> yang terdaftar, kuota Anda:
-                                        </p>
+                                <!-- Quota Alert (Sebelum Batas Waktu) vs Policy Banner (Setelah Batas Waktu) -->
+                                @if(!$isExpired)
+                                    <div class="bg-slate-50 border border-slate-200 rounded-2xl p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+                                        <div>
+                                            <span class="text-[10px] font-black uppercase tracking-wider text-slate-500 block">HAK KUOTA PARKIR RESMI KONTINGEN:</span>
+                                            <p class="text-xs text-slate-700 mt-0.5">
+                                                Berdasarkan <strong>{{ $registration->total_teams_count }} regu</strong> yang terdaftar, kuota gratis Anda:
+                                            </p>
+                                            @if($parkingDeadline)
+                                                <p class="text-[11px] text-amber-700 font-bold mt-1">
+                                                    <i class="fa-regular fa-clock"></i> Batas Klaim Gratis: {{ $parkingDeadline->translatedFormat('d F Y, H:i') }} WIB (H+1 Gelombang 2)
+                                                </p>
+                                            @endif
+                                        </div>
+                                        <div class="flex items-center gap-2">
+                                            <span class="px-3 py-1.5 rounded-xl bg-blue-100 text-blue-900 border border-blue-200 font-bold text-xs flex items-center gap-1.5">
+                                                <i class="fa-solid fa-car"></i> Sisa Mobil: <span class="font-black text-sm" x-text="dynamicR4Remaining"></span>
+                                            </span>
+                                            <span class="px-3 py-1.5 rounded-xl bg-purple-100 text-purple-900 border border-purple-200 font-bold text-xs flex items-center gap-1.5">
+                                                <i class="fa-solid fa-motorcycle"></i> Sisa Motor: <span class="font-black text-sm" x-text="dynamicR2Remaining"></span>
+                                            </span>
+                                        </div>
                                     </div>
-                                    <div class="flex items-center gap-2">
-                                        <span class="px-3 py-1.5 rounded-xl bg-blue-100 text-blue-900 border border-blue-200 font-bold text-xs flex items-center gap-1.5">
-                                            <i class="fa-solid fa-car"></i> Sisa Mobil: <span class="font-black text-sm" x-text="dynamicR4Remaining"></span>
-                                        </span>
-                                        <span class="px-3 py-1.5 rounded-xl bg-purple-100 text-purple-900 border border-purple-200 font-bold text-xs flex items-center gap-1.5">
-                                            <i class="fa-solid fa-motorcycle"></i> Sisa Motor: <span class="font-black text-sm" x-text="dynamicR2Remaining"></span>
-                                        </span>
+                                @else
+                                    <div class="bg-amber-500/10 border-2 border-amber-400 rounded-2xl p-4 space-y-3">
+                                        <div class="flex items-start gap-2.5 text-amber-950">
+                                            <i class="fa-solid fa-triangle-exclamation text-amber-600 text-base mt-0.5 shrink-0"></i>
+                                            <div>
+                                                <h4 class="font-black text-xs uppercase tracking-wide text-amber-950">
+                                                    Batas Waktu Kuota Parkir Gratis Kontingen Telah Berakhir
+                                                </h4>
+                                                <p class="text-[11px] text-amber-900 mt-0.5 leading-relaxed">
+                                                    Batas pendaftaran kuota gratis resmi ditutup pada <strong>{{ $parkingDeadline?->translatedFormat('d F Y, H:i') ?? 'H+1 Gelombang 2' }} WIB</strong>. Pendaftaran saat ini dialihkan ke <strong>Tarif Parkir Umum</strong> dengan sistem <strong>Floating Parkir</strong> (penempatan kantong parkir menyesuaikan sisa slot kosong yang tersedia).
+                                                </p>
+                                            </div>
+                                        </div>
+
+                                        <!-- Tarif Parkir Singkat -->
+                                        <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 text-[11px]">
+                                            <div class="bg-white/90 p-2 rounded-xl border border-amber-200 text-center">
+                                                <span class="text-slate-500 block text-[10px]">Motor (R2)</span>
+                                                <span class="font-mono font-black text-slate-800">Rp {{ number_format($fareSetting->fare_r2_motor, 0, ',', '.') }}</span>
+                                            </div>
+                                            <div class="bg-white/90 p-2 rounded-xl border border-amber-200 text-center">
+                                                <span class="text-slate-500 block text-[10px]">Mobil (R4)</span>
+                                                <span class="font-mono font-black text-slate-800">Rp {{ number_format($fareSetting->fare_r4_car, 0, ',', '.') }}</span>
+                                            </div>
+                                            <div class="bg-white/90 p-2 rounded-xl border border-amber-200 text-center">
+                                                <span class="text-slate-500 block text-[10px]">Minibus (Elf)</span>
+                                                <span class="font-mono font-black text-slate-800">Rp {{ number_format($fareSetting->fare_r4_minibus, 0, ',', '.') }}</span>
+                                            </div>
+                                            <div class="bg-white/90 p-2 rounded-xl border border-amber-200 text-center">
+                                                <span class="text-slate-500 block text-[10px]">Bus Pariwisata</span>
+                                                <span class="font-mono font-black text-slate-800">Rp {{ number_format($fareSetting->fare_r6_bus, 0, ',', '.') }}</span>
+                                            </div>
+                                        </div>
+
+                                        <!-- Pilihan Metode Pembayaran -->
+                                        <div class="pt-2 border-t border-amber-200/80">
+                                            <span class="text-[10px] font-black uppercase text-amber-950 block mb-1.5">Pilih Metode Pembayaran:</span>
+                                            <div class="grid grid-cols-2 gap-2 text-xs">
+                                                <label class="flex items-center gap-2 p-2.5 bg-white rounded-xl border border-amber-200 cursor-pointer hover:border-amber-400">
+                                                    <input type="radio" name="payment_method" value="cash" checked class="text-amber-600 focus:ring-amber-500">
+                                                    <div>
+                                                        <span class="font-bold text-slate-800 block text-xs">Tunai (Cash)</span>
+                                                        <span class="text-[10px] text-slate-500">Bayar saat tiba di gerbang</span>
+                                                    </div>
+                                                </label>
+                                                <label class="flex items-center gap-2 p-2.5 bg-white rounded-xl border border-amber-200 cursor-pointer hover:border-amber-400">
+                                                    <input type="radio" name="payment_method" value="qris" class="text-amber-600 focus:ring-amber-500">
+                                                    <div>
+                                                        <span class="font-bold text-slate-800 block text-xs">QRIS Digital</span>
+                                                        <span class="text-[10px] text-slate-500">Scan QRIS panitia di lokasi</span>
+                                                    </div>
+                                                </label>
+                                            </div>
+                                        </div>
                                     </div>
-                                </div>
+                                @endif
 
                                 <!-- Dynamic Vehicle Rows -->
                                 <div class="space-y-4">
@@ -774,15 +905,28 @@
                                     <button type="button" @click="addVehicle()" :disabled="!canAddMore" class="px-4 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 disabled:opacity-50 text-slate-700 font-bold text-xs transition flex items-center gap-1.5 cursor-pointer">
                                         <i class="fa-solid fa-plus text-rose-500"></i> Tambah Kendaraan Lainnya
                                     </button>
-                                    <span class="text-[11px] text-slate-400 italic" x-show="!canAddMore">Maksimal sesuai kuota yang tersedia.</span>
+                                    <span class="text-[11px] text-slate-400 italic" x-show="!canAddMore">
+                                        {{ $isExpired ? 'Maksimal 10 kendaraan per pengajuan.' : 'Maksimal sesuai sisa kuota resmi.' }}
+                                    </span>
                                 </div>
 
+                                @if($isExpired)
+                                    <div class="p-3.5 bg-amber-50 rounded-2xl border border-amber-200 flex items-center justify-between text-xs font-bold text-amber-950">
+                                        <div>
+                                            <span class="block text-[11px] text-amber-800">Total Tarif Parkir Umum (<span x-text="vehicles.length"></span> Kendaraan):</span>
+                                            <span class="text-[10px] text-slate-500 font-normal">Penempatan: Floating Parkir (sesuai slot kantong tersedia)</span>
+                                        </div>
+                                        <span class="font-mono font-black text-base text-amber-900" x-text="formattedTotalFare"></span>
+                                    </div>
+                                @endif
+
                                 <div class="pt-4 border-t border-slate-200 flex items-center justify-end gap-3">
-                                    <button type="button" @click="closeModal()" class="px-4 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs transition">
+                                    <button type="button" @click="closeModal()" class="px-4 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs transition cursor-pointer">
                                         Tutup
                                     </button>
-                                    <button type="submit" class="px-6 py-2.5 rounded-xl bg-rose-600 hover:bg-rose-700 text-white font-extrabold text-xs shadow-md transition flex items-center gap-2">
-                                        <i class="fa-solid fa-paper-plane"></i> Kirim Pendaftaran Kendaraan & Ajukan Tiket
+                                    <button type="submit" class="px-6 py-2.5 rounded-xl {{ $isExpired ? 'bg-gradient-to-r from-amber-600 to-yellow-600 hover:from-amber-700 hover:to-yellow-700' : 'bg-rose-600 hover:bg-rose-700' }} text-white font-extrabold text-xs shadow-md transition flex items-center gap-2 cursor-pointer">
+                                        <i class="fa-solid fa-paper-plane"></i>
+                                        <span>{{ $isExpired ? 'Kirim Pendaftaran (Tarif Umum Floating)' : 'Kirim Pendaftaran Kendaraan (Klaim Kuota Gratis)' }}</span>
                                     </button>
                                 </div>
                             </form>
@@ -851,10 +995,12 @@
             showModal: config.autoOpenModal || false,
             r4Remaining: config.r4Remaining || 0,
             r2Remaining: config.r2Remaining || 0,
+            isExpired: config.isExpired || false,
+            fares: config.fares || { r2_motor: 5000, r4_car: 10000, r4_elf: 25000, r4_bus: 50000 },
             copied: false,
             vehicles: [
                 {
-                    vehicle_type: (config.r4Remaining > 0 ? 'r4_car' : 'r2_motor'),
+                    vehicle_type: (config.isExpired ? 'r4_car' : (config.r4Remaining > 0 ? 'r4_car' : 'r2_motor')),
                     license_plate: '',
                     vehicle_brand: '',
                     vehicle_color: '',
@@ -882,7 +1028,16 @@
             get dynamicR2Remaining() {
                 return Math.max(0, this.r2Remaining - this.r2Count);
             },
+            get totalFare() {
+                return this.vehicles.reduce((sum, v) => sum + (this.fares[v.vehicle_type] || 0), 0);
+            },
+            get formattedTotalFare() {
+                return 'Rp ' + this.totalFare.toLocaleString('id-ID');
+            },
             get canAddMore() {
+                if (this.isExpired) {
+                    return this.vehicles.length < 10;
+                }
                 return (this.dynamicR4Remaining + this.dynamicR2Remaining) > 0;
             },
             openModal() {
@@ -893,8 +1048,12 @@
             },
             addVehicle() {
                 if (this.canAddMore) {
+                    let defaultType = 'r4_car';
+                    if (!this.isExpired) {
+                        defaultType = (this.dynamicR4Remaining > 0 ? 'r4_car' : 'r2_motor');
+                    }
                     this.vehicles.push({
-                        vehicle_type: (this.dynamicR4Remaining > 0 ? 'r4_car' : 'r2_motor'),
+                        vehicle_type: defaultType,
                         license_plate: '',
                         vehicle_brand: '',
                         vehicle_color: '',

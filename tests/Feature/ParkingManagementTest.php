@@ -777,4 +777,88 @@ class ParkingManagementTest extends TestCase
             'is_public' => true,
         ]);
     }
+
+    public function test_contingent_vehicle_registration_respects_wave2_deadline_and_switches_to_public_fare(): void
+    {
+        $event = $this->registration->event;
+        $event->update([
+            'is_waves_enabled' => true,
+            'wave2_end_date' => now()->addDays(3),
+        ]);
+
+        $category = CompetitionCategory::create([
+            'competition_event_id' => $event->id,
+            'name' => 'Pertolongan Pertama',
+            'code' => 'PP-WIRA',
+            'level' => 'Wira',
+            'is_active' => true,
+        ]);
+
+        CompetitionParticipantTeam::create([
+            'competition_registration_id' => $this->registration->id,
+            'competition_category_id' => $category->id,
+            'team_name' => 'Tim A',
+            'level' => 'Wira',
+        ]);
+
+        // 1. Sebelum batas waktu: kuota gratis aktif
+        $this->assertFalse($this->registration->fresh()->is_parking_registration_expired);
+        $this->assertEquals(1, $this->registration->fresh()->remaining_quota_r4);
+
+        $responseBeforeDeadline = $this->post(route('lomba.register-vehicles'), [
+            'registration_code' => $this->registration->registration_code,
+            'vehicles' => [
+                [
+                    'vehicle_type' => 'r4_car',
+                    'license_plate' => 'F 1111 FREE',
+                    'driver_name' => 'Sopir Resmi',
+                    'driver_phone' => '0812345678',
+                ],
+            ],
+        ]);
+
+        $responseBeforeDeadline->assertRedirect(route('lomba.status', ['code' => $this->registration->registration_code]));
+        $this->assertDatabaseHas('parking_tickets', [
+            'license_plate' => 'F 1111 FREE',
+            'competition_registration_id' => $this->registration->id,
+            'is_public' => false,
+            'fee_amount' => 0,
+            'status' => 'booked',
+        ]);
+
+        // 2. Simulasikan batas waktu telah lewat (H+1 penutupan gelombang 2)
+        $event->update([
+            'wave2_end_date' => now()->subDays(2), // Lewat lebih dari 1 hari
+        ]);
+
+        $regFresh = $this->registration->fresh();
+        $this->assertTrue($regFresh->is_parking_registration_expired);
+        $this->assertEquals(0, $regFresh->remaining_quota_r4);
+        $this->assertEquals(0, $regFresh->remaining_quota_r2);
+
+        // Pendaftaran setelah deadline akan otomatis dialihkan ke tarif umum & floating parkir
+        $responseAfterDeadline = $this->post(route('lomba.register-vehicles'), [
+            'registration_code' => $this->registration->registration_code,
+            'payment_method' => 'cash',
+            'vehicles' => [
+                [
+                    'vehicle_type' => 'r4_car',
+                    'license_plate' => 'B 9999 FLOAT',
+                    'driver_name' => 'Sopir Floating',
+                    'driver_phone' => '081299998888',
+                ],
+            ],
+        ]);
+
+        $responseAfterDeadline->assertRedirect(route('lomba.status', ['code' => $this->registration->registration_code]));
+        $this->assertDatabaseHas('parking_tickets', [
+            'license_plate' => 'B 9999 FLOAT',
+            'competition_registration_id' => $this->registration->id,
+            'is_public' => true,
+            'fee_amount' => 10000,
+            'payment_method' => 'cash',
+            'payment_status' => 'unpaid',
+            'status' => 'booked',
+        ]);
+    }
 }
