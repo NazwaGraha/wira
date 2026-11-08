@@ -30,6 +30,13 @@
 
         <div class="p-6 space-y-5">
             
+            @if(session('success'))
+                <div class="p-3 bg-emerald-500/20 border border-emerald-500/40 rounded-2xl text-emerald-300 text-xs text-center flex items-center justify-center gap-2">
+                    <i class="fa-solid fa-circle-check text-emerald-400 text-sm"></i>
+                    <span>{{ session('success') }}</span>
+                </div>
+            @endif
+
             <!-- QR Code Section -->
             <div class="text-center">
                 <div class="inline-block p-4 bg-white rounded-3xl shadow-xl relative border-2 border-slate-700">
@@ -79,6 +86,17 @@
                     <span class="text-slate-400">Pengemudi / Sopir:</span>
                     <span class="font-bold text-slate-200">{{ $ticket->driver_name ?: '-' }}</span>
                 </div>
+                @if($ticket->is_public)
+                    <div class="flex items-center justify-between pt-2 border-t border-slate-800">
+                        <span class="text-amber-400 font-bold">Biaya Tiket Parkir:</span>
+                        <div class="text-right">
+                            <span class="font-mono font-black text-amber-300 text-sm block">{{ $ticket->formatted_fee }}</span>
+                            <span class="text-[9px] font-bold px-2 py-0.5 rounded-full inline-block mt-0.5 {{ $ticket->payment_status === 'paid' ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/40' : 'bg-amber-500/20 text-amber-300 border border-amber-500/40' }}">
+                                {{ $ticket->payment_status === 'paid' ? 'LUNAS (' . strtoupper($ticket->payment_method) . ')' : 'BAYAR DI PINTU' }}
+                            </span>
+                        </div>
+                    </div>
+                @endif
             </div>
 
             <!-- Navigation & Contact Action Buttons -->
@@ -89,11 +107,24 @@
                     </a>
                 @endif
 
+                <div class="grid grid-cols-2 gap-2">
+                    <a href="{{ route('admin.parking.tickets.print', $ticket->id) }}" target="_blank" class="py-2.5 bg-slate-800 hover:bg-slate-700 text-white font-bold text-xs rounded-xl shadow-md transition flex items-center justify-center gap-1.5 border border-slate-700">
+                        <i class="fa-solid fa-print"></i> Cetak PDF / Karcis
+                    </a>
+                    <a href="https://wa.me/?text=Halo,%20berikut%20e-tiket%20parkir%20resmi%20lomba%20PMR%20SMAN%201%20Ciawi%20saya%20(Plat%20{{ urlencode($ticket->license_plate) }}):%20{{ urlencode(route('parking.public-ticket', $ticket->qr_code_token)) }}" target="_blank" class="py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs rounded-xl shadow-md transition flex items-center justify-center gap-1.5">
+                        <i class="fa-brands fa-whatsapp"></i> Bagikan Tiket
+                    </a>
+                </div>
+
                 @if($ticket->location?->officer_phone)
-                    <a href="https://wa.me/{{ preg_replace('/[^0-9]/', '', $ticket->location->officer_phone) }}?text=Halo%20Petugas%20{{ urlencode($ticket->location->name) }},%20saya%20kontingen%20{{ urlencode($ticket->school_name) }}%20(Plat%20{{ urlencode($ticket->license_plate) }}),%20sedang%20menuju%20lokasi." target="_blank" class="w-full py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs rounded-2xl shadow-md transition flex items-center justify-center gap-2">
-                        <i class="fa-brands fa-whatsapp text-sm"></i> Hubungi Petugas Kantong Parkir
+                    <a href="https://wa.me/{{ preg_replace('/[^0-9]/', '', $ticket->location->officer_phone) }}?text=Halo%20Petugas%20{{ urlencode($ticket->location->name) }},%20saya%20pengunjung%20(Plat%20{{ urlencode($ticket->license_plate) }}),%20sedang%20menuju%20lokasi." target="_blank" class="w-full py-2 bg-slate-800/80 hover:bg-slate-800 text-slate-300 font-bold text-[11px] rounded-xl transition flex items-center justify-center gap-2 border border-slate-700/60">
+                        <i class="fa-brands fa-whatsapp text-emerald-400"></i> Kontak Petugas Kantong Parkir
                     </a>
                 @endif
+
+                <a href="{{ route('lomba.index') }}" class="w-full py-2 bg-transparent hover:bg-slate-800 text-slate-400 hover:text-white font-medium text-xs rounded-xl transition flex items-center justify-center gap-1.5">
+                    <i class="fa-solid fa-arrow-left"></i> Kembali ke Portal Lomba
+                </a>
             </div>
 
             <!-- Status Notice -->

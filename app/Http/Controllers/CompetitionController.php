@@ -10,6 +10,7 @@ use App\Models\CompetitionParticipantTeam;
 use App\Models\CompetitionRegistration;
 use App\Models\CompetitionScore;
 use App\Models\Gallery;
+use App\Models\ParkingFareSetting;
 use App\Models\ParkingLocation;
 use App\Models\ParkingTicket;
 use App\Services\CompetitionSpreadsheetService;
@@ -93,7 +94,10 @@ class CompetitionController extends Controller
             $isInfoMenuVisible = $targetEvent->isInfoMenuVisible();
         }
 
-        return view('pages.lomba.index', compact('event', 'pastEvent', 'pageState', 'categoriesByLevel', 'infoMenus', 'isInfoMenuVisible', 'pastGalleries'));
+        // Pengaturan Tarif Parkir Umum
+        $parkingFareSetting = ParkingFareSetting::current();
+
+        return view('pages.lomba.index', compact('event', 'pastEvent', 'pageState', 'categoriesByLevel', 'infoMenus', 'isInfoMenuVisible', 'pastGalleries', 'parkingFareSetting'));
     }
 
     public function register()
@@ -603,6 +607,77 @@ class CompetitionController extends Controller
 
         return redirect()->route('lomba.status', ['code' => $registration->registration_code])
             ->with('success', "Kendaraan dengan nomor polisi {$plate} berhasil dihapus dari daftar parkir.");
+    }
+
+    /**
+     * Pembelian E-Tiket Parkir Resmi Pengunjung Umum dari Portal Lomba
+     */
+    public function storePublicParkingTicket(Request $request)
+    {
+        $fareSetting = ParkingFareSetting::current();
+
+        if (! $fareSetting->is_public_parking_active) {
+            return back()->with('error', 'Mohon maaf, pemesanan tiket parkir umum saat ini sedang ditutup oleh panitia.');
+        }
+
+        $validated = $request->validate([
+            'vehicle_type' => 'required|in:r2_motor,r4_car,r4_elf,r4_bus',
+            'license_plate' => 'required|string|max:30',
+            'vehicle_brand' => 'nullable|string|max:100',
+            'vehicle_color' => 'nullable|string|max:50',
+            'driver_name' => 'required|string|max:100',
+            'driver_phone' => 'required|string|max:30',
+            'payment_method' => 'required|in:qris,cash',
+        ]);
+
+        $validated['license_plate'] = strtoupper(trim($validated['license_plate']));
+        $validated['is_public'] = true;
+        $validated['fee_amount'] = $fareSetting->getFareForVehicleType($validated['vehicle_type']);
+        $validated['payment_status'] = ($validated['payment_method'] === 'qris') ? 'paid' : 'unpaid';
+        $validated['status'] = 'booked';
+
+        // Auto-assign ke kantong parkir umum yang tersedia
+        $isR4 = in_array($validated['vehicle_type'], ['r4_car', 'r4_elf', 'r4_bus']);
+        $location = ParkingLocation::where('status', 'open')
+            ->get()
+            ->first(function ($loc) use ($isR4) {
+                return $isR4 ? ($loc->remaining_r4 > 0) : ($loc->remaining_r2 > 0);
+            }) ?: ParkingLocation::where('status', 'open')->first();
+
+        if ($location) {
+            $validated['parking_location_id'] = $location->id;
+        }
+
+        $ticket = ParkingTicket::create($validated);
+
+        return redirect()->route('parking.public-ticket', $ticket->qr_code_token)
+            ->with('success', 'E-Tiket parkir umum Anda berhasil diterbitkan! Silakan simpan atau screenshot tiket ini.');
+    }
+
+    /**
+     * Lacak / Cek E-Tiket Parkir Pengunjung Umum berdasarkan Plat Nomor atau Kode Tiket
+     */
+    public function checkPublicParkingTicket(Request $request)
+    {
+        $query = trim($request->input('ticket_search', ''));
+
+        if (! $query) {
+            return back()->with('error', 'Silakan masukkan nomor polisi (plat) atau kode tiket parkir.');
+        }
+
+        $cleanQuery = strtoupper(str_replace(' ', '', $query));
+
+        $ticket = ParkingTicket::where(function ($q) use ($query, $cleanQuery) {
+            $q->where('ticket_code', 'like', "%{$query}%")
+                ->orWhereRaw("UPPER(REPLACE(license_plate, ' ', '')) = ?", [$cleanQuery])
+                ->orWhere('driver_phone', 'like', "%{$query}%");
+        })->latest()->first();
+
+        if (! $ticket) {
+            return back()->with('error', "Tiket parkir untuk '{$query}' tidak ditemukan. Pastikan nomor plat atau kode tiket benar.");
+        }
+
+        return redirect()->route('parking.public-ticket', $ticket->qr_code_token);
     }
 
     /**

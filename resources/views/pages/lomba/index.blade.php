@@ -604,6 +604,9 @@
                             <i class="fa-solid fa-square-poll-vertical"></i> <span>Live Klasemen Juara</span>
                         </a>
                     @endif
+                    <a href="#tiket-parkir-umum" class="w-full sm:w-auto bg-gradient-to-r from-amber-500 to-yellow-600 hover:from-amber-600 hover:to-yellow-700 text-slate-950 font-black px-7 py-3.5 rounded-xl shadow-lg shadow-amber-950/30 transition flex items-center justify-center gap-2 text-sm sm:text-base">
+                        <i class="fa-solid fa-coins text-slate-950"></i> <span>Beli Tiket Parkir Umum</span>
+                    </a>
                     @if($event ? $event->isHandbookButtonVisible() : false)
                         @php
                             $handbookUrl = ($event && $event->handbook_file) ? asset('storage/' . $event->handbook_file) : null;
@@ -941,6 +944,296 @@
                     </a>
                 </div>
             </div>
+        </div>
+    </section>
+
+    <!-- =================================================================== -->
+    <!-- SECTION KHUSUS: PEMESANAN & PEMBELIAN E-TIKET PARKIR PENGUNJUNG UMUM  -->
+    <!-- =================================================================== -->
+    <section id="tiket-parkir-umum" class="py-14 sm:py-20 bg-slate-900 text-white relative overflow-hidden border-t border-slate-800"
+        x-data="publicParkingBooking({
+            rates: {
+                r2_motor: {{ $parkingFareSetting->fare_r2_motor ?? 5000 }},
+                r4_car: {{ $parkingFareSetting->fare_r4_car ?? 10000 }},
+                r4_elf: {{ $parkingFareSetting->fare_r4_minibus ?? 25000 }},
+                r4_bus: {{ $parkingFareSetting->fare_r6_bus ?? 50000 }}
+            },
+            isActive: {{ ($parkingFareSetting->is_public_parking_active ?? true) ? 'true' : 'false' }},
+            defaultType: 'r4_car'
+        })">
+        
+        <!-- Ambient Glow -->
+        <div class="absolute inset-0 opacity-15 bg-[radial-gradient(#f59e0b_1px,transparent_1px)] [background-size:20px_20px] pointer-events-none"></div>
+        <div class="absolute -top-40 -right-40 w-96 h-96 bg-amber-500/10 rounded-full blur-3xl pointer-events-none"></div>
+        <div class="absolute -bottom-40 -left-40 w-96 h-96 bg-red-600/10 rounded-full blur-3xl pointer-events-none"></div>
+
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+
+            <!-- Section Header -->
+            <div class="text-center max-w-3xl mx-auto mb-10 sm:mb-14">
+                <div class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full text-xs font-black uppercase tracking-wider bg-amber-500/15 text-amber-300 border border-amber-500/30 mb-3 shadow-inner">
+                    <i class="fa-solid fa-coins text-amber-400"></i>
+                    <span>E-TIKET RESMI HARI-H • FASILITAS PENGUNJUNG UMUM</span>
+                </div>
+                <h2 class="text-2xl sm:text-4xl font-black text-white tracking-tight">
+                    Pemesanan & Pembelian E-Tiket Parkir Resmi Pengunjung Umum
+                </h2>
+                <p class="text-slate-400 text-xs sm:text-sm md:text-base mt-2.5 leading-relaxed">
+                    Fasilitas kantong parkir resmi Sua Bhakti Berkarya IV 2026 untuk orang tua siswa, alumni, supporter, dan penonton umum di kampus SMAN 1 Ciawi Bogor.
+                </p>
+            </div>
+
+            <!-- Flash Alert -->
+            @if(session('success'))
+                <div class="mb-8 max-w-4xl mx-auto bg-emerald-500/15 border border-emerald-500/40 text-emerald-300 px-5 py-4 rounded-2xl flex items-center gap-3">
+                    <i class="fa-solid fa-circle-check text-emerald-400 text-xl shrink-0"></i>
+                    <div class="text-xs sm:text-sm font-semibold">{{ session('success') }}</div>
+                </div>
+            @endif
+
+            @if(session('error'))
+                <div class="mb-8 max-w-4xl mx-auto bg-rose-500/15 border border-rose-500/40 text-rose-300 px-5 py-4 rounded-2xl flex items-center gap-3">
+                    <i class="fa-solid fa-circle-exclamation text-rose-400 text-xl shrink-0"></i>
+                    <div class="text-xs sm:text-sm font-semibold">{{ session('error') }}</div>
+                </div>
+            @endif
+
+            <!-- 4 Column Rates Showcase Cards -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5 mb-10">
+                <!-- Roda 2 -->
+                <div @click="selectVehicleType('r2_motor')" :class="vehicleType === 'r2_motor' ? 'ring-2 ring-purple-400 bg-slate-800/90 shadow-lg shadow-purple-950/40 scale-[1.02]' : 'bg-slate-800/60 hover:bg-slate-800/80 border-slate-700/80'" class="p-5 rounded-3xl border transition cursor-pointer flex flex-col justify-between group">
+                    <div>
+                        <div class="flex items-center justify-between mb-3">
+                            <div class="w-11 h-11 rounded-2xl bg-purple-500/15 text-purple-400 flex items-center justify-center text-xl shadow-inner group-hover:scale-110 transition">
+                                <i class="fa-solid fa-motorcycle"></i>
+                            </div>
+                            <span class="text-[10px] font-black uppercase tracking-wider text-purple-300 bg-purple-500/20 border border-purple-500/30 px-2.5 py-0.5 rounded-full">
+                                RODA 2
+                            </span>
+                        </div>
+                        <h4 class="font-black text-sm text-white">Sepeda Motor</h4>
+                        <span class="text-[11px] text-slate-400 block mt-0.5">Matic, Bebek, Sport</span>
+                    </div>
+                    <div class="pt-3 border-t border-slate-700/60 flex items-baseline justify-between mt-3">
+                        <span class="text-[10px] text-slate-400">Tarif Flat:</span>
+                        <span class="font-mono font-black text-base text-purple-300">Rp {{ number_format($parkingFareSetting->fare_r2_motor ?? 5000, 0, ',', '.') }}</span>
+                    </div>
+                </div>
+
+                <!-- Roda 4 Mobil Pribadi -->
+                <div @click="selectVehicleType('r4_car')" :class="vehicleType === 'r4_car' ? 'ring-2 ring-blue-400 bg-slate-800/90 shadow-lg shadow-blue-950/40 scale-[1.02]' : 'bg-slate-800/60 hover:bg-slate-800/80 border-slate-700/80'" class="p-5 rounded-3xl border transition cursor-pointer flex flex-col justify-between group">
+                    <div>
+                        <div class="flex items-center justify-between mb-3">
+                            <div class="w-11 h-11 rounded-2xl bg-blue-500/15 text-blue-400 flex items-center justify-center text-xl shadow-inner group-hover:scale-110 transition">
+                                <i class="fa-solid fa-car"></i>
+                            </div>
+                            <span class="text-[10px] font-black uppercase tracking-wider text-blue-300 bg-blue-500/20 border border-blue-500/30 px-2.5 py-0.5 rounded-full">
+                                RODA 4
+                            </span>
+                        </div>
+                        <h4 class="font-black text-sm text-white">Mobil Pribadi / MPV / SUV</h4>
+                        <span class="text-[11px] text-slate-400 block mt-0.5">Avanza, Innova, Brio, dll</span>
+                    </div>
+                    <div class="pt-3 border-t border-slate-700/60 flex items-baseline justify-between mt-3">
+                        <span class="text-[10px] text-slate-400">Tarif Flat:</span>
+                        <span class="font-mono font-black text-base text-blue-300">Rp {{ number_format($parkingFareSetting->fare_r4_car ?? 10000, 0, ',', '.') }}</span>
+                    </div>
+                </div>
+
+                <!-- Roda 4+ Minibus -->
+                <div @click="selectVehicleType('r4_elf')" :class="vehicleType === 'r4_elf' ? 'ring-2 ring-amber-400 bg-slate-800/90 shadow-lg shadow-amber-950/40 scale-[1.02]' : 'bg-slate-800/60 hover:bg-slate-800/80 border-slate-700/80'" class="p-5 rounded-3xl border transition cursor-pointer flex flex-col justify-between group">
+                    <div>
+                        <div class="flex items-center justify-between mb-3">
+                            <div class="w-11 h-11 rounded-2xl bg-amber-500/15 text-amber-400 flex items-center justify-center text-xl shadow-inner group-hover:scale-110 transition">
+                                <i class="fa-solid fa-van-shuttle"></i>
+                            </div>
+                            <span class="text-[10px] font-black uppercase tracking-wider text-amber-300 bg-amber-500/20 border border-amber-500/30 px-2.5 py-0.5 rounded-full">
+                                RODA 4+ MINIBUS
+                            </span>
+                        </div>
+                        <h4 class="font-black text-sm text-white">Minibus (Elf / HiAce)</h4>
+                        <span class="text-[11px] text-slate-400 block mt-0.5">Elf Short/Long, Toyota HiAce</span>
+                    </div>
+                    <div class="pt-3 border-t border-slate-700/60 flex items-baseline justify-between mt-3">
+                        <span class="text-[10px] text-slate-400">Tarif Flat:</span>
+                        <span class="font-mono font-black text-base text-amber-300">Rp {{ number_format($parkingFareSetting->fare_r4_minibus ?? 25000, 0, ',', '.') }}</span>
+                    </div>
+                </div>
+
+                <!-- Roda 6+ Bus Besar -->
+                <div @click="selectVehicleType('r4_bus')" :class="vehicleType === 'r4_bus' ? 'ring-2 ring-rose-400 bg-slate-800/90 shadow-lg shadow-rose-950/40 scale-[1.02]' : 'bg-slate-800/60 hover:bg-slate-800/80 border-slate-700/80'" class="p-5 rounded-3xl border transition cursor-pointer flex flex-col justify-between group">
+                    <div>
+                        <div class="flex items-center justify-between mb-3">
+                            <div class="w-11 h-11 rounded-2xl bg-rose-500/15 text-rose-400 flex items-center justify-center text-xl shadow-inner group-hover:scale-110 transition">
+                                <i class="fa-solid fa-bus"></i>
+                            </div>
+                            <span class="text-[10px] font-black uppercase tracking-wider text-rose-300 bg-rose-500/20 border border-rose-500/30 px-2.5 py-0.5 rounded-full">
+                                RODA 6+ BUS
+                            </span>
+                        </div>
+                        <h4 class="font-black text-sm text-white">Bus Besar Pariwisata</h4>
+                        <span class="text-[11px] text-slate-400 block mt-0.5">Bus Besar 40–60 Kursi</span>
+                    </div>
+                    <div class="pt-3 border-t border-slate-700/60 flex items-baseline justify-between mt-3">
+                        <span class="text-[10px] text-slate-400">Tarif Flat:</span>
+                        <span class="font-mono font-black text-base text-rose-300">Rp {{ number_format($parkingFareSetting->fare_r6_bus ?? 50000, 0, ',', '.') }}</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Two-Column Interactive Grid: Form Booking & Live Preview -->
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+                
+                <!-- Left: Booking Form (7 Cols) -->
+                <div class="lg:col-span-7 bg-slate-800/80 border border-slate-700 rounded-3xl p-6 sm:p-8 shadow-2xl backdrop-blur-md">
+                    <div class="flex items-center justify-between pb-4 border-b border-slate-700/80 mb-6">
+                        <div>
+                            <span class="text-xs font-bold text-amber-400 uppercase tracking-wider block">Langkah 1 &bull; Isi Data Kendaraan</span>
+                            <h3 class="text-lg sm:text-xl font-black text-white mt-0.5">Formulir Pemesanan E-Tiket Parkir</h3>
+                        </div>
+                        <div class="w-10 h-10 rounded-2xl bg-amber-500/10 text-amber-400 border border-amber-500/20 flex items-center justify-center text-lg">
+                            <i class="fa-solid fa-ticket"></i>
+                        </div>
+                    </div>
+
+                    @if(!($parkingFareSetting->is_public_parking_active ?? true))
+                        <div class="p-6 bg-slate-900/90 rounded-2xl border border-slate-700 text-center space-y-2">
+                            <i class="fa-solid fa-lock text-3xl text-amber-400 mb-1"></i>
+                            <h4 class="text-base font-bold text-white">Layanan Parkir Umum Sedang Ditutup</h4>
+                            <p class="text-xs text-slate-400">Panitia sedang memprioritaskan kantong parkir khusus kontingen sekolah peserta lomba. Silakan cek kembali nanti atau hubungi panitia.</p>
+                        </div>
+                    @else
+                        <form action="{{ route('lomba.buy-parking-ticket') }}" method="POST" class="space-y-4">
+                            @csrf
+
+                            <!-- Pilihan Kategori Kendaraan -->
+                            <div>
+                                <label class="text-xs font-bold text-slate-300 block mb-1">Jenis Kendaraan <span class="text-rose-400">*</span></label>
+                                <select name="vehicle_type" x-model="vehicleType" required class="w-full text-xs sm:text-sm font-bold bg-slate-900 border border-slate-700 focus:border-amber-500 rounded-xl px-3.5 py-3 text-white focus:outline-none">
+                                    <option value="r2_motor">Roda 2 Sepeda Motor (Rp {{ number_format($parkingFareSetting->fare_r2_motor ?? 5000, 0, ',', '.') }})</option>
+                                    <option value="r4_car">Roda 4 Mobil Pribadi / MPV / SUV (Rp {{ number_format($parkingFareSetting->fare_r4_car ?? 10000, 0, ',', '.') }})</option>
+                                    <option value="r4_elf">Roda 4+ Minibus (Elf / HiAce) (Rp {{ number_format($parkingFareSetting->fare_r4_minibus ?? 25000, 0, ',', '.') }})</option>
+                                    <option value="r4_bus">Roda 6+ Bus Besar Pariwisata (Rp {{ number_format($parkingFareSetting->fare_r6_bus ?? 50000, 0, ',', '.') }})</option>
+                                </select>
+                            </div>
+
+                            <!-- Plat Nomor & Merek -->
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+                                <div>
+                                    <label class="text-xs font-bold text-slate-300 block mb-1">Nomor Polisi (Plat Nomor) <span class="text-rose-400">*</span></label>
+                                    <input type="text" name="license_plate" x-model="licensePlate" required placeholder="F 1845 EA" class="w-full text-xs sm:text-sm font-mono font-black uppercase bg-slate-900 border border-slate-700 focus:border-amber-500 rounded-xl px-3.5 py-3 text-white focus:outline-none">
+                                </div>
+                                <div>
+                                    <label class="text-xs font-bold text-slate-300 block mb-1">Merek & Warna Kendaraan</label>
+                                    <input type="text" name="vehicle_brand" x-model="vehicleBrand" placeholder="Toyota Avanza - Hitam" class="w-full text-xs sm:text-sm bg-slate-900 border border-slate-700 focus:border-amber-500 rounded-xl px-3.5 py-3 text-white focus:outline-none">
+                                </div>
+                            </div>
+
+                            <!-- Nama & WhatsApp -->
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+                                <div>
+                                    <label class="text-xs font-bold text-slate-300 block mb-1">Nama Pemesan / Pengemudi <span class="text-rose-400">*</span></label>
+                                    <input type="text" name="driver_name" x-model="driverName" required placeholder="Bpk. Hendra (Wali Murid)" class="w-full text-xs sm:text-sm bg-slate-900 border border-slate-700 focus:border-amber-500 rounded-xl px-3.5 py-3 text-white focus:outline-none">
+                                </div>
+                                <div>
+                                    <label class="text-xs font-bold text-slate-300 block mb-1">No. WhatsApp Aktif <span class="text-rose-400">*</span></label>
+                                    <input type="text" name="driver_phone" x-model="driverPhone" required placeholder="08123456789" class="w-full text-xs sm:text-sm font-mono bg-slate-900 border border-slate-700 focus:border-amber-500 rounded-xl px-3.5 py-3 text-white focus:outline-none">
+                                </div>
+                            </div>
+
+                            <!-- Pilihan Metode Pembayaran -->
+                            <div class="pt-2">
+                                <label class="text-xs font-bold text-slate-300 block mb-2">Pilihan Metode Pembayaran <span class="text-rose-400">*</span></label>
+                                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                    <label :class="paymentMethod === 'qris' ? 'border-emerald-500 bg-emerald-500/10 text-white' : 'border-slate-700 bg-slate-900/60 text-slate-300'" class="p-3.5 rounded-2xl border-2 flex items-center gap-3 cursor-pointer transition">
+                                        <input type="radio" name="payment_method" value="qris" x-model="paymentMethod" class="text-emerald-500 focus:ring-emerald-500">
+                                        <div>
+                                            <span class="font-bold text-xs block">QRIS Digital (Instan)</span>
+                                            <span class="text-[10px] text-slate-400">Scan bayar otomatis & tiket langsung lunas</span>
+                                        </div>
+                                    </label>
+                                    <label :class="paymentMethod === 'cash' ? 'border-amber-500 bg-amber-500/10 text-white' : 'border-slate-700 bg-slate-900/60 text-slate-300'" class="p-3.5 rounded-2xl border-2 flex items-center gap-3 cursor-pointer transition">
+                                        <input type="radio" name="payment_method" value="cash" x-model="paymentMethod" class="text-amber-500 focus:ring-amber-500">
+                                        <div>
+                                            <span class="font-bold text-xs block">Bayar Tunai di Pintu Masuk</span>
+                                            <span class="text-[10px] text-slate-400">Bayar ke petugas saat tiba di gerbang</span>
+                                        </div>
+                                    </label>
+                                </div>
+                            </div>
+
+                            <!-- Submit Button -->
+                            <div class="pt-3">
+                                <button type="submit" class="w-full py-4 rounded-2xl bg-gradient-to-r from-red-600 via-rose-600 to-red-700 hover:from-red-700 hover:to-rose-800 text-white font-black text-sm sm:text-base shadow-xl shadow-red-950/40 transition flex items-center justify-center gap-2 cursor-pointer">
+                                    <i class="fa-solid fa-lock"></i>
+                                    <span>Bayar & Terbitkan E-Tiket Parkir (<span x-text="formattedFee"></span>)</span>
+                                </button>
+                                <span class="block text-[11px] text-slate-400 text-center mt-2">
+                                    <i class="fa-solid fa-shield-halved text-emerald-400"></i> E-Tiket ber-QR Code resmi akan langsung tampil dan tautan tiket dikirim via WhatsApp.
+                                </span>
+                            </div>
+                        </form>
+                    @endif
+                </div>
+
+                <!-- Right: Live Preview & Search Ticket (5 Cols) -->
+                <div class="lg:col-span-5 space-y-6">
+
+                    <!-- Live Digital Ticket Preview Card -->
+                    <div class="bg-gradient-to-b from-slate-950 via-slate-900 to-slate-950 border-2 border-dashed border-slate-700 rounded-3xl p-6 shadow-2xl relative overflow-hidden">
+                        <div class="flex items-center justify-between pb-3 border-b border-slate-800 mb-4">
+                            <span class="text-[10px] font-black uppercase tracking-wider text-rose-400">
+                                <i class="fa-solid fa-qrcode mr-1"></i> PRATINJAU E-TIKET DIGITAL
+                            </span>
+                            <span class="text-[9px] font-mono px-2 py-0.5 rounded bg-slate-800 text-slate-400">SBB IV 2026</span>
+                        </div>
+
+                        <div class="text-center space-y-3">
+                            <div class="inline-block p-3.5 bg-white rounded-2xl shadow-lg border border-slate-200">
+                                <img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=SBB4-PARKING-PREVIEW" alt="QR Code Preview" class="w-32 h-32 mx-auto">
+                            </div>
+
+                            <div>
+                                <span class="font-mono text-base font-black px-3 py-1 bg-black rounded-lg border border-slate-700 text-white tracking-widest inline-block" x-text="licensePlate ? licensePlate.toUpperCase() : 'F 1845 EA'"></span>
+                                <span class="block text-xs font-bold text-amber-300 mt-1" x-text="driverName ? driverName : 'Nama Pengemudi'"></span>
+                            </div>
+
+                            <div class="bg-slate-900/90 rounded-xl p-3 border border-slate-800 text-xs text-left space-y-1.5">
+                                <div class="flex justify-between">
+                                    <span class="text-slate-400">Jenis:</span>
+                                    <span class="font-bold text-white" x-text="vehicleLabel"></span>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span class="text-slate-400">Tarif Flat:</span>
+                                    <span class="font-bold text-amber-400 font-mono" x-text="formattedFee"></span>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span class="text-slate-400">Status Pembayaran:</span>
+                                    <span class="font-bold" :class="paymentMethod === 'qris' ? 'text-emerald-400' : 'text-amber-400'" x-text="paymentMethod === 'qris' ? 'Lunas (QRIS Digital)' : 'Bayar di Pintu Masuk'"></span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Lacak / Cek Tiket Saya Card -->
+                    <div class="bg-slate-800/60 border border-slate-700/80 rounded-3xl p-5 shadow-lg">
+                        <h4 class="font-black text-sm text-white flex items-center gap-2 mb-1">
+                            <i class="fa-solid fa-magnifying-glass text-amber-400"></i> Sudah Pernah Memesan Tiket?
+                        </h4>
+                        <p class="text-xs text-slate-400 mb-3">Masukkan nomor polisi atau kode tiket Anda untuk membuka kembali karcis digital Anda:</p>
+
+                        <form action="{{ route('lomba.check-parking-ticket') }}" method="GET" class="flex gap-2">
+                            <input type="text" name="ticket_search" placeholder="No. Plat (Contoh: F 1845 EA)..." required class="flex-1 bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-xs font-mono font-bold text-white uppercase focus:outline-none focus:border-amber-500">
+                            <button type="submit" class="bg-amber-500 hover:bg-amber-600 text-slate-950 px-4 py-2 rounded-xl font-black text-xs transition shrink-0 cursor-pointer">
+                                Lacak
+                            </button>
+                        </form>
+                    </div>
+
+                </div>
+
+            </div>
+
         </div>
     </section>
 @endif
@@ -1341,6 +1634,36 @@
             }
         });
     });
+
+    function publicParkingBooking(config) {
+        return {
+            vehicleType: config.defaultType || 'r4_car',
+            rates: config.rates || { r2_motor: 5000, r4_car: 10000, r4_elf: 25000, r4_bus: 50000 },
+            licensePlate: '',
+            vehicleBrand: '',
+            driverName: '',
+            driverPhone: '',
+            paymentMethod: 'qris',
+            selectVehicleType(type) {
+                this.vehicleType = type;
+            },
+            get currentFee() {
+                return this.rates[this.vehicleType] || 10000;
+            },
+            get formattedFee() {
+                return 'Rp ' + Number(this.currentFee).toLocaleString('id-ID');
+            },
+            get vehicleLabel() {
+                const labels = {
+                    'r2_motor': 'Roda 2 Sepeda Motor',
+                    'r4_car': 'Roda 4 Mobil Pribadi / MPV / SUV',
+                    'r4_elf': 'Roda 4+ Minibus (Elf / HiAce)',
+                    'r4_bus': 'Roda 6+ Bus Besar Pariwisata'
+                };
+                return labels[this.vehicleType] || 'Roda 4 Mobil Pribadi / MPV / SUV';
+            }
+        };
+    }
 </script>
 @endpush
 @endsection

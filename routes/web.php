@@ -678,6 +678,8 @@ Route::prefix('lomba')->name('lomba.')->group(function () {
     Route::get('/kartu-peserta/{code}', [CompetitionController::class, 'participantCards'])->name('cards');
     Route::get('/kartu-peserta/{code}', [CompetitionController::class, 'participantCards'])->name('kartu-peserta');
     Route::get('/live-scoreboard', [CompetitionController::class, 'liveScoreboard'])->name('scoreboard');
+    Route::post('/beli-tiket-parkir', [CompetitionController::class, 'storePublicParkingTicket'])->name('buy-parking-ticket');
+    Route::get('/cek-tiket-parkir', [CompetitionController::class, 'checkPublicParkingTicket'])->name('check-parking-ticket');
 });
 
 // ================= PORTAL PENILAIAN JURI LAPANGAN (MOBILE-FIRST) =================

@@ -6,6 +6,7 @@ use App\Models\CompetitionCategory;
 use App\Models\CompetitionEvent;
 use App\Models\CompetitionParticipantTeam;
 use App\Models\CompetitionRegistration;
+use App\Models\ParkingFareSetting;
 use App\Models\ParkingLocation;
 use App\Models\ParkingTicket;
 use App\Models\User;
@@ -660,5 +661,73 @@ class ParkingManagementTest extends TestCase
             'payment_method' => 'cash',
             'payment_status' => 'paid',
         ]);
+    }
+
+    public function test_public_user_can_purchase_parking_ticket_from_competition_portal(): void
+    {
+        $response = $this->post(route('lomba.buy-parking-ticket'), [
+            'vehicle_type' => 'r4_car',
+            'license_plate' => 'F 1845 EA',
+            'vehicle_brand' => 'Toyota Avanza',
+            'vehicle_color' => 'Hitam Metalik',
+            'driver_name' => 'Hendra Setiawan',
+            'driver_phone' => '081234567890',
+            'payment_method' => 'qris',
+        ]);
+
+        $this->assertDatabaseHas('parking_tickets', [
+            'license_plate' => 'F 1845 EA',
+            'is_public' => true,
+            'vehicle_type' => 'r4_car',
+            'fee_amount' => 10000,
+            'payment_method' => 'qris',
+            'payment_status' => 'paid',
+            'driver_name' => 'Hendra Setiawan',
+        ]);
+
+        $ticket = ParkingTicket::where('license_plate', 'F 1845 EA')->first();
+        $this->assertNotNull($ticket);
+        $response->assertRedirect(route('parking.public-ticket', $ticket->qr_code_token));
+
+        // Test public ticket page renders
+        $ticketResp = $this->get(route('parking.public-ticket', $ticket->qr_code_token));
+        $ticketResp->assertOk();
+        $ticketResp->assertSee('F 1845 EA');
+        $ticketResp->assertSee('Hendra Setiawan');
+        $ticketResp->assertSee('Rp 10.000');
+    }
+
+    public function test_public_user_can_search_parking_ticket_by_plate(): void
+    {
+        $ticket = ParkingTicket::create([
+            'vehicle_type' => 'r2_motor',
+            'license_plate' => 'B 1234 XYZ',
+            'driver_name' => 'Rian',
+            'driver_phone' => '081299998888',
+            'is_public' => true,
+            'fee_amount' => 5000,
+            'payment_method' => 'cash',
+            'payment_status' => 'unpaid',
+            'status' => 'booked',
+        ]);
+
+        $response = $this->get(route('lomba.check-parking-ticket', ['ticket_search' => 'b 1234 xyz']));
+        $response->assertRedirect(route('parking.public-ticket', $ticket->qr_code_token));
+    }
+
+    public function test_public_user_cannot_purchase_ticket_when_service_is_closed(): void
+    {
+        ParkingFareSetting::current()->update(['is_public_parking_active' => false]);
+
+        $response = $this->post(route('lomba.buy-parking-ticket'), [
+            'vehicle_type' => 'r4_car',
+            'license_plate' => 'F 9999 AA',
+            'driver_name' => 'Budi',
+            'driver_phone' => '0812345678',
+            'payment_method' => 'cash',
+        ]);
+
+        $response->assertSessionHas('error');
+        $this->assertDatabaseMissing('parking_tickets', ['license_plate' => 'F 9999 AA']);
     }
 }
