@@ -602,4 +602,63 @@ class ParkingManagementTest extends TestCase
         $resp2->assertSee('Pak Hendra');
         $resp2->assertSee('Cetak Semua E-Tiket Sekaligus (PDF)');
     }
+
+    public function test_admin_can_update_parking_fare_settings(): void
+    {
+        $this->actingAs($this->admin);
+
+        $response = $this->from(route('admin.parking.index'))->post(route('admin.parking.fares.update'), [
+            'is_public_parking_active' => '1',
+            'fare_r2_motor' => 7000,
+            'fare_r4_car' => 15000,
+            'fare_r4_minibus' => 30000,
+            'fare_r6_bus' => 60000,
+            'allow_cash' => '1',
+            'allow_qris' => '1',
+            'lost_ticket_penalty' => 25000,
+            'ticket_receipt_note' => 'Simpan karcis ini baik-baik.',
+        ]);
+
+        $response->assertRedirect(route('admin.parking.index'));
+        $response->assertSessionHas('success');
+
+        $this->assertDatabaseHas('parking_fare_settings', [
+            'id' => 1,
+            'fare_r2_motor' => 7000,
+            'fare_r4_car' => 15000,
+            'fare_r4_minibus' => 30000,
+            'fare_r6_bus' => 60000,
+            'lost_ticket_penalty' => 25000,
+            'ticket_receipt_note' => 'Simpan karcis ini baik-baik.',
+        ]);
+    }
+
+    public function test_admin_can_create_public_parking_ticket_with_calculated_fare(): void
+    {
+        $this->actingAs($this->admin);
+
+        // Create public ticket for minibus elf without school registration
+        $response = $this->from(route('admin.parking.index'))->post(route('admin.parking.tickets.store'), [
+            'competition_registration_id' => '',
+            'license_plate' => 'B 9999 PMR',
+            'vehicle_type' => 'r4_elf',
+            'vehicle_brand' => 'Isuzu Elf Long',
+            'vehicle_color' => 'Silver',
+            'driver_name' => 'Bambang',
+            'driver_phone' => '081299887766',
+            'parking_location_id' => $this->locationA->id,
+            'payment_method' => 'cash',
+            'payment_status' => 'paid',
+        ]);
+
+        $response->assertRedirect(route('admin.parking.index'));
+
+        $this->assertDatabaseHas('parking_tickets', [
+            'license_plate' => 'B 9999 PMR',
+            'is_public' => true,
+            'fee_amount' => 25000,
+            'payment_method' => 'cash',
+            'payment_status' => 'paid',
+        ]);
+    }
 }

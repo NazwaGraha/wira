@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\CompetitionCategory;
 use App\Models\CompetitionRegistration;
+use App\Models\ParkingFareSetting;
 use App\Models\ParkingLocation;
 use App\Models\ParkingQuotaSetting;
 use App\Models\ParkingTicket;
@@ -82,6 +83,13 @@ class ParkingManagementController extends Controller
             ->orderBy('school_name')
             ->get(['id', 'school_name', 'registration_code', 'level']);
 
+        // Konfigurasi Tarif & Rekap Pendapatan Parkir Umum
+        $fareSetting = ParkingFareSetting::current();
+        $publicTicketsCount = ParkingTicket::where('is_public', true)->count();
+        $publicRevenueTotal = (int) ParkingTicket::where('is_public', true)->where('payment_status', 'paid')->sum('fee_amount');
+        $publicCashTotal = (int) ParkingTicket::where('is_public', true)->where('payment_method', 'cash')->where('payment_status', 'paid')->sum('fee_amount');
+        $publicQrisTotal = (int) ParkingTicket::where('is_public', true)->where('payment_method', 'qris')->where('payment_status', 'paid')->sum('fee_amount');
+
         return view('admin.parking.index', compact(
             'locations',
             'totalCapacityR4',
@@ -91,7 +99,12 @@ class ParkingManagementController extends Controller
             'totalParked',
             'totalTickets',
             'tickets',
-            'schools'
+            'schools',
+            'fareSetting',
+            'publicTicketsCount',
+            'publicRevenueTotal',
+            'publicCashTotal',
+            'publicQrisTotal'
         ));
     }
 
@@ -178,9 +191,49 @@ class ParkingManagementController extends Controller
 
         $validated['license_plate'] = strtoupper(trim($validated['license_plate']));
 
+        $fareSetting = ParkingFareSetting::current();
+        if (empty($validated['competition_registration_id'])) {
+            $validated['is_public'] = true;
+            $validated['fee_amount'] = $fareSetting->getFareForVehicleType($validated['vehicle_type']);
+            $validated['payment_method'] = $request->input('payment_method', 'cash');
+            $validated['payment_status'] = 'paid';
+        } else {
+            $validated['is_public'] = false;
+            $validated['fee_amount'] = 0;
+            $validated['payment_method'] = 'free_contingent';
+            $validated['payment_status'] = 'free';
+        }
+
         ParkingTicket::create($validated);
 
         return back()->with('success', 'Tiket parkir kendaraan berhasil diterbitkan!');
+    }
+
+    /**
+     * Update Setup Tarif & Harga Tiket Parkir Umum
+     */
+    public function updateFareSettings(Request $request): RedirectResponse
+    {
+        $validated = $request->validate([
+            'is_public_parking_active' => 'nullable',
+            'fare_r2_motor' => 'required|integer|min:0',
+            'fare_r4_car' => 'required|integer|min:0',
+            'fare_r4_minibus' => 'required|integer|min:0',
+            'fare_r6_bus' => 'required|integer|min:0',
+            'allow_cash' => 'nullable',
+            'allow_qris' => 'nullable',
+            'lost_ticket_penalty' => 'required|integer|min:0',
+            'ticket_receipt_note' => 'nullable|string|max:500',
+        ]);
+
+        $validated['is_public_parking_active'] = $request->boolean('is_public_parking_active');
+        $validated['allow_cash'] = $request->boolean('allow_cash');
+        $validated['allow_qris'] = $request->boolean('allow_qris');
+
+        $setting = ParkingFareSetting::current();
+        $setting->update($validated);
+
+        return back()->with('success', 'Setup harga tiket & tarif parkir umum berhasil diperbarui!');
     }
 
     /**

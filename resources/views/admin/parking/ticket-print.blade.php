@@ -103,6 +103,17 @@
                     <span class="text-slate-400 font-medium">Petugas Kantong:</span>
                     <span class="font-bold text-slate-900">{{ $ticket->location?->officer_name ?: '-' }}</span>
                 </div>
+                @if($ticket->is_public)
+                    <div class="flex justify-between items-center py-1 bg-amber-50 px-2 rounded-lg border border-amber-200">
+                        <span class="text-amber-800 font-bold">Biaya Tiket Parkir:</span>
+                        <span class="font-mono font-black text-slate-900">{{ $ticket->formatted_fee }} ({{ $ticket->payment_status_label }} - {{ $ticket->payment_method_label }})</span>
+                    </div>
+                @else
+                    <div class="flex justify-between items-center py-1 bg-emerald-50 px-2 rounded-lg border border-emerald-200">
+                        <span class="text-emerald-800 font-bold">Fasilitas Kontingen:</span>
+                        <span class="font-bold text-emerald-900">Gratis (Kuota Resmi Sekolah)</span>
+                    </div>
+                @endif
             </div>
 
             <!-- Barcode Graphic Decorative -->

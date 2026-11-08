@@ -28,12 +28,18 @@ class ParkingTicket extends Model
         'check_in_at',
         'check_out_at',
         'checked_by_user_id',
+        'is_public',
+        'fee_amount',
+        'payment_method',
+        'payment_status',
         'notes',
     ];
 
     protected $casts = [
         'check_in_at' => 'datetime',
         'check_out_at' => 'datetime',
+        'is_public' => 'boolean',
+        'fee_amount' => 'integer',
     ];
 
     protected static function booted()
@@ -114,5 +120,32 @@ class ParkingTicket extends Model
     public function getSchoolNameAttribute(): string
     {
         return $this->registration?->school_name ?? 'Umum / Penonton';
+    }
+
+    public function getPaymentMethodLabelAttribute(): string
+    {
+        return match ($this->payment_method) {
+            'cash' => 'Tunai (Cash)',
+            'qris' => 'QRIS Digital',
+            default => 'Gratis Kontingen',
+        };
+    }
+
+    public function getPaymentStatusLabelAttribute(): string
+    {
+        return match ($this->payment_status) {
+            'paid' => 'Lunas',
+            'unpaid' => 'Belum Lunas',
+            default => 'Gratis',
+        };
+    }
+
+    public function getFormattedFeeAttribute(): string
+    {
+        if ($this->fee_amount > 0) {
+            return 'Rp '.number_format($this->fee_amount, 0, ',', '.');
+        }
+
+        return 'Gratis';
     }
 }

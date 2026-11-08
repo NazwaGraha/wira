@@ -398,6 +398,7 @@ Route::prefix('admin')->name('admin.')->group(function () {
             Route::post('/quotas/school/{registration}', [ParkingManagementController::class, 'updateSchoolQuota'])->name('quotas.school');
             Route::post('/quotas/reset-all', [ParkingManagementController::class, 'resetAllSchoolQuotas'])->name('quotas.reset-all');
             Route::post('/auto-allocate-priority', [ParkingManagementController::class, 'autoAllocatePriority'])->name('auto-allocate-priority');
+            Route::post('/fares', [ParkingManagementController::class, 'updateFareSettings'])->name('fares.update');
         });
         Route::get('/parking-management', fn () => redirect()->route('admin.parking.index'));
 
