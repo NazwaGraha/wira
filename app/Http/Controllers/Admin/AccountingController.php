@@ -902,7 +902,7 @@ class AccountingController extends Controller
             // Header Dokumen Resmi Organisasi
             fputcsv($file, ['PALANG MERAH REMAJA (PMR) WIRA UNIT SMAN 1 CIAWI']);
             fputcsv($file, ['KABUPATEN BOGOR - PROVINSI JAWA BARAT']);
-            fputcsv($file, ['Sekretariat: Ruang Markas UKS SMAN 1 Ciawi, Jl. Veteran III Banjarwaru, Ciawi, Bogor, Jawa Barat 16720']);
+            fputcsv($file, ['Sekretariat: Jl. Veteran III Banjarwaru, Ciawi, Bogor, Jawa Barat 16720']);
             fputcsv($file, []);
 
             if ($reportType === 'income_statement') {

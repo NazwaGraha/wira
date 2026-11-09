@@ -45,7 +45,7 @@
                     PANITIA PELAKSANA: {{ strtoupper($project->name) }}
                 </h2>
                 <p class="text-[10px] text-slate-500">
-                    Sekretariat: Ruang Markas UKS SMAN 1 Ciawi, Jl. Veteran III Banjarwaru, Ciawi, Bogor, Jawa Barat 16720
+                    Sekretariat: Jl. Veteran III Banjarwaru, Ciawi, Bogor, Jawa Barat 16720
                 </p>
             </div>
         </div>

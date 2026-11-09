@@ -117,7 +117,7 @@
                     KABUPATEN BOGOR &bull; PROVINSI JAWA BARAT
                 </div>
                 <div class="text-[11px] text-slate-500 pt-0.5">
-                    Sekretariat: Ruang Markas UKS SMAN 1 Ciawi, Jl. Veteran III Banjarwaru, Ciawi, Bogor, Jawa Barat 16720
+                    Sekretariat: Jl. Veteran III Banjarwaru, Ciawi, Bogor, Jawa Barat 16720
                 </div>
             </div>
 
