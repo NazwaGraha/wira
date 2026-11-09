@@ -67,6 +67,11 @@ class AccountingAccount extends Model
         return $prefix.number_format(abs($balance), 0, ',', '.');
     }
 
+    public function getNormalBalanceAttribute(): string
+    {
+        return in_array($this->type, ['asset', 'expense']) ? 'debit' : 'credit';
+    }
+
     public function getTypeLabelAttribute(): string
     {
         return match ($this->type) {

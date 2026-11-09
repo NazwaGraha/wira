@@ -259,6 +259,38 @@ class AccountingModuleTest extends TestCase
         ]);
     }
 
+    public function test_admin_can_view_general_ledger_mode_with_running_balance(): void
+    {
+        $cashAccount = AccountingAccount::where('code', '1-1030')->firstOrFail();
+        $revenueAccount = AccountingAccount::where('code', '4-2030')->firstOrFail();
+        $project = AccountingProject::where('code', 'PRJ-2026-SBB4')->firstOrFail();
+
+        // 1. Catat Transaksi BKM
+        $this->actingAs($this->admin)->post(route('admin.accounting.cash-in.store'), [
+            'accounting_project_id' => $project->id,
+            'debit_account_id' => $cashAccount->id,
+            'credit_account_id' => $revenueAccount->id,
+            'amount' => 1000000,
+            'transaction_date' => '2026-11-09',
+            'recipient_or_payer' => 'Duke',
+            'description' => 'Uang Sponsor Kegiatan SBB IV',
+        ]);
+
+        // 2. Akses halaman dalam mode Buku Besar
+        $response = $this->actingAs($this->admin)->get(route('admin.accounting.transactions', [
+            'view_mode' => 'ledger',
+            'account_id' => $cashAccount->id,
+        ]));
+
+        $response->assertStatus(200);
+        $response->assertSee('Buku Besar (General Ledger)');
+        $response->assertSee('1-1030');
+        $response->assertSee('Kas Tunai Panitia Lomba (SBB IV)');
+        $response->assertSee('Saldo Berjalan');
+        $response->assertSee('Uang Sponsor Kegiatan SBB IV');
+        $response->assertSee('Rp 1.000.000');
+    }
+
     public function test_financial_reports_page_and_project_pdf(): void
     {
         $project = AccountingProject::where('code', 'PRJ-2026-SBB4')->firstOrFail();

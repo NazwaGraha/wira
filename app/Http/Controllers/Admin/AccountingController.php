@@ -294,10 +294,27 @@ class AccountingController extends Controller
     }
 
     /**
-     * Histori & Rekap Transaksi Kas
+     * Histori Voucher Kas & Buku Besar (General Ledger)
      */
     public function transactions(Request $request): View
     {
+        $viewMode = $request->query('view_mode', 'voucher'); // 'voucher' or 'ledger'
+        $selectedProjectId = $request->query('project_id');
+        $dateFrom = $request->query('date_from');
+        $dateTo = $request->query('date_to');
+
+        // Master data untuk formulir modal & filter
+        $projects = AccountingProject::orderBy('name')->get();
+        $cashBankAccounts = AccountingAccount::where('type', 'asset')
+            ->where('category', 'cash_and_bank')
+            ->where('is_active', true)
+            ->orderBy('code')
+            ->get();
+        $revenueAccounts = AccountingAccount::where('type', 'revenue')->where('is_active', true)->orderBy('code')->get();
+        $expenseAccounts = AccountingAccount::where('type', 'expense')->where('is_active', true)->orderBy('code')->get();
+        $allAccounts = AccountingAccount::where('is_active', true)->orderBy('code')->get();
+
+        // 1. DATA UNTUK MODE JURNAL VOUCHER KRONOLOGIS
         $query = AccountingTransaction::with(['project', 'lines.account', 'creator']);
 
         if ($request->filled('type')) {
@@ -330,17 +347,94 @@ class AccountingController extends Controller
             ->paginate(20)
             ->withQueryString();
 
-        $projects = AccountingProject::orderBy('name')->get();
-        $cashBankAccounts = AccountingAccount::where('type', 'asset')->where('category', 'cash_and_bank')->where('is_active', true)->get();
-        $revenueAccounts = AccountingAccount::where('type', 'revenue')->where('is_active', true)->get();
-        $expenseAccounts = AccountingAccount::where('type', 'expense')->where('is_active', true)->get();
+        // 2. DATA UNTUK MODE BUKU BESAR (GENERAL LEDGER PER AKUN)
+        $selectedAccountId = $request->query('account_id');
+        if (! $selectedAccountId) {
+            $defaultAcc = $cashBankAccounts->firstWhere('code', '1-1030') ?: $cashBankAccounts->first() ?: $allAccounts->first();
+            $selectedAccountId = $defaultAcc?->id;
+        }
+
+        $selectedAccount = $selectedAccountId ? $allAccounts->firstWhere('id', $selectedAccountId) : null;
+        $ledgerLines = collect([]);
+        $openingBalance = 0;
+        $totalDebit = 0;
+        $totalCredit = 0;
+        $closingBalance = 0;
+
+        if ($selectedAccount) {
+            $normalBalance = $selectedAccount->normal_balance;
+
+            // Saldo Awal sebelum $dateFrom jika difilter tanggal mulai
+            if ($dateFrom) {
+                $priorLines = AccountingTransactionLine::where('accounting_account_id', $selectedAccount->id)
+                    ->whereHas('transaction', function ($q) use ($dateFrom, $selectedProjectId) {
+                        $q->where('status', 'posted')
+                            ->whereDate('transaction_date', '<', $dateFrom);
+                        if ($selectedProjectId) {
+                            $q->where('accounting_project_id', $selectedProjectId);
+                        }
+                    })->get();
+
+                $priorDebit = (int) $priorLines->sum('debit');
+                $priorCredit = (int) $priorLines->sum('credit');
+                $openingBalance = $normalBalance === 'debit' ? ($priorDebit - $priorCredit) : ($priorCredit - $priorDebit);
+            }
+
+            // Transaksi periode
+            $ledgerQuery = AccountingTransactionLine::where('accounting_account_id', $selectedAccount->id)
+                ->whereHas('transaction', function ($q) use ($dateFrom, $dateTo, $selectedProjectId) {
+                    $q->where('status', 'posted');
+                    if ($dateFrom) {
+                        $q->whereDate('transaction_date', '>=', $dateFrom);
+                    }
+                    if ($dateTo) {
+                        $q->whereDate('transaction_date', '<=', $dateTo);
+                    }
+                    if ($selectedProjectId) {
+                        $q->where('accounting_project_id', $selectedProjectId);
+                    }
+                })
+                ->with(['transaction.project', 'transaction.creator']);
+
+            // Urutkan kronologis naik untuk kalkulasi saldo berjalan yang presisi
+            $rawLines = $ledgerQuery->get()->sortBy(function ($line) {
+                return $line->transaction->transaction_date->format('Y-m-d').'_'.str_pad($line->transaction->id, 8, '0', STR_PAD_LEFT);
+            });
+
+            $running = $openingBalance;
+            foreach ($rawLines as $line) {
+                $totalDebit += (int) $line->debit;
+                $totalCredit += (int) $line->credit;
+                if ($normalBalance === 'debit') {
+                    $running += (int) $line->debit - (int) $line->credit;
+                } else {
+                    $running += (int) $line->credit - (int) $line->debit;
+                }
+                $line->running_balance = $running;
+            }
+
+            $closingBalance = $running;
+            $ledgerLines = $rawLines;
+        }
 
         return view('admin.accounting.transactions', compact(
+            'viewMode',
             'transactions',
             'projects',
             'cashBankAccounts',
             'revenueAccounts',
-            'expenseAccounts'
+            'expenseAccounts',
+            'allAccounts',
+            'selectedAccount',
+            'selectedAccountId',
+            'ledgerLines',
+            'openingBalance',
+            'totalDebit',
+            'totalCredit',
+            'closingBalance',
+            'selectedProjectId',
+            'dateFrom',
+            'dateTo'
         ));
     }
 
