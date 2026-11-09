@@ -248,7 +248,7 @@
             <div class="grid grid-cols-2 gap-3">
                 <div>
                     <label class="text-xs font-bold text-slate-700 block mb-1">Nominal (Rp) <span class="text-rose-500">*</span></label>
-                    <input type="number" min="1" step="1000" name="amount" required placeholder="0" class="w-full text-xs font-mono font-bold bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 text-slate-800 focus:outline-none">
+                    <input type="number" min="1" step="1" name="amount" required placeholder="0" class="w-full text-xs font-mono font-bold bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 text-slate-800 focus:outline-none">
                 </div>
                 <div>
                     <label class="text-xs font-bold text-slate-700 block mb-1">Penyetor</label>
@@ -334,7 +334,7 @@
             <div class="grid grid-cols-2 gap-3">
                 <div>
                     <label class="text-xs font-bold text-slate-700 block mb-1">Nominal (Rp) <span class="text-rose-500">*</span></label>
-                    <input type="number" min="1" step="1000" name="amount" required placeholder="0" class="w-full text-xs font-mono font-bold bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 text-slate-800 focus:outline-none">
+                    <input type="number" min="1" step="1" name="amount" required placeholder="0" class="w-full text-xs font-mono font-bold bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 text-slate-800 focus:outline-none">
                 </div>
                 <div>
                     <label class="text-xs font-bold text-slate-700 block mb-1">Penerima / Vendor Toko</label>
@@ -407,7 +407,7 @@
 
             <div>
                 <label class="text-xs font-bold text-slate-700 block mb-1">Nominal (Rp) <span class="text-rose-500">*</span></label>
-                <input type="number" min="1" step="1000" name="amount" required placeholder="0" class="w-full text-xs font-mono font-bold bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 text-slate-800 focus:outline-none">
+                <input type="number" min="1" step="1" name="amount" required placeholder="0" class="w-full text-xs font-mono font-bold bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 text-slate-800 focus:outline-none">
             </div>
 
             <div>

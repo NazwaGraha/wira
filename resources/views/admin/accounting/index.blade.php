@@ -371,7 +371,7 @@
                     <label class="text-xs font-bold text-slate-700 block mb-1">Jumlah Nominal (Rp) <span class="text-rose-500">*</span></label>
                     <div class="relative">
                         <span class="absolute inset-y-0 left-0 pl-3 flex items-center font-bold text-xs text-slate-400">Rp</span>
-                        <input type="number" min="1" step="1000" name="amount" required placeholder="0" class="w-full text-xs font-mono font-bold bg-slate-50 border border-slate-200 rounded-xl pl-9 pr-3 py-2.5 text-slate-800 focus:outline-none focus:ring-2 focus:ring-emerald-500">
+                        <input type="number" min="1" step="1" name="amount" required placeholder="0" class="w-full text-xs font-mono font-bold bg-slate-50 border border-slate-200 rounded-xl pl-9 pr-3 py-2.5 text-slate-800 focus:outline-none focus:ring-2 focus:ring-emerald-500">
                     </div>
                 </div>
                 <div>
@@ -470,7 +470,7 @@
                     <label class="text-xs font-bold text-slate-700 block mb-1">Jumlah Nominal (Rp) <span class="text-rose-500">*</span></label>
                     <div class="relative">
                         <span class="absolute inset-y-0 left-0 pl-3 flex items-center font-bold text-xs text-slate-400">Rp</span>
-                        <input type="number" min="1" step="1000" name="amount" required placeholder="0" class="w-full text-xs font-mono font-bold bg-slate-50 border border-slate-200 rounded-xl pl-9 pr-3 py-2.5 text-slate-800 focus:outline-none focus:ring-2 focus:ring-rose-500">
+                        <input type="number" min="1" step="1" name="amount" required placeholder="0" class="w-full text-xs font-mono font-bold bg-slate-50 border border-slate-200 rounded-xl pl-9 pr-3 py-2.5 text-slate-800 focus:outline-none focus:ring-2 focus:ring-rose-500">
                     </div>
                 </div>
                 <div>
@@ -552,7 +552,7 @@
                 <label class="text-xs font-bold text-slate-700 block mb-1">Nominal Transfer (Rp) <span class="text-rose-500">*</span></label>
                 <div class="relative">
                     <span class="absolute inset-y-0 left-0 pl-3 flex items-center font-bold text-xs text-slate-400">Rp</span>
-                    <input type="number" min="1" step="1000" name="amount" required placeholder="0" class="w-full text-xs font-mono font-bold bg-slate-50 border border-slate-200 rounded-xl pl-9 pr-3 py-2.5 text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    <input type="number" min="1" step="1" name="amount" required placeholder="0" class="w-full text-xs font-mono font-bold bg-slate-50 border border-slate-200 rounded-xl pl-9 pr-3 py-2.5 text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500">
                 </div>
             </div>
 

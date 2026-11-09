@@ -186,11 +186,11 @@
             <div class="grid grid-cols-2 gap-3">
                 <div>
                     <label class="text-xs font-bold text-slate-700 block mb-1">Target Pemasukan (Rp)</label>
-                    <input type="number" min="0" step="50000" name="budget_target_revenue" value="0" class="w-full text-xs font-mono font-bold bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 text-slate-800 focus:outline-none focus:ring-2 focus:ring-rose-500">
+                    <input type="number" min="0" step="1" name="budget_target_revenue" value="0" class="w-full text-xs font-mono font-bold bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 text-slate-800 focus:outline-none focus:ring-2 focus:ring-rose-500">
                 </div>
                 <div>
                     <label class="text-xs font-bold text-slate-700 block mb-1">Pagu Maksimal Belanja (Rp)</label>
-                    <input type="number" min="0" step="50000" name="budget_limit_expense" value="0" class="w-full text-xs font-mono font-bold bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 text-slate-800 focus:outline-none focus:ring-2 focus:ring-rose-500">
+                    <input type="number" min="0" step="1" name="budget_limit_expense" value="0" class="w-full text-xs font-mono font-bold bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 text-slate-800 focus:outline-none focus:ring-2 focus:ring-rose-500">
                 </div>
             </div>
 
@@ -284,11 +284,11 @@
             <div class="grid grid-cols-2 gap-3">
                 <div>
                     <label class="text-xs font-bold text-slate-700 block mb-1">Target Pemasukan (Rp)</label>
-                    <input type="number" min="0" step="50000" name="budget_target_revenue" id="edit_prj_target" class="w-full text-xs font-mono font-bold bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 text-slate-800 focus:outline-none">
+                    <input type="number" min="0" step="1" name="budget_target_revenue" id="edit_prj_target" class="w-full text-xs font-mono font-bold bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 text-slate-800 focus:outline-none">
                 </div>
                 <div>
                     <label class="text-xs font-bold text-slate-700 block mb-1">Pagu Maksimal Belanja (Rp)</label>
-                    <input type="number" min="0" step="50000" name="budget_limit_expense" id="edit_prj_limit" class="w-full text-xs font-mono font-bold bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 text-slate-800 focus:outline-none">
+                    <input type="number" min="0" step="1" name="budget_limit_expense" id="edit_prj_limit" class="w-full text-xs font-mono font-bold bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 text-slate-800 focus:outline-none">
                 </div>
             </div>
 
