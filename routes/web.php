@@ -460,6 +460,7 @@ Route::prefix('admin')->name('admin.')->group(function () {
 
             // Laporan Keuangan & Realisasi Proyek
             Route::get('/reports', [AccountingController::class, 'reports'])->name('reports');
+            Route::get('/reports/export-excel', [AccountingController::class, 'exportExcel'])->name('reports.export-excel');
             Route::get('/projects/{project}/lpj-pdf', [AccountingController::class, 'exportProjectPdf'])->name('projects.lpj-pdf');
 
             // Jembatan Sinkronisasi Otomatis Kas

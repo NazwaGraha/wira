@@ -7,14 +7,17 @@
     <a href="{{ route('admin.accounting.index') }}" class="bg-slate-100 hover:bg-slate-200 text-slate-700 px-3.5 py-2.5 rounded-xl font-bold text-xs transition flex items-center gap-1.5 border border-slate-200">
         <i class="fa-solid fa-arrow-left"></i> Kembali ke Dashboard
     </a>
+    <a href="{{ route('admin.accounting.reports.export-excel', request()->all()) }}" class="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2.5 rounded-xl font-bold text-xs shadow-xs transition flex items-center gap-2">
+        <i class="fa-solid fa-file-excel text-sm"></i> Export ke Excel
+    </a>
+    <button type="button" onclick="window.print()" class="bg-rose-600 hover:bg-rose-700 text-white px-4 py-2.5 rounded-xl font-bold text-xs shadow-xs transition flex items-center gap-2 cursor-pointer">
+        <i class="fa-solid fa-file-pdf text-sm"></i> Print ke PDF
+    </button>
     @if($reportType === 'project' && $selectedProject)
-        <a href="{{ route('admin.accounting.projects.lpj-pdf', $selectedProject->id) }}" target="_blank" class="bg-rose-600 hover:bg-rose-700 text-white px-4 py-2.5 rounded-xl font-bold text-xs shadow-xs transition flex items-center gap-2">
-            <i class="fa-solid fa-file-pdf"></i> Cetak LPJ Resmi Proyek
+        <a href="{{ route('admin.accounting.projects.lpj-pdf', $selectedProject->id) }}" target="_blank" class="bg-slate-900 hover:bg-slate-800 text-white px-4 py-2.5 rounded-xl font-bold text-xs shadow-xs transition flex items-center gap-2">
+            <i class="fa-solid fa-stamp text-sm"></i> Lembar LPJ Resmi
         </a>
     @endif
-    <button type="button" onclick="window.print()" class="bg-slate-900 hover:bg-slate-800 text-white px-4 py-2.5 rounded-xl font-bold text-xs shadow-xs transition flex items-center gap-2 cursor-pointer">
-        <i class="fa-solid fa-print"></i> Cetak Dokumen Resmi
-    </button>
 @endsection
 
 @section('content')
@@ -114,7 +117,7 @@
                     KABUPATEN BOGOR &bull; PROVINSI JAWA BARAT
                 </div>
                 <div class="text-[11px] text-slate-500 pt-0.5">
-                    Sekretariat: Ruang Markas UKS SMA Negeri 1 Ciawi, Jl. Mayor Oking No. 1 Ciawi, Kab. Bogor 16720
+                    Sekretariat: Ruang Markas UKS SMAN 1 Ciawi, Jl. Veteran III Banjarwaru, Ciawi, Bogor, Jawa Barat 16720
                 </div>
             </div>
 

@@ -16,6 +16,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\View\View;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class AccountingController extends Controller
 {
@@ -862,6 +863,348 @@ class AccountingController extends Controller
             'closingEquity',
             'cashBankAccountsList'
         ));
+    }
+
+    /**
+     * Export Laporan Keuangan ke Excel (Format CSV UTF-8 Kompatibel Excel)
+     */
+    public function exportExcel(Request $request): StreamedResponse
+    {
+        $rawReportType = $request->query('report_type', 'income_statement');
+        if ($rawReportType === 'general') {
+            $rawReportType = 'income_statement';
+        }
+        $validTypes = ['income_statement', 'balance_sheet', 'cash_flow', 'equity_changes', 'calk', 'project'];
+        $reportType = in_array($rawReportType, $validTypes) ? $rawReportType : 'income_statement';
+
+        $projectId = $request->query('project_id');
+        $dateFrom = $request->query('date_from', Carbon::now()->startOfYear()->toDateString());
+        $dateTo = $request->query('date_to', Carbon::now()->toDateString());
+
+        $projects = AccountingProject::orderBy('name')->get();
+        $selectedProject = $projectId ? $projects->firstWhere('id', $projectId) : ($reportType === 'project' ? ($projects->firstWhere('code', 'PRJ-2026-SBB4') ?: $projects->first()) : null);
+
+        $fileName = 'Laporan_Keuangan_PMR_'.strtoupper($reportType).'_'.date('Ymd_His').'.csv';
+
+        $headers = [
+            'Content-Type' => 'text/csv; charset=UTF-8',
+            'Content-Disposition' => "attachment; filename=\"{$fileName}\"",
+            'Pragma' => 'no-cache',
+            'Cache-Control' => 'must-revalidate, post-check=0, pre-check=0',
+            'Expires' => '0',
+        ];
+
+        return response()->stream(function () use ($reportType, $dateFrom, $dateTo, $selectedProject) {
+            $file = fopen('php://output', 'w');
+            // Write BOM for UTF-8 Excel compatibility
+            fprintf($file, chr(0xEF).chr(0xBB).chr(0xBF));
+
+            // Header Dokumen Resmi Organisasi
+            fputcsv($file, ['PALANG MERAH REMAJA (PMR) WIRA UNIT SMAN 1 CIAWI']);
+            fputcsv($file, ['KABUPATEN BOGOR - PROVINSI JAWA BARAT']);
+            fputcsv($file, ['Sekretariat: Ruang Markas UKS SMAN 1 Ciawi, Jl. Veteran III Banjarwaru, Ciawi, Bogor, Jawa Barat 16720']);
+            fputcsv($file, []);
+
+            if ($reportType === 'income_statement') {
+                fputcsv($file, ['LAPORAN LABA RUGI / AKTIVITAS KEUANGAN (INCOME STATEMENT)']);
+                fputcsv($file, ['Periode:', $dateFrom.' s/d '.$dateTo]);
+                fputcsv($file, ['Standar Akuntansi:', 'SAK EP / ISAK 35 Nonlaba']);
+                fputcsv($file, []);
+
+                // Query Pendapatan & Beban
+                $revenueLines = AccountingTransactionLine::whereHas('transaction', function ($q) use ($dateFrom, $dateTo) {
+                    $q->where('status', 'posted')
+                        ->whereDate('transaction_date', '>=', $dateFrom)
+                        ->whereDate('transaction_date', '<=', $dateTo);
+                })->whereHas('account', fn ($q) => $q->where('type', 'revenue'))
+                    ->selectRaw('accounting_account_id, sum(credit) - sum(debit) as total')
+                    ->groupBy('accounting_account_id')
+                    ->with('account')
+                    ->get()
+                    ->filter(fn ($l) => (int) $l->total != 0);
+
+                $expenseLines = AccountingTransactionLine::whereHas('transaction', function ($q) use ($dateFrom, $dateTo) {
+                    $q->where('status', 'posted')
+                        ->whereDate('transaction_date', '>=', $dateFrom)
+                        ->whereDate('transaction_date', '<=', $dateTo);
+                })->whereHas('account', fn ($q) => $q->where('type', 'expense'))
+                    ->selectRaw('accounting_account_id, sum(debit) - sum(credit) as total')
+                    ->groupBy('accounting_account_id')
+                    ->with('account')
+                    ->get()
+                    ->filter(fn ($l) => (int) $l->total != 0);
+
+                $totalRevenue = (int) $revenueLines->sum('total');
+                $totalExpense = (int) $expenseLines->sum('total');
+                $netSurplus = $totalRevenue - $totalExpense;
+
+                fputcsv($file, ['I. PENDAPATAN / PENERIMAAN DANA']);
+                fputcsv($file, ['No', 'Kode Akun', 'Nama Pos Pendapatan', 'Kategori', 'Nominal (Rp)']);
+                $no = 1;
+                foreach ($revenueLines as $rl) {
+                    fputcsv($file, [$no++, $rl->account?->code, $rl->account?->name, 'Pendapatan', $rl->total]);
+                }
+                fputcsv($file, ['', '', 'TOTAL PENDAPATAN', '', $totalRevenue]);
+                fputcsv($file, []);
+
+                fputcsv($file, ['II. BEBAN / PENGELUARAN KEGIATAN & OPERASIONAL']);
+                fputcsv($file, ['No', 'Kode Akun', 'Nama Pos Beban / Belanja', 'Kategori', 'Nominal (Rp)']);
+                $no = 1;
+                foreach ($expenseLines as $el) {
+                    fputcsv($file, [$no++, $el->account?->code, $el->account?->name, 'Beban Operasional', $el->total]);
+                }
+                fputcsv($file, ['', '', 'TOTAL BEBAN / PENGELUARAN', '', $totalExpense]);
+                fputcsv($file, []);
+
+                fputcsv($file, ['', '', 'SURPLUS / (DEFISIT) BERSIH PERIODE BERJALAN', '', $netSurplus]);
+            } elseif ($reportType === 'balance_sheet') {
+                fputcsv($file, ['LAPORAN POSISI KEUANGAN (NERACA / BALANCE SHEET)']);
+                fputcsv($file, ['Posisi Tanggal (Cut-off):', $dateTo]);
+                fputcsv($file, []);
+
+                // Aset
+                fputcsv($file, ['ASET (AKTIVA)']);
+                fputcsv($file, ['No', 'Kode Akun', 'Nama Akun Aset', 'Kategori', 'Saldo (Rp)']);
+                $assetAccounts = AccountingAccount::where('type', 'asset')->orderBy('code')->get();
+                $totalAssets = 0;
+                $no = 1;
+                foreach ($assetAccounts as $acc) {
+                    $bal = (int) (AccountingTransactionLine::where('accounting_account_id', $acc->id)
+                        ->whereHas('transaction', fn ($q) => $q->where('status', 'posted')->whereDate('transaction_date', '<=', $dateTo))
+                        ->selectRaw('sum(debit) - sum(credit) as bal')
+                        ->value('bal') ?? 0);
+                    if ($bal != 0 || $acc->category === 'cash_and_bank') {
+                        $totalAssets += $bal;
+                        fputcsv($file, [$no++, $acc->code, $acc->name, $acc->category, $bal]);
+                    }
+                }
+                fputcsv($file, ['', '', 'TOTAL ASET (AKTIVA)', '', $totalAssets]);
+                fputcsv($file, []);
+
+                // Kewajiban
+                fputcsv($file, ['KEWAJIBAN & EKUITAS (PASIVA)']);
+                fputcsv($file, ['A. Kewajiban']);
+                fputcsv($file, ['No', 'Kode Akun', 'Nama Akun Kewajiban', 'Kategori', 'Saldo (Rp)']);
+                $liabilityAccounts = AccountingAccount::where('type', 'liability')->orderBy('code')->get();
+                $totalLiabilities = 0;
+                $no = 1;
+                foreach ($liabilityAccounts as $acc) {
+                    $bal = (int) (AccountingTransactionLine::where('accounting_account_id', $acc->id)
+                        ->whereHas('transaction', fn ($q) => $q->where('status', 'posted')->whereDate('transaction_date', '<=', $dateTo))
+                        ->selectRaw('sum(credit) - sum(debit) as bal')
+                        ->value('bal') ?? 0);
+                    if ($bal != 0) {
+                        $totalLiabilities += $bal;
+                        fputcsv($file, [$no++, $acc->code, $acc->name, 'Kewajiban', $bal]);
+                    }
+                }
+                fputcsv($file, ['', '', 'Total Kewajiban', '', $totalLiabilities]);
+                fputcsv($file, []);
+
+                // Ekuitas
+                fputcsv($file, ['B. Ekuitas']);
+                $equityAccounts = AccountingAccount::where('type', 'equity')->orderBy('code')->get();
+                $baseEquity = 0;
+                $no = 1;
+                foreach ($equityAccounts as $acc) {
+                    $bal = (int) (AccountingTransactionLine::where('accounting_account_id', $acc->id)
+                        ->whereHas('transaction', fn ($q) => $q->where('status', 'posted')->whereDate('transaction_date', '<=', $dateTo))
+                        ->selectRaw('sum(credit) - sum(debit) as bal')
+                        ->value('bal') ?? 0);
+                    if ($bal != 0 || $acc->code === '3-1010') {
+                        $baseEquity += $bal;
+                        fputcsv($file, [$no++, $acc->code, $acc->name, 'Ekuitas', $bal]);
+                    }
+                }
+
+                $cumulativeRevenue = (int) (AccountingTransactionLine::whereHas('transaction', fn ($q) => $q->where('status', 'posted')->whereDate('transaction_date', '<=', $dateTo))
+                    ->whereHas('account', fn ($q) => $q->where('type', 'revenue'))
+                    ->selectRaw('sum(credit) - sum(debit) as total')
+                    ->value('total') ?? 0);
+
+                $cumulativeExpense = (int) (AccountingTransactionLine::whereHas('transaction', fn ($q) => $q->where('status', 'posted')->whereDate('transaction_date', '<=', $dateTo))
+                    ->whereHas('account', fn ($q) => $q->where('type', 'expense'))
+                    ->selectRaw('sum(debit) - sum(credit) as total')
+                    ->value('total') ?? 0);
+
+                $cumulativeSurplus = $cumulativeRevenue - $cumulativeExpense;
+                $totalEquity = $baseEquity + $cumulativeSurplus;
+                $totalPasiva = $totalLiabilities + $totalEquity;
+
+                fputcsv($file, [$no++, '3-SURPLUS', 'Akumulasi Surplus Berjalan', 'Ekuitas', $cumulativeSurplus]);
+                fputcsv($file, ['', '', 'Total Ekuitas / Aset Bersih', '', $totalEquity]);
+                fputcsv($file, ['', '', 'TOTAL KEWAJIBAN & EKUITAS (PASIVA)', '', $totalPasiva]);
+                fputcsv($file, []);
+                fputcsv($file, ['Status Neraca:', ($totalAssets === $totalPasiva ? 'SEIMBANG (BALANCED)' : 'SELISIH / PERLU PENYESUAIAN')]);
+            } elseif ($reportType === 'cash_flow') {
+                fputcsv($file, ['LAPORAN ARUS KAS (STATEMENT OF CASH FLOWS)']);
+                fputcsv($file, ['Periode:', $dateFrom.' s/d '.$dateTo]);
+                fputcsv($file, []);
+
+                $cashAccountIds = AccountingAccount::where('type', 'asset')->where('category', 'cash_and_bank')->pluck('id');
+                $openingCash = (int) (AccountingTransactionLine::whereIn('accounting_account_id', $cashAccountIds)
+                    ->whereHas('transaction', fn ($q) => $q->where('status', 'posted')->whereDate('transaction_date', '<', $dateFrom))
+                    ->selectRaw('sum(debit) - sum(credit) as total')
+                    ->value('total') ?? 0);
+
+                fputcsv($file, ['SALDO AWAL KAS & BANK', '', '', '', $openingCash]);
+                fputcsv($file, []);
+
+                // Inflows & Outflows
+                $operatingInflows = AccountingTransaction::where('type', 'cash_in')
+                    ->where('status', 'posted')
+                    ->whereDate('transaction_date', '>=', $dateFrom)
+                    ->whereDate('transaction_date', '<=', $dateTo)
+                    ->with(['lines.account'])
+                    ->get();
+
+                fputcsv($file, ['I. ARUS KAS DARI AKTIVITAS OPERASIONAL & PROYEK']);
+                fputcsv($file, ['A. Penerimaan Kas:']);
+                $totalIn = 0;
+                $no = 1;
+                foreach ($operatingInflows as $tx) {
+                    $contraLine = $tx->lines->first(fn ($l) => ! in_array($l->accounting_account_id, $cashAccountIds->toArray()));
+                    $accName = $contraLine?->account?->name ?: $tx->description;
+                    $totalIn += $tx->amount;
+                    fputcsv($file, [$no++, $tx->voucher_number, $accName, 'Penerimaan', $tx->amount]);
+                }
+                fputcsv($file, ['', '', 'Subtotal Penerimaan Kas', '', $totalIn]);
+                fputcsv($file, []);
+
+                $operatingOutflows = AccountingTransaction::where('type', 'cash_out')
+                    ->where('status', 'posted')
+                    ->whereDate('transaction_date', '>=', $dateFrom)
+                    ->whereDate('transaction_date', '<=', $dateTo)
+                    ->with(['lines.account'])
+                    ->get();
+
+                fputcsv($file, ['B. Pengeluaran Kas:']);
+                $totalOut = 0;
+                $no = 1;
+                foreach ($operatingOutflows as $tx) {
+                    $contraLine = $tx->lines->first(fn ($l) => ! in_array($l->accounting_account_id, $cashAccountIds->toArray()));
+                    $accName = $contraLine?->account?->name ?: $tx->description;
+                    $totalOut += $tx->amount;
+                    fputcsv($file, [$no++, $tx->voucher_number, $accName, 'Pengeluaran', $tx->amount]);
+                }
+                fputcsv($file, ['', '', 'Subtotal Pengeluaran Kas', '', $totalOut]);
+                fputcsv($file, []);
+
+                $netOperating = $totalIn - $totalOut;
+                $closingCash = $openingCash + $netOperating;
+                fputcsv($file, ['', '', 'ARUS KAS BERSIH AKTIVITAS OPERASIONAL', '', $netOperating]);
+                fputcsv($file, ['', '', 'ARUS KAS DARI AKTIVITAS INVESTASI', '', 0]);
+                fputcsv($file, ['', '', 'ARUS KAS DARI AKTIVITAS PENDANAAN', '', 0]);
+                fputcsv($file, ['', '', 'KENAIKAN / (PENURUNAN) BERSIH KAS', '', $netOperating]);
+                fputcsv($file, ['', '', 'SALDO AKHIR KAS & BANK', '', $closingCash]);
+            } elseif ($reportType === 'equity_changes') {
+                fputcsv($file, ['LAPORAN PERUBAHAN MODAL / EKUITAS (STATEMENT OF CHANGES IN EQUITY)']);
+                fputcsv($file, ['Periode:', $dateFrom.' s/d '.$dateTo]);
+                fputcsv($file, []);
+
+                $priorEquityBase = (int) (AccountingTransactionLine::whereHas('account', fn ($q) => $q->where('type', 'equity'))
+                    ->whereHas('transaction', fn ($q) => $q->where('status', 'posted')->whereDate('transaction_date', '<', $dateFrom))
+                    ->selectRaw('sum(credit) - sum(debit) as total')
+                    ->value('total') ?? 0);
+
+                $priorNetSurplus = (int) (AccountingTransactionLine::whereHas('transaction', fn ($q) => $q->where('status', 'posted')->whereDate('transaction_date', '<', $dateFrom))
+                    ->whereHas('account', fn ($q) => $q->where('type', 'revenue'))
+                    ->selectRaw('sum(credit) - sum(debit) as total')
+                    ->value('total') ?? 0) - (int) (AccountingTransactionLine::whereHas('transaction', fn ($q) => $q->where('status', 'posted')->whereDate('transaction_date', '<', $dateFrom))
+                    ->whereHas('account', fn ($q) => $q->where('type', 'expense'))
+                    ->selectRaw('sum(debit) - sum(credit) as total')
+                    ->value('total') ?? 0);
+
+                $openingEquity = $priorEquityBase + $priorNetSurplus;
+
+                $periodRevenue = (int) (AccountingTransactionLine::whereHas('transaction', fn ($q) => $q->where('status', 'posted')->whereDate('transaction_date', '>=', $dateFrom)->whereDate('transaction_date', '<=', $dateTo))
+                    ->whereHas('account', fn ($q) => $q->where('type', 'revenue'))
+                    ->selectRaw('sum(credit) - sum(debit) as total')
+                    ->value('total') ?? 0);
+
+                $periodExpense = (int) (AccountingTransactionLine::whereHas('transaction', fn ($q) => $q->where('status', 'posted')->whereDate('transaction_date', '>=', $dateFrom)->whereDate('transaction_date', '<=', $dateTo))
+                    ->whereHas('account', fn ($q) => $q->where('type', 'expense'))
+                    ->selectRaw('sum(debit) - sum(credit) as total')
+                    ->value('total') ?? 0);
+
+                $periodSurplus = $periodRevenue - $periodExpense;
+                $closingEquity = $openingEquity + $periodSurplus;
+
+                fputcsv($file, ['No', 'Komponen Perubahan Modal / Ekuitas', 'Keterangan', 'Nominal (Rp)']);
+                fputcsv($file, ['1', 'Saldo Modal / Ekuitas Awal', 'Sebelum '.$dateFrom, $openingEquity]);
+                fputcsv($file, ['2', 'Surplus / (Defisit) Bersih Periode Berjalan', 'Laba Rugi Periode Ini', $periodSurplus]);
+                fputcsv($file, ['3', 'Penambahan Langsung ke Ekuitas', 'Setoran Modal / Titipan', 0]);
+                fputcsv($file, ['', 'SALDO AKHIR MODAL / EKUITAS ORGANISASI', 'Per '.$dateTo, $closingEquity]);
+            } elseif ($reportType === 'calk') {
+                fputcsv($file, ['CATATAN ATAS LAPORAN KEUANGAN (CALK)']);
+                fputcsv($file, ['Tahun Buku:', date('Y')]);
+                fputcsv($file, []);
+
+                fputcsv($file, ['RINCIAN REKENING KAS & BANK PMR:']);
+                fputcsv($file, ['No', 'Kode Akun', 'Nama Rekening / Akun Kas', 'Keterangan / Institusi', 'Saldo Terkini (Rp)']);
+                $cashBankList = AccountingAccount::where('type', 'asset')->where('category', 'cash_and_bank')->orderBy('code')->get();
+                $no = 1;
+                foreach ($cashBankList as $c) {
+                    fputcsv($file, [$no++, $c->code, $c->name, $c->description, $c->current_balance]);
+                }
+                fputcsv($file, ['', '', 'TOTAL KAS & SETARA KAS', '', $cashBankList->sum('current_balance')]);
+            } elseif ($reportType === 'project' && $selectedProject) {
+                fputcsv($file, ['LAPORAN REALISASI ANGGARAN & LPJ KEUANGAN PROYEK']);
+                fputcsv($file, ['Kode Proyek:', $selectedProject->code]);
+                fputcsv($file, ['Nama Proyek:', $selectedProject->name]);
+                fputcsv($file, ['Ketua Pelaksana:', $selectedProject->person_in_charge]);
+                fputcsv($file, ['Bendahara Panitia:', $selectedProject->treasurer_name]);
+                fputcsv($file, ['Target Penerimaan (Rp):', $selectedProject->budget_target_revenue]);
+                fputcsv($file, ['Pagu Belanja (Rp):', $selectedProject->budget_limit_expense]);
+                fputcsv($file, ['Total Realisasi Penerimaan (Rp):', $selectedProject->total_revenue]);
+                fputcsv($file, ['Total Realisasi Belanja (Rp):', $selectedProject->total_expense]);
+                fputcsv($file, ['Sisa Kas / Surplus Proyek (Rp):', $selectedProject->net_surplus]);
+                fputcsv($file, []);
+
+                fputcsv($file, ['I. RINCIAN PENERIMAAN PROYEK']);
+                fputcsv($file, ['No', 'Kode Akun', 'Nama Pos Penerimaan', 'Nominal (Rp)']);
+                $revenueLines = AccountingTransactionLine::whereHas('transaction', function ($q) use ($selectedProject) {
+                    $q->where('accounting_project_id', $selectedProject->id)->where('status', 'posted');
+                })->whereHas('account', fn ($q) => $q->where('type', 'revenue'))
+                    ->selectRaw('accounting_account_id, sum(credit) as total')
+                    ->groupBy('accounting_account_id')
+                    ->with('account')
+                    ->get();
+                $no = 1;
+                foreach ($revenueLines as $rl) {
+                    fputcsv($file, [$no++, $rl->account?->code, $rl->account?->name, $rl->total]);
+                }
+                fputcsv($file, ['', '', 'Total Penerimaan Proyek', $selectedProject->total_revenue]);
+                fputcsv($file, []);
+
+                fputcsv($file, ['II. RINCIAN PENGELUARAN PROYEK']);
+                fputcsv($file, ['No', 'Kode Akun', 'Nama Pos Pengeluaran', 'Nominal (Rp)']);
+                $expenseLines = AccountingTransactionLine::whereHas('transaction', function ($q) use ($selectedProject) {
+                    $q->where('accounting_project_id', $selectedProject->id)->where('status', 'posted');
+                })->whereHas('account', fn ($q) => $q->where('type', 'expense'))
+                    ->selectRaw('accounting_account_id, sum(debit) as total')
+                    ->groupBy('accounting_account_id')
+                    ->with('account')
+                    ->get();
+                $no = 1;
+                foreach ($expenseLines as $el) {
+                    fputcsv($file, [$no++, $el->account?->code, $el->account?->name, $el->total]);
+                }
+                fputcsv($file, ['', '', 'Total Belanja Proyek', $selectedProject->total_expense]);
+            }
+
+            // Lembar Pengesahan RAT di bagian bawah file CSV
+            fputcsv($file, []);
+            fputcsv($file, ['LEMBAR PENGESAHAN LAPORAN KEUANGAN PMR WIRA']);
+            fputcsv($file, ['Disahkan dalam Rapat Anggota Tahunan (RAT) PMR Wira SMAN 1 Ciawi']);
+            fputcsv($file, ['Bogor, '.date('d F Y')]);
+            fputcsv($file, []);
+            fputcsv($file, ['Bendahara Umum / Pelaksana', 'Ketua Umum PMR Wira', 'Pembina PMR Wira', 'Mengetahui Kepala Sekolah']);
+            fputcsv($file, ['Siti Nurhaliza', 'Sulthan Arkana Putra R.', 'Drs. H. Mulyadi, M.Pd.', 'Dr. Hj. Ai Nurjanah, M.Pd.']);
+            fputcsv($file, ['NIA. PMR-WIRA-2025-014', 'NIA. PMR-WIRA-2024-001', 'NIP. 19740512 200003 1 004', 'NIP. 19681120 199303 2 003']);
+
+            fclose($file);
+        }, 200, $headers);
     }
 
     /**

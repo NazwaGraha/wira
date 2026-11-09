@@ -301,6 +301,9 @@ class AccountingModuleTest extends TestCase
         $incomeResponse->assertSee('LAPORAN LABA RUGI');
         $incomeResponse->assertSee('logo_kop_laporan_pmr.png');
         $incomeResponse->assertSee('Total Pendapatan');
+        $incomeResponse->assertSee('Jl. Veteran III Banjarwaru, Ciawi, Bogor, Jawa Barat 16720');
+        $incomeResponse->assertSee('Export ke Excel');
+        $incomeResponse->assertSee('Print ke PDF');
 
         // 2. Balance Sheet (Neraca)
         $balanceResponse = $this->actingAs($this->admin)->get(route('admin.accounting.reports', ['report_type' => 'balance_sheet']));
@@ -309,6 +312,7 @@ class AccountingModuleTest extends TestCase
         $balanceResponse->assertSee('ASET (AKTIVA)');
         $balanceResponse->assertSee('KEWAJIBAN');
         $balanceResponse->assertSee('Total Ekuitas');
+        $balanceResponse->assertSee('Jl. Veteran III Banjarwaru, Ciawi, Bogor, Jawa Barat 16720');
 
         // 3. Cash Flow (Arus Kas)
         $cashFlowResponse = $this->actingAs($this->admin)->get(route('admin.accounting.reports', ['report_type' => 'cash_flow']));
@@ -339,7 +343,15 @@ class AccountingModuleTest extends TestCase
         $pdfResponse->assertStatus(200);
         $pdfResponse->assertSee('LAPORAN PERTANGGUNGJAWABAN');
         $pdfResponse->assertSee('logo_kop_laporan_pmr.png');
+        $pdfResponse->assertSee('Jl. Veteran III Banjarwaru, Ciawi, Bogor, Jawa Barat 16720');
         $pdfResponse->assertSee('Rapat Anggota Tahunan (RAT)');
+
+        // 8. Excel Export Facility
+        $excelResponse = $this->actingAs($this->admin)->get(route('admin.accounting.reports.export-excel', ['report_type' => 'income_statement']));
+        $excelResponse->assertStatus(200);
+        $excelResponse->assertHeader('Content-Type', 'text/csv; charset=UTF-8');
+        $this->assertStringContainsString('Jl. Veteran III Banjarwaru, Ciawi, Bogor, Jawa Barat 16720', $excelResponse->streamedContent());
+        $this->assertStringContainsString('LAPORAN LABA RUGI', $excelResponse->streamedContent());
     }
 
     public function test_sync_competition_and_parking_revenue(): void

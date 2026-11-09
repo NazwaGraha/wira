@@ -15,13 +15,18 @@
 <body class="bg-slate-100 text-slate-800 p-4 sm:p-8 font-sans antialiased text-xs">
 
     <!-- Top Action Bar for Screen View -->
-    <div class="max-w-4xl mx-auto mb-6 flex items-center justify-between no-print">
-        <a href="{{ route('admin.accounting.index', ['project_id' => $project->id]) }}" class="px-4 py-2 rounded-xl bg-slate-800 text-white font-bold text-xs hover:bg-slate-700 transition">
+    <div class="max-w-4xl mx-auto mb-6 flex flex-wrap items-center justify-between gap-3 no-print">
+        <a href="{{ route('admin.accounting.index', ['project_id' => $project->id]) }}" class="px-4 py-2.5 rounded-xl bg-slate-800 text-white font-bold text-xs hover:bg-slate-700 transition flex items-center gap-2">
             &larr; Kembali ke Dashboard Akuntansi
         </a>
-        <button type="button" onclick="window.print()" class="px-5 py-2.5 rounded-xl bg-red-600 hover:bg-red-700 text-white font-black text-xs shadow-md transition cursor-pointer">
-            🖨️ Cetak / Simpan PDF Dokumen Resmi
-        </button>
+        <div class="flex items-center gap-2">
+            <a href="{{ route('admin.accounting.reports.export-excel', ['report_type' => 'project', 'project_id' => $project->id]) }}" class="px-4 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs shadow-md transition flex items-center gap-2">
+                <i class="fa-solid fa-file-excel"></i> Export ke Excel
+            </a>
+            <button type="button" onclick="window.print()" class="px-5 py-2.5 rounded-xl bg-rose-600 hover:bg-rose-700 text-white font-black text-xs shadow-md transition cursor-pointer flex items-center gap-2">
+                <i class="fa-solid fa-file-pdf"></i> Print ke PDF
+            </button>
+        </div>
     </div>
 
     <!-- Official Paper Document -->
@@ -40,7 +45,7 @@
                     PANITIA PELAKSANA: {{ strtoupper($project->name) }}
                 </h2>
                 <p class="text-[10px] text-slate-500">
-                    Sekretariat: Ruang Markas UKS SMA Negeri 1 Ciawi, Jl. Mayor Oking No. 1 Ciawi, Kab. Bogor 16720
+                    Sekretariat: Ruang Markas UKS SMAN 1 Ciawi, Jl. Veteran III Banjarwaru, Ciawi, Bogor, Jawa Barat 16720
                 </p>
             </div>
         </div>
