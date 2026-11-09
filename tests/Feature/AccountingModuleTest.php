@@ -295,14 +295,50 @@ class AccountingModuleTest extends TestCase
     {
         $project = AccountingProject::where('code', 'PRJ-2026-SBB4')->firstOrFail();
 
-        $response = $this->actingAs($this->admin)->get(route('admin.accounting.reports', ['project_id' => $project->id]));
-        $response->assertStatus(200);
-        $response->assertSee('Laporan Keuangan');
-        $response->assertSee('PRJ-2026-SBB4');
+        // 1. Income Statement (Laba Rugi)
+        $incomeResponse = $this->actingAs($this->admin)->get(route('admin.accounting.reports', ['report_type' => 'income_statement']));
+        $incomeResponse->assertStatus(200);
+        $incomeResponse->assertSee('LAPORAN LABA RUGI');
+        $incomeResponse->assertSee('logo_kop_laporan_pmr.png');
+        $incomeResponse->assertSee('Total Pendapatan');
 
+        // 2. Balance Sheet (Neraca)
+        $balanceResponse = $this->actingAs($this->admin)->get(route('admin.accounting.reports', ['report_type' => 'balance_sheet']));
+        $balanceResponse->assertStatus(200);
+        $balanceResponse->assertSee('LAPORAN POSISI KEUANGAN');
+        $balanceResponse->assertSee('ASET (AKTIVA)');
+        $balanceResponse->assertSee('KEWAJIBAN');
+        $balanceResponse->assertSee('Total Ekuitas');
+
+        // 3. Cash Flow (Arus Kas)
+        $cashFlowResponse = $this->actingAs($this->admin)->get(route('admin.accounting.reports', ['report_type' => 'cash_flow']));
+        $cashFlowResponse->assertStatus(200);
+        $cashFlowResponse->assertSee('LAPORAN ARUS KAS');
+        $cashFlowResponse->assertSee('SALDO AWAL KAS');
+
+        // 4. Equity Changes (Perubahan Modal)
+        $equityResponse = $this->actingAs($this->admin)->get(route('admin.accounting.reports', ['report_type' => 'equity_changes']));
+        $equityResponse->assertStatus(200);
+        $equityResponse->assertSee('LAPORAN PERUBAHAN MODAL');
+
+        // 5. CALK (Catatan Atas Laporan Keuangan)
+        $calkResponse = $this->actingAs($this->admin)->get(route('admin.accounting.reports', ['report_type' => 'calk']));
+        $calkResponse->assertStatus(200);
+        $calkResponse->assertSee('CATATAN ATAS LAPORAN KEUANGAN');
+        $calkResponse->assertSee('Gambaran Umum Organisasi');
+        $calkResponse->assertSee('Kebijakan Akuntansi Signifikan');
+
+        // 6. Project LPJ
+        $projectReportResponse = $this->actingAs($this->admin)->get(route('admin.accounting.reports', ['report_type' => 'project', 'project_id' => $project->id]));
+        $projectReportResponse->assertStatus(200);
+        $projectReportResponse->assertSee('LAPORAN REALISASI ANGGARAN');
+        $projectReportResponse->assertSee('PRJ-2026-SBB4');
+
+        // 7. Printable PDF View
         $pdfResponse = $this->actingAs($this->admin)->get(route('admin.accounting.projects.lpj-pdf', $project));
         $pdfResponse->assertStatus(200);
         $pdfResponse->assertSee('LAPORAN PERTANGGUNGJAWABAN');
+        $pdfResponse->assertSee('logo_kop_laporan_pmr.png');
         $pdfResponse->assertSee('Rapat Anggota Tahunan (RAT)');
     }
 

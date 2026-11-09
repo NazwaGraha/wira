@@ -28,16 +28,21 @@
     <div class="max-w-4xl mx-auto bg-white p-8 sm:p-12 rounded-3xl shadow-lg border border-slate-200 space-y-6">
         
         <!-- Header / Kop Surat Resmi -->
-        <div class="text-center pb-6 border-b-2 border-slate-900 space-y-1">
-            <h1 class="text-base sm:text-lg font-black uppercase tracking-wide text-slate-900">
-                PALANG MERAH REMAJA (PMR) WIRA UNIT SMAN 1 CIAWI
-            </h1>
-            <h2 class="text-xs font-black text-red-600 uppercase tracking-widest">
-                PANITIA PELAKSANA: {{ strtoupper($project->name) }}
-            </h2>
-            <p class="text-[10px] text-slate-500">
-                Sekretariat: Ruang Markas UKS SMA Negeri 1 Ciawi, Jl. Mayor Oking No. 1 Ciawi, Kab. Bogor 16720
-            </p>
+        <div class="text-center pb-5 border-b-2 border-slate-900 space-y-2">
+            <div class="flex items-center justify-center">
+                <img src="{{ asset('images/logo_kop_laporan_pmr.png') }}" alt="Logo Palang Merah Indonesia & SMA Negeri 1 Ciawi" class="h-16 sm:h-20 w-auto object-contain mx-auto">
+            </div>
+            <div>
+                <h1 class="text-base sm:text-lg font-black uppercase tracking-wide text-slate-900">
+                    PALANG MERAH REMAJA (PMR) WIRA UNIT SMAN 1 CIAWI
+                </h1>
+                <h2 class="text-xs font-black text-red-600 uppercase tracking-widest">
+                    PANITIA PELAKSANA: {{ strtoupper($project->name) }}
+                </h2>
+                <p class="text-[10px] text-slate-500">
+                    Sekretariat: Ruang Markas UKS SMA Negeri 1 Ciawi, Jl. Mayor Oking No. 1 Ciawi, Kab. Bogor 16720
+                </p>
+            </div>
         </div>
 
         <div class="text-center py-2 space-y-1">

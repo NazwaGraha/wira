@@ -621,71 +621,203 @@ class AccountingController extends Controller
     }
 
     /**
-     * Laporan Keuangan (Laba Rugi, Realisasi Proyek, Arus Kas, Buku Besar)
+     * Laporan Keuangan Standar (Laba Rugi, Neraca, Arus Kas, Perubahan Modal, CALK, LPJ Proyek)
      */
     public function reports(Request $request): View
     {
-        $reportType = $request->query('report_type', 'project');
+        $rawReportType = $request->query('report_type', 'income_statement');
+        if ($rawReportType === 'general') {
+            $rawReportType = 'income_statement';
+        }
+        $validTypes = ['income_statement', 'balance_sheet', 'cash_flow', 'equity_changes', 'calk', 'project'];
+        $reportType = in_array($rawReportType, $validTypes) ? $rawReportType : 'income_statement';
+
         $projectId = $request->query('project_id');
         $dateFrom = $request->query('date_from', Carbon::now()->startOfYear()->toDateString());
         $dateTo = $request->query('date_to', Carbon::now()->toDateString());
 
         $projects = AccountingProject::orderBy('name')->get();
-        $selectedProject = $projectId ? $projects->firstWhere('id', $projectId) : $projects->firstWhere('code', 'PRJ-2026-SBB4');
+        $selectedProject = $projectId ? $projects->firstWhere('id', $projectId) : ($reportType === 'project' ? ($projects->firstWhere('code', 'PRJ-2026-SBB4') ?: $projects->first()) : null);
 
-        $revenueLines = collect([]);
-        $expenseLines = collect([]);
-        $totalRevenue = 0;
-        $totalExpense = 0;
-        $netSurplus = 0;
-
-        if ($reportType === 'project' && $selectedProject) {
-            // Laporan Proyek
-            $revenueLines = AccountingTransactionLine::whereHas('transaction', function ($q) use ($selectedProject) {
-                $q->where('accounting_project_id', $selectedProject->id)->where('status', 'posted');
-            })->whereHas('account', fn ($q) => $q->where('type', 'revenue'))
-                ->selectRaw('accounting_account_id, sum(credit) as total')
-                ->groupBy('accounting_account_id')
-                ->with('account')
-                ->get();
-
-            $expenseLines = AccountingTransactionLine::whereHas('transaction', function ($q) use ($selectedProject) {
-                $q->where('accounting_project_id', $selectedProject->id)->where('status', 'posted');
-            })->whereHas('account', fn ($q) => $q->where('type', 'expense'))
-                ->selectRaw('accounting_account_id, sum(debit) as total')
-                ->groupBy('accounting_account_id')
-                ->with('account')
-                ->get();
-
-            $totalRevenue = $selectedProject->total_revenue;
-            $totalExpense = $selectedProject->total_expense;
-            $netSurplus = $selectedProject->net_surplus;
-        } else {
-            // Laporan Umum / Laba Rugi Berjalan Konsolidasi
-            $revenueLines = AccountingTransactionLine::whereHas('transaction', function ($q) use ($dateFrom, $dateTo) {
-                $q->where('status', 'posted')
-                    ->whereDate('transaction_date', '>=', $dateFrom)
+        // 1. DATA PENDAPATAN & BEBAN (LABA RUGI & UMUM)
+        $revenueQuery = AccountingTransactionLine::whereHas('transaction', function ($q) use ($dateFrom, $dateTo, $reportType, $selectedProject) {
+            $q->where('status', 'posted');
+            if ($reportType === 'project' && $selectedProject) {
+                $q->where('accounting_project_id', $selectedProject->id);
+            } else {
+                $q->whereDate('transaction_date', '>=', $dateFrom)
                     ->whereDate('transaction_date', '<=', $dateTo);
-            })->whereHas('account', fn ($q) => $q->where('type', 'revenue'))
-                ->selectRaw('accounting_account_id, sum(credit) as total')
-                ->groupBy('accounting_account_id')
-                ->with('account')
-                ->get();
+            }
+        })->whereHas('account', fn ($q) => $q->where('type', 'revenue'))
+            ->selectRaw('accounting_account_id, sum(credit) - sum(debit) as total')
+            ->groupBy('accounting_account_id')
+            ->with('account');
 
-            $expenseLines = AccountingTransactionLine::whereHas('transaction', function ($q) use ($dateFrom, $dateTo) {
-                $q->where('status', 'posted')
-                    ->whereDate('transaction_date', '>=', $dateFrom)
+        $expenseQuery = AccountingTransactionLine::whereHas('transaction', function ($q) use ($dateFrom, $dateTo, $reportType, $selectedProject) {
+            $q->where('status', 'posted');
+            if ($reportType === 'project' && $selectedProject) {
+                $q->where('accounting_project_id', $selectedProject->id);
+            } else {
+                $q->whereDate('transaction_date', '>=', $dateFrom)
                     ->whereDate('transaction_date', '<=', $dateTo);
-            })->whereHas('account', fn ($q) => $q->where('type', 'expense'))
-                ->selectRaw('accounting_account_id, sum(debit) as total')
-                ->groupBy('accounting_account_id')
-                ->with('account')
-                ->get();
+            }
+        })->whereHas('account', fn ($q) => $q->where('type', 'expense'))
+            ->selectRaw('accounting_account_id, sum(debit) - sum(credit) as total')
+            ->groupBy('accounting_account_id')
+            ->with('account');
 
-            $totalRevenue = $revenueLines->sum('total');
-            $totalExpense = $expenseLines->sum('total');
-            $netSurplus = $totalRevenue - $totalExpense;
+        $revenueLines = $revenueQuery->get()->filter(fn ($l) => (int) $l->total != 0);
+        $expenseLines = $expenseQuery->get()->filter(fn ($l) => (int) $l->total != 0);
+
+        $totalRevenue = (int) $revenueLines->sum('total');
+        $totalExpense = (int) $expenseLines->sum('total');
+        $netSurplus = $totalRevenue - $totalExpense;
+
+        // 2. DATA NERACA / POSISI KEUANGAN (As of $dateTo)
+        $assetAccounts = AccountingAccount::where('type', 'asset')->orderBy('code')->get();
+        $assetLines = [];
+        foreach ($assetAccounts as $acc) {
+            $bal = (int) (AccountingTransactionLine::where('accounting_account_id', $acc->id)
+                ->whereHas('transaction', fn ($q) => $q->where('status', 'posted')->whereDate('transaction_date', '<=', $dateTo))
+                ->selectRaw('sum(debit) - sum(credit) as bal')
+                ->value('bal') ?? 0);
+
+            if ($bal != 0 || $acc->category === 'cash_and_bank') {
+                $assetLines[] = [
+                    'account' => $acc,
+                    'balance' => $bal,
+                ];
+            }
         }
+        $cashBankLines = collect($assetLines)->filter(fn ($i) => $i['account']->category === 'cash_and_bank');
+        $otherCurrentAssetLines = collect($assetLines)->filter(fn ($i) => $i['account']->category === 'current_asset');
+        $fixedAssetLines = collect($assetLines)->filter(fn ($i) => $i['account']->category === 'fixed_asset');
+
+        $totalCashBank = (int) $cashBankLines->sum('balance');
+        $totalOtherCurrentAssets = (int) $otherCurrentAssetLines->sum('balance');
+        $totalCurrentAssets = $totalCashBank + $totalOtherCurrentAssets;
+        $totalFixedAssets = (int) $fixedAssetLines->sum('balance');
+        $totalAssets = $totalCurrentAssets + $totalFixedAssets;
+
+        $liabilityAccounts = AccountingAccount::where('type', 'liability')->orderBy('code')->get();
+        $liabilityLines = [];
+        foreach ($liabilityAccounts as $acc) {
+            $bal = (int) (AccountingTransactionLine::where('accounting_account_id', $acc->id)
+                ->whereHas('transaction', fn ($q) => $q->where('status', 'posted')->whereDate('transaction_date', '<=', $dateTo))
+                ->selectRaw('sum(credit) - sum(debit) as bal')
+                ->value('bal') ?? 0);
+
+            if ($bal != 0) {
+                $liabilityLines[] = [
+                    'account' => $acc,
+                    'balance' => $bal,
+                ];
+            }
+        }
+        $totalLiabilities = (int) collect($liabilityLines)->sum('balance');
+
+        $equityAccounts = AccountingAccount::where('type', 'equity')->orderBy('code')->get();
+        $equityLines = [];
+        foreach ($equityAccounts as $acc) {
+            $bal = (int) (AccountingTransactionLine::where('accounting_account_id', $acc->id)
+                ->whereHas('transaction', fn ($q) => $q->where('status', 'posted')->whereDate('transaction_date', '<=', $dateTo))
+                ->selectRaw('sum(credit) - sum(debit) as bal')
+                ->value('bal') ?? 0);
+
+            if ($bal != 0 || $acc->code === '3-1010') {
+                $equityLines[] = [
+                    'account' => $acc,
+                    'balance' => $bal,
+                ];
+            }
+        }
+        $baseEquity = (int) collect($equityLines)->sum('balance');
+
+        $cumulativeRevenue = (int) (AccountingTransactionLine::whereHas('transaction', fn ($q) => $q->where('status', 'posted')->whereDate('transaction_date', '<=', $dateTo))
+            ->whereHas('account', fn ($q) => $q->where('type', 'revenue'))
+            ->selectRaw('sum(credit) - sum(debit) as total')
+            ->value('total') ?? 0);
+
+        $cumulativeExpense = (int) (AccountingTransactionLine::whereHas('transaction', fn ($q) => $q->where('status', 'posted')->whereDate('transaction_date', '<=', $dateTo))
+            ->whereHas('account', fn ($q) => $q->where('type', 'expense'))
+            ->selectRaw('sum(debit) - sum(credit) as total')
+            ->value('total') ?? 0);
+
+        $cumulativeSurplus = $cumulativeRevenue - $cumulativeExpense;
+        $totalEquity = $baseEquity + $cumulativeSurplus;
+        $totalLiabilitiesAndEquity = $totalLiabilities + $totalEquity;
+        $isBalanced = ($totalAssets === $totalLiabilitiesAndEquity);
+
+        // 3. DATA ARUS KAS (CASH FLOW STATEMENT)
+        $cashAccountIds = AccountingAccount::where('type', 'asset')->where('category', 'cash_and_bank')->pluck('id');
+        $openingCash = (int) (AccountingTransactionLine::whereIn('accounting_account_id', $cashAccountIds)
+            ->whereHas('transaction', fn ($q) => $q->where('status', 'posted')->whereDate('transaction_date', '<', $dateFrom))
+            ->selectRaw('sum(debit) - sum(credit) as total')
+            ->value('total') ?? 0);
+
+        $operatingInflowTransactions = AccountingTransaction::where('type', 'cash_in')
+            ->where('status', 'posted')
+            ->whereDate('transaction_date', '>=', $dateFrom)
+            ->whereDate('transaction_date', '<=', $dateTo)
+            ->with(['lines.account'])
+            ->get();
+
+        $cashInflowSummary = [];
+        foreach ($operatingInflowTransactions as $tx) {
+            $contraLine = $tx->lines->first(fn ($l) => ! in_array($l->accounting_account_id, $cashAccountIds->toArray()));
+            $accName = $contraLine?->account?->name ?: $tx->description;
+            $cashInflowSummary[$accName] = ($cashInflowSummary[$accName] ?? 0) + (int) $tx->amount;
+        }
+
+        $operatingOutflowTransactions = AccountingTransaction::where('type', 'cash_out')
+            ->where('status', 'posted')
+            ->whereDate('transaction_date', '>=', $dateFrom)
+            ->whereDate('transaction_date', '<=', $dateTo)
+            ->with(['lines.account'])
+            ->get();
+
+        $cashOutflowSummary = [];
+        foreach ($operatingOutflowTransactions as $tx) {
+            $contraLine = $tx->lines->first(fn ($l) => ! in_array($l->accounting_account_id, $cashAccountIds->toArray()));
+            $accName = $contraLine?->account?->name ?: $tx->description;
+            $cashOutflowSummary[$accName] = ($cashOutflowSummary[$accName] ?? 0) + (int) $tx->amount;
+        }
+
+        $totalOperatingIn = array_sum($cashInflowSummary);
+        $totalOperatingOut = array_sum($cashOutflowSummary);
+        $netOperatingCash = $totalOperatingIn - $totalOperatingOut;
+        $netInvestingCash = 0;
+        $netFinancingCash = 0;
+        $netCashChange = $netOperatingCash + $netInvestingCash + $netFinancingCash;
+        $closingCash = $openingCash + $netCashChange;
+
+        // 4. DATA PERUBAHAN MODAL / EKUITAS
+        $priorEquityBase = (int) (AccountingTransactionLine::whereHas('account', fn ($q) => $q->where('type', 'equity'))
+            ->whereHas('transaction', fn ($q) => $q->where('status', 'posted')->whereDate('transaction_date', '<', $dateFrom))
+            ->selectRaw('sum(credit) - sum(debit) as total')
+            ->value('total') ?? 0);
+
+        $priorNetSurplus = (int) (AccountingTransactionLine::whereHas('transaction', fn ($q) => $q->where('status', 'posted')->whereDate('transaction_date', '<', $dateFrom))
+            ->whereHas('account', fn ($q) => $q->where('type', 'revenue'))
+            ->selectRaw('sum(credit) - sum(debit) as total')
+            ->value('total') ?? 0) - (int) (AccountingTransactionLine::whereHas('transaction', fn ($q) => $q->where('status', 'posted')->whereDate('transaction_date', '<', $dateFrom))
+            ->whereHas('account', fn ($q) => $q->where('type', 'expense'))
+            ->selectRaw('sum(debit) - sum(credit) as total')
+            ->value('total') ?? 0);
+
+        $openingEquity = $priorEquityBase + $priorNetSurplus;
+        $periodSurplus = $netSurplus;
+        $periodDirectEquity = (int) (AccountingTransactionLine::whereHas('account', fn ($q) => $q->where('type', 'equity'))
+            ->whereHas('transaction', fn ($q) => $q->where('status', 'posted')->whereDate('transaction_date', '>=', $dateFrom)->whereDate('transaction_date', '<=', $dateTo))
+            ->selectRaw('sum(credit) - sum(debit) as total')
+            ->value('total') ?? 0);
+        $closingEquity = $openingEquity + $periodSurplus + $periodDirectEquity;
+
+        // 5. DATA CALK (Catatan Atas Laporan Keuangan)
+        $cashBankAccountsList = AccountingAccount::where('type', 'asset')
+            ->where('category', 'cash_and_bank')
+            ->orderBy('code')
+            ->get();
 
         return view('admin.accounting.reports', compact(
             'reportType',
@@ -697,7 +829,38 @@ class AccountingController extends Controller
             'expenseLines',
             'totalRevenue',
             'totalExpense',
-            'netSurplus'
+            'netSurplus',
+            'cashBankLines',
+            'otherCurrentAssetLines',
+            'fixedAssetLines',
+            'totalCashBank',
+            'totalOtherCurrentAssets',
+            'totalCurrentAssets',
+            'totalFixedAssets',
+            'totalAssets',
+            'liabilityLines',
+            'totalLiabilities',
+            'equityLines',
+            'baseEquity',
+            'cumulativeSurplus',
+            'totalEquity',
+            'totalLiabilitiesAndEquity',
+            'isBalanced',
+            'openingCash',
+            'cashInflowSummary',
+            'cashOutflowSummary',
+            'totalOperatingIn',
+            'totalOperatingOut',
+            'netOperatingCash',
+            'netInvestingCash',
+            'netFinancingCash',
+            'netCashChange',
+            'closingCash',
+            'openingEquity',
+            'periodSurplus',
+            'periodDirectEquity',
+            'closingEquity',
+            'cashBankAccountsList'
         ));
     }
 
