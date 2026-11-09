@@ -1,3 +1,36 @@
+@php
+    $currentActiveSection = null;
+    if (request()->routeIs('admin.dashboard') || request()->routeIs('admin.articles.*') || request()->routeIs('admin.categories.*')) {
+        $currentActiveSection = 'menu_utama';
+    } elseif (request()->routeIs('admin.advisors.*')) {
+        $currentActiveSection = 'data_pembina';
+    } elseif (request()->routeIs('admin.member-registrations.*') || request()->routeIs('admin.members.*')) {
+        $currentActiveSection = 'data_anggota';
+    } elseif (request()->routeIs('admin.content-setup.*')) {
+        $currentActiveSection = 'setup_konten';
+    } elseif (
+        request()->routeIs('admin.media-manager.*') ||
+        request()->routeIs('admin.hero-slides.*') ||
+        request()->routeIs('admin.popup-banner.*') ||
+        request()->routeIs('admin.background-music.*') ||
+        request()->routeIs('admin.uks-hotline.*') ||
+        request()->routeIs('admin.activities.*') ||
+        request()->routeIs('admin.gallery.*') ||
+        request()->routeIs('admin.gallery-categories.*') ||
+        request()->routeIs('admin.organization.*') ||
+        request()->routeIs('admin.prestasi.*') ||
+        request()->routeIs('admin.organization-guidelines.*')
+    ) {
+        $currentActiveSection = 'media_konten';
+    } elseif (
+        request()->routeIs('admin.competition-*') ||
+        request()->routeIs('admin.parking.*')
+    ) {
+        $currentActiveSection = 'manajemen_lomba';
+    } elseif (request()->routeIs('admin.blood-*')) {
+        $currentActiveSection = 'donor_darah';
+    }
+@endphp
 <!DOCTYPE html>
 <html lang="id">
 <head>
@@ -13,6 +46,7 @@
     
     <!-- Alpine.js & FontAwesome & Tailwind -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/@alpinejs/collapse@3.x.x/dist/cdn.min.js"></script>
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
@@ -33,10 +67,57 @@
                 }
             }
         }
+
+        function adminSidebar() {
+            return {
+                mobileSidebarOpen: false,
+                sections: {
+                    menu_utama: true,
+                    data_pembina: false,
+                    data_anggota: false,
+                    setup_konten: false,
+                    media_konten: false,
+                    manajemen_lomba: false,
+                    donor_darah: false,
+                    layanan_kemanusiaan: false,
+                    akses_cepat: false,
+                },
+                init() {
+                    try {
+                        const saved = localStorage.getItem('pmr_admin_sidebar_sections_v1');
+                        if (saved) {
+                            const parsed = JSON.parse(saved);
+                            if (parsed && typeof parsed === 'object') {
+                                this.sections = Object.assign({}, this.sections, parsed);
+                            }
+                        }
+                    } catch (e) {
+                        console.warn('Could not read sidebar state from localStorage', e);
+                    }
+
+                    // Auto-expand section containing current active page
+                    const activeSection = '{{ $currentActiveSection ?? '' }}';
+                    if (activeSection && this.sections.hasOwnProperty(activeSection)) {
+                        this.sections[activeSection] = true;
+                    }
+                },
+                isOpen(key) {
+                    return !!this.sections[key];
+                },
+                toggleSection(key) {
+                    this.sections[key] = !this.sections[key];
+                    try {
+                        localStorage.setItem('pmr_admin_sidebar_sections_v1', JSON.stringify(this.sections));
+                    } catch (e) {
+                        console.warn('Could not save sidebar state to localStorage', e);
+                    }
+                }
+            };
+        }
     </script>
     @stack('styles')
 </head>
-<body x-data="{ mobileSidebarOpen: false }" class="bg-slate-100 text-slate-800 font-sans antialiased flex h-screen overflow-hidden relative">
+<body x-data="adminSidebar()" class="bg-slate-100 text-slate-800 font-sans antialiased flex h-screen overflow-hidden relative">
 
     <!-- Mobile Backdrop Overlay -->
     <div x-show="mobileSidebarOpen" 
@@ -71,260 +152,432 @@
         </div>
 
         <!-- Navigation Links -->
-        <div class="flex-grow overflow-y-auto px-4 py-6 space-y-1">
-            <div class="text-[11px] font-bold uppercase text-slate-500 tracking-wider px-3 mb-2">Menu Utama</div>
-            
-            <a href="{{ route('admin.dashboard') }}" class="flex items-center gap-3 px-3 py-2.5 rounded-xl font-medium text-sm transition {{ request()->routeIs('admin.dashboard') ? 'bg-pmr-primary text-white shadow-md shadow-red-950/40' : 'hover:bg-slate-800 text-slate-300' }}">
-                <i class="fa-solid fa-chart-pie w-5 text-center"></i>
-                <span>Dashboard</span>
-            </a>
+        <div class="flex-grow overflow-y-auto px-3.5 py-4 space-y-1.5 text-xs">
+            <!-- ========================================== -->
+            <!-- 1. MENU UTAMA -->
+            <!-- ========================================== -->
+            @php $isMenuUtamaActive = ($currentActiveSection === 'menu_utama'); @endphp
+            <div class="space-y-1">
+                <button type="button" 
+                        @click="toggleSection('menu_utama')" 
+                        class="w-full flex items-center justify-between px-3 py-2 text-left text-[11px] font-bold uppercase tracking-wider rounded-xl transition group select-none {{ $isMenuUtamaActive ? 'text-white bg-slate-800/90' : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/50' }}">
+                    <div class="flex items-center gap-2.5 min-w-0">
+                        <i class="fa-solid fa-gauge-high text-xs {{ $isMenuUtamaActive ? 'text-rose-400' : 'text-slate-500 group-hover:text-slate-300' }}"></i>
+                        <span class="truncate">Menu Utama</span>
+                        @if($isMenuUtamaActive)
+                            <span class="w-1.5 h-1.5 rounded-full bg-red-500 shrink-0"></span>
+                        @endif
+                    </div>
+                    <i class="fa-solid fa-chevron-down text-[10px] text-slate-400 transition-transform duration-200 shrink-0"
+                       :class="isOpen('menu_utama') ? 'rotate-180 text-white' : ''"></i>
+                </button>
 
-            @if(in_array(auth()->user()?->role, ['superuser', 'pembina', 'ketua_umum', 'bph', 'ketua_bidang', 'staff_bidang'], true))
-            <a href="{{ route('admin.articles.index') }}" class="flex items-center gap-3 px-3 py-2.5 rounded-xl font-medium text-sm transition {{ request()->routeIs('admin.articles.*') ? 'bg-pmr-primary text-white shadow-md shadow-red-950/40' : 'hover:bg-slate-800 text-slate-300' }}">
-                <i class="fa-solid fa-newspaper w-5 text-center"></i>
-                <span>Kelola Artikel</span>
-                <span class="ml-auto bg-slate-800 text-slate-300 text-[10px] font-bold px-2 py-0.5 rounded-full">Active</span>
-            </a>
+                <div x-show="isOpen('menu_utama')" x-collapse class="pl-2 space-y-1 border-l-2 border-slate-800 ml-3.5 my-1">
+                    <a href="{{ route('admin.dashboard') }}" class="flex items-center gap-2.5 px-3 py-2 rounded-xl font-medium text-xs md:text-sm transition {{ request()->routeIs('admin.dashboard') ? 'bg-pmr-primary text-white shadow-md shadow-red-950/40' : 'hover:bg-slate-800 text-slate-300' }}">
+                        <i class="fa-solid fa-chart-pie w-4 text-center"></i>
+                        <span>Dashboard</span>
+                    </a>
 
-            <a href="{{ route('admin.categories.index') }}" class="flex items-center gap-3 px-3 py-2.5 rounded-xl font-medium text-sm transition {{ request()->routeIs('admin.categories.*') ? 'bg-pmr-primary text-white shadow-md shadow-red-950/40' : 'hover:bg-slate-800 text-slate-300' }}">
-                <i class="fa-solid fa-tags w-5 text-center"></i>
-                <span>Kategori Artikel</span>
-            </a>
-            @endif
+                    @if(in_array(auth()->user()?->role, ['superuser', 'pembina', 'ketua_umum', 'bph', 'ketua_bidang', 'staff_bidang'], true))
+                    <a href="{{ route('admin.articles.index') }}" class="flex items-center gap-2.5 px-3 py-2 rounded-xl font-medium text-xs md:text-sm transition {{ request()->routeIs('admin.articles.*') ? 'bg-pmr-primary text-white shadow-md shadow-red-950/40' : 'hover:bg-slate-800 text-slate-300' }}">
+                        <i class="fa-solid fa-newspaper w-4 text-center"></i>
+                        <span class="truncate">Kelola Artikel</span>
+                        <span class="ml-auto bg-slate-800 text-slate-300 text-[10px] font-bold px-2 py-0.5 rounded-full shrink-0">Active</span>
+                    </a>
 
-            <!-- Submenu Data Pembina -->
-            @if(in_array(auth()->user()?->role, ['superuser', 'pembina', 'ketua_umum', 'bph'], true))
-            <div class="pt-4 pb-1 text-[11px] font-bold uppercase text-slate-500 tracking-wider px-3">Data Pembina</div>
-            <a href="{{ route('admin.advisors.create') }}" class="flex items-center gap-3 px-3 py-2.5 rounded-xl font-medium text-sm transition {{ request()->routeIs('admin.advisors.create') ? 'bg-pmr-primary text-white shadow-md shadow-red-950/40' : 'hover:bg-slate-800 text-slate-300' }}">
-                <i class="fa-solid fa-user-tie w-5 text-center text-amber-400"></i>
-                <span>Input Data Pembina</span>
-            </a>
-            <a href="{{ route('admin.advisors.index') }}" class="flex items-center gap-3 px-3 py-2.5 rounded-xl font-medium text-sm transition {{ request()->routeIs('admin.advisors.index') || request()->routeIs('admin.advisors.edit') ? 'bg-pmr-primary text-white shadow-md shadow-red-950/40' : 'hover:bg-slate-800 text-slate-300' }}">
-                <i class="fa-solid fa-shield-halved w-5 text-center text-rose-400"></i>
-                <span>Daftar Pembina</span>
-            </a>
-            @endif
-
-            <!-- Submenu Data Anggota (Bisa diakses oleh semua anggota berstatus aktif) -->
-            @if(auth()->user()?->canManageMembers())
-            <div class="pt-4 pb-1 text-[11px] font-bold uppercase text-slate-500 tracking-wider px-3">Data Anggota</div>
-            <a href="{{ route('admin.member-registrations.index') }}" class="flex items-center gap-3 px-3 py-2.5 rounded-xl font-medium text-sm transition {{ request()->routeIs('admin.member-registrations.*') ? 'bg-pmr-primary text-white shadow-md shadow-red-950/40' : 'hover:bg-slate-800 text-slate-300' }}">
-                <i class="fa-solid fa-id-card-clip w-5 text-center text-amber-400"></i>
-                <div class="flex items-center justify-between flex-1">
-                    <span>Calon Anggota Baru</span>
-                    @php
-                        $pendingRegistrationsCount = \App\Models\MemberRegistration::where('status', 'pending')->count();
-                    @endphp
-                    @if($pendingRegistrationsCount > 0)
-                        <span class="bg-amber-500/20 text-amber-300 text-[10px] font-black px-2 py-0.5 rounded-full border border-amber-500/30">{{ $pendingRegistrationsCount }}</span>
+                    <a href="{{ route('admin.categories.index') }}" class="flex items-center gap-2.5 px-3 py-2 rounded-xl font-medium text-xs md:text-sm transition {{ request()->routeIs('admin.categories.*') ? 'bg-pmr-primary text-white shadow-md shadow-red-950/40' : 'hover:bg-slate-800 text-slate-300' }}">
+                        <i class="fa-solid fa-tags w-4 text-center"></i>
+                        <span class="truncate">Kategori Artikel</span>
+                    </a>
                     @endif
                 </div>
-            </a>
-            <a href="{{ route('admin.members.create') }}" class="flex items-center gap-3 px-3 py-2.5 rounded-xl font-medium text-sm transition {{ request()->routeIs('admin.members.create') ? 'bg-pmr-primary text-white shadow-md shadow-red-950/40' : 'hover:bg-slate-800 text-slate-300' }}">
-                <i class="fa-solid fa-user-plus w-5 text-center text-emerald-400"></i>
-                <span>Input Data Anggota</span>
-            </a>
-            <a href="{{ route('admin.members.index') }}" class="flex items-center gap-3 px-3 py-2.5 rounded-xl font-medium text-sm transition {{ request()->routeIs('admin.members.index') || request()->routeIs('admin.members.edit') ? 'bg-pmr-primary text-white shadow-md shadow-red-950/40' : 'hover:bg-slate-800 text-slate-300' }}">
-                <i class="fa-solid fa-users-rectangle w-5 text-center text-blue-400"></i>
-                <span>Daftar Anggota</span>
-            </a>
+            </div>
+
+            <!-- ========================================== -->
+            <!-- 2. DATA PEMBINA -->
+            <!-- ========================================== -->
+            @if(in_array(auth()->user()?->role, ['superuser', 'pembina', 'ketua_umum', 'bph'], true))
+            @php $isDataPembinaActive = ($currentActiveSection === 'data_pembina'); @endphp
+            <div class="pt-1 space-y-1">
+                <button type="button" 
+                        @click="toggleSection('data_pembina')" 
+                        class="w-full flex items-center justify-between px-3 py-2 text-left text-[11px] font-bold uppercase tracking-wider rounded-xl transition group select-none {{ $isDataPembinaActive ? 'text-white bg-slate-800/90' : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/50' }}">
+                    <div class="flex items-center gap-2.5 min-w-0">
+                        <i class="fa-solid fa-user-shield text-xs {{ $isDataPembinaActive ? 'text-amber-400' : 'text-slate-500 group-hover:text-slate-300' }}"></i>
+                        <span class="truncate">Data Pembina</span>
+                        @if($isDataPembinaActive)
+                            <span class="w-1.5 h-1.5 rounded-full bg-red-500 shrink-0"></span>
+                        @endif
+                    </div>
+                    <i class="fa-solid fa-chevron-down text-[10px] text-slate-400 transition-transform duration-200 shrink-0"
+                       :class="isOpen('data_pembina') ? 'rotate-180 text-white' : ''"></i>
+                </button>
+
+                <div x-show="isOpen('data_pembina')" x-collapse class="pl-2 space-y-1 border-l-2 border-slate-800 ml-3.5 my-1">
+                    <a href="{{ route('admin.advisors.create') }}" class="flex items-center gap-2.5 px-3 py-2 rounded-xl font-medium text-xs md:text-sm transition {{ request()->routeIs('admin.advisors.create') ? 'bg-pmr-primary text-white shadow-md shadow-red-950/40' : 'hover:bg-slate-800 text-slate-300' }}">
+                        <i class="fa-solid fa-user-tie w-4 text-center text-amber-400"></i>
+                        <span class="truncate">Input Data Pembina</span>
+                    </a>
+                    <a href="{{ route('admin.advisors.index') }}" class="flex items-center gap-2.5 px-3 py-2 rounded-xl font-medium text-xs md:text-sm transition {{ request()->routeIs('admin.advisors.index') || request()->routeIs('admin.advisors.edit') ? 'bg-pmr-primary text-white shadow-md shadow-red-950/40' : 'hover:bg-slate-800 text-slate-300' }}">
+                        <i class="fa-solid fa-shield-halved w-4 text-center text-rose-400"></i>
+                        <span class="truncate">Daftar Pembina</span>
+                    </a>
+                </div>
+            </div>
+            @endif
+
+            <!-- ========================================== -->
+            <!-- 3. DATA ANGGOTA -->
+            <!-- ========================================== -->
+            @if(auth()->user()?->canManageMembers())
+            @php 
+                $isDataAnggotaActive = ($currentActiveSection === 'data_anggota');
+                $pendingRegistrationsCount = \App\Models\MemberRegistration::where('status', 'pending')->count();
+            @endphp
+            <div class="pt-1 space-y-1">
+                <button type="button" 
+                        @click="toggleSection('data_anggota')" 
+                        class="w-full flex items-center justify-between px-3 py-2 text-left text-[11px] font-bold uppercase tracking-wider rounded-xl transition group select-none {{ $isDataAnggotaActive ? 'text-white bg-slate-800/90' : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/50' }}">
+                    <div class="flex items-center gap-2.5 min-w-0">
+                        <i class="fa-solid fa-users text-xs {{ $isDataAnggotaActive ? 'text-blue-400' : 'text-slate-500 group-hover:text-slate-300' }}"></i>
+                        <span class="truncate">Data Anggota</span>
+                        @if($isDataAnggotaActive)
+                            <span class="w-1.5 h-1.5 rounded-full bg-red-500 shrink-0"></span>
+                        @endif
+                    </div>
+                    <div class="flex items-center gap-2 shrink-0">
+                        @if($pendingRegistrationsCount > 0)
+                            <span class="bg-amber-500/20 text-amber-300 text-[10px] font-black px-1.5 py-0.2 rounded-full border border-amber-500/30">
+                                {{ $pendingRegistrationsCount }}
+                            </span>
+                        @endif
+                        <i class="fa-solid fa-chevron-down text-[10px] text-slate-400 transition-transform duration-200 shrink-0"
+                           :class="isOpen('data_anggota') ? 'rotate-180 text-white' : ''"></i>
+                    </div>
+                </button>
+
+                <div x-show="isOpen('data_anggota')" x-collapse class="pl-2 space-y-1 border-l-2 border-slate-800 ml-3.5 my-1">
+                    <a href="{{ route('admin.member-registrations.index') }}" class="flex items-center gap-2.5 px-3 py-2 rounded-xl font-medium text-xs md:text-sm transition {{ request()->routeIs('admin.member-registrations.*') ? 'bg-pmr-primary text-white shadow-md shadow-red-950/40' : 'hover:bg-slate-800 text-slate-300' }}">
+                        <i class="fa-solid fa-id-card-clip w-4 text-center text-amber-400"></i>
+                        <div class="flex items-center justify-between flex-1 min-w-0">
+                            <span class="truncate">Calon Anggota Baru</span>
+                            @if($pendingRegistrationsCount > 0)
+                                <span class="bg-amber-500/20 text-amber-300 text-[10px] font-black px-2 py-0.5 rounded-full border border-amber-500/30 shrink-0 ml-1">{{ $pendingRegistrationsCount }}</span>
+                            @endif
+                        </div>
+                    </a>
+                    <a href="{{ route('admin.members.create') }}" class="flex items-center gap-2.5 px-3 py-2 rounded-xl font-medium text-xs md:text-sm transition {{ request()->routeIs('admin.members.create') ? 'bg-pmr-primary text-white shadow-md shadow-red-950/40' : 'hover:bg-slate-800 text-slate-300' }}">
+                        <i class="fa-solid fa-user-plus w-4 text-center text-emerald-400"></i>
+                        <span class="truncate">Input Data Anggota</span>
+                    </a>
+                    <a href="{{ route('admin.members.index') }}" class="flex items-center gap-2.5 px-3 py-2 rounded-xl font-medium text-xs md:text-sm transition {{ request()->routeIs('admin.members.index') || request()->routeIs('admin.members.edit') ? 'bg-pmr-primary text-white shadow-md shadow-red-950/40' : 'hover:bg-slate-800 text-slate-300' }}">
+                        <i class="fa-solid fa-users-rectangle w-4 text-center text-blue-400"></i>
+                        <span class="truncate">Daftar Anggota</span>
+                    </a>
+                </div>
+            </div>
             @endif
 
             @if(!in_array(auth()->user()?->role, ['anggota', 'staff_bidang'], true))
-            <!-- Setup Konten -->
-            <div class="pt-4 pb-1 text-[11px] font-bold uppercase text-slate-500 tracking-wider px-3">Setup Konten</div>
-            <a href="{{ route('admin.content-setup.home') }}" class="flex items-center gap-3 px-3 py-2.5 rounded-xl font-medium text-sm transition {{ request()->routeIs('admin.content-setup.home*') ? 'bg-pmr-primary text-white shadow-md shadow-red-950/40' : 'hover:bg-slate-800 text-slate-300' }}">
-                <i class="fa-solid fa-house-laptop w-5 text-center text-rose-400"></i>
-                <div class="flex items-center justify-between flex-grow">
-                    <span>Beranda</span>
-                    <span class="text-[9px] bg-rose-500/20 text-rose-300 border border-rose-500/30 px-1.5 py-0.2 rounded font-black uppercase">Home</span>
+            <!-- ========================================== -->
+            <!-- 4. SETUP KONTEN -->
+            <!-- ========================================== -->
+            @php $isSetupKontenActive = ($currentActiveSection === 'setup_konten'); @endphp
+            <div class="pt-1 space-y-1">
+                <button type="button" 
+                        @click="toggleSection('setup_konten')" 
+                        class="w-full flex items-center justify-between px-3 py-2 text-left text-[11px] font-bold uppercase tracking-wider rounded-xl transition group select-none {{ $isSetupKontenActive ? 'text-white bg-slate-800/90' : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/50' }}">
+                    <div class="flex items-center gap-2.5 min-w-0">
+                        <i class="fa-solid fa-desktop text-xs {{ $isSetupKontenActive ? 'text-rose-400' : 'text-slate-500 group-hover:text-slate-300' }}"></i>
+                        <span class="truncate">Setup Konten</span>
+                        @if($isSetupKontenActive)
+                            <span class="w-1.5 h-1.5 rounded-full bg-red-500 shrink-0"></span>
+                        @endif
+                    </div>
+                    <i class="fa-solid fa-chevron-down text-[10px] text-slate-400 transition-transform duration-200 shrink-0"
+                       :class="isOpen('setup_konten') ? 'rotate-180 text-white' : ''"></i>
+                </button>
+
+                <div x-show="isOpen('setup_konten')" x-collapse class="pl-2 space-y-1 border-l-2 border-slate-800 ml-3.5 my-1">
+                    <a href="{{ route('admin.content-setup.home') }}" class="flex items-center gap-2.5 px-3 py-2 rounded-xl font-medium text-xs md:text-sm transition {{ request()->routeIs('admin.content-setup.home*') ? 'bg-pmr-primary text-white shadow-md shadow-red-950/40' : 'hover:bg-slate-800 text-slate-300' }}">
+                        <i class="fa-solid fa-house-laptop w-4 text-center text-rose-400"></i>
+                        <div class="flex items-center justify-between flex-grow min-w-0">
+                            <span class="truncate">Beranda</span>
+                            <span class="text-[9px] bg-rose-500/20 text-rose-300 border border-rose-500/30 px-1.5 py-0.2 rounded font-black uppercase shrink-0 ml-1">Home</span>
+                        </div>
+                    </a>
+                    <a href="{{ route('admin.content-setup.about') }}" class="flex items-center gap-2.5 px-3 py-2 rounded-xl font-medium text-xs md:text-sm transition {{ request()->routeIs('admin.content-setup.about*') ? 'bg-pmr-primary text-white shadow-md shadow-red-950/40' : 'hover:bg-slate-800 text-slate-300' }}">
+                        <i class="fa-solid fa-circle-info w-4 text-center text-amber-400"></i>
+                        <div class="flex items-center justify-between flex-grow min-w-0">
+                            <span class="truncate">Tentang Kami</span>
+                            <span class="text-[9px] bg-amber-500/20 text-amber-300 border border-amber-500/30 px-1.5 py-0.2 rounded font-black uppercase shrink-0 ml-1">Profil</span>
+                        </div>
+                    </a>
                 </div>
-            </a>
-            <a href="{{ route('admin.content-setup.about') }}" class="flex items-center gap-3 px-3 py-2.5 rounded-xl font-medium text-sm transition {{ request()->routeIs('admin.content-setup.about*') ? 'bg-pmr-primary text-white shadow-md shadow-red-950/40' : 'hover:bg-slate-800 text-slate-300' }}">
-                <i class="fa-solid fa-circle-info w-5 text-center text-amber-400"></i>
-                <div class="flex items-center justify-between flex-grow">
-                    <span>Tentang Kami</span>
-                    <span class="text-[9px] bg-amber-500/20 text-amber-300 border border-amber-500/30 px-1.5 py-0.2 rounded font-black uppercase">Profil</span>
+            </div>
+
+            <!-- ========================================== -->
+            <!-- 5. MEDIA & KONTEN WEB -->
+            <!-- ========================================== -->
+            @php $isMediaKontenActive = ($currentActiveSection === 'media_konten'); @endphp
+            <div class="pt-1 space-y-1">
+                <button type="button" 
+                        @click="toggleSection('media_konten')" 
+                        class="w-full flex items-center justify-between px-3 py-2 text-left text-[11px] font-bold uppercase tracking-wider rounded-xl transition group select-none {{ $isMediaKontenActive ? 'text-white bg-slate-800/90' : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/50' }}">
+                    <div class="flex items-center gap-2.5 min-w-0">
+                        <i class="fa-solid fa-photo-film text-xs {{ $isMediaKontenActive ? 'text-rose-400' : 'text-slate-500 group-hover:text-slate-300' }}"></i>
+                        <span class="truncate">Media & Konten Web</span>
+                        @if($isMediaKontenActive)
+                            <span class="w-1.5 h-1.5 rounded-full bg-red-500 shrink-0"></span>
+                        @endif
+                    </div>
+                    <i class="fa-solid fa-chevron-down text-[10px] text-slate-400 transition-transform duration-200 shrink-0"
+                       :class="isOpen('media_konten') ? 'rotate-180 text-white' : ''"></i>
+                </button>
+
+                <div x-show="isOpen('media_konten')" x-collapse class="pl-2 space-y-1 border-l-2 border-slate-800 ml-3.5 my-1">
+                    <a href="{{ route('admin.media-manager.index') }}" class="flex items-center gap-2.5 px-3 py-2 rounded-xl font-medium text-xs md:text-sm transition {{ request()->routeIs('admin.media-manager.*') || request()->routeIs('admin.hero-slides.*') ? 'bg-pmr-primary text-white shadow-md shadow-red-950/40' : 'hover:bg-slate-800 text-slate-300' }}">
+                        <i class="fa-solid fa-photo-film w-4 text-center text-rose-400"></i>
+                        <span class="truncate">Kelola Gambar & Media</span>
+                        <span class="ml-auto bg-white/20 text-white text-[10px] font-bold px-2 py-0.5 rounded-full shrink-0">Web</span>
+                    </a>
+                    <a href="{{ route('admin.popup-banner.index') }}" class="flex items-center gap-2.5 px-3 py-2 rounded-xl font-medium text-xs md:text-sm transition {{ request()->routeIs('admin.popup-banner.*') ? 'bg-pmr-primary text-white shadow-md shadow-red-950/40' : 'hover:bg-slate-800 text-slate-300' }}">
+                        <i class="fa-solid fa-bullhorn w-4 text-center text-amber-400"></i>
+                        <span class="truncate">Popup Banner Iklan</span>
+                    </a>
+                    <a href="{{ route('admin.background-music.index') }}" class="flex items-center gap-2.5 px-3 py-2 rounded-xl font-medium text-xs md:text-sm transition {{ request()->routeIs('admin.background-music.*') ? 'bg-pmr-primary text-white shadow-md shadow-red-950/40' : 'hover:bg-slate-800 text-slate-300' }}">
+                        <i class="fa-solid fa-music w-4 text-center text-rose-400"></i>
+                        <span class="truncate">Sound Mars PMI</span>
+                        <span class="ml-auto bg-rose-500/20 text-rose-300 text-[10px] font-bold px-2 py-0.5 rounded-full border border-rose-500/30 shrink-0">Audio</span>
+                    </a>
+                    <a href="{{ route('admin.uks-hotline.index') }}" class="flex items-center gap-2.5 px-3 py-2 rounded-xl font-medium text-xs md:text-sm transition {{ request()->routeIs('admin.uks-hotline.*') ? 'bg-pmr-primary text-white shadow-md shadow-red-950/40' : 'hover:bg-slate-800 text-slate-300' }}">
+                        <i class="fa-solid fa-truck-medical w-4 text-center text-rose-400"></i>
+                        <span class="truncate">Hotline & Siaga UKS</span>
+                        <span class="ml-auto bg-emerald-500/20 text-emerald-300 text-[10px] font-bold px-2 py-0.5 rounded-full border border-emerald-500/30 shrink-0">Siaga</span>
+                    </a>
+                    <a href="{{ route('admin.activities.index') }}" class="flex items-center gap-2.5 px-3 py-2 rounded-xl font-medium text-xs md:text-sm transition {{ request()->routeIs('admin.activities.*') ? 'bg-pmr-primary text-white shadow-md shadow-red-950/40' : 'hover:bg-slate-800 text-slate-300' }}">
+                        <i class="fa-solid fa-calendar-check w-4 text-center"></i>
+                        <span class="truncate">Kelola Kegiatan</span>
+                    </a>
+                    <a href="{{ route('admin.gallery.index') }}" class="flex items-center gap-2.5 px-3 py-2 rounded-xl font-medium text-xs md:text-sm transition {{ request()->routeIs('admin.gallery.*') && !request()->routeIs('admin.gallery-categories.*') ? 'bg-pmr-primary text-white shadow-md shadow-red-950/40' : 'hover:bg-slate-800 text-slate-300' }}">
+                        <i class="fa-solid fa-images w-4 text-center"></i>
+                        <span class="truncate">Kelola Galeri</span>
+                    </a>
+                    <a href="{{ route('admin.gallery-categories.index') }}" class="flex items-center gap-2.5 px-3 py-2 rounded-xl font-medium text-xs md:text-sm transition {{ request()->routeIs('admin.gallery-categories.*') ? 'bg-pmr-primary text-white shadow-md shadow-red-950/40' : 'hover:bg-slate-800 text-slate-300' }}">
+                        <i class="fa-solid fa-folder-tree w-4 text-center"></i>
+                        <span class="truncate">Kategori Galeri</span>
+                    </a>
+                    <a href="{{ route('admin.organization.index') }}" class="flex items-center gap-2.5 px-3 py-2 rounded-xl font-medium text-xs md:text-sm transition {{ request()->routeIs('admin.organization.*') ? 'bg-pmr-primary text-white shadow-md shadow-red-950/40' : 'hover:bg-slate-800 text-slate-300' }}">
+                        <i class="fa-solid fa-sitemap w-4 text-center"></i>
+                        <span class="truncate">Bagan Kepengurusan</span>
+                    </a>
+                    <a href="{{ route('admin.prestasi.index') }}" class="flex items-center gap-2.5 px-3 py-2 rounded-xl font-medium text-xs md:text-sm transition {{ request()->routeIs('admin.prestasi.*') ? 'bg-pmr-primary text-white shadow-md shadow-red-950/40' : 'hover:bg-slate-800 text-slate-300' }}">
+                        <i class="fa-solid fa-trophy w-4 text-center text-amber-400"></i>
+                        <span class="truncate">Prestasi & Penghargaan</span>
+                    </a>
+                    <a href="{{ route('admin.organization-guidelines.index') }}" class="flex items-center gap-2.5 px-3 py-2 rounded-xl font-medium text-xs md:text-sm transition {{ request()->routeIs('admin.organization-guidelines.*') ? 'bg-pmr-primary text-white shadow-md shadow-red-950/40' : 'hover:bg-slate-800 text-slate-300' }}">
+                        <i class="fa-solid fa-book-bookmark w-4 text-center text-amber-400"></i>
+                        <span class="truncate">Pedoman Organisasi</span>
+                    </a>
                 </div>
-            </a>
+            </div>
 
-            <div class="pt-4 pb-1 text-[11px] font-bold uppercase text-slate-500 tracking-wider px-3">Media & Konten Web</div>
-            <a href="{{ route('admin.media-manager.index') }}" class="flex items-center gap-3 px-3 py-2.5 rounded-xl font-medium text-sm transition {{ request()->routeIs('admin.media-manager.*') || request()->routeIs('admin.hero-slides.*') ? 'bg-pmr-primary text-white shadow-md shadow-red-950/40' : 'hover:bg-slate-800 text-slate-300' }}">
-                <i class="fa-solid fa-photo-film w-5 text-center text-rose-400"></i>
-                <span>Kelola Gambar & Media</span>
-                <span class="ml-auto bg-white/20 text-white text-[10px] font-bold px-2 py-0.5 rounded-full">Web</span>
-            </a>
+            <!-- ========================================== -->
+            <!-- 6. SUA BHAKTI BERKARYA (MANAJEMEN LOMBA) -->
+            <!-- ========================================== -->
+            @php $isManajemenLombaActive = ($currentActiveSection === 'manajemen_lomba'); @endphp
+            <div class="pt-1 space-y-1">
+                <button type="button" 
+                        @click="toggleSection('manajemen_lomba')" 
+                        class="w-full flex items-center justify-between px-3 py-2 text-left text-[11px] font-bold uppercase tracking-wider rounded-xl transition group select-none {{ $isManajemenLombaActive ? 'text-white bg-slate-800/90' : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/50' }}">
+                    <div class="flex items-center gap-2.5 min-w-0">
+                        <i class="fa-solid fa-trophy text-xs {{ $isManajemenLombaActive ? 'text-amber-400' : 'text-slate-500 group-hover:text-slate-300' }}"></i>
+                        <span class="truncate">Sua Bhakti Berkarya</span>
+                        @if($isManajemenLombaActive)
+                            <span class="w-1.5 h-1.5 rounded-full bg-red-500 shrink-0"></span>
+                        @endif
+                    </div>
+                    <i class="fa-solid fa-chevron-down text-[10px] text-slate-400 transition-transform duration-200 shrink-0"
+                       :class="isOpen('manajemen_lomba') ? 'rotate-180 text-white' : ''"></i>
+                </button>
 
-            <a href="{{ route('admin.popup-banner.index') }}" class="flex items-center gap-3 px-3 py-2.5 rounded-xl font-medium text-sm transition {{ request()->routeIs('admin.popup-banner.*') ? 'bg-pmr-primary text-white shadow-md shadow-red-950/40' : 'hover:bg-slate-800 text-slate-300' }}">
-                <i class="fa-solid fa-bullhorn w-5 text-center text-amber-400"></i>
-                <span>Popup Banner Iklan</span>
-            </a>
-
-            <a href="{{ route('admin.background-music.index') }}" class="flex items-center gap-3 px-3 py-2.5 rounded-xl font-medium text-sm transition {{ request()->routeIs('admin.background-music.*') ? 'bg-pmr-primary text-white shadow-md shadow-red-950/40' : 'hover:bg-slate-800 text-slate-300' }}">
-                <i class="fa-solid fa-music w-5 text-center text-rose-400"></i>
-                <span>Sound Mars PMI</span>
-                <span class="ml-auto bg-rose-500/20 text-rose-300 text-[10px] font-bold px-2 py-0.5 rounded-full border border-rose-500/30">Audio</span>
-            </a>
-
-            <a href="{{ route('admin.uks-hotline.index') }}" class="flex items-center gap-3 px-3 py-2.5 rounded-xl font-medium text-sm transition {{ request()->routeIs('admin.uks-hotline.*') ? 'bg-pmr-primary text-white shadow-md shadow-red-950/40' : 'hover:bg-slate-800 text-slate-300' }}">
-                <i class="fa-solid fa-truck-medical w-5 text-center text-rose-400"></i>
-                <span>Hotline & Siaga UKS</span>
-                <span class="ml-auto bg-emerald-500/20 text-emerald-300 text-[10px] font-bold px-2 py-0.5 rounded-full border border-emerald-500/30">Siaga</span>
-            </a>
-
-            <a href="{{ route('admin.activities.index') }}" class="flex items-center gap-3 px-3 py-2.5 rounded-xl font-medium text-sm transition {{ request()->routeIs('admin.activities.*') ? 'bg-pmr-primary text-white shadow-md shadow-red-950/40' : 'hover:bg-slate-800 text-slate-300' }}">
-                <i class="fa-solid fa-calendar-check w-5 text-center"></i>
-                <span>Kelola Kegiatan</span>
-            </a>
-
-            <a href="{{ route('admin.gallery.index') }}" class="flex items-center gap-3 px-3 py-2.5 rounded-xl font-medium text-sm transition {{ request()->routeIs('admin.gallery.*') && !request()->routeIs('admin.gallery-categories.*') ? 'bg-pmr-primary text-white shadow-md shadow-red-950/40' : 'hover:bg-slate-800 text-slate-300' }}">
-                <i class="fa-solid fa-images w-5 text-center"></i>
-                <span>Kelola Galeri</span>
-            </a>
-
-            <a href="{{ route('admin.gallery-categories.index') }}" class="flex items-center gap-3 px-3 py-2.5 rounded-xl font-medium text-sm transition {{ request()->routeIs('admin.gallery-categories.*') ? 'bg-pmr-primary text-white shadow-md shadow-red-950/40' : 'hover:bg-slate-800 text-slate-300' }}">
-                <i class="fa-solid fa-folder-tree w-5 text-center"></i>
-                <span>Kategori Galeri</span>
-            </a>
-
-            <a href="{{ route('admin.organization.index') }}" class="flex items-center gap-3 px-3 py-2.5 rounded-xl font-medium text-sm transition {{ request()->routeIs('admin.organization.*') ? 'bg-pmr-primary text-white shadow-md shadow-red-950/40' : 'hover:bg-slate-800 text-slate-300' }}">
-                <i class="fa-solid fa-sitemap w-5 text-center"></i>
-                <span>Bagan Kepengurusan</span>
-            </a>
-
-            <a href="{{ route('admin.prestasi.index') }}" class="flex items-center gap-3 px-3 py-2.5 rounded-xl font-medium text-sm transition {{ request()->routeIs('admin.prestasi.*') ? 'bg-pmr-primary text-white shadow-md shadow-red-950/40' : 'hover:bg-slate-800 text-slate-300' }}">
-                <i class="fa-solid fa-trophy w-5 text-center text-amber-400"></i>
-                <span>Prestasi & Penghargaan</span>
-            </a>
-
-            <a href="{{ route('admin.organization-guidelines.index') }}" class="flex items-center gap-3 px-3 py-2.5 rounded-xl font-medium text-sm transition {{ request()->routeIs('admin.organization-guidelines.*') ? 'bg-pmr-primary text-white shadow-md shadow-red-950/40' : 'hover:bg-slate-800 text-slate-300' }}">
-                <i class="fa-solid fa-book-bookmark w-5 text-center text-amber-400"></i>
-                <span>Pedoman Organisasi</span>
-            </a>
-
-            <!-- Submenu Manajemen Lomba -->
-            <div class="pt-4 pb-1 text-[11px] font-bold uppercase text-slate-500 tracking-wider px-3">SUA BHAKTI BERKARYA</div>
-            <a href="{{ route('admin.competition-event.index') }}" class="flex items-center gap-3 px-3 py-2.5 rounded-xl font-medium text-sm transition {{ request()->routeIs('admin.competition-event.*') ? 'bg-pmr-primary text-white shadow-md shadow-red-950/40' : 'hover:bg-slate-800 text-slate-300' }}">
-                <i class="fa-solid fa-sliders w-5 text-center text-rose-400"></i>
-                <span>Pengaturan Event Lomba</span>
-            </a>
-            <a href="{{ route('admin.competition-bank-accounts.index') }}" class="flex items-center gap-3 px-3 py-2.5 rounded-xl font-medium text-sm transition {{ request()->routeIs('admin.competition-bank-accounts.*') ? 'bg-pmr-primary text-white shadow-md shadow-red-950/40' : 'hover:bg-slate-800 text-slate-300' }}">
-                <i class="fa-solid fa-credit-card w-5 text-center text-emerald-400"></i>
-                <div class="flex items-center justify-between flex-grow">
-                    <span>Rekening Transfer Lomba</span>
-                    <span class="text-[9px] bg-emerald-400/20 text-emerald-300 border border-emerald-400/30 px-1.5 py-0.2 rounded font-black uppercase">3 Tingkat</span>
+                <div x-show="isOpen('manajemen_lomba')" x-collapse class="pl-2 space-y-1 border-l-2 border-slate-800 ml-3.5 my-1">
+                    <a href="{{ route('admin.competition-event.index') }}" class="flex items-center gap-2.5 px-3 py-2 rounded-xl font-medium text-xs md:text-sm transition {{ request()->routeIs('admin.competition-event.*') ? 'bg-pmr-primary text-white shadow-md shadow-red-950/40' : 'hover:bg-slate-800 text-slate-300' }}">
+                        <i class="fa-solid fa-sliders w-4 text-center text-rose-400"></i>
+                        <span class="truncate">Pengaturan Event Lomba</span>
+                    </a>
+                    <a href="{{ route('admin.competition-bank-accounts.index') }}" class="flex items-center gap-2.5 px-3 py-2 rounded-xl font-medium text-xs md:text-sm transition {{ request()->routeIs('admin.competition-bank-accounts.*') ? 'bg-pmr-primary text-white shadow-md shadow-red-950/40' : 'hover:bg-slate-800 text-slate-300' }}">
+                        <i class="fa-solid fa-credit-card w-4 text-center text-emerald-400"></i>
+                        <div class="flex items-center justify-between flex-grow min-w-0">
+                            <span class="truncate">Rekening Transfer Lomba</span>
+                            <span class="text-[9px] bg-emerald-400/20 text-emerald-300 border border-emerald-400/30 px-1.5 py-0.2 rounded font-black uppercase shrink-0 ml-1">3 Tingkat</span>
+                        </div>
+                    </a>
+                    <a href="{{ route('admin.competition-fees.index') }}" class="flex items-center gap-2.5 px-3 py-2 rounded-xl font-medium text-xs md:text-sm transition {{ request()->routeIs('admin.competition-fees.*') ? 'bg-pmr-primary text-white shadow-md shadow-red-950/40' : 'hover:bg-slate-800 text-slate-300' }}">
+                        <i class="fa-solid fa-calendar-check w-4 text-center text-amber-400"></i>
+                        <div class="flex items-center justify-between flex-grow min-w-0">
+                            <span class="truncate">Jadwal & Biaya Gelombang</span>
+                            <span class="text-[9px] bg-amber-400/20 text-amber-300 border border-amber-400/30 px-1.5 py-0.2 rounded font-black uppercase shrink-0 ml-1">2 Gel</span>
+                        </div>
+                    </a>
+                    <a href="{{ route('admin.competition-quotas.index') }}" class="flex items-center gap-2.5 px-3 py-2 rounded-xl font-medium text-xs md:text-sm transition {{ request()->routeIs('admin.competition-quotas.*') ? 'bg-pmr-primary text-white shadow-md shadow-red-950/40' : 'hover:bg-slate-800 text-slate-300' }}">
+                        <i class="fa-solid fa-sliders w-4 text-center text-rose-400"></i>
+                        <div class="flex items-center justify-between flex-grow min-w-0">
+                            <span class="truncate">Pengaturan Kuota Regu</span>
+                            <span class="text-[9px] bg-rose-400/20 text-rose-300 border border-rose-400/30 px-1.5 py-0.2 rounded font-black uppercase shrink-0 ml-1">Kuota</span>
+                        </div>
+                    </a>
+                    <a href="{{ route('admin.competition-registrations.index') }}" class="flex items-center gap-2.5 px-3 py-2 rounded-xl font-medium text-xs md:text-sm transition {{ request()->routeIs('admin.competition-registrations.*') ? 'bg-pmr-primary text-white shadow-md shadow-red-950/40' : 'hover:bg-slate-800 text-slate-300' }}">
+                        <i class="fa-solid fa-clipboard-check w-4 text-center text-amber-400"></i>
+                        <span class="truncate">Verifikasi Pendaftar</span>
+                    </a>
+                    <a href="{{ route('admin.competition-checkin.index') }}" class="flex items-center gap-2.5 px-3 py-2 rounded-xl font-medium text-xs md:text-sm transition {{ request()->routeIs('admin.competition-checkin.*') ? 'bg-pmr-primary text-white shadow-md shadow-red-950/40' : 'hover:bg-slate-800 text-slate-300' }}">
+                        <i class="fa-solid fa-qrcode w-4 text-center text-emerald-400"></i>
+                        <span class="truncate">Daftar Ulang Peserta</span>
+                    </a>
+                    <a href="{{ route('admin.competition-juries.index') }}" class="flex items-center gap-2.5 px-3 py-2 rounded-xl font-medium text-xs md:text-sm transition {{ request()->routeIs('admin.competition-juries.*') ? 'bg-pmr-primary text-white shadow-md shadow-red-950/40' : 'hover:bg-slate-800 text-slate-300' }}">
+                        <i class="fa-solid fa-user-gear w-4 text-center text-amber-400"></i>
+                        <div class="flex items-center justify-between flex-grow min-w-0">
+                            <span class="truncate">Input & Registrasi Juri</span>
+                            <span class="text-[9px] bg-amber-400/20 text-amber-300 border border-amber-400/30 px-1.5 py-0.2 rounded font-black uppercase shrink-0 ml-1">Juri</span>
+                        </div>
+                    </a>
+                    <a href="{{ route('admin.competition-scores.index') }}" class="flex items-center gap-2.5 px-3 py-2 rounded-xl font-medium text-xs md:text-sm transition {{ (request()->routeIs('admin.competition-scores.*') && !request()->routeIs('admin.competition-scores.master-sheet*')) ? 'bg-pmr-primary text-white shadow-md shadow-red-950/40' : 'hover:bg-slate-800 text-slate-300' }}">
+                        <i class="fa-solid fa-calculator w-4 text-center text-teal-400"></i>
+                        <span class="truncate">Input Nilai Lomba</span>
+                    </a>
+                    <a href="{{ route('admin.competition-scores.master-sheet') }}" class="flex items-center gap-2.5 px-3 py-2 rounded-xl font-medium text-xs md:text-sm transition {{ request()->routeIs('admin.competition-scores.master-sheet*') ? 'bg-pmr-primary text-white shadow-md shadow-red-950/40' : 'hover:bg-slate-800 text-slate-300' }}">
+                        <i class="fa-solid fa-table-list w-4 text-center text-blue-400"></i>
+                        <div class="flex items-center justify-between flex-grow min-w-0">
+                            <span class="truncate">Lembar Skor Utama</span>
+                            <span class="text-[9px] bg-blue-500/20 text-blue-300 border border-blue-400/30 px-1.5 py-0.2 rounded font-black uppercase shrink-0 ml-1">Rekap</span>
+                        </div>
+                    </a>
+                    <a href="{{ route('admin.competition-mascots.index') }}" class="flex items-center gap-2.5 px-3 py-2 rounded-xl font-medium text-xs md:text-sm transition {{ request()->routeIs('admin.competition-mascots.*') ? 'bg-pmr-primary text-white shadow-md shadow-red-950/40' : 'hover:bg-slate-800 text-slate-300' }}">
+                        <i class="fa-solid fa-cat w-4 text-center text-amber-300"></i>
+                        <div class="flex items-center justify-between flex-grow min-w-0">
+                            <span class="truncate">Maskot Lomba</span>
+                            <span class="text-[9px] bg-amber-400/20 text-amber-300 border border-amber-400/30 px-1.5 py-0.2 rounded font-black uppercase shrink-0 ml-1">Foto</span>
+                        </div>
+                    </a>
+                    <a href="{{ route('admin.competition-leaderboard.index') }}" class="flex items-center gap-2.5 px-3 py-2 rounded-xl font-medium text-xs md:text-sm transition {{ request()->routeIs('admin.competition-leaderboard.*') ? 'bg-pmr-primary text-white shadow-md shadow-red-950/40' : 'hover:bg-slate-800 text-slate-300' }}">
+                        <i class="fa-solid fa-trophy w-4 text-center text-yellow-400"></i>
+                        <span class="truncate">Rekap Juara Umum</span>
+                    </a>
+                    <a href="{{ route('admin.competition-participants.index') }}" class="flex items-center gap-2.5 px-3 py-2 rounded-xl font-medium text-xs md:text-sm transition {{ request()->routeIs('admin.competition-participants.*') ? 'bg-pmr-primary text-white shadow-md shadow-red-950/40' : 'hover:bg-slate-800 text-slate-300' }}">
+                        <i class="fa-solid fa-medal w-4 text-center text-amber-400"></i>
+                        <div class="flex items-center justify-between flex-grow min-w-0">
+                            <span class="truncate">Daftar Peserta & Juara</span>
+                            <span class="text-[9px] bg-amber-400/20 text-amber-300 border border-amber-400/30 px-1.5 py-0.2 rounded font-black uppercase shrink-0 ml-1">Event</span>
+                        </div>
+                    </a>
+                    <a href="{{ route('admin.competition-broadcast.index') }}" class="flex items-center gap-2.5 px-3 py-2 rounded-xl font-medium text-xs md:text-sm transition {{ request()->routeIs('admin.competition-broadcast.*') ? 'bg-pmr-primary text-white shadow-md shadow-red-950/40' : 'hover:bg-slate-800 text-slate-300' }}">
+                        <i class="fa-solid fa-paper-plane w-4 text-center text-indigo-400"></i>
+                        <span class="truncate">Siaran Email / Informasi</span>
+                    </a>
+                    <a href="{{ route('admin.competition-info-menus.index') }}" class="flex items-center gap-2.5 px-3 py-2 rounded-xl font-medium text-xs md:text-sm transition {{ request()->routeIs('admin.competition-info-menus.*') ? 'bg-pmr-primary text-white shadow-md shadow-red-950/40' : 'hover:bg-slate-800 text-slate-300' }}" title="Kelola Menu Informasi Lomba (Surat, Juklak, Grid, Denah, Kontak)">
+                        <i class="fa-solid fa-folder-open w-4 text-center text-pink-400"></i>
+                        <span class="truncate">Informasi Lomba</span>
+                    </a>
+                    <a href="{{ route('admin.parking.index') }}" class="flex items-center gap-2.5 px-3 py-2 rounded-xl font-medium text-xs md:text-sm transition {{ request()->routeIs('admin.parking.*') ? 'bg-pmr-primary text-white shadow-md shadow-red-950/40' : 'hover:bg-slate-800 text-slate-300' }}" title="Kelola Kantong Parkir & Tiket Kendaraan Kontingen">
+                        <i class="fa-solid fa-square-parking w-4 text-center text-amber-400"></i>
+                        <span class="truncate">Tiket & Kantong Parkir</span>
+                    </a>
                 </div>
-            </a>
-            <a href="{{ route('admin.competition-fees.index') }}" class="flex items-center gap-3 px-3 py-2.5 rounded-xl font-medium text-sm transition {{ request()->routeIs('admin.competition-fees.*') ? 'bg-pmr-primary text-white shadow-md shadow-red-950/40' : 'hover:bg-slate-800 text-slate-300' }}">
-                <i class="fa-solid fa-calendar-check w-5 text-center text-amber-400"></i>
-                <div class="flex items-center justify-between flex-grow">
-                    <span>Jadwal & Biaya Gelombang</span>
-                    <span class="text-[9px] bg-amber-400/20 text-amber-300 border border-amber-400/30 px-1.5 py-0.2 rounded font-black uppercase">2 Gel</span>
-                </div>
-            </a>
-            <a href="{{ route('admin.competition-quotas.index') }}" class="flex items-center gap-3 px-3 py-2.5 rounded-xl font-medium text-sm transition {{ request()->routeIs('admin.competition-quotas.*') ? 'bg-pmr-primary text-white shadow-md shadow-red-950/40' : 'hover:bg-slate-800 text-slate-300' }}">
-                <i class="fa-solid fa-sliders w-5 text-center text-rose-400"></i>
-                <div class="flex items-center justify-between flex-grow">
-                    <span>Pengaturan Kuota Regu</span>
-                    <span class="text-[9px] bg-rose-400/20 text-rose-300 border border-rose-400/30 px-1.5 py-0.2 rounded font-black uppercase">Kuota</span>
-                </div>
-            </a>
-            <a href="{{ route('admin.competition-registrations.index') }}" class="flex items-center gap-3 px-3 py-2.5 rounded-xl font-medium text-sm transition {{ request()->routeIs('admin.competition-registrations.*') ? 'bg-pmr-primary text-white shadow-md shadow-red-950/40' : 'hover:bg-slate-800 text-slate-300' }}">
-                <i class="fa-solid fa-clipboard-check w-5 text-center text-amber-400"></i>
-                <span>Verifikasi Pendaftar</span>
-            </a>
-            <a href="{{ route('admin.competition-checkin.index') }}" class="flex items-center gap-3 px-3 py-2.5 rounded-xl font-medium text-sm transition {{ request()->routeIs('admin.competition-checkin.*') ? 'bg-pmr-primary text-white shadow-md shadow-red-950/40' : 'hover:bg-slate-800 text-slate-300' }}">
-                <i class="fa-solid fa-qrcode w-5 text-center text-emerald-400"></i>
-                <span>Daftar Ulang Peserta</span>
-            </a>
-            <a href="{{ route('admin.competition-juries.index') }}" class="flex items-center gap-3 px-3 py-2.5 rounded-xl font-medium text-sm transition {{ request()->routeIs('admin.competition-juries.*') ? 'bg-pmr-primary text-white shadow-md shadow-red-950/40' : 'hover:bg-slate-800 text-slate-300' }}">
-                <i class="fa-solid fa-user-gear w-5 text-center text-amber-400"></i>
-                <div class="flex items-center justify-between flex-grow">
-                    <span>Input & Registrasi Juri</span>
-                    <span class="text-[9px] bg-amber-400/20 text-amber-300 border border-amber-400/30 px-1.5 py-0.2 rounded font-black uppercase">Juri</span>
-                </div>
-            </a>
-            <a href="{{ route('admin.competition-scores.index') }}" class="flex items-center gap-3 px-3 py-2.5 rounded-xl font-medium text-sm transition {{ (request()->routeIs('admin.competition-scores.*') && !request()->routeIs('admin.competition-scores.master-sheet*')) ? 'bg-pmr-primary text-white shadow-md shadow-red-950/40' : 'hover:bg-slate-800 text-slate-300' }}">
-                <i class="fa-solid fa-calculator w-5 text-center text-teal-400"></i>
-                <span>Input Nilai Lomba</span>
-            </a>
-            <a href="{{ route('admin.competition-scores.master-sheet') }}" class="flex items-center gap-3 px-3 py-2.5 rounded-xl font-medium text-sm transition {{ request()->routeIs('admin.competition-scores.master-sheet*') ? 'bg-pmr-primary text-white shadow-md shadow-red-950/40' : 'hover:bg-slate-800 text-slate-300' }}">
-                <i class="fa-solid fa-table-list w-5 text-center text-blue-400"></i>
-                <div class="flex items-center justify-between flex-grow">
-                    <span>Lembar Skor Utama</span>
-                    <span class="text-[9px] bg-blue-500/20 text-blue-300 border border-blue-400/30 px-1.5 py-0.2 rounded font-black uppercase">Rekap</span>
-                </div>
-            </a>
-            <a href="{{ route('admin.competition-mascots.index') }}" class="flex items-center gap-3 px-3 py-2.5 rounded-xl font-medium text-sm transition {{ request()->routeIs('admin.competition-mascots.*') ? 'bg-pmr-primary text-white shadow-md shadow-red-950/40' : 'hover:bg-slate-800 text-slate-300' }}">
-                <i class="fa-solid fa-cat w-5 text-center text-amber-300"></i>
-                <div class="flex items-center justify-between flex-grow">
-                    <span>Maskot Lomba</span>
-                    <span class="text-[9px] bg-amber-400/20 text-amber-300 border border-amber-400/30 px-1.5 py-0.2 rounded font-black uppercase">Foto</span>
-                </div>
-            </a>
-            <a href="{{ route('admin.competition-leaderboard.index') }}" class="flex items-center gap-3 px-3 py-2.5 rounded-xl font-medium text-sm transition {{ request()->routeIs('admin.competition-leaderboard.*') ? 'bg-pmr-primary text-white shadow-md shadow-red-950/40' : 'hover:bg-slate-800 text-slate-300' }}">
-                <i class="fa-solid fa-trophy w-5 text-center text-yellow-400"></i>
-                <span>Rekap Juara Umum</span>
-            </a>
-            <a href="{{ route('admin.competition-participants.index') }}" class="flex items-center gap-3 px-3 py-2.5 rounded-xl font-medium text-sm transition {{ request()->routeIs('admin.competition-participants.*') ? 'bg-pmr-primary text-white shadow-md shadow-red-950/40' : 'hover:bg-slate-800 text-slate-300' }}">
-                <i class="fa-solid fa-medal w-5 text-center text-amber-400"></i>
-                <div class="flex items-center justify-between flex-grow">
-                    <span>Daftar Peserta & Juara</span>
-                    <span class="text-[9px] bg-amber-400/20 text-amber-300 border border-amber-400/30 px-1.5 py-0.2 rounded font-black uppercase">Event</span>
-                </div>
-            </a>
-            <a href="{{ route('admin.competition-broadcast.index') }}" class="flex items-center gap-3 px-3 py-2.5 rounded-xl font-medium text-sm transition {{ request()->routeIs('admin.competition-broadcast.*') ? 'bg-pmr-primary text-white shadow-md shadow-red-950/40' : 'hover:bg-slate-800 text-slate-300' }}">
-                <i class="fa-solid fa-paper-plane w-5 text-center text-indigo-400"></i>
-                <span>Siaran Email / Informasi</span>
-            </a>
-            <a href="{{ route('admin.competition-info-menus.index') }}" class="flex items-center gap-3 px-3 py-2.5 rounded-xl font-medium text-sm transition {{ request()->routeIs('admin.competition-info-menus.*') ? 'bg-pmr-primary text-white shadow-md shadow-red-950/40' : 'hover:bg-slate-800 text-slate-300' }}" title="Kelola Menu Informasi Lomba (Surat, Juklak, Grid, Denah, Kontak)">
-                <i class="fa-solid fa-folder-open w-5 text-center text-pink-400"></i>
-                <span class="truncate">Informasi Lomba</span>
-            </a>
-            <a href="{{ route('admin.parking.index') }}" class="flex items-center gap-3 px-3 py-2.5 rounded-xl font-medium text-sm transition {{ request()->routeIs('admin.parking.*') ? 'bg-pmr-primary text-white shadow-md shadow-red-950/40' : 'hover:bg-slate-800 text-slate-300' }}" title="Kelola Kantong Parkir & Tiket Kendaraan Kontingen">
-                <i class="fa-solid fa-square-parking w-5 text-center text-amber-400"></i>
-                <span class="truncate">Tiket & Kantong Parkir</span>
-            </a>
+            </div>
 
-            <!-- Submenu Donor Darah -->
-            <div class="pt-4 pb-1 text-[11px] font-bold uppercase text-slate-500 tracking-wider px-3">Kelola Donor Darah</div>
-            <a href="{{ route('admin.blood-stocks.index') }}" class="flex items-center gap-3 px-3 py-2.5 rounded-xl font-medium text-sm transition {{ request()->routeIs('admin.blood-stocks.*') ? 'bg-pmr-primary text-white shadow-md shadow-red-950/40' : 'hover:bg-slate-800 text-slate-300' }}">
-                <i class="fa-solid fa-droplet w-5 text-center text-red-400"></i>
-                <span>Stok Darah</span>
-            </a>
-            <a href="{{ route('admin.blood-donation-events.index') }}" class="flex items-center gap-3 px-3 py-2.5 rounded-xl font-medium text-sm transition {{ request()->routeIs('admin.blood-donation-events.*') ? 'bg-pmr-primary text-white shadow-md shadow-red-950/40' : 'hover:bg-slate-800 text-slate-300' }}">
-                <i class="fa-solid fa-calendar-plus w-5 text-center text-rose-400"></i>
-                <span>Jadwal & Event</span>
-            </a>
-            <a href="{{ route('admin.blood-donor-registrations.index') }}" class="flex items-center gap-3 px-3 py-2.5 rounded-xl font-medium text-sm transition {{ request()->routeIs('admin.blood-donor-registrations.*') ? 'bg-pmr-primary text-white shadow-md shadow-red-950/40' : 'hover:bg-slate-800 text-slate-300' }}">
-                <i class="fa-solid fa-users w-5 text-center text-orange-400"></i>
-                <span>Pendaftar Donor</span>
-            </a>
+            <!-- ========================================== -->
+            <!-- 7. KELOLA DONOR DARAH -->
+            <!-- ========================================== -->
+            @php $isDonorDarahActive = ($currentActiveSection === 'donor_darah'); @endphp
+            <div class="pt-1 space-y-1">
+                <button type="button" 
+                        @click="toggleSection('donor_darah')" 
+                        class="w-full flex items-center justify-between px-3 py-2 text-left text-[11px] font-bold uppercase tracking-wider rounded-xl transition group select-none {{ $isDonorDarahActive ? 'text-white bg-slate-800/90' : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/50' }}">
+                    <div class="flex items-center gap-2.5 min-w-0">
+                        <i class="fa-solid fa-hand-holding-droplet text-xs {{ $isDonorDarahActive ? 'text-rose-400' : 'text-slate-500 group-hover:text-slate-300' }}"></i>
+                        <span class="truncate">Kelola Donor Darah</span>
+                        @if($isDonorDarahActive)
+                            <span class="w-1.5 h-1.5 rounded-full bg-red-500 shrink-0"></span>
+                        @endif
+                    </div>
+                    <i class="fa-solid fa-chevron-down text-[10px] text-slate-400 transition-transform duration-200 shrink-0"
+                       :class="isOpen('donor_darah') ? 'rotate-180 text-white' : ''"></i>
+                </button>
+
+                <div x-show="isOpen('donor_darah')" x-collapse class="pl-2 space-y-1 border-l-2 border-slate-800 ml-3.5 my-1">
+                    <a href="{{ route('admin.blood-stocks.index') }}" class="flex items-center gap-2.5 px-3 py-2 rounded-xl font-medium text-xs md:text-sm transition {{ request()->routeIs('admin.blood-stocks.*') ? 'bg-pmr-primary text-white shadow-md shadow-red-950/40' : 'hover:bg-slate-800 text-slate-300' }}">
+                        <i class="fa-solid fa-droplet w-4 text-center text-red-400"></i>
+                        <span class="truncate">Stok Darah</span>
+                    </a>
+                    <a href="{{ route('admin.blood-donation-events.index') }}" class="flex items-center gap-2.5 px-3 py-2 rounded-xl font-medium text-xs md:text-sm transition {{ request()->routeIs('admin.blood-donation-events.*') ? 'bg-pmr-primary text-white shadow-md shadow-red-950/40' : 'hover:bg-slate-800 text-slate-300' }}">
+                        <i class="fa-solid fa-calendar-plus w-4 text-center text-rose-400"></i>
+                        <span class="truncate">Jadwal & Event</span>
+                    </a>
+                    <a href="{{ route('admin.blood-donor-registrations.index') }}" class="flex items-center gap-2.5 px-3 py-2 rounded-xl font-medium text-xs md:text-sm transition {{ request()->routeIs('admin.blood-donor-registrations.*') ? 'bg-pmr-primary text-white shadow-md shadow-red-950/40' : 'hover:bg-slate-800 text-slate-300' }}">
+                        <i class="fa-solid fa-users w-4 text-center text-orange-400"></i>
+                        <span class="truncate">Pendaftar Donor</span>
+                    </a>
+                </div>
+            </div>
             @endif
 
-            <div class="pt-6 text-[11px] font-bold uppercase text-slate-500 tracking-wider px-3 mb-2">Layanan Kemanusiaan</div>
+            <!-- ========================================== -->
+            <!-- 8. LAYANAN KEMANUSIAAN -->
+            <!-- ========================================== -->
+            <div class="pt-2 space-y-1 border-t border-slate-800/80 mt-2">
+                <button type="button" 
+                        @click="toggleSection('layanan_kemanusiaan')" 
+                        class="w-full flex items-center justify-between px-3 py-2 text-left text-[11px] font-bold uppercase tracking-wider rounded-xl transition group select-none text-slate-400 hover:text-slate-200 hover:bg-slate-800/50">
+                    <div class="flex items-center gap-2.5 min-w-0">
+                        <i class="fa-solid fa-heart-pulse text-xs text-rose-400 group-hover:text-rose-300"></i>
+                        <span class="truncate">Layanan Kemanusiaan</span>
+                    </div>
+                    <i class="fa-solid fa-chevron-down text-[10px] text-slate-400 transition-transform duration-200 shrink-0"
+                       :class="isOpen('layanan_kemanusiaan') ? 'rotate-180 text-white' : ''"></i>
+                </button>
 
-            <a href="{{ route('donor-darah') }}" target="_blank" class="flex items-center gap-3 px-3 py-2.5 rounded-xl font-medium text-sm transition hover:bg-slate-800 text-slate-300">
-                <i class="fa-solid fa-droplet w-5 text-center text-red-400"></i>
-                <span>Donor Darah (Live)</span>
-            </a>
+                <div x-show="isOpen('layanan_kemanusiaan')" x-collapse class="pl-2 space-y-1 border-l-2 border-slate-800 ml-3.5 my-1">
+                    <a href="{{ route('donor-darah') }}" target="_blank" class="flex items-center gap-2.5 px-3 py-2 rounded-xl font-medium text-xs md:text-sm transition hover:bg-slate-800 text-slate-300">
+                        <i class="fa-solid fa-droplet w-4 text-center text-red-400"></i>
+                        <span class="truncate">Donor Darah (Live)</span>
+                        <i class="fa-solid fa-arrow-up-right-from-square text-[10px] text-slate-500 ml-auto shrink-0"></i>
+                    </a>
+                    <a href="{{ route('kegiatan') }}" target="_blank" class="flex items-center gap-2.5 px-3 py-2 rounded-xl font-medium text-xs md:text-sm transition hover:bg-slate-800 text-slate-300">
+                        <i class="fa-solid fa-calendar-check w-4 text-center text-amber-400"></i>
+                        <span class="truncate">Agenda Kegiatan</span>
+                        <i class="fa-solid fa-arrow-up-right-from-square text-[10px] text-slate-500 ml-auto shrink-0"></i>
+                    </a>
+                    <a href="{{ route('galeri') }}" target="_blank" class="flex items-center gap-2.5 px-3 py-2 rounded-xl font-medium text-xs md:text-sm transition hover:bg-slate-800 text-slate-300">
+                        <i class="fa-solid fa-images w-4 text-center text-blue-400"></i>
+                        <span class="truncate">Galeri Foto</span>
+                        <i class="fa-solid fa-arrow-up-right-from-square text-[10px] text-slate-500 ml-auto shrink-0"></i>
+                    </a>
+                </div>
+            </div>
 
-            <a href="{{ route('kegiatan') }}" target="_blank" class="flex items-center gap-3 px-3 py-2.5 rounded-xl font-medium text-sm transition hover:bg-slate-800 text-slate-300">
-                <i class="fa-solid fa-calendar-check w-5 text-center text-amber-400"></i>
-                <span>Agenda Kegiatan</span>
-            </a>
+            <!-- ========================================== -->
+            <!-- 9. AKSES CEPAT -->
+            <!-- ========================================== -->
+            <div class="pt-2 space-y-1 border-t border-slate-800/80 mt-2">
+                <button type="button" 
+                        @click="toggleSection('akses_cepat')" 
+                        class="w-full flex items-center justify-between px-3 py-2 text-left text-[11px] font-bold uppercase tracking-wider rounded-xl transition group select-none text-slate-400 hover:text-slate-200 hover:bg-slate-800/50">
+                    <div class="flex items-center gap-2.5 min-w-0">
+                        <i class="fa-solid fa-rocket text-xs text-emerald-400 group-hover:text-emerald-300"></i>
+                        <span class="truncate">Akses Cepat</span>
+                    </div>
+                    <i class="fa-solid fa-chevron-down text-[10px] text-slate-400 transition-transform duration-200 shrink-0"
+                       :class="isOpen('akses_cepat') ? 'rotate-180 text-white' : ''"></i>
+                </button>
 
-            <a href="{{ route('galeri') }}" target="_blank" class="flex items-center gap-3 px-3 py-2.5 rounded-xl font-medium text-sm transition hover:bg-slate-800 text-slate-300">
-                <i class="fa-solid fa-images w-5 text-center text-blue-400"></i>
-                <span>Galeri Foto</span>
-            </a>
-
-            <div class="pt-6 text-[11px] font-bold uppercase text-slate-500 tracking-wider px-3 mb-2">Akses Cepat</div>
-
-            <a href="{{ route('home') }}" target="_blank" class="flex items-center gap-3 px-3 py-2.5 rounded-xl font-medium text-sm transition hover:bg-slate-800 text-emerald-400">
-                <i class="fa-solid fa-arrow-up-right-from-square w-5 text-center"></i>
-                <span>Lihat Web Publik</span>
-            </a>
+                <div x-show="isOpen('akses_cepat')" x-collapse class="pl-2 space-y-1 border-l-2 border-slate-800 ml-3.5 my-1">
+                    <a href="{{ route('home') }}" target="_blank" class="flex items-center gap-2.5 px-3 py-2 rounded-xl font-medium text-xs md:text-sm transition hover:bg-slate-800 text-emerald-400">
+                        <i class="fa-solid fa-arrow-up-right-from-square w-4 text-center"></i>
+                        <span class="truncate">Lihat Web Publik</span>
+                    </a>
+                </div>
+            </div>
         </div>
 
         <!-- User Info & Logout -->
