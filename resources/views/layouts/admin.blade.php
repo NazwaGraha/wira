@@ -248,7 +248,7 @@
             <!-- ========================================== -->
             <!-- 3. DATA ANGGOTA -->
             <!-- ========================================== -->
-            @if(auth()->user()?->hasPermission('members.view') || auth()->user()?->hasPermission('member_registrations.view') || auth()->user()?->hasPermission('user_permissions.view'))
+            @if(auth()->user()?->hasPermission('members.view') || auth()->user()?->hasPermission('member_registrations.view'))
             @php 
                 $isDataAnggotaActive = ($currentActiveSection === 'data_anggota');
                 $pendingRegistrationsCount = \App\Models\MemberRegistration::where('status', 'pending')->count();
@@ -306,14 +306,6 @@
                     <a href="{{ route('admin.members.index') }}" class="flex items-center gap-2.5 px-3 py-2 rounded-xl font-medium text-xs md:text-sm transition {{ request()->routeIs('admin.members.index') || request()->routeIs('admin.members.edit') ? 'bg-pmr-primary text-white shadow-md shadow-red-950/40' : 'hover:bg-slate-800 text-slate-300' }}">
                         <i class="fa-solid fa-users-rectangle w-4 text-center text-blue-400"></i>
                         <span class="truncate">Daftar Anggota</span>
-                    </a>
-                    @endif
-
-                    @if(auth()->user()?->hasPermission('user_permissions.view') || auth()->user()?->canManagePermissions())
-                    <a href="{{ route('admin.user-permissions.index') }}" class="flex items-center gap-2.5 px-3 py-2 rounded-xl font-medium text-xs md:text-sm transition {{ request()->routeIs('admin.user-permissions.*') ? 'bg-pmr-primary text-white shadow-md shadow-red-950/40' : 'hover:bg-slate-800 text-slate-300' }}" title="Manajemen Hak Akses Pengguna & Matriks Granular Permissions">
-                        <i class="fa-solid fa-shield-halved w-4 text-center text-indigo-400"></i>
-                        <span class="truncate">Kelola Hak Akses</span>
-                        <span class="text-[9px] bg-indigo-500/20 text-indigo-300 border border-indigo-400/30 px-1.5 py-0.2 rounded font-black uppercase shrink-0 ml-auto">RBAC</span>
                     </a>
                     @endif
                 </div>
