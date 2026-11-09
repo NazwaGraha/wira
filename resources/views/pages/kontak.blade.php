@@ -58,8 +58,8 @@
                     </div>
                     <div>
                         <div class="text-xs font-bold text-slate-800">Instagram Resmi</div>
-                        <a href="https://instagram.com/pmrwirasman1c" target="_blank" class="text-[11px] text-pmr-primary font-semibold hover:underline mt-1 block">
-                            @pmrwirasman1c
+                        <a href="https://www.instagram.com/pmr_sman1c" target="_blank" rel="noopener noreferrer" class="text-[11px] text-pmr-primary font-semibold hover:underline mt-1 block">
+                            @pmr_sman1c
                         </a>
                     </div>
                 </div>

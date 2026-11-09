@@ -500,7 +500,7 @@
                         Unit kegiatan ekstrakurikuler Palang Merah Remaja tingkat SMA yang bergerak dalam bidang pertolongan pertama, kesiapsiagaan bencana, donor darah, dan bakti sosial kemanusiaan.
                     </p>
                     <div class="pt-2 flex items-center gap-3">
-                        <a href="https://instagram.com/pmrwirasman1c" target="_blank" class="w-8 h-8 rounded-full bg-stone-800 hover:bg-pmr-primary hover:text-white flex items-center justify-center text-xs transition">
+                        <a href="https://www.instagram.com/pmr_sman1c" target="_blank" rel="noopener noreferrer" class="w-8 h-8 rounded-full bg-stone-800 hover:bg-pmr-primary hover:text-white flex items-center justify-center text-xs transition" aria-label="Instagram Resmi PMR Wira SMAN 1 Ciawi">
                             <i class="fa-brands fa-instagram"></i>
                         </a>
                         <a href="#" class="w-8 h-8 rounded-full bg-stone-800 hover:bg-pmr-primary hover:text-white flex items-center justify-center text-xs transition">
