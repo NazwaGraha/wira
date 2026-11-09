@@ -28,6 +28,7 @@ class ParkingTicket extends Model
         'check_in_at',
         'check_out_at',
         'checked_by_user_id',
+        'checked_by_officer_id',
         'is_public',
         'fee_amount',
         'payment_method',
@@ -79,6 +80,11 @@ class ParkingTicket extends Model
     public function checker(): BelongsTo
     {
         return $this->belongsTo(User::class, 'checked_by_user_id');
+    }
+
+    public function officerChecker(): BelongsTo
+    {
+        return $this->belongsTo(ParkingOfficer::class, 'checked_by_officer_id');
     }
 
     public function getVehicleTypeLabelAttribute(): string

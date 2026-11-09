@@ -5,18 +5,95 @@ namespace App\Http\Controllers;
 use App\Models\CompetitionRegistration;
 use App\Models\ParkingFareSetting;
 use App\Models\ParkingLocation;
+use App\Models\ParkingOfficer;
 use App\Models\ParkingTicket;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\View\View;
 
 class ParkingOfficerController extends Controller
 {
-    public function scanner(Request $request): View
+    /**
+     * Halaman Login Khusus Petugas Parkir Lapangan (/parkir/login)
+     */
+    public function showLogin(): View|RedirectResponse
     {
-        $locations = ParkingLocation::where('status', '!=', 'closed')
-            ->orderBy('name')
-            ->get();
+        if (Auth::guard('parking_officer')->check() || Auth::guard('web')->check()) {
+            return redirect()->route('parking.index');
+        }
+
+        return view('parking.login');
+    }
+
+    /**
+     * Proses Autentikasi Petugas Parkir Lapangan
+     */
+    public function login(Request $request): RedirectResponse
+    {
+        $credentials = $request->validate([
+            'username' => 'required|string',
+            'password' => 'required|string',
+        ]);
+
+        $remember = $request->boolean('remember');
+
+        $officer = ParkingOfficer::where('username', $credentials['username'])->first();
+
+        if (! $officer || ! Hash::check($credentials['password'], $officer->password)) {
+            return back()->withInput($request->only('username', 'remember'))
+                ->withErrors(['username' => 'Username atau password petugas tidak sesuai.']);
+        }
+
+        if (! $officer->is_active) {
+            return back()->withInput($request->only('username', 'remember'))
+                ->withErrors(['username' => 'Akun petugas parkir ini sedang dinonaktifkan oleh panitia.']);
+        }
+
+        Auth::guard('parking_officer')->login($officer, $remember);
+        $officer->update(['last_login_at' => now()]);
+
+        return redirect()->intended(route('parking.index'))
+            ->with('success', 'Selamat bertugas, '.$officer->name.'!');
+    }
+
+    /**
+     * Logout Petugas Parkir
+     */
+    public function logout(Request $request): RedirectResponse
+    {
+        Auth::guard('parking_officer')->logout();
+        $request->session()->invalidate();
+        $request->session()->regenerateToken();
+
+        return redirect()->route('parking.login')
+            ->with('info', 'Anda telah berhasil keluar dari sistem petugas parkir.');
+    }
+
+    /**
+     * Portal Scanner & POS Lapangan (/parkir)
+     */
+    public function scanner(Request $request): View|RedirectResponse
+    {
+        $officer = Auth::guard('parking_officer')->user();
+        $adminUser = Auth::guard('web')->user();
+
+        if (! $officer && ! $adminUser) {
+            return redirect()->route('parking.login')->with('warning', 'Silakan login terlebih dahulu untuk mengakses scanner parkir.');
+        }
+
+        if ($officer) {
+            // Jika petugas memiliki kantong parkir spesifik yang ditugaskan
+            $assignedLocations = $officer->locations()->where('status', '!=', 'closed')->orderBy('name')->get();
+            $locations = $assignedLocations->isNotEmpty()
+                ? $assignedLocations
+                : ParkingLocation::where('status', '!=', 'closed')->orderBy('name')->get();
+        } else {
+            // Admin atau Panitia memiliki akses ke seluruh kantong parkir aktif
+            $locations = ParkingLocation::where('status', '!=', 'closed')->orderBy('name')->get();
+        }
 
         $selectedLocationId = $request->query('location_id', $locations->first()?->id);
         $activeLocation = $locations->firstWhere('id', $selectedLocationId) ?: $locations->first();
@@ -48,11 +125,19 @@ class ParkingOfficerController extends Controller
                 ->count();
         }
 
-        return view('parking.scanner', compact('locations', 'activeLocation', 'recentTickets', 'fareSetting', 'todayCashTotal', 'todayTicketsCount'));
+        return view('parking.scanner', compact('locations', 'activeLocation', 'recentTickets', 'fareSetting', 'todayCashTotal', 'todayTicketsCount', 'officer', 'adminUser'));
     }
 
     public function verifyTicket(Request $request): JsonResponse
     {
+        $officer = Auth::guard('parking_officer')->user();
+        if (! $officer && ! Auth::guard('web')->check()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Sesi login telah berakhir. Silakan login kembali.',
+            ], 401);
+        }
+
         $code = trim($request->input('code', ''));
         $currentLocationId = $request->input('location_id');
 
@@ -116,6 +201,14 @@ class ParkingOfficerController extends Controller
 
     public function checkIn(Request $request): JsonResponse
     {
+        $officer = Auth::guard('parking_officer')->user();
+        if (! $officer && ! Auth::guard('web')->check()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Sesi login telah berakhir. Silakan login kembali.',
+            ], 401);
+        }
+
         $request->validate([
             'ticket_id' => 'required|exists:parking_tickets,id',
             'location_id' => 'required|exists:parking_locations,id',
@@ -124,11 +217,19 @@ class ParkingOfficerController extends Controller
         $ticket = ParkingTicket::findOrFail($request->ticket_id);
         $location = ParkingLocation::findOrFail($request->location_id);
 
+        if ($officer && $officer->locations()->exists() && ! $officer->hasAssignedLocation($location->id)) {
+            return response()->json([
+                'success' => false,
+                'message' => "Anda tidak memiliki wewenang bertugas di {$location->name}. Anda ditugaskan di: {$officer->assigned_location_names}.",
+            ], 403);
+        }
+
         $updateData = [
             'status' => 'parked',
             'parking_location_id' => $location->id,
             'check_in_at' => now(),
-            'checked_by_user_id' => auth()->id(),
+            'checked_by_user_id' => Auth::guard('web')->id(),
+            'checked_by_officer_id' => $officer?->id,
         ];
 
         // Jika tiket umum dan belum bayar (bayar tunai di pintu), tandai lunas
@@ -160,6 +261,14 @@ class ParkingOfficerController extends Controller
 
     public function checkOut(Request $request): JsonResponse
     {
+        $officer = Auth::guard('parking_officer')->user();
+        if (! $officer && ! Auth::guard('web')->check()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Sesi login telah berakhir. Silakan login kembali.',
+            ], 401);
+        }
+
         $request->validate([
             'ticket_id' => 'required|exists:parking_tickets,id',
         ]);
@@ -182,6 +291,14 @@ class ParkingOfficerController extends Controller
      */
     public function issueOnTheSpotTicket(Request $request): JsonResponse
     {
+        $officer = Auth::guard('parking_officer')->user();
+        if (! $officer && ! Auth::guard('web')->check()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Sesi login telah berakhir. Silakan login kembali.',
+            ], 401);
+        }
+
         $validated = $request->validate([
             'parking_location_id' => 'required|exists:parking_locations,id',
             'vehicle_type' => 'required|in:r2_motor,r4_car,r4_elf,r4_bus',
@@ -192,8 +309,16 @@ class ParkingOfficerController extends Controller
             'payment_method' => 'required|in:cash,qris',
         ]);
 
-        $fareSetting = ParkingFareSetting::current();
         $location = ParkingLocation::findOrFail($validated['parking_location_id']);
+
+        if ($officer && $officer->locations()->exists() && ! $officer->hasAssignedLocation($location->id)) {
+            return response()->json([
+                'success' => false,
+                'message' => "Anda tidak memiliki wewenang menerbitkan tiket di {$location->name}.",
+            ], 403);
+        }
+
+        $fareSetting = ParkingFareSetting::current();
 
         $validated['license_plate'] = strtoupper(trim($validated['license_plate']));
         $validated['is_public'] = true;
@@ -202,7 +327,8 @@ class ParkingOfficerController extends Controller
         $validated['status'] = 'parked'; // Langsung terparkir / check-in saat terbit di pintu
         $validated['check_in_at'] = now();
         $validated['driver_name'] = $validated['driver_name'] ?: 'Pengemudi Umum';
-        $validated['checked_by_user_id'] = auth()->id();
+        $validated['checked_by_user_id'] = Auth::guard('web')->id();
+        $validated['checked_by_officer_id'] = $officer?->id;
 
         $ticket = ParkingTicket::create($validated);
 

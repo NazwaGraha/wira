@@ -258,6 +258,8 @@ class ParkingManagementTest extends TestCase
             'status' => 'booked',
         ]);
 
+        $this->actingAs($this->admin);
+
         // 1. Scanner view & /parkir root access
         $respRoot = $this->get('/parkir');
         $respRoot->assertOk();

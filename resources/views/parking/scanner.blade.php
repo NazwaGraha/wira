@@ -45,7 +45,18 @@
                 <i class="fa-solid fa-square-parking"></i>
             </div>
             <div>
-                <span class="text-[9px] font-black text-rose-400 uppercase tracking-wider block">PETUGAS PARKIR LAPANGAN</span>
+                <div class="flex items-center gap-1.5">
+                    <span class="text-[9px] font-black text-rose-400 uppercase tracking-wider block">PETUGAS PARKIR LAPANGAN</span>
+                    @if(isset($officer) && $officer)
+                        <span class="px-1.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 text-[8px] font-bold">
+                            <i class="fa-solid fa-circle-check"></i> Petugas
+                        </span>
+                    @elseif(isset($adminUser) && $adminUser)
+                        <span class="px-1.5 py-0.5 rounded-full bg-amber-500/20 text-amber-400 border border-amber-500/30 text-[8px] font-bold">
+                            <i class="fa-solid fa-shield"></i> Panitia
+                        </span>
+                    @endif
+                </div>
                 <h1 class="text-xs font-black text-white truncate max-w-[170px] sm:max-w-[240px]">
                     {{ $activeLocation?->name ?? 'Pilih Kantong Parkir' }}
                 </h1>
@@ -60,15 +71,50 @@
             <button type="button" onclick="toggleTorch()" id="btnTorch" class="w-8 h-8 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-yellow-400 flex items-center justify-center text-xs transition border border-slate-700 active:scale-95" title="Senter / Flashlight">
                 <i class="fa-solid fa-bolt"></i>
             </button>
-            <select onchange="window.location.href='?location_id=' + this.value" class="text-[11px] font-bold bg-slate-800 border border-slate-700 text-slate-200 rounded-xl px-2.5 py-1.5 focus:outline-none focus:ring-1 focus:ring-rose-500">
-                @foreach($locations as $loc)
-                    <option value="{{ $loc->id }}" {{ $activeLocation?->id == $loc->id ? 'selected' : '' }}>
-                        {{ $loc->code ?: $loc->name }}
-                    </option>
-                @endforeach
-            </select>
+
+            @if($locations->count() > 1)
+                <select onchange="window.location.href='?location_id=' + this.value" class="text-[11px] font-bold bg-slate-800 border border-slate-700 text-slate-200 rounded-xl px-2.5 py-1.5 focus:outline-none focus:ring-1 focus:ring-rose-500">
+                    @foreach($locations as $loc)
+                        <option value="{{ $loc->id }}" {{ $activeLocation?->id == $loc->id ? 'selected' : '' }}>
+                            {{ $loc->code ?: $loc->name }}
+                        </option>
+                    @endforeach
+                </select>
+            @elseif($activeLocation)
+                <div class="text-[10px] font-bold bg-slate-800 border border-slate-700 text-rose-300 rounded-xl px-2.5 py-1.5 flex items-center gap-1" title="Pos Terkunci Sesuai Tugas">
+                    <i class="fa-solid fa-lock text-[9px] text-rose-400"></i>
+                    <span>{{ $activeLocation->code ?: $activeLocation->name }}</span>
+                </div>
+            @endif
+
+            @if(isset($officer) && $officer)
+                <form action="{{ route('parking.logout') }}" method="POST" class="inline" onsubmit="return confirm('Keluar dari sistem petugas parkir?')">
+                    @csrf
+                    <button type="submit" class="w-8 h-8 rounded-xl bg-slate-800 hover:bg-rose-950 text-slate-400 hover:text-rose-400 flex items-center justify-center text-xs transition border border-slate-700 active:scale-95" title="Keluar / Logout ({{ $officer->name }})">
+                        <i class="fa-solid fa-right-from-bracket"></i>
+                    </button>
+                </form>
+            @elseif(isset($adminUser) && $adminUser)
+                <a href="{{ route('admin.parking.index') }}" class="w-8 h-8 rounded-xl bg-slate-800 hover:bg-amber-950 text-slate-400 hover:text-amber-400 flex items-center justify-center text-xs transition border border-slate-700 active:scale-95" title="Kembali ke Panel Admin">
+                    <i class="fa-solid fa-arrow-left"></i>
+                </a>
+            @endif
         </div>
     </header>
+
+    <!-- Officer Profile & Assignment Notice Strip -->
+    @if(isset($officer) && $officer)
+        <div class="bg-slate-900/60 border-b border-slate-800/80 px-4 py-1.5 flex items-center justify-between text-[11px] text-slate-400">
+            <div class="flex items-center gap-1.5 truncate">
+                <i class="fa-solid fa-user-shield text-rose-400 text-xs"></i>
+                <span>Petugas: <strong class="text-slate-200">{{ $officer->name }}</strong> ({{ $officer->username }})</span>
+            </div>
+            <div class="shrink-0 flex items-center gap-1 text-[10px] text-slate-400">
+                <i class="fa-solid fa-location-dot text-rose-500"></i>
+                <span>{{ $officer->locations->count() > 0 ? $officer->locations->count() . ' Pos Ditugaskan' : 'Semua Pos' }}</span>
+            </div>
+        </div>
+    @endif
 
     @if($activeLocation)
         <!-- Live Occupancy Slot Counter Bar -->

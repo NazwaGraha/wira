@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class ParkingLocation extends Model
@@ -33,6 +34,16 @@ class ParkingLocation extends Model
         'is_priority' => 'boolean',
         'priority_order' => 'integer',
     ];
+
+    public function officers(): BelongsToMany
+    {
+        return $this->belongsToMany(
+            ParkingOfficer::class,
+            'parking_officer_locations',
+            'parking_location_id',
+            'parking_officer_id'
+        )->withTimestamps();
+    }
 
     public function tickets(): HasMany
     {

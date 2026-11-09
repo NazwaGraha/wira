@@ -1,6 +1,7 @@
 <?php
 
 use App\Models\Member;
+use App\Models\ParkingOfficer;
 use App\Models\User;
 
 return [
@@ -43,6 +44,10 @@ return [
             'driver' => 'session',
             'provider' => 'users',
         ],
+        'parking_officer' => [
+            'driver' => 'session',
+            'provider' => 'parking_officers',
+        ],
     ],
 
     /*
@@ -66,6 +71,10 @@ return [
         'users' => [
             'driver' => 'pmr',
             'model' => env('AUTH_MODEL', Member::class),
+        ],
+        'parking_officers' => [
+            'driver' => 'eloquent',
+            'model' => ParkingOfficer::class,
         ],
     ],
 

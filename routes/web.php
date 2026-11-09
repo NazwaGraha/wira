@@ -425,6 +425,12 @@ Route::prefix('admin')->name('admin.')->group(function () {
             Route::post('/quotas/reset-all', [ParkingManagementController::class, 'resetAllSchoolQuotas'])->name('quotas.reset-all');
             Route::post('/auto-allocate-priority', [ParkingManagementController::class, 'autoAllocatePriority'])->name('auto-allocate-priority');
             Route::post('/fares', [ParkingManagementController::class, 'updateFareSettings'])->name('fares.update');
+
+            // Tim Petugas Parkir Lapangan & Penugasan Pos
+            Route::post('/officers', [ParkingManagementController::class, 'storeOfficer'])->name('officers.store');
+            Route::put('/officers/{id}', [ParkingManagementController::class, 'updateOfficer'])->name('officers.update');
+            Route::delete('/officers/{id}', [ParkingManagementController::class, 'destroyOfficer'])->name('officers.destroy');
+            Route::post('/officers/{id}/toggle-status', [ParkingManagementController::class, 'toggleOfficerStatus'])->name('officers.toggle-status');
         });
         Route::get('/parking-management', fn () => redirect()->route('admin.parking.index'));
 
@@ -726,6 +732,10 @@ Route::middleware(['auth'])->prefix('juri')->name('jury.')->group(function () {
 
 // ================= SISTEM PENGELOLAAN PARKIR & SCANNER LAPANGAN =================
 Route::prefix('parkir')->name('parking.')->group(function () {
+    Route::get('/login', [ParkingOfficerController::class, 'showLogin'])->name('login');
+    Route::post('/login', [ParkingOfficerController::class, 'login'])->name('login.submit');
+    Route::post('/logout', [ParkingOfficerController::class, 'logout'])->name('logout');
+
     Route::get('/', [ParkingOfficerController::class, 'scanner'])->name('index');
     Route::get('/scanner', function (Request $request) {
         return redirect()->route('parking.index', $request->query(), 301);

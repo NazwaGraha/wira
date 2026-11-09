@@ -10,6 +10,9 @@
     <button type="button" onclick="openModal('modalFareSettings')" class="bg-gradient-to-r from-amber-500 to-yellow-600 hover:from-amber-600 hover:to-yellow-700 text-white px-4 py-2.5 rounded-xl font-extrabold text-xs shadow-xs transition flex items-center gap-2">
         <i class="fa-solid fa-coins"></i> Setup Tarif Parkir Umum
     </button>
+    <button type="button" onclick="openModal('modalCreateOfficer')" class="bg-slate-900 hover:bg-slate-800 text-white px-4 py-2.5 rounded-xl font-bold text-xs shadow-xs transition flex items-center gap-2">
+        <i class="fa-solid fa-user-plus text-rose-400"></i> + Petugas Parkir
+    </button>
     <a href="{{ route('parking.index') }}" target="_blank" class="bg-slate-900 hover:bg-slate-800 text-white px-4 py-2.5 rounded-xl font-bold text-xs shadow-xs transition flex items-center gap-2">
         <i class="fa-solid fa-camera-viewfinder text-rose-400"></i> Buka Web Petugas Parkir (/parkir)
     </a>
@@ -362,6 +365,163 @@
                     <p class="text-xs text-slate-400 mt-1">Silakan klik tombol <strong>"Tambah Kantong Parkir"</strong> di atas untuk menambahkan lokasi parkir peserta.</p>
                 </div>
             @endforelse
+        </div>
+    </div>
+
+    <!-- 2b. SECTION: TIM PETUGAS PARKIR LAPANGAN & KREDENSIAL POS -->
+    <div class="bg-white rounded-3xl p-6 border border-slate-200 shadow-xs">
+        <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-5">
+            <div>
+                <div class="flex items-center gap-2">
+                    <span class="text-[10px] font-black uppercase tracking-wider text-rose-600 bg-rose-50 border border-rose-200 px-2.5 py-0.5 rounded-full">
+                        <i class="fa-solid fa-id-badge text-rose-500"></i> MANAJEMEN PETUGAS
+                    </span>
+                    <span class="text-[10px] font-bold text-slate-500 bg-slate-100 px-2 py-0.5 rounded-full border border-slate-200">
+                        {{ $activeOfficersCount }} Aktif / {{ $totalOfficersCount }} Terdaftar
+                    </span>
+                </div>
+                <h3 class="font-black text-lg text-slate-900 flex items-center gap-2 mt-1">
+                    <i class="fa-solid fa-users-gear text-rose-600"></i> Tim Petugas Parkir Lapangan & Penugasan Pos
+                </h3>
+                <p class="text-xs text-slate-500 mt-0.5">Kelola akun login petugas lapangan (username & password) serta tentukan kantong parkir mana yang menjadi wilayah wewenangnya.</p>
+            </div>
+            <div class="flex items-center gap-2 shrink-0">
+                <a href="{{ route('parking.index') }}" target="_blank" class="px-3.5 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs transition flex items-center gap-1.5 border border-slate-200">
+                    <i class="fa-solid fa-arrow-up-right-from-square text-[11px] text-slate-500"></i> Buka Portal Lapangan (/parkir)
+                </a>
+                <button type="button" onclick="openModal('modalCreateOfficer')" class="px-4 py-2 rounded-xl bg-rose-600 hover:bg-rose-700 text-white font-extrabold text-xs transition flex items-center gap-2 shadow-xs cursor-pointer">
+                    <i class="fa-solid fa-user-plus"></i> Daftarkan Petugas Parkir
+                </button>
+            </div>
+        </div>
+
+        <!-- Tabel Petugas Parkir -->
+        <div class="overflow-x-auto border border-slate-200 rounded-2xl">
+            <table class="w-full text-left text-xs text-slate-600">
+                <thead class="bg-slate-50/80 text-slate-700 uppercase font-bold text-[10px] tracking-wider border-b border-slate-200">
+                    <tr>
+                        <th class="py-3 px-4">Petugas Lapangan</th>
+                        <th class="py-3 px-4">Kredensial Login</th>
+                        <th class="py-3 px-4">Wilayah Pos Bertugas</th>
+                        <th class="py-3 px-4 text-center">Status</th>
+                        <th class="py-3 px-4 text-center">Login Terakhir</th>
+                        <th class="py-3 px-4 text-center">Aksi</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-100 bg-white">
+                    @forelse($officers as $officer)
+                        <tr class="hover:bg-slate-50/70 transition">
+                            <!-- Petugas Lapangan -->
+                            <td class="py-3 px-4">
+                                <div class="flex items-center gap-3">
+                                    <div class="w-9 h-9 rounded-xl bg-gradient-to-tr from-slate-800 to-slate-700 text-white flex items-center justify-center font-black text-xs shadow-xs shrink-0">
+                                        {{ strtoupper(substr($officer->name, 0, 2)) }}
+                                    </div>
+                                    <div class="min-w-0">
+                                        <div class="font-black text-slate-900 text-xs">{{ $officer->name }}</div>
+                                        @if($officer->phone)
+                                            <div class="text-[11px] text-slate-500 flex items-center gap-1 mt-0.5">
+                                                <i class="fa-brands fa-whatsapp text-emerald-500"></i>
+                                                <a href="https://wa.me/{{ preg_replace('/[^0-9]/', '', $officer->phone) }}" target="_blank" class="hover:underline font-mono text-slate-600">
+                                                    {{ $officer->phone }}
+                                                </a>
+                                            </div>
+                                        @else
+                                            <span class="text-[10px] text-slate-400 italic">No. HP belum diisi</span>
+                                        @endif
+                                    </div>
+                                </div>
+                            </td>
+
+                            <!-- Kredensial Login -->
+                            <td class="py-3 px-4">
+                                <div class="space-y-0.5">
+                                    <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-lg bg-slate-100 border border-slate-200 font-mono font-bold text-slate-800 text-[11px]">
+                                        <i class="fa-solid fa-user-lock text-slate-400 text-[10px]"></i> {{ $officer->username }}
+                                    </span>
+                                    <div class="text-[10px] text-slate-400">Password terenkripsi aman</div>
+                                </div>
+                            </td>
+
+                            <!-- Wilayah Pos Bertugas -->
+                            <td class="py-3 px-4">
+                                @if($officer->locations->count() > 0)
+                                    <div class="flex flex-wrap gap-1.5 max-w-xs">
+                                        @foreach($officer->locations as $loc)
+                                            <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-rose-50 text-rose-700 border border-rose-200 text-[10px] font-bold">
+                                                <i class="fa-solid fa-location-dot text-rose-500 text-[9px]"></i>
+                                                {{ $loc->code ?: $loc->name }}
+                                            </span>
+                                        @endforeach
+                                    </div>
+                                @else
+                                    <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-emerald-50 text-emerald-700 border border-emerald-200 text-[10px] font-bold">
+                                        <i class="fa-solid fa-globe text-emerald-500 text-[9px]"></i> Semua Pos (Bebas / Koordinator)
+                                    </span>
+                                @endif
+                            </td>
+
+                            <!-- Status -->
+                            <td class="py-3 px-4 text-center">
+                                @if($officer->is_active)
+                                    <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-800 border border-emerald-200">
+                                        <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span> Aktif
+                                    </span>
+                                @else
+                                    <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-slate-100 text-slate-600 border border-slate-200">
+                                        <span class="w-1.5 h-1.5 rounded-full bg-slate-400"></span> Nonaktif
+                                    </span>
+                                @endif
+                            </td>
+
+                            <!-- Login Terakhir -->
+                            <td class="py-3 px-4 text-center text-[11px] text-slate-500">
+                                @if($officer->last_login_at)
+                                    <span class="font-medium text-slate-700 block">{{ $officer->last_login_at->format('d M Y') }}</span>
+                                    <span class="text-[10px] text-slate-400">{{ $officer->last_login_at->format('H:i') }} WIB</span>
+                                @else
+                                    <span class="text-slate-400 italic">Belum pernah</span>
+                                @endif
+                            </td>
+
+                            <!-- Aksi -->
+                            <td class="py-3 px-4 text-center">
+                                <div class="flex items-center justify-center gap-1.5">
+                                    <!-- Toggle Status Button -->
+                                    <form action="{{ route('admin.parking.officers.toggle-status', $officer->id) }}" method="POST">
+                                        @csrf
+                                        <button type="submit" class="p-1.5 rounded-lg border {{ $officer->is_active ? 'bg-amber-50 hover:bg-amber-100 text-amber-700 border-amber-200' : 'bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border-emerald-200' }} text-xs transition cursor-pointer" title="{{ $officer->is_active ? 'Nonaktifkan Petugas' : 'Aktifkan Petugas' }}">
+                                            <i class="fa-solid {{ $officer->is_active ? 'fa-user-slash' : 'fa-user-check' }}"></i>
+                                        </button>
+                                    </form>
+
+                                    <!-- Edit Officer Button -->
+                                    <button type="button" onclick="editOfficer({{ json_encode($officer->load('locations')) }})" class="p-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-200 text-xs transition cursor-pointer" title="Edit Data & Penugasan Pos">
+                                        <i class="fa-solid fa-pen-to-square"></i>
+                                    </button>
+
+                                    <!-- Delete Officer Button -->
+                                    <form action="{{ route('admin.parking.officers.destroy', $officer->id) }}" method="POST" onsubmit="return confirm('Apakah Anda yakin ingin menghapus petugas parkir ini?')">
+                                        @csrf
+                                        @method('DELETE')
+                                        <button type="submit" class="p-1.5 rounded-lg bg-rose-50 hover:bg-rose-100 text-rose-600 border border-rose-200 text-xs transition cursor-pointer" title="Hapus Petugas">
+                                            <i class="fa-solid fa-trash"></i>
+                                        </button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                    @empty
+                        <tr>
+                            <td colspan="6" class="py-8 text-center text-slate-400">
+                                <i class="fa-solid fa-user-xmark text-3xl text-slate-300 mb-2"></i>
+                                <p class="font-bold text-slate-600">Belum Ada Petugas Parkir Terdaftar</p>
+                                <p class="text-xs text-slate-400 mt-0.5">Daftarkan petugas parkir agar mereka dapat login ke <code>/parkir</code> untuk scan karcis dan validasi lokasi.</p>
+                            </td>
+                        </tr>
+                    @endforelse
+                </tbody>
+            </table>
         </div>
     </div>
 
@@ -1057,6 +1217,166 @@
     </div>
 </div>
 
+<!-- 6. MODAL TAMBAH PETUGAS PARKIR -->
+<div id="modalCreateOfficer" class="fixed inset-0 bg-slate-900/60 backdrop-blur-xs z-50 flex items-center justify-center p-4 hidden">
+    <div class="bg-white rounded-3xl max-w-lg w-full p-6 shadow-2xl border border-slate-200 max-h-[90vh] flex flex-col">
+        <div class="flex items-center justify-between pb-4 border-b border-slate-100 shrink-0">
+            <div>
+                <h4 class="font-black text-slate-900 text-base flex items-center gap-2">
+                    <i class="fa-solid fa-user-plus text-rose-600"></i> Daftarkan Petugas Parkir Baru
+                </h4>
+                <p class="text-xs text-slate-500 mt-0.5">Buat akun login & tentukan pos kantong parkir bertugas.</p>
+            </div>
+            <button type="button" onclick="closeModal('modalCreateOfficer')" class="w-8 h-8 rounded-full bg-slate-100 text-slate-500 hover:text-slate-800 flex items-center justify-center cursor-pointer">✕</button>
+        </div>
+
+        <form action="{{ route('admin.parking.officers.store') }}" method="POST" class="mt-4 space-y-4 overflow-y-auto pr-1">
+            @csrf
+            
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                    <label class="text-xs font-bold text-slate-700 block mb-1">Nama Lengkap Petugas <span class="text-rose-500">*</span></label>
+                    <input type="text" name="name" required placeholder="Contoh: Rian Anggara" class="w-full text-xs bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 text-slate-800 font-bold focus:outline-none focus:ring-2 focus:ring-rose-500">
+                </div>
+                <div>
+                    <label class="text-xs font-bold text-slate-700 block mb-1">Nomor WhatsApp / HP</label>
+                    <input type="text" name="phone" placeholder="Contoh: 081234567890" class="w-full text-xs font-mono bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 text-slate-800 focus:outline-none focus:ring-2 focus:ring-rose-500">
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                    <label class="text-xs font-bold text-slate-700 block mb-1">Username Login <span class="text-rose-500">*</span></label>
+                    <input type="text" name="username" required placeholder="Contoh: petugas_parkir1" class="w-full text-xs font-mono font-bold bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 text-slate-800 focus:outline-none focus:ring-2 focus:ring-rose-500">
+                    <span class="text-[10px] text-slate-400 mt-0.5 block">Digunakan saat login di /parkir</span>
+                </div>
+                <div>
+                    <label class="text-xs font-bold text-slate-700 block mb-1">Password <span class="text-rose-500">*</span></label>
+                    <input type="password" name="password" required minlength="6" placeholder="Minimal 6 karakter" class="w-full text-xs font-mono bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 text-slate-800 focus:outline-none focus:ring-2 focus:ring-rose-500">
+                    <span class="text-[10px] text-slate-400 mt-0.5 block">Password rahasia petugas</span>
+                </div>
+            </div>
+
+            <!-- Penugasan Pos Kantong Parkir -->
+            <div class="p-3.5 bg-slate-50 rounded-2xl border border-slate-200 space-y-2">
+                <div class="flex items-center justify-between">
+                    <label class="text-xs font-bold text-slate-900 flex items-center gap-1.5">
+                        <i class="fa-solid fa-map-pin text-rose-500"></i> Penugasan Pos Kantong Parkir:
+                    </label>
+                    <span class="text-[10px] text-slate-400">Pilih satu atau lebih</span>
+                </div>
+                <p class="text-[11px] text-slate-500 leading-relaxed">
+                    Petugas hanya dapat memvalidasi karcis di kantong parkir yang dicentang. Jika tidak ada yang dicentang, petugas bertugas di semua pos (bebas).
+                </p>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-1 max-h-40 overflow-y-auto">
+                    @foreach($locations as $loc)
+                        <label class="flex items-start gap-2 p-2 rounded-xl bg-white border border-slate-200 hover:border-rose-300 hover:bg-rose-50/30 cursor-pointer transition">
+                            <input type="checkbox" name="location_ids[]" value="{{ $loc->id }}" class="mt-0.5 rounded border-slate-300 text-rose-600 focus:ring-rose-500">
+                            <div class="min-w-0 text-xs">
+                                <span class="font-bold text-slate-800 block truncate">{{ $loc->name }}</span>
+                                <span class="text-[10px] text-slate-400 font-mono">{{ $loc->code ?: 'Pos Parkir' }} &bull; R4: {{ $loc->capacity_r4 }} | R2: {{ $loc->capacity_r2 }}</span>
+                            </div>
+                        </label>
+                    @endforeach
+                </div>
+            </div>
+
+            <!-- Status Aktif -->
+            <div class="pt-1">
+                <label class="flex items-center gap-2 cursor-pointer text-xs font-bold text-slate-700">
+                    <input type="checkbox" name="is_active" value="1" checked class="rounded border-slate-300 text-emerald-600 focus:ring-emerald-500">
+                    <span>Aktifkan akun petugas ini segera</span>
+                </label>
+            </div>
+
+            <div class="flex items-center justify-between pt-3 border-t border-slate-100 shrink-0">
+                <button type="button" onclick="closeModal('modalCreateOfficer')" class="px-4 py-2 rounded-xl text-slate-600 hover:bg-slate-100 font-bold text-xs cursor-pointer">Batal</button>
+                <button type="submit" class="px-5 py-2.5 rounded-xl bg-rose-600 hover:bg-rose-700 text-white font-extrabold text-xs shadow-md transition flex items-center gap-1.5 cursor-pointer">
+                    <i class="fa-solid fa-floppy-disk"></i> Simpan Petugas Parkir
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- 7. MODAL EDIT PETUGAS PARKIR -->
+<div id="modalEditOfficer" class="fixed inset-0 bg-slate-900/60 backdrop-blur-xs z-50 flex items-center justify-center p-4 hidden">
+    <div class="bg-white rounded-3xl max-w-lg w-full p-6 shadow-2xl border border-slate-200 max-h-[90vh] flex flex-col">
+        <div class="flex items-center justify-between pb-4 border-b border-slate-100 shrink-0">
+            <div>
+                <h4 class="font-black text-slate-900 text-base flex items-center gap-2">
+                    <i class="fa-solid fa-user-pen text-rose-600"></i> Edit Data Petugas Parkir
+                </h4>
+                <p class="text-xs text-slate-500 mt-0.5">Perbarui profil, username, password, atau penugasan pos.</p>
+            </div>
+            <button type="button" onclick="closeModal('modalEditOfficer')" class="w-8 h-8 rounded-full bg-slate-100 text-slate-500 hover:text-slate-800 flex items-center justify-center cursor-pointer">✕</button>
+        </div>
+
+        <form id="formEditOfficer" action="" method="POST" class="mt-4 space-y-4 overflow-y-auto pr-1">
+            @csrf
+            @method('PUT')
+            
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                    <label class="text-xs font-bold text-slate-700 block mb-1">Nama Lengkap Petugas <span class="text-rose-500">*</span></label>
+                    <input type="text" name="name" id="edit_officer_name" required class="w-full text-xs bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 text-slate-800 font-bold focus:outline-none focus:ring-2 focus:ring-rose-500">
+                </div>
+                <div>
+                    <label class="text-xs font-bold text-slate-700 block mb-1">Nomor WhatsApp / HP</label>
+                    <input type="text" name="phone" id="edit_officer_phone" class="w-full text-xs font-mono bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 text-slate-800 focus:outline-none focus:ring-2 focus:ring-rose-500">
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                    <label class="text-xs font-bold text-slate-700 block mb-1">Username Login <span class="text-rose-500">*</span></label>
+                    <input type="text" name="username" id="edit_officer_username" required class="w-full text-xs font-mono font-bold bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 text-slate-800 focus:outline-none focus:ring-2 focus:ring-rose-500">
+                </div>
+                <div>
+                    <label class="text-xs font-bold text-slate-700 block mb-1">Ganti Password (Opsional)</label>
+                    <input type="password" name="password" id="edit_officer_password" minlength="6" placeholder="Kosongkan jika tak diubah" class="w-full text-xs font-mono bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 text-slate-800 focus:outline-none focus:ring-2 focus:ring-rose-500">
+                </div>
+            </div>
+
+            <!-- Penugasan Pos Kantong Parkir -->
+            <div class="p-3.5 bg-slate-50 rounded-2xl border border-slate-200 space-y-2">
+                <div class="flex items-center justify-between">
+                    <label class="text-xs font-bold text-slate-900 flex items-center gap-1.5">
+                        <i class="fa-solid fa-map-pin text-rose-500"></i> Penugasan Pos Kantong Parkir:
+                    </label>
+                    <span class="text-[10px] text-slate-400">Pilih satu atau lebih</span>
+                </div>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-1 max-h-40 overflow-y-auto">
+                    @foreach($locations as $loc)
+                        <label class="flex items-start gap-2 p-2 rounded-xl bg-white border border-slate-200 hover:border-rose-300 hover:bg-rose-50/30 cursor-pointer transition">
+                            <input type="checkbox" name="location_ids[]" value="{{ $loc->id }}" id="edit_officer_loc_{{ $loc->id }}" class="edit-officer-location-cb mt-0.5 rounded border-slate-300 text-rose-600 focus:ring-rose-500">
+                            <div class="min-w-0 text-xs">
+                                <span class="font-bold text-slate-800 block truncate">{{ $loc->name }}</span>
+                                <span class="text-[10px] text-slate-400 font-mono">{{ $loc->code ?: 'Pos Parkir' }}</span>
+                            </div>
+                        </label>
+                    @endforeach
+                </div>
+            </div>
+
+            <!-- Status Aktif -->
+            <div class="pt-1">
+                <label class="flex items-center gap-2 cursor-pointer text-xs font-bold text-slate-700">
+                    <input type="checkbox" name="is_active" id="edit_officer_is_active" value="1" class="rounded border-slate-300 text-emerald-600 focus:ring-emerald-500">
+                    <span>Akun petugas aktif</span>
+                </label>
+            </div>
+
+            <div class="flex items-center justify-between pt-3 border-t border-slate-100 shrink-0">
+                <button type="button" onclick="closeModal('modalEditOfficer')" class="px-4 py-2 rounded-xl text-slate-600 hover:bg-slate-100 font-bold text-xs cursor-pointer">Batal</button>
+                <button type="submit" class="px-5 py-2.5 rounded-xl bg-rose-600 hover:bg-rose-700 text-white font-extrabold text-xs shadow-md transition flex items-center gap-1.5 cursor-pointer">
+                    <i class="fa-solid fa-floppy-disk"></i> Perbarui Data Petugas
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
 <script>
     function openModal(id) {
         document.getElementById(id).classList.remove('hidden');
@@ -1078,6 +1398,29 @@
         document.getElementById('edit_loc_address').value = loc.address || '';
         document.getElementById('formEditLocation').action = `/admin/parking/locations/${loc.id}`;
         openModal('modalEditLocation');
+    }
+
+    function editOfficer(officer) {
+        document.getElementById('edit_officer_name').value = officer.name || '';
+        document.getElementById('edit_officer_username').value = officer.username || '';
+        document.getElementById('edit_officer_phone').value = officer.phone || '';
+        document.getElementById('edit_officer_password').value = '';
+        document.getElementById('edit_officer_is_active').checked = Boolean(officer.is_active);
+
+        // Reset all location checkboxes
+        const checkboxes = document.querySelectorAll('.edit-officer-location-cb');
+        checkboxes.forEach(cb => cb.checked = false);
+
+        // Check assigned locations
+        if (officer.locations && Array.isArray(officer.locations)) {
+            officer.locations.forEach(loc => {
+                const cb = document.getElementById('edit_officer_loc_' + loc.id);
+                if (cb) cb.checked = true;
+            });
+        }
+
+        document.getElementById('formEditOfficer').action = `/admin/parking/officers/${officer.id}`;
+        openModal('modalEditOfficer');
     }
 
     function editTicket(ticket) {

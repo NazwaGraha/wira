@@ -7,6 +7,7 @@ use App\Models\CompetitionCategory;
 use App\Models\CompetitionRegistration;
 use App\Models\ParkingFareSetting;
 use App\Models\ParkingLocation;
+use App\Models\ParkingOfficer;
 use App\Models\ParkingQuotaSetting;
 use App\Models\ParkingTicket;
 use Illuminate\Http\RedirectResponse;
@@ -90,6 +91,11 @@ class ParkingManagementController extends Controller
         $publicCashTotal = (int) ParkingTicket::where('is_public', true)->where('payment_method', 'cash')->where('payment_status', 'paid')->sum('fee_amount');
         $publicQrisTotal = (int) ParkingTicket::where('is_public', true)->where('payment_method', 'qris')->where('payment_status', 'paid')->sum('fee_amount');
 
+        // Data Akun Petugas Parkir Lapangan
+        $officers = ParkingOfficer::with('locations')->orderBy('name')->get();
+        $totalOfficersCount = $officers->count();
+        $activeOfficersCount = $officers->where('is_active', true)->count();
+
         return view('admin.parking.index', compact(
             'locations',
             'totalCapacityR4',
@@ -104,7 +110,10 @@ class ParkingManagementController extends Controller
             'publicTicketsCount',
             'publicRevenueTotal',
             'publicCashTotal',
-            'publicQrisTotal'
+            'publicQrisTotal',
+            'officers',
+            'totalOfficersCount',
+            'activeOfficersCount'
         ));
     }
 
@@ -664,5 +673,104 @@ class ParkingManagementController extends Controller
         }
 
         return back()->with('success', "Kalkulasi Prioritas Parkir Cerdas berhasil! {$totalVerified} sekolah dievaluasi. {$topPriorityCount} kontingen berhasil mendapatkan Prioritas Utama di {$priorityLocation->name}.");
+    }
+
+    /**
+     * Daftarkan Petugas Parkir Lapangan Baru
+     */
+    public function storeOfficer(Request $request): RedirectResponse
+    {
+        $validated = $request->validate([
+            'name' => 'required|string|max:100',
+            'username' => 'required|string|max:50|alpha_dash|unique:parking_officers,username',
+            'password' => 'required|string|min:6',
+            'phone' => 'nullable|string|max:30',
+            'is_active' => 'nullable|boolean',
+            'location_ids' => 'nullable|array',
+            'location_ids.*' => 'exists:parking_locations,id',
+        ], [
+            'username.unique' => 'Username tersebut sudah digunakan oleh petugas lain.',
+            'username.alpha_dash' => 'Username hanya boleh berisi huruf, angka, strip (-), dan garis bawah (_).',
+            'password.min' => 'Kata sandi minimal 6 karakter.',
+        ]);
+
+        $officer = ParkingOfficer::create([
+            'name' => $validated['name'],
+            'username' => strtolower($validated['username']),
+            'password' => $validated['password'],
+            'phone' => $validated['phone'] ?? null,
+            'is_active' => $request->boolean('is_active', true),
+        ]);
+
+        if (! empty($validated['location_ids'])) {
+            $officer->locations()->sync($validated['location_ids']);
+        }
+
+        return redirect()->route('admin.parking.index')->with('success', "Petugas parkir {$officer->name} (@{$officer->username}) berhasil didaftarkan dengan akses ke ".count($validated['location_ids'] ?? []).' kantong parkir.');
+    }
+
+    /**
+     * Update Data / Penugasan Petugas Parkir
+     */
+    public function updateOfficer(Request $request, int $id): RedirectResponse
+    {
+        $officer = ParkingOfficer::findOrFail($id);
+
+        $validated = $request->validate([
+            'name' => 'required|string|max:100',
+            'username' => 'required|string|max:50|alpha_dash|unique:parking_officers,username,'.$officer->id,
+            'password' => 'nullable|string|min:6',
+            'phone' => 'nullable|string|max:30',
+            'is_active' => 'nullable|boolean',
+            'location_ids' => 'nullable|array',
+            'location_ids.*' => 'exists:parking_locations,id',
+        ], [
+            'username.unique' => 'Username tersebut sudah digunakan oleh petugas lain.',
+            'username.alpha_dash' => 'Username hanya boleh berisi huruf, angka, strip (-), dan garis bawah (_).',
+            'password.min' => 'Kata sandi minimal 6 karakter.',
+        ]);
+
+        $updateData = [
+            'name' => $validated['name'],
+            'username' => strtolower($validated['username']),
+            'phone' => $validated['phone'] ?? null,
+            'is_active' => $request->boolean('is_active'),
+        ];
+
+        if (! empty($validated['password'])) {
+            $updateData['password'] = $validated['password'];
+        }
+
+        $officer->update($updateData);
+        $officer->locations()->sync($validated['location_ids'] ?? []);
+
+        return redirect()->route('admin.parking.index')->with('success', "Data dan penugasan pos jaga petugas {$officer->name} berhasil diperbarui.");
+    }
+
+    /**
+     * Hapus Akun Petugas Parkir
+     */
+    public function destroyOfficer(int $id): RedirectResponse
+    {
+        $officer = ParkingOfficer::findOrFail($id);
+        $name = $officer->name;
+        $officer->locations()->detach();
+        $officer->delete();
+
+        return redirect()->route('admin.parking.index')->with('success', "Akun petugas parkir {$name} berhasil dihapus.");
+    }
+
+    /**
+     * Toggle Status Keaktifan Petugas Parkir
+     */
+    public function toggleOfficerStatus(int $id): RedirectResponse
+    {
+        $officer = ParkingOfficer::findOrFail($id);
+        $officer->is_active = ! $officer->is_active;
+        $officer->save();
+
+        $statusLabel = $officer->is_active ? 'diaktifkan' : 'dinonaktifkan';
+
+        return redirect()->route('admin.parking.index')->with('success', "Status akun petugas {$officer->name} berhasil {$statusLabel}.");
     }
 }
