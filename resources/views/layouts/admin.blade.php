@@ -4,8 +4,10 @@
         $currentActiveSection = 'menu_utama';
     } elseif (request()->routeIs('admin.advisors.*')) {
         $currentActiveSection = 'data_pembina';
-    } elseif (request()->routeIs('admin.member-registrations.*') || request()->routeIs('admin.members.*') || request()->routeIs('admin.user-permissions.*')) {
+    } elseif (request()->routeIs('admin.member-registrations.*') || request()->routeIs('admin.members.*')) {
         $currentActiveSection = 'data_anggota';
+    } elseif (request()->routeIs('admin.user-permissions.*')) {
+        $currentActiveSection = 'user_permissions';
     } elseif (request()->routeIs('admin.content-setup.*')) {
         $currentActiveSection = 'setup_konten';
     } elseif (
@@ -46,7 +48,6 @@
     
     <!-- Alpine.js & FontAwesome & Tailwind -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-    <script defer src="https://cdn.jsdelivr.net/npm/@alpinejs/collapse@3.x.x/dist/cdn.min.js"></script>
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
@@ -73,8 +74,8 @@
                 mobileSidebarOpen: false,
                 sections: {
                     menu_utama: true,
-                    data_pembina: false,
-                    data_anggota: false,
+                    data_pembina: true,
+                    data_anggota: true,
                     setup_konten: false,
                     media_konten: false,
                     manajemen_lomba: false,
@@ -84,7 +85,7 @@
                 },
                 init() {
                     try {
-                        const saved = localStorage.getItem('pmr_admin_sidebar_sections_v1');
+                        const saved = localStorage.getItem('pmr_admin_sidebar_sections_v2');
                         if (saved) {
                             const parsed = JSON.parse(saved);
                             if (parsed && typeof parsed === 'object') {
@@ -107,7 +108,7 @@
                 toggleSection(key) {
                     this.sections[key] = !this.sections[key];
                     try {
-                        localStorage.setItem('pmr_admin_sidebar_sections_v1', JSON.stringify(this.sections));
+                        localStorage.setItem('pmr_admin_sidebar_sections_v2', JSON.stringify(this.sections));
                     } catch (e) {
                         console.warn('Could not save sidebar state to localStorage', e);
                     }
@@ -172,7 +173,14 @@
                        :class="isOpen('menu_utama') ? 'rotate-180 text-white' : ''"></i>
                 </button>
 
-                <div x-show="isOpen('menu_utama')" x-collapse class="pl-2 space-y-1 border-l-2 border-slate-800 ml-3.5 my-1">
+                <div x-show="isOpen('menu_utama')" 
+                     x-transition:enter="transition ease-out duration-150"
+                     x-transition:enter-start="opacity-0 -translate-y-1"
+                     x-transition:enter-end="opacity-100 translate-y-0"
+                     x-transition:leave="transition ease-in duration-100"
+                     x-transition:leave-start="opacity-100 translate-y-0"
+                     x-transition:leave-end="opacity-0 -translate-y-1"
+                     class="pl-2 space-y-1 border-l-2 border-slate-800 ml-3.5 my-1">
                     <a href="{{ route('admin.dashboard') }}" class="flex items-center gap-2.5 px-3 py-2 rounded-xl font-medium text-xs md:text-sm transition {{ request()->routeIs('admin.dashboard') ? 'bg-pmr-primary text-white shadow-md shadow-red-950/40' : 'hover:bg-slate-800 text-slate-300' }}">
                         <i class="fa-solid fa-chart-pie w-4 text-center"></i>
                         <span>Dashboard</span>
@@ -215,7 +223,14 @@
                        :class="isOpen('data_pembina') ? 'rotate-180 text-white' : ''"></i>
                 </button>
 
-                <div x-show="isOpen('data_pembina')" x-collapse class="pl-2 space-y-1 border-l-2 border-slate-800 ml-3.5 my-1">
+                <div x-show="isOpen('data_pembina')" 
+                     x-transition:enter="transition ease-out duration-150"
+                     x-transition:enter-start="opacity-0 -translate-y-1"
+                     x-transition:enter-end="opacity-100 translate-y-0"
+                     x-transition:leave="transition ease-in duration-100"
+                     x-transition:leave-start="opacity-100 translate-y-0"
+                     x-transition:leave-end="opacity-0 -translate-y-1"
+                     class="pl-2 space-y-1 border-l-2 border-slate-800 ml-3.5 my-1">
                     @if(auth()->user()?->hasPermission('advisors.create'))
                     <a href="{{ route('admin.advisors.create') }}" class="flex items-center gap-2.5 px-3 py-2 rounded-xl font-medium text-xs md:text-sm transition {{ request()->routeIs('admin.advisors.create') ? 'bg-pmr-primary text-white shadow-md shadow-red-950/40' : 'hover:bg-slate-800 text-slate-300' }}">
                         <i class="fa-solid fa-user-tie w-4 text-center text-amber-400"></i>
@@ -260,7 +275,14 @@
                     </div>
                 </button>
 
-                <div x-show="isOpen('data_anggota')" x-collapse class="pl-2 space-y-1 border-l-2 border-slate-800 ml-3.5 my-1">
+                <div x-show="isOpen('data_anggota')" 
+                     x-transition:enter="transition ease-out duration-150"
+                     x-transition:enter-start="opacity-0 -translate-y-1"
+                     x-transition:enter-end="opacity-100 translate-y-0"
+                     x-transition:leave="transition ease-in duration-100"
+                     x-transition:leave-start="opacity-100 translate-y-0"
+                     x-transition:leave-end="opacity-0 -translate-y-1"
+                     class="pl-2 space-y-1 border-l-2 border-slate-800 ml-3.5 my-1">
                     @if(auth()->user()?->hasPermission('member_registrations.view'))
                     <a href="{{ route('admin.member-registrations.index') }}" class="flex items-center gap-2.5 px-3 py-2 rounded-xl font-medium text-xs md:text-sm transition {{ request()->routeIs('admin.member-registrations.*') ? 'bg-pmr-primary text-white shadow-md shadow-red-950/40' : 'hover:bg-slate-800 text-slate-300' }}">
                         <i class="fa-solid fa-id-card-clip w-4 text-center text-amber-400"></i>
@@ -287,7 +309,7 @@
                     </a>
                     @endif
 
-                    @if(auth()->user()?->hasPermission('user_permissions.view'))
+                    @if(auth()->user()?->hasPermission('user_permissions.view') || auth()->user()?->canManagePermissions())
                     <a href="{{ route('admin.user-permissions.index') }}" class="flex items-center gap-2.5 px-3 py-2 rounded-xl font-medium text-xs md:text-sm transition {{ request()->routeIs('admin.user-permissions.*') ? 'bg-pmr-primary text-white shadow-md shadow-red-950/40' : 'hover:bg-slate-800 text-slate-300' }}" title="Manajemen Hak Akses Pengguna & Matriks Granular Permissions">
                         <i class="fa-solid fa-shield-halved w-4 text-center text-indigo-400"></i>
                         <span class="truncate">Kelola Hak Akses</span>
@@ -295,6 +317,27 @@
                     </a>
                     @endif
                 </div>
+            </div>
+            @endif
+
+            <!-- ========================================== -->
+            <!-- 4. HAK AKSES PENGGUNA (MENU KHUSUS RBAC) -->
+            <!-- ========================================== -->
+            @if(auth()->user()?->hasPermission('user_permissions.view') || auth()->user()?->canManagePermissions())
+            @php $isUserPermissionsActive = ($currentActiveSection === 'user_permissions'); @endphp
+            <div class="pt-1">
+                <a href="{{ route('admin.user-permissions.index') }}" 
+                   class="w-full flex items-center justify-between px-3 py-2 rounded-xl font-bold text-xs uppercase tracking-wider transition group {{ $isUserPermissionsActive ? 'bg-pmr-primary text-white shadow-md shadow-red-950/40' : 'hover:bg-slate-800 text-slate-300 bg-slate-800/40 border border-indigo-500/20' }}"
+                   title="Manajemen Hak Akses Pengguna & Granular Permissions">
+                    <div class="flex items-center gap-2.5 min-w-0">
+                        <i class="fa-solid fa-shield-halved text-xs text-indigo-400"></i>
+                        <span class="truncate">Hak Akses Pengguna</span>
+                        @if($isUserPermissionsActive)
+                            <span class="w-1.5 h-1.5 rounded-full bg-red-500 shrink-0"></span>
+                        @endif
+                    </div>
+                    <span class="text-[9px] bg-indigo-500/20 text-indigo-300 border border-indigo-400/30 px-1.5 py-0.2 rounded font-black uppercase shrink-0">RBAC</span>
+                </a>
             </div>
             @endif
 
@@ -318,7 +361,14 @@
                        :class="isOpen('setup_konten') ? 'rotate-180 text-white' : ''"></i>
                 </button>
 
-                <div x-show="isOpen('setup_konten')" x-collapse class="pl-2 space-y-1 border-l-2 border-slate-800 ml-3.5 my-1">
+                <div x-show="isOpen('setup_konten')" 
+                     x-transition:enter="transition ease-out duration-150"
+                     x-transition:enter-start="opacity-0 -translate-y-1"
+                     x-transition:enter-end="opacity-100 translate-y-0"
+                     x-transition:leave="transition ease-in duration-100"
+                     x-transition:leave-start="opacity-100 translate-y-0"
+                     x-transition:leave-end="opacity-0 -translate-y-1"
+                     class="pl-2 space-y-1 border-l-2 border-slate-800 ml-3.5 my-1">
                     @if(auth()->user()?->hasPermission('content_setup.home'))
                     <a href="{{ route('admin.content-setup.home') }}" class="flex items-center gap-2.5 px-3 py-2 rounded-xl font-medium text-xs md:text-sm transition {{ request()->routeIs('admin.content-setup.home*') ? 'bg-pmr-primary text-white shadow-md shadow-red-950/40' : 'hover:bg-slate-800 text-slate-300' }}">
                         <i class="fa-solid fa-house-laptop w-4 text-center text-rose-400"></i>
@@ -371,7 +421,14 @@
                        :class="isOpen('media_konten') ? 'rotate-180 text-white' : ''"></i>
                 </button>
 
-                <div x-show="isOpen('media_konten')" x-collapse class="pl-2 space-y-1 border-l-2 border-slate-800 ml-3.5 my-1">
+                <div x-show="isOpen('media_konten')" 
+                     x-transition:enter="transition ease-out duration-150"
+                     x-transition:enter-start="opacity-0 -translate-y-1"
+                     x-transition:enter-end="opacity-100 translate-y-0"
+                     x-transition:leave="transition ease-in duration-100"
+                     x-transition:leave-start="opacity-100 translate-y-0"
+                     x-transition:leave-end="opacity-0 -translate-y-1"
+                     class="pl-2 space-y-1 border-l-2 border-slate-800 ml-3.5 my-1">
                     @if(auth()->user()?->hasPermission('media_manager.view'))
                     <a href="{{ route('admin.media-manager.index') }}" class="flex items-center gap-2.5 px-3 py-2 rounded-xl font-medium text-xs md:text-sm transition {{ request()->routeIs('admin.media-manager.*') || request()->routeIs('admin.hero-slides.*') ? 'bg-pmr-primary text-white shadow-md shadow-red-950/40' : 'hover:bg-slate-800 text-slate-300' }}">
                         <i class="fa-solid fa-photo-film w-4 text-center text-rose-400"></i>
@@ -468,7 +525,14 @@
                        :class="isOpen('manajemen_lomba') ? 'rotate-180 text-white' : ''"></i>
                 </button>
 
-                <div x-show="isOpen('manajemen_lomba')" x-collapse class="pl-2 space-y-1 border-l-2 border-slate-800 ml-3.5 my-1">
+                <div x-show="isOpen('manajemen_lomba')" 
+                     x-transition:enter="transition ease-out duration-150"
+                     x-transition:enter-start="opacity-0 -translate-y-1"
+                     x-transition:enter-end="opacity-100 translate-y-0"
+                     x-transition:leave="transition ease-in duration-100"
+                     x-transition:leave-start="opacity-100 translate-y-0"
+                     x-transition:leave-end="opacity-0 -translate-y-1"
+                     class="pl-2 space-y-1 border-l-2 border-slate-800 ml-3.5 my-1">
                     @if(auth()->user()?->hasPermission('competition_event.view'))
                     <a href="{{ route('admin.competition-event.index') }}" class="flex items-center gap-2.5 px-3 py-2 rounded-xl font-medium text-xs md:text-sm transition {{ request()->routeIs('admin.competition-event.*') ? 'bg-pmr-primary text-white shadow-md shadow-red-950/40' : 'hover:bg-slate-800 text-slate-300' }}">
                         <i class="fa-solid fa-sliders w-4 text-center text-rose-400"></i>
@@ -608,7 +672,14 @@
                        :class="isOpen('donor_darah') ? 'rotate-180 text-white' : ''"></i>
                 </button>
 
-                <div x-show="isOpen('donor_darah')" x-collapse class="pl-2 space-y-1 border-l-2 border-slate-800 ml-3.5 my-1">
+                <div x-show="isOpen('donor_darah')" 
+                     x-transition:enter="transition ease-out duration-150"
+                     x-transition:enter-start="opacity-0 -translate-y-1"
+                     x-transition:enter-end="opacity-100 translate-y-0"
+                     x-transition:leave="transition ease-in duration-100"
+                     x-transition:leave-start="opacity-100 translate-y-0"
+                     x-transition:leave-end="opacity-0 -translate-y-1"
+                     class="pl-2 space-y-1 border-l-2 border-slate-800 ml-3.5 my-1">
                     @if(auth()->user()?->hasPermission('blood_stocks.view'))
                     <a href="{{ route('admin.blood-stocks.index') }}" class="flex items-center gap-2.5 px-3 py-2 rounded-xl font-medium text-xs md:text-sm transition {{ request()->routeIs('admin.blood-stocks.*') ? 'bg-pmr-primary text-white shadow-md shadow-red-950/40' : 'hover:bg-slate-800 text-slate-300' }}">
                         <i class="fa-solid fa-droplet w-4 text-center text-red-400"></i>
@@ -646,7 +717,14 @@
                        :class="isOpen('layanan_kemanusiaan') ? 'rotate-180 text-white' : ''"></i>
                 </button>
 
-                <div x-show="isOpen('layanan_kemanusiaan')" x-collapse class="pl-2 space-y-1 border-l-2 border-slate-800 ml-3.5 my-1">
+                <div x-show="isOpen('layanan_kemanusiaan')" 
+                     x-transition:enter="transition ease-out duration-150"
+                     x-transition:enter-start="opacity-0 -translate-y-1"
+                     x-transition:enter-end="opacity-100 translate-y-0"
+                     x-transition:leave="transition ease-in duration-100"
+                     x-transition:leave-start="opacity-100 translate-y-0"
+                     x-transition:leave-end="opacity-0 -translate-y-1"
+                     class="pl-2 space-y-1 border-l-2 border-slate-800 ml-3.5 my-1">
                     <a href="{{ route('donor-darah') }}" target="_blank" class="flex items-center gap-2.5 px-3 py-2 rounded-xl font-medium text-xs md:text-sm transition hover:bg-slate-800 text-slate-300">
                         <i class="fa-solid fa-droplet w-4 text-center text-red-400"></i>
                         <span class="truncate">Donor Darah (Live)</span>
@@ -680,7 +758,14 @@
                        :class="isOpen('akses_cepat') ? 'rotate-180 text-white' : ''"></i>
                 </button>
 
-                <div x-show="isOpen('akses_cepat')" x-collapse class="pl-2 space-y-1 border-l-2 border-slate-800 ml-3.5 my-1">
+                <div x-show="isOpen('akses_cepat')" 
+                     x-transition:enter="transition ease-out duration-150"
+                     x-transition:enter-start="opacity-0 -translate-y-1"
+                     x-transition:enter-end="opacity-100 translate-y-0"
+                     x-transition:leave="transition ease-in duration-100"
+                     x-transition:leave-start="opacity-100 translate-y-0"
+                     x-transition:leave-end="opacity-0 -translate-y-1"
+                     class="pl-2 space-y-1 border-l-2 border-slate-800 ml-3.5 my-1">
                     <a href="{{ route('home') }}" target="_blank" class="flex items-center gap-2.5 px-3 py-2 rounded-xl font-medium text-xs md:text-sm transition hover:bg-slate-800 text-emerald-400">
                         <i class="fa-solid fa-arrow-up-right-from-square w-4 text-center"></i>
                         <span class="truncate">Lihat Web Publik</span>

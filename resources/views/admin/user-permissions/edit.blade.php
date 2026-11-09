@@ -92,8 +92,8 @@
         
         <input type="hidden" name="mode" :value="mode">
 
-        <!-- Custom Permissions Panel (Shown when mode is 'custom') -->
-        <div class="space-y-6" x-show="mode === 'custom'" x-transition>
+        <!-- Checklist Matriks Hak Akses Granular per Menu (Selalu Tampil) -->
+        <div class="space-y-6">
 
             <!-- Quick Template Presets Bar -->
             <div class="bg-white border border-slate-200/80 rounded-2xl p-4 sm:p-5 shadow-xs">
@@ -283,6 +283,7 @@
             },
 
             applyPreset(presetKey) {
+                this.mode = 'custom';
                 if (PRESETS[presetKey]) {
                     const preset = PRESETS[presetKey];
                     this.checkedPermissions = [...preset.permissions];
@@ -292,6 +293,7 @@
             },
 
             selectAll() {
+                this.mode = 'custom';
                 const checkboxes = document.querySelectorAll('input[name="allowed_menus[]"]');
                 const allCodes = [];
                 checkboxes.forEach(cb => allCodes.push(cb.value));
@@ -299,10 +301,12 @@
             },
 
             unselectAll() {
+                this.mode = 'custom';
                 this.checkedPermissions = [];
             },
 
             toggleModuleGroup(moduleKey) {
+                this.mode = 'custom';
                 const checkboxes = document.querySelectorAll(`input[data-module="${moduleKey}"]`);
                 const groupCodes = Array.from(checkboxes).map(cb => cb.value);
                 const allSelected = groupCodes.every(code => this.checkedPermissions.includes(code));
