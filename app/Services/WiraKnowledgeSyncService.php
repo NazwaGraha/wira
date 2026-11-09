@@ -137,8 +137,8 @@ class WiraKnowledgeSyncService
             'id' => 'profil_organisasi',
             'category' => 'organisasi',
             'title' => 'Profil & Identitas PMR Wira SMAN 1 Ciawi',
-            'keywords' => ['profil', 'alamat', 'lokasi', 'kontak', 'email', 'markas', 'sekretariat', 'uks', 'sekolah', 'pandansari', 'veteran', 'terakreditasi a', 'sman 1 ciawi'],
-            'content' => 'PMR Wira Unit SMA Negeri 1 Ciawi adalah organisasi relawan sekolah terakreditasi A berkedudukan di Ruang UKS/PMR SMAN 1 Ciawi, Jl. Veteran III Banjarwaru, Ciawi, Kabupaten Bogor (Kode Pos 16720). Email resmi: pmrwirasman1c@gmail.com. Hotline Siaga Medis UKS: 0838-7250-6817. Masa bakti kepengurusan aktif adalah Ragana Dwi Pantara 2026/2027.',
+            'keywords' => ['profil', 'alamat', 'lokasi', 'kontak', 'email', 'markas', 'sekretariat', 'uks', 'sekolah', 'pandansari', 'veteran', 'terakreditasi a', 'sman 1 ciawi', 'instagram', 'youtube', 'media sosial'],
+            'content' => 'PMR Wira Unit SMA Negeri 1 Ciawi adalah organisasi relawan sekolah terakreditasi A berkedudukan di Ruang UKS/PMR SMAN 1 Ciawi, Jl. Veteran III Banjarwaru, Ciawi, Kabupaten Bogor (Kode Pos 16720). Email resmi: pmrwirasman1c@gmail.com. Hotline Siaga Medis UKS: 0838-7250-6817. Media sosial resmi: Instagram @pmr_sman1c (https://www.instagram.com/pmr_sman1c) dan YouTube @PMRSMAN1CIAWIBOGOR (https://www.youtube.com/@PMRSMAN1CIAWIBOGOR). Masa bakti kepengurusan aktif adalah Ragana Dwi Pantara 2026/2027.',
         ];
     }
 

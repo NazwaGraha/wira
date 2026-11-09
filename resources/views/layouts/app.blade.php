@@ -503,10 +503,10 @@
                         <a href="https://www.instagram.com/pmr_sman1c" target="_blank" rel="noopener noreferrer" class="w-8 h-8 rounded-full bg-stone-800 hover:bg-pmr-primary hover:text-white flex items-center justify-center text-xs transition" aria-label="Instagram Resmi PMR Wira SMAN 1 Ciawi">
                             <i class="fa-brands fa-instagram"></i>
                         </a>
-                        <a href="#" class="w-8 h-8 rounded-full bg-stone-800 hover:bg-pmr-primary hover:text-white flex items-center justify-center text-xs transition">
+                        <a href="{{ $hotlineUks ? $hotlineUks->whatsapp_url : 'https://wa.me/6283872506817' }}" target="_blank" rel="noopener noreferrer" class="w-8 h-8 rounded-full bg-stone-800 hover:bg-emerald-600 hover:text-white flex items-center justify-center text-xs transition" aria-label="WhatsApp Hotline PMR Wira SMAN 1 Ciawi">
                             <i class="fa-brands fa-whatsapp"></i>
                         </a>
-                        <a href="#" class="w-8 h-8 rounded-full bg-stone-800 hover:bg-pmr-primary hover:text-white flex items-center justify-center text-xs transition">
+                        <a href="https://www.youtube.com/@PMRSMAN1CIAWIBOGOR" target="_blank" rel="noopener noreferrer" class="w-8 h-8 rounded-full bg-stone-800 hover:bg-rose-600 hover:text-white flex items-center justify-center text-xs transition" aria-label="YouTube Resmi PMR Wira SMAN 1 Ciawi">
                             <i class="fa-brands fa-youtube"></i>
                         </a>
                     </div>

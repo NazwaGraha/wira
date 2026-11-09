@@ -1209,8 +1209,8 @@ PROMPT;
         }
 
         // 29. Pertanyaan seputar Profil & UKS
-        if (str_contains($lower, 'profil') || str_contains($lower, 'alamat') || str_contains($lower, 'lokasi') || str_contains($lower, 'kontak') || str_contains($lower, 'sekretariat') || str_contains($lower, 'uks') || str_contains($lower, 'markas') || str_contains($lower, 'hotline') || str_contains($lower, 'telepon')) {
-            return "Halo Sahabat Relawan! 🏫\n\n• **Organisasi:** PMR Wira Unit SMAN 1 Ciawi (Terakreditasi A).\n• **Alamat:** Ruang UKS/PMR SMAN 1 Ciawi, Jl. Veteran III Banjarwaru, Ciawi, Bogor.\n• **Hotline Siaga UKS:** 0838-7250-6817 (WhatsApp & Panggilan Cepat Langsung).\n• **Jam Layanan:** Senin - Jumat (07.00 - 16.00 WIB).\n• **Email Resmi:** pmrwirasman1c@gmail.com\n\nDi pojok kanan bawah website ini juga tersedia tombol WhatsApp langsung yang menghubungkan Kakak ke petugas medis siaga UKS!";
+        if (str_contains($lower, 'profil') || str_contains($lower, 'alamat') || str_contains($lower, 'lokasi') || str_contains($lower, 'kontak') || str_contains($lower, 'sekretariat') || str_contains($lower, 'uks') || str_contains($lower, 'markas') || str_contains($lower, 'hotline') || str_contains($lower, 'telepon') || str_contains($lower, 'youtube') || str_contains($lower, 'instagram') || str_contains($lower, 'sosmed') || str_contains($lower, 'media sosial')) {
+            return "Halo Sahabat Relawan! 🏫\n\n• **Organisasi:** PMR Wira Unit SMAN 1 Ciawi (Terakreditasi A).\n• **Alamat:** Ruang UKS/PMR SMAN 1 Ciawi, Jl. Veteran III Banjarwaru, Ciawi, Bogor.\n• **Hotline Siaga UKS:** 0838-7250-6817 (WhatsApp & Panggilan Cepat Langsung).\n• **Jam Layanan:** Senin - Jumat (07.00 - 16.00 WIB).\n• **Email Resmi:** pmrwirasman1c@gmail.com\n• **Instagram Resmi:** @pmr_sman1c (https://www.instagram.com/pmr_sman1c)\n• **YouTube Resmi:** @PMRSMAN1CIAWIBOGOR (https://www.youtube.com/@PMRSMAN1CIAWIBOGOR)\n\nDi pojok kanan bawah website ini juga tersedia tombol WhatsApp langsung yang menghubungkan Kakak ke petugas medis siaga UKS!";
         }
 
         // 30. Smart Knowledge Base (RAG) Fallback Search

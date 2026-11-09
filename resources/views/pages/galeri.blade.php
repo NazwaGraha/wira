@@ -55,14 +55,20 @@
 
     <!-- Video Dokumentasi Section -->
     <div class="mt-20 gallery-item filter-video">
-        <div class="flex items-center gap-3 mb-8">
-            <div class="w-10 h-10 rounded-2xl bg-red-100 text-pmr-primary flex items-center justify-center text-xl">
-                <i class="fa-brands fa-youtube"></i>
+        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-2xl bg-red-100 text-pmr-primary flex items-center justify-center text-xl">
+                    <i class="fa-brands fa-youtube text-red-600"></i>
+                </div>
+                <div>
+                    <h2 class="text-2xl font-extrabold text-slate-900 tracking-tight">Video Dokumentasi Kegiatan</h2>
+                    <p class="text-xs text-slate-500">Tayangan dokumenter aktivitas dan aksi relawan di lapangan.</p>
+                </div>
             </div>
-            <div>
-                <h2 class="text-2xl font-extrabold text-slate-900 tracking-tight">Video Dokumentasi Kegiatan</h2>
-                <p class="text-xs text-slate-500">Tayangan dokumenter aktivitas dan aksi relawan di lapangan.</p>
-            </div>
+            <a href="https://www.youtube.com/@PMRSMAN1CIAWIBOGOR" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-2 px-4 py-2 bg-rose-600 hover:bg-rose-700 text-white rounded-xl text-xs font-black shadow-md shadow-rose-950/20 transition self-start sm:self-auto">
+                <i class="fa-brands fa-youtube text-base"></i>
+                <span>Kunjungi Channel YouTube</span>
+            </a>
         </div>
 
         <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
