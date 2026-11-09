@@ -11,7 +11,13 @@
 
 @section('content')
 @auth
-    @if(auth()->user()->isAdmin() || auth()->user()->isSuperUser() || auth()->user()->role === 'admin' || auth()->user()->role === 'superuser')
+    @php
+        $isAdministrator = (method_exists(auth()->user(), 'isAdmin') && auth()->user()->isAdmin()) 
+            || (method_exists(auth()->user(), 'isSuperUser') && auth()->user()->isSuperUser()) 
+            || (method_exists(auth()->user(), 'canAccessBackoffice') && auth()->user()->canAccessBackoffice())
+            || in_array(auth()->user()->role ?? '', ['admin', 'superuser', 'pembina', 'bph']);
+    @endphp
+    @if($isAdministrator)
         @php
             $adminPhoto = auth()->user()->photo_url 
                 ?? (auth()->user()->photo ? (str_starts_with(auth()->user()->photo, 'http') ? auth()->user()->photo : asset('storage/'.auth()->user()->photo)) : null)

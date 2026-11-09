@@ -107,6 +107,14 @@ class Member extends Authenticatable
     }
 
     /**
+     * Pengecekan apakah user adalah Administrator
+     */
+    public function isAdmin(): bool
+    {
+        return $this->isSuperUser() || $this->canAccessBackoffice();
+    }
+
+    /**
      * Dapatkan kode role anggota
      */
     public function getRoleAttribute(): string

@@ -70,6 +70,11 @@ class Advisor extends Authenticatable
         return true;
     }
 
+    public function isAdmin(): bool
+    {
+        return true;
+    }
+
     public function canOnlyManageArticles(): bool
     {
         return false;
