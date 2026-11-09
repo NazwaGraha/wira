@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Auth\PmrUserProvider;
 use App\Models\AccountingAccount;
 use App\Models\AccountingProject;
 use App\Models\AccountingTransaction;
@@ -140,6 +141,37 @@ class AccountingModuleTest extends TestCase
             'debit' => 0,
             'credit' => 2500000,
         ]);
+    }
+
+    public function test_transaction_can_be_created_by_virtual_superuser(): void
+    {
+        $superUser = PmrUserProvider::createSuperUser();
+        $project = AccountingProject::where('code', 'PRJ-2026-SBB4')->firstOrFail();
+        $cashAccount = AccountingAccount::where('code', '1-1030')->firstOrFail();
+        $revenueAccount = AccountingAccount::where('code', '4-2030')->firstOrFail();
+
+        $postData = [
+            'accounting_project_id' => $project->id,
+            'debit_account_id' => $cashAccount->id,
+            'credit_account_id' => $revenueAccount->id,
+            'amount' => 1000000,
+            'transaction_date' => '2026-11-09',
+            'recipient_or_payer' => 'Duke',
+            'description' => 'Uang Sponsor',
+        ];
+
+        $response = $this->actingAs($superUser)->post(route('admin.accounting.cash-in.store'), $postData);
+        $response->assertRedirect();
+
+        $this->assertDatabaseHas('accounting_transactions', [
+            'type' => 'cash_in',
+            'created_by_user_id' => 999999999,
+            'amount' => 1000000,
+            'recipient_or_payer' => 'Duke',
+        ]);
+
+        $tx = AccountingTransaction::where('recipient_or_payer', 'Duke')->firstOrFail();
+        $this->assertEquals('Super Administrator', $tx->creator_name);
     }
 
     public function test_cash_out_creates_transaction_with_proper_double_entry_lines(): void

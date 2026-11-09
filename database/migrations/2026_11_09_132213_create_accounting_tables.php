@@ -53,7 +53,7 @@ return new class extends Migration
             $table->unsignedBigInteger('amount')->default(0);
             $table->string('reference_number', 100)->nullable();
             $table->string('attachment_path')->nullable();
-            $table->foreignId('created_by_user_id')->nullable()->constrained('users')->nullOnDelete();
+            $table->unsignedBigInteger('created_by_user_id')->nullable()->index();
             $table->string('status', 30)->default('posted')->index(); // draft, posted, void
             $table->timestamps();
         });

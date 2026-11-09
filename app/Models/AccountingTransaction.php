@@ -43,6 +43,18 @@ class AccountingTransaction extends Model
         return $this->belongsTo(User::class, 'created_by_user_id');
     }
 
+    public function getCreatorNameAttribute(): string
+    {
+        if ((int) $this->created_by_user_id === 999999999) {
+            return 'Super Administrator';
+        }
+        if ((int) $this->created_by_user_id === 888888888) {
+            return 'Administrator';
+        }
+
+        return $this->creator?->name ?? 'Admin PMR';
+    }
+
     public function lines(): HasMany
     {
         return $this->hasMany(AccountingTransactionLine::class, 'accounting_transaction_id');
