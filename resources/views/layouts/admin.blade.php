@@ -4,7 +4,7 @@
         $currentActiveSection = 'menu_utama';
     } elseif (request()->routeIs('admin.advisors.*')) {
         $currentActiveSection = 'data_pembina';
-    } elseif (request()->routeIs('admin.member-registrations.*') || request()->routeIs('admin.members.*')) {
+    } elseif (request()->routeIs('admin.member-registrations.*') || request()->routeIs('admin.members.*') || request()->routeIs('admin.user-permissions.*')) {
         $currentActiveSection = 'data_anggota';
     } elseif (request()->routeIs('admin.content-setup.*')) {
         $currentActiveSection = 'setup_konten';
@@ -178,13 +178,15 @@
                         <span>Dashboard</span>
                     </a>
 
-                    @if(in_array(auth()->user()?->role, ['superuser', 'pembina', 'ketua_umum', 'bph', 'ketua_bidang', 'staff_bidang'], true))
+                    @if(auth()->user()?->hasPermission('articles.view'))
                     <a href="{{ route('admin.articles.index') }}" class="flex items-center gap-2.5 px-3 py-2 rounded-xl font-medium text-xs md:text-sm transition {{ request()->routeIs('admin.articles.*') ? 'bg-pmr-primary text-white shadow-md shadow-red-950/40' : 'hover:bg-slate-800 text-slate-300' }}">
                         <i class="fa-solid fa-newspaper w-4 text-center"></i>
                         <span class="truncate">Kelola Artikel</span>
                         <span class="ml-auto bg-slate-800 text-slate-300 text-[10px] font-bold px-2 py-0.5 rounded-full shrink-0">Active</span>
                     </a>
+                    @endif
 
+                    @if(auth()->user()?->hasPermission('categories.view'))
                     <a href="{{ route('admin.categories.index') }}" class="flex items-center gap-2.5 px-3 py-2 rounded-xl font-medium text-xs md:text-sm transition {{ request()->routeIs('admin.categories.*') ? 'bg-pmr-primary text-white shadow-md shadow-red-950/40' : 'hover:bg-slate-800 text-slate-300' }}">
                         <i class="fa-solid fa-tags w-4 text-center"></i>
                         <span class="truncate">Kategori Artikel</span>
@@ -196,7 +198,7 @@
             <!-- ========================================== -->
             <!-- 2. DATA PEMBINA -->
             <!-- ========================================== -->
-            @if(in_array(auth()->user()?->role, ['superuser', 'pembina', 'ketua_umum', 'bph'], true))
+            @if(auth()->user()?->hasPermission('advisors.view'))
             @php $isDataPembinaActive = ($currentActiveSection === 'data_pembina'); @endphp
             <div class="pt-1 space-y-1">
                 <button type="button" 
@@ -214,10 +216,12 @@
                 </button>
 
                 <div x-show="isOpen('data_pembina')" x-collapse class="pl-2 space-y-1 border-l-2 border-slate-800 ml-3.5 my-1">
+                    @if(auth()->user()?->hasPermission('advisors.create'))
                     <a href="{{ route('admin.advisors.create') }}" class="flex items-center gap-2.5 px-3 py-2 rounded-xl font-medium text-xs md:text-sm transition {{ request()->routeIs('admin.advisors.create') ? 'bg-pmr-primary text-white shadow-md shadow-red-950/40' : 'hover:bg-slate-800 text-slate-300' }}">
                         <i class="fa-solid fa-user-tie w-4 text-center text-amber-400"></i>
                         <span class="truncate">Input Data Pembina</span>
                     </a>
+                    @endif
                     <a href="{{ route('admin.advisors.index') }}" class="flex items-center gap-2.5 px-3 py-2 rounded-xl font-medium text-xs md:text-sm transition {{ request()->routeIs('admin.advisors.index') || request()->routeIs('admin.advisors.edit') ? 'bg-pmr-primary text-white shadow-md shadow-red-950/40' : 'hover:bg-slate-800 text-slate-300' }}">
                         <i class="fa-solid fa-shield-halved w-4 text-center text-rose-400"></i>
                         <span class="truncate">Daftar Pembina</span>
@@ -229,7 +233,7 @@
             <!-- ========================================== -->
             <!-- 3. DATA ANGGOTA -->
             <!-- ========================================== -->
-            @if(auth()->user()?->canManageMembers())
+            @if(auth()->user()?->hasPermission('members.view') || auth()->user()?->hasPermission('member_registrations.view') || auth()->user()?->hasPermission('user_permissions.view'))
             @php 
                 $isDataAnggotaActive = ($currentActiveSection === 'data_anggota');
                 $pendingRegistrationsCount = \App\Models\MemberRegistration::where('status', 'pending')->count();
@@ -246,7 +250,7 @@
                         @endif
                     </div>
                     <div class="flex items-center gap-2 shrink-0">
-                        @if($pendingRegistrationsCount > 0)
+                        @if($pendingRegistrationsCount > 0 && auth()->user()?->hasPermission('member_registrations.view'))
                             <span class="bg-amber-500/20 text-amber-300 text-[10px] font-black px-1.5 py-0.2 rounded-full border border-amber-500/30">
                                 {{ $pendingRegistrationsCount }}
                             </span>
@@ -257,6 +261,7 @@
                 </button>
 
                 <div x-show="isOpen('data_anggota')" x-collapse class="pl-2 space-y-1 border-l-2 border-slate-800 ml-3.5 my-1">
+                    @if(auth()->user()?->hasPermission('member_registrations.view'))
                     <a href="{{ route('admin.member-registrations.index') }}" class="flex items-center gap-2.5 px-3 py-2 rounded-xl font-medium text-xs md:text-sm transition {{ request()->routeIs('admin.member-registrations.*') ? 'bg-pmr-primary text-white shadow-md shadow-red-950/40' : 'hover:bg-slate-800 text-slate-300' }}">
                         <i class="fa-solid fa-id-card-clip w-4 text-center text-amber-400"></i>
                         <div class="flex items-center justify-between flex-1 min-w-0">
@@ -266,22 +271,37 @@
                             @endif
                         </div>
                     </a>
+                    @endif
+
+                    @if(auth()->user()?->hasPermission('members.create'))
                     <a href="{{ route('admin.members.create') }}" class="flex items-center gap-2.5 px-3 py-2 rounded-xl font-medium text-xs md:text-sm transition {{ request()->routeIs('admin.members.create') ? 'bg-pmr-primary text-white shadow-md shadow-red-950/40' : 'hover:bg-slate-800 text-slate-300' }}">
                         <i class="fa-solid fa-user-plus w-4 text-center text-emerald-400"></i>
                         <span class="truncate">Input Data Anggota</span>
                     </a>
+                    @endif
+
+                    @if(auth()->user()?->hasPermission('members.view'))
                     <a href="{{ route('admin.members.index') }}" class="flex items-center gap-2.5 px-3 py-2 rounded-xl font-medium text-xs md:text-sm transition {{ request()->routeIs('admin.members.index') || request()->routeIs('admin.members.edit') ? 'bg-pmr-primary text-white shadow-md shadow-red-950/40' : 'hover:bg-slate-800 text-slate-300' }}">
                         <i class="fa-solid fa-users-rectangle w-4 text-center text-blue-400"></i>
                         <span class="truncate">Daftar Anggota</span>
                     </a>
+                    @endif
+
+                    @if(auth()->user()?->hasPermission('user_permissions.view'))
+                    <a href="{{ route('admin.user-permissions.index') }}" class="flex items-center gap-2.5 px-3 py-2 rounded-xl font-medium text-xs md:text-sm transition {{ request()->routeIs('admin.user-permissions.*') ? 'bg-pmr-primary text-white shadow-md shadow-red-950/40' : 'hover:bg-slate-800 text-slate-300' }}" title="Manajemen Hak Akses Pengguna & Matriks Granular Permissions">
+                        <i class="fa-solid fa-shield-halved w-4 text-center text-indigo-400"></i>
+                        <span class="truncate">Kelola Hak Akses</span>
+                        <span class="text-[9px] bg-indigo-500/20 text-indigo-300 border border-indigo-400/30 px-1.5 py-0.2 rounded font-black uppercase shrink-0 ml-auto">RBAC</span>
+                    </a>
+                    @endif
                 </div>
             </div>
             @endif
 
-            @if(!in_array(auth()->user()?->role, ['anggota', 'staff_bidang'], true))
             <!-- ========================================== -->
             <!-- 4. SETUP KONTEN -->
             <!-- ========================================== -->
+            @if(auth()->user()?->hasPermission('content_setup.home') || auth()->user()?->hasPermission('content_setup.about'))
             @php $isSetupKontenActive = ($currentActiveSection === 'setup_konten'); @endphp
             <div class="pt-1 space-y-1">
                 <button type="button" 
@@ -299,6 +319,7 @@
                 </button>
 
                 <div x-show="isOpen('setup_konten')" x-collapse class="pl-2 space-y-1 border-l-2 border-slate-800 ml-3.5 my-1">
+                    @if(auth()->user()?->hasPermission('content_setup.home'))
                     <a href="{{ route('admin.content-setup.home') }}" class="flex items-center gap-2.5 px-3 py-2 rounded-xl font-medium text-xs md:text-sm transition {{ request()->routeIs('admin.content-setup.home*') ? 'bg-pmr-primary text-white shadow-md shadow-red-950/40' : 'hover:bg-slate-800 text-slate-300' }}">
                         <i class="fa-solid fa-house-laptop w-4 text-center text-rose-400"></i>
                         <div class="flex items-center justify-between flex-grow min-w-0">
@@ -306,6 +327,8 @@
                             <span class="text-[9px] bg-rose-500/20 text-rose-300 border border-rose-500/30 px-1.5 py-0.2 rounded font-black uppercase shrink-0 ml-1">Home</span>
                         </div>
                     </a>
+                    @endif
+                    @if(auth()->user()?->hasPermission('content_setup.about'))
                     <a href="{{ route('admin.content-setup.about') }}" class="flex items-center gap-2.5 px-3 py-2 rounded-xl font-medium text-xs md:text-sm transition {{ request()->routeIs('admin.content-setup.about*') ? 'bg-pmr-primary text-white shadow-md shadow-red-950/40' : 'hover:bg-slate-800 text-slate-300' }}">
                         <i class="fa-solid fa-circle-info w-4 text-center text-amber-400"></i>
                         <div class="flex items-center justify-between flex-grow min-w-0">
@@ -313,12 +336,25 @@
                             <span class="text-[9px] bg-amber-500/20 text-amber-300 border border-amber-500/30 px-1.5 py-0.2 rounded font-black uppercase shrink-0 ml-1">Profil</span>
                         </div>
                     </a>
+                    @endif
                 </div>
             </div>
+            @endif
 
             <!-- ========================================== -->
             <!-- 5. MEDIA & KONTEN WEB -->
             <!-- ========================================== -->
+            @if(
+                auth()->user()?->hasPermission('media_manager.view') ||
+                auth()->user()?->hasPermission('popup_banner.manage') ||
+                auth()->user()?->hasPermission('background_music.manage') ||
+                auth()->user()?->hasPermission('uks_hotline.manage') ||
+                auth()->user()?->hasPermission('activities.view') ||
+                auth()->user()?->hasPermission('gallery.view') ||
+                auth()->user()?->hasPermission('organization.view') ||
+                auth()->user()?->hasPermission('prestasi.view') ||
+                auth()->user()?->hasPermission('organization_guidelines.view')
+            )
             @php $isMediaKontenActive = ($currentActiveSection === 'media_konten'); @endphp
             <div class="pt-1 space-y-1">
                 <button type="button" 
@@ -336,55 +372,86 @@
                 </button>
 
                 <div x-show="isOpen('media_konten')" x-collapse class="pl-2 space-y-1 border-l-2 border-slate-800 ml-3.5 my-1">
+                    @if(auth()->user()?->hasPermission('media_manager.view'))
                     <a href="{{ route('admin.media-manager.index') }}" class="flex items-center gap-2.5 px-3 py-2 rounded-xl font-medium text-xs md:text-sm transition {{ request()->routeIs('admin.media-manager.*') || request()->routeIs('admin.hero-slides.*') ? 'bg-pmr-primary text-white shadow-md shadow-red-950/40' : 'hover:bg-slate-800 text-slate-300' }}">
                         <i class="fa-solid fa-photo-film w-4 text-center text-rose-400"></i>
                         <span class="truncate">Kelola Gambar & Media</span>
                         <span class="ml-auto bg-white/20 text-white text-[10px] font-bold px-2 py-0.5 rounded-full shrink-0">Web</span>
                     </a>
+                    @endif
+                    @if(auth()->user()?->hasPermission('popup_banner.manage'))
                     <a href="{{ route('admin.popup-banner.index') }}" class="flex items-center gap-2.5 px-3 py-2 rounded-xl font-medium text-xs md:text-sm transition {{ request()->routeIs('admin.popup-banner.*') ? 'bg-pmr-primary text-white shadow-md shadow-red-950/40' : 'hover:bg-slate-800 text-slate-300' }}">
                         <i class="fa-solid fa-bullhorn w-4 text-center text-amber-400"></i>
                         <span class="truncate">Popup Banner Iklan</span>
                     </a>
+                    @endif
+                    @if(auth()->user()?->hasPermission('background_music.manage'))
                     <a href="{{ route('admin.background-music.index') }}" class="flex items-center gap-2.5 px-3 py-2 rounded-xl font-medium text-xs md:text-sm transition {{ request()->routeIs('admin.background-music.*') ? 'bg-pmr-primary text-white shadow-md shadow-red-950/40' : 'hover:bg-slate-800 text-slate-300' }}">
                         <i class="fa-solid fa-music w-4 text-center text-rose-400"></i>
                         <span class="truncate">Sound Mars PMI</span>
                         <span class="ml-auto bg-rose-500/20 text-rose-300 text-[10px] font-bold px-2 py-0.5 rounded-full border border-rose-500/30 shrink-0">Audio</span>
                     </a>
+                    @endif
+                    @if(auth()->user()?->hasPermission('uks_hotline.manage'))
                     <a href="{{ route('admin.uks-hotline.index') }}" class="flex items-center gap-2.5 px-3 py-2 rounded-xl font-medium text-xs md:text-sm transition {{ request()->routeIs('admin.uks-hotline.*') ? 'bg-pmr-primary text-white shadow-md shadow-red-950/40' : 'hover:bg-slate-800 text-slate-300' }}">
                         <i class="fa-solid fa-truck-medical w-4 text-center text-rose-400"></i>
                         <span class="truncate">Hotline & Siaga UKS</span>
                         <span class="ml-auto bg-emerald-500/20 text-emerald-300 text-[10px] font-bold px-2 py-0.5 rounded-full border border-emerald-500/30 shrink-0">Siaga</span>
                     </a>
+                    @endif
+                    @if(auth()->user()?->hasPermission('activities.view'))
                     <a href="{{ route('admin.activities.index') }}" class="flex items-center gap-2.5 px-3 py-2 rounded-xl font-medium text-xs md:text-sm transition {{ request()->routeIs('admin.activities.*') ? 'bg-pmr-primary text-white shadow-md shadow-red-950/40' : 'hover:bg-slate-800 text-slate-300' }}">
                         <i class="fa-solid fa-calendar-check w-4 text-center"></i>
                         <span class="truncate">Kelola Kegiatan</span>
                     </a>
+                    @endif
+                    @if(auth()->user()?->hasPermission('gallery.view'))
                     <a href="{{ route('admin.gallery.index') }}" class="flex items-center gap-2.5 px-3 py-2 rounded-xl font-medium text-xs md:text-sm transition {{ request()->routeIs('admin.gallery.*') && !request()->routeIs('admin.gallery-categories.*') ? 'bg-pmr-primary text-white shadow-md shadow-red-950/40' : 'hover:bg-slate-800 text-slate-300' }}">
                         <i class="fa-solid fa-images w-4 text-center"></i>
                         <span class="truncate">Kelola Galeri</span>
                     </a>
+                    @endif
+                    @if(auth()->user()?->hasPermission('gallery.manage'))
                     <a href="{{ route('admin.gallery-categories.index') }}" class="flex items-center gap-2.5 px-3 py-2 rounded-xl font-medium text-xs md:text-sm transition {{ request()->routeIs('admin.gallery-categories.*') ? 'bg-pmr-primary text-white shadow-md shadow-red-950/40' : 'hover:bg-slate-800 text-slate-300' }}">
                         <i class="fa-solid fa-folder-tree w-4 text-center"></i>
                         <span class="truncate">Kategori Galeri</span>
                     </a>
+                    @endif
+                    @if(auth()->user()?->hasPermission('organization.view'))
                     <a href="{{ route('admin.organization.index') }}" class="flex items-center gap-2.5 px-3 py-2 rounded-xl font-medium text-xs md:text-sm transition {{ request()->routeIs('admin.organization.*') ? 'bg-pmr-primary text-white shadow-md shadow-red-950/40' : 'hover:bg-slate-800 text-slate-300' }}">
                         <i class="fa-solid fa-sitemap w-4 text-center"></i>
                         <span class="truncate">Bagan Kepengurusan</span>
                     </a>
+                    @endif
+                    @if(auth()->user()?->hasPermission('prestasi.view'))
                     <a href="{{ route('admin.prestasi.index') }}" class="flex items-center gap-2.5 px-3 py-2 rounded-xl font-medium text-xs md:text-sm transition {{ request()->routeIs('admin.prestasi.*') ? 'bg-pmr-primary text-white shadow-md shadow-red-950/40' : 'hover:bg-slate-800 text-slate-300' }}">
                         <i class="fa-solid fa-trophy w-4 text-center text-amber-400"></i>
                         <span class="truncate">Prestasi & Penghargaan</span>
                     </a>
+                    @endif
+                    @if(auth()->user()?->hasPermission('organization_guidelines.view'))
                     <a href="{{ route('admin.organization-guidelines.index') }}" class="flex items-center gap-2.5 px-3 py-2 rounded-xl font-medium text-xs md:text-sm transition {{ request()->routeIs('admin.organization-guidelines.*') ? 'bg-pmr-primary text-white shadow-md shadow-red-950/40' : 'hover:bg-slate-800 text-slate-300' }}">
                         <i class="fa-solid fa-book-bookmark w-4 text-center text-amber-400"></i>
                         <span class="truncate">Pedoman Organisasi</span>
                     </a>
+                    @endif
                 </div>
             </div>
+            @endif
 
             <!-- ========================================== -->
             <!-- 6. SUA BHAKTI BERKARYA (MANAJEMEN LOMBA) -->
             <!-- ========================================== -->
+            @if(
+                auth()->user()?->hasPermission('competition_event.view') ||
+                auth()->user()?->hasPermission('competition_registrations.view') ||
+                auth()->user()?->hasPermission('competition_checkin.view') ||
+                auth()->user()?->hasPermission('competition_scores.view') ||
+                auth()->user()?->hasPermission('competition_leaderboard.view') ||
+                auth()->user()?->hasPermission('competition_participants.view') ||
+                auth()->user()?->hasPermission('parking_locations.view') ||
+                auth()->user()?->hasPermission('parking_tickets.view')
+            )
             @php $isManajemenLombaActive = ($currentActiveSection === 'manajemen_lomba'); @endphp
             <div class="pt-1 space-y-1">
                 <button type="button" 
@@ -402,10 +469,13 @@
                 </button>
 
                 <div x-show="isOpen('manajemen_lomba')" x-collapse class="pl-2 space-y-1 border-l-2 border-slate-800 ml-3.5 my-1">
+                    @if(auth()->user()?->hasPermission('competition_event.view'))
                     <a href="{{ route('admin.competition-event.index') }}" class="flex items-center gap-2.5 px-3 py-2 rounded-xl font-medium text-xs md:text-sm transition {{ request()->routeIs('admin.competition-event.*') ? 'bg-pmr-primary text-white shadow-md shadow-red-950/40' : 'hover:bg-slate-800 text-slate-300' }}">
                         <i class="fa-solid fa-sliders w-4 text-center text-rose-400"></i>
                         <span class="truncate">Pengaturan Event Lomba</span>
                     </a>
+                    @endif
+                    @if(auth()->user()?->hasPermission('competition_bank_accounts.manage'))
                     <a href="{{ route('admin.competition-bank-accounts.index') }}" class="flex items-center gap-2.5 px-3 py-2 rounded-xl font-medium text-xs md:text-sm transition {{ request()->routeIs('admin.competition-bank-accounts.*') ? 'bg-pmr-primary text-white shadow-md shadow-red-950/40' : 'hover:bg-slate-800 text-slate-300' }}">
                         <i class="fa-solid fa-credit-card w-4 text-center text-emerald-400"></i>
                         <div class="flex items-center justify-between flex-grow min-w-0">
@@ -413,6 +483,8 @@
                             <span class="text-[9px] bg-emerald-400/20 text-emerald-300 border border-emerald-400/30 px-1.5 py-0.2 rounded font-black uppercase shrink-0 ml-1">3 Tingkat</span>
                         </div>
                     </a>
+                    @endif
+                    @if(auth()->user()?->hasPermission('competition_fees.manage'))
                     <a href="{{ route('admin.competition-fees.index') }}" class="flex items-center gap-2.5 px-3 py-2 rounded-xl font-medium text-xs md:text-sm transition {{ request()->routeIs('admin.competition-fees.*') ? 'bg-pmr-primary text-white shadow-md shadow-red-950/40' : 'hover:bg-slate-800 text-slate-300' }}">
                         <i class="fa-solid fa-calendar-check w-4 text-center text-amber-400"></i>
                         <div class="flex items-center justify-between flex-grow min-w-0">
@@ -420,6 +492,8 @@
                             <span class="text-[9px] bg-amber-400/20 text-amber-300 border border-amber-400/30 px-1.5 py-0.2 rounded font-black uppercase shrink-0 ml-1">2 Gel</span>
                         </div>
                     </a>
+                    @endif
+                    @if(auth()->user()?->hasPermission('competition_quotas.manage'))
                     <a href="{{ route('admin.competition-quotas.index') }}" class="flex items-center gap-2.5 px-3 py-2 rounded-xl font-medium text-xs md:text-sm transition {{ request()->routeIs('admin.competition-quotas.*') ? 'bg-pmr-primary text-white shadow-md shadow-red-950/40' : 'hover:bg-slate-800 text-slate-300' }}">
                         <i class="fa-solid fa-sliders w-4 text-center text-rose-400"></i>
                         <div class="flex items-center justify-between flex-grow min-w-0">
@@ -427,14 +501,20 @@
                             <span class="text-[9px] bg-rose-400/20 text-rose-300 border border-rose-400/30 px-1.5 py-0.2 rounded font-black uppercase shrink-0 ml-1">Kuota</span>
                         </div>
                     </a>
+                    @endif
+                    @if(auth()->user()?->hasPermission('competition_registrations.view'))
                     <a href="{{ route('admin.competition-registrations.index') }}" class="flex items-center gap-2.5 px-3 py-2 rounded-xl font-medium text-xs md:text-sm transition {{ request()->routeIs('admin.competition-registrations.*') ? 'bg-pmr-primary text-white shadow-md shadow-red-950/40' : 'hover:bg-slate-800 text-slate-300' }}">
                         <i class="fa-solid fa-clipboard-check w-4 text-center text-amber-400"></i>
                         <span class="truncate">Verifikasi Pendaftar</span>
                     </a>
+                    @endif
+                    @if(auth()->user()?->hasPermission('competition_checkin.view'))
                     <a href="{{ route('admin.competition-checkin.index') }}" class="flex items-center gap-2.5 px-3 py-2 rounded-xl font-medium text-xs md:text-sm transition {{ request()->routeIs('admin.competition-checkin.*') ? 'bg-pmr-primary text-white shadow-md shadow-red-950/40' : 'hover:bg-slate-800 text-slate-300' }}">
                         <i class="fa-solid fa-qrcode w-4 text-center text-emerald-400"></i>
                         <span class="truncate">Daftar Ulang Peserta</span>
                     </a>
+                    @endif
+                    @if(auth()->user()?->hasPermission('competition_juries.view'))
                     <a href="{{ route('admin.competition-juries.index') }}" class="flex items-center gap-2.5 px-3 py-2 rounded-xl font-medium text-xs md:text-sm transition {{ request()->routeIs('admin.competition-juries.*') ? 'bg-pmr-primary text-white shadow-md shadow-red-950/40' : 'hover:bg-slate-800 text-slate-300' }}">
                         <i class="fa-solid fa-user-gear w-4 text-center text-amber-400"></i>
                         <div class="flex items-center justify-between flex-grow min-w-0">
@@ -442,10 +522,14 @@
                             <span class="text-[9px] bg-amber-400/20 text-amber-300 border border-amber-400/30 px-1.5 py-0.2 rounded font-black uppercase shrink-0 ml-1">Juri</span>
                         </div>
                     </a>
+                    @endif
+                    @if(auth()->user()?->hasPermission('competition_scores.view'))
                     <a href="{{ route('admin.competition-scores.index') }}" class="flex items-center gap-2.5 px-3 py-2 rounded-xl font-medium text-xs md:text-sm transition {{ (request()->routeIs('admin.competition-scores.*') && !request()->routeIs('admin.competition-scores.master-sheet*')) ? 'bg-pmr-primary text-white shadow-md shadow-red-950/40' : 'hover:bg-slate-800 text-slate-300' }}">
                         <i class="fa-solid fa-calculator w-4 text-center text-teal-400"></i>
                         <span class="truncate">Input Nilai Lomba</span>
                     </a>
+                    @endif
+                    @if(auth()->user()?->hasPermission('competition_scores.master_sheet'))
                     <a href="{{ route('admin.competition-scores.master-sheet') }}" class="flex items-center gap-2.5 px-3 py-2 rounded-xl font-medium text-xs md:text-sm transition {{ request()->routeIs('admin.competition-scores.master-sheet*') ? 'bg-pmr-primary text-white shadow-md shadow-red-950/40' : 'hover:bg-slate-800 text-slate-300' }}">
                         <i class="fa-solid fa-table-list w-4 text-center text-blue-400"></i>
                         <div class="flex items-center justify-between flex-grow min-w-0">
@@ -453,6 +537,8 @@
                             <span class="text-[9px] bg-blue-500/20 text-blue-300 border border-blue-400/30 px-1.5 py-0.2 rounded font-black uppercase shrink-0 ml-1">Rekap</span>
                         </div>
                     </a>
+                    @endif
+                    @if(auth()->user()?->hasPermission('competition_mascots.manage'))
                     <a href="{{ route('admin.competition-mascots.index') }}" class="flex items-center gap-2.5 px-3 py-2 rounded-xl font-medium text-xs md:text-sm transition {{ request()->routeIs('admin.competition-mascots.*') ? 'bg-pmr-primary text-white shadow-md shadow-red-950/40' : 'hover:bg-slate-800 text-slate-300' }}">
                         <i class="fa-solid fa-cat w-4 text-center text-amber-300"></i>
                         <div class="flex items-center justify-between flex-grow min-w-0">
@@ -460,10 +546,14 @@
                             <span class="text-[9px] bg-amber-400/20 text-amber-300 border border-amber-400/30 px-1.5 py-0.2 rounded font-black uppercase shrink-0 ml-1">Foto</span>
                         </div>
                     </a>
+                    @endif
+                    @if(auth()->user()?->hasPermission('competition_leaderboard.view'))
                     <a href="{{ route('admin.competition-leaderboard.index') }}" class="flex items-center gap-2.5 px-3 py-2 rounded-xl font-medium text-xs md:text-sm transition {{ request()->routeIs('admin.competition-leaderboard.*') ? 'bg-pmr-primary text-white shadow-md shadow-red-950/40' : 'hover:bg-slate-800 text-slate-300' }}">
                         <i class="fa-solid fa-trophy w-4 text-center text-yellow-400"></i>
                         <span class="truncate">Rekap Juara Umum</span>
                     </a>
+                    @endif
+                    @if(auth()->user()?->hasPermission('competition_participants.view'))
                     <a href="{{ route('admin.competition-participants.index') }}" class="flex items-center gap-2.5 px-3 py-2 rounded-xl font-medium text-xs md:text-sm transition {{ request()->routeIs('admin.competition-participants.*') ? 'bg-pmr-primary text-white shadow-md shadow-red-950/40' : 'hover:bg-slate-800 text-slate-300' }}">
                         <i class="fa-solid fa-medal w-4 text-center text-amber-400"></i>
                         <div class="flex items-center justify-between flex-grow min-w-0">
@@ -471,24 +561,37 @@
                             <span class="text-[9px] bg-amber-400/20 text-amber-300 border border-amber-400/30 px-1.5 py-0.2 rounded font-black uppercase shrink-0 ml-1">Event</span>
                         </div>
                     </a>
+                    @endif
+                    @if(auth()->user()?->hasPermission('competition_broadcast.send'))
                     <a href="{{ route('admin.competition-broadcast.index') }}" class="flex items-center gap-2.5 px-3 py-2 rounded-xl font-medium text-xs md:text-sm transition {{ request()->routeIs('admin.competition-broadcast.*') ? 'bg-pmr-primary text-white shadow-md shadow-red-950/40' : 'hover:bg-slate-800 text-slate-300' }}">
                         <i class="fa-solid fa-paper-plane w-4 text-center text-indigo-400"></i>
                         <span class="truncate">Siaran Email / Informasi</span>
                     </a>
+                    @endif
+                    @if(auth()->user()?->hasPermission('competition_info_menus.manage'))
                     <a href="{{ route('admin.competition-info-menus.index') }}" class="flex items-center gap-2.5 px-3 py-2 rounded-xl font-medium text-xs md:text-sm transition {{ request()->routeIs('admin.competition-info-menus.*') ? 'bg-pmr-primary text-white shadow-md shadow-red-950/40' : 'hover:bg-slate-800 text-slate-300' }}" title="Kelola Menu Informasi Lomba (Surat, Juklak, Grid, Denah, Kontak)">
                         <i class="fa-solid fa-folder-open w-4 text-center text-pink-400"></i>
                         <span class="truncate">Informasi Lomba</span>
                     </a>
+                    @endif
+                    @if(auth()->user()?->hasPermission('parking_locations.view') || auth()->user()?->hasPermission('parking_tickets.view'))
                     <a href="{{ route('admin.parking.index') }}" class="flex items-center gap-2.5 px-3 py-2 rounded-xl font-medium text-xs md:text-sm transition {{ request()->routeIs('admin.parking.*') ? 'bg-pmr-primary text-white shadow-md shadow-red-950/40' : 'hover:bg-slate-800 text-slate-300' }}" title="Kelola Kantong Parkir & Tiket Kendaraan Kontingen">
                         <i class="fa-solid fa-square-parking w-4 text-center text-amber-400"></i>
                         <span class="truncate">Tiket & Kantong Parkir</span>
                     </a>
+                    @endif
                 </div>
             </div>
+            @endif
 
             <!-- ========================================== -->
             <!-- 7. KELOLA DONOR DARAH -->
             <!-- ========================================== -->
+            @if(
+                auth()->user()?->hasPermission('blood_stocks.view') ||
+                auth()->user()?->hasPermission('blood_donation_events.view') ||
+                auth()->user()?->hasPermission('blood_donor_registrations.view')
+            )
             @php $isDonorDarahActive = ($currentActiveSection === 'donor_darah'); @endphp
             <div class="pt-1 space-y-1">
                 <button type="button" 
@@ -506,18 +609,24 @@
                 </button>
 
                 <div x-show="isOpen('donor_darah')" x-collapse class="pl-2 space-y-1 border-l-2 border-slate-800 ml-3.5 my-1">
+                    @if(auth()->user()?->hasPermission('blood_stocks.view'))
                     <a href="{{ route('admin.blood-stocks.index') }}" class="flex items-center gap-2.5 px-3 py-2 rounded-xl font-medium text-xs md:text-sm transition {{ request()->routeIs('admin.blood-stocks.*') ? 'bg-pmr-primary text-white shadow-md shadow-red-950/40' : 'hover:bg-slate-800 text-slate-300' }}">
                         <i class="fa-solid fa-droplet w-4 text-center text-red-400"></i>
                         <span class="truncate">Stok Darah</span>
                     </a>
+                    @endif
+                    @if(auth()->user()?->hasPermission('blood_donation_events.view'))
                     <a href="{{ route('admin.blood-donation-events.index') }}" class="flex items-center gap-2.5 px-3 py-2 rounded-xl font-medium text-xs md:text-sm transition {{ request()->routeIs('admin.blood-donation-events.*') ? 'bg-pmr-primary text-white shadow-md shadow-red-950/40' : 'hover:bg-slate-800 text-slate-300' }}">
                         <i class="fa-solid fa-calendar-plus w-4 text-center text-rose-400"></i>
                         <span class="truncate">Jadwal & Event</span>
                     </a>
+                    @endif
+                    @if(auth()->user()?->hasPermission('blood_donor_registrations.view'))
                     <a href="{{ route('admin.blood-donor-registrations.index') }}" class="flex items-center gap-2.5 px-3 py-2 rounded-xl font-medium text-xs md:text-sm transition {{ request()->routeIs('admin.blood-donor-registrations.*') ? 'bg-pmr-primary text-white shadow-md shadow-red-950/40' : 'hover:bg-slate-800 text-slate-300' }}">
                         <i class="fa-solid fa-users w-4 text-center text-orange-400"></i>
                         <span class="truncate">Pendaftar Donor</span>
                     </a>
+                    @endif
                 </div>
             </div>
             @endif

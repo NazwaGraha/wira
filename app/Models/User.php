@@ -82,6 +82,40 @@ class User extends Authenticatable
         return true;
     }
 
+    public function isSuperUser(): bool
+    {
+        return $this->role === 'superuser';
+    }
+
+    public function hasCustomPermissions(): bool
+    {
+        return false;
+    }
+
+    public function canManagePermissions(): bool
+    {
+        return $this->isAdmin() || $this->isSuperUser();
+    }
+
+    public function hasPermission(string $permissionCode): bool
+    {
+        if ($this->isAdmin() || $this->isSuperUser()) {
+            return true;
+        }
+
+        return false;
+    }
+
+    public function canDeleteData(): bool
+    {
+        return $this->canDelete();
+    }
+
+    public function canExportData(): bool
+    {
+        return true;
+    }
+
     public function getRoleAttribute(): string
     {
         return $this->attributes['role'] ?? 'admin';

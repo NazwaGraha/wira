@@ -36,6 +36,7 @@ use App\Http\Controllers\Admin\OrganizationGuidelineController;
 use App\Http\Controllers\Admin\ParkingManagementController;
 use App\Http\Controllers\Admin\PopupBannerController;
 use App\Http\Controllers\Admin\UksHotlineController;
+use App\Http\Controllers\Admin\UserPermissionController;
 use App\Http\Controllers\Admin\WiraAgentKnowledgeController;
 use App\Http\Controllers\ArticleController;
 use App\Http\Controllers\CompetitionController;
@@ -254,6 +255,12 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::post('/members/import', [MemberController::class, 'import'])->name('members.import');
         Route::get('/members/lookup', [MemberController::class, 'lookup'])->name('members.lookup');
         Route::resource('members', MemberController::class);
+
+        // Manajemen Hak Akses Pengguna (Granular Permissions)
+        Route::get('/user-permissions', [UserPermissionController::class, 'index'])->name('user-permissions.index');
+        Route::get('/user-permissions/{id}/edit', [UserPermissionController::class, 'edit'])->name('user-permissions.edit');
+        Route::put('/user-permissions/{id}', [UserPermissionController::class, 'update'])->name('user-permissions.update');
+        Route::post('/user-permissions/{id}/reset', [UserPermissionController::class, 'reset'])->name('user-permissions.reset');
 
         // Donor Darah
         Route::resource('blood-stocks', BloodStockController::class);

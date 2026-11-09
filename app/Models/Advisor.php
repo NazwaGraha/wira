@@ -28,6 +28,7 @@ class Advisor extends Authenticatable
         'photo',
         'order_position',
         'is_active',
+        'custom_permissions',
     ];
 
     protected $hidden = [
@@ -40,6 +41,7 @@ class Advisor extends Authenticatable
         'order_position' => 'integer',
         'is_active' => 'boolean',
         'password' => 'hashed',
+        'custom_permissions' => 'array',
     ];
 
     public function getPhotoUrlAttribute(): string
@@ -91,5 +93,51 @@ class Advisor extends Authenticatable
     public function canAccessBackoffice(): bool
     {
         return (bool) $this->is_active;
+    }
+
+    public function isSuperUser(): bool
+    {
+        return false;
+    }
+
+    public function hasCustomPermissions(): bool
+    {
+        return ! empty($this->custom_permissions)
+            && is_array($this->custom_permissions)
+            && ($this->custom_permissions['mode'] ?? '') === 'custom';
+    }
+
+    public function canManagePermissions(): bool
+    {
+        return (bool) $this->is_active;
+    }
+
+    public function hasPermission(string $permissionCode): bool
+    {
+        if ($this->hasCustomPermissions()) {
+            $allowed = $this->custom_permissions['allowed_menus'] ?? [];
+
+            return in_array($permissionCode, $allowed, true);
+        }
+
+        return true;
+    }
+
+    public function canDeleteData(): bool
+    {
+        if ($this->hasCustomPermissions()) {
+            return ! empty($this->custom_permissions['can_delete']);
+        }
+
+        return true;
+    }
+
+    public function canExportData(): bool
+    {
+        if ($this->hasCustomPermissions()) {
+            return ! empty($this->custom_permissions['can_export']);
+        }
+
+        return true;
     }
 }

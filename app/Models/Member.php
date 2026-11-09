@@ -31,6 +31,7 @@ class Member extends Authenticatable
         'mission',
         'photo',
         'is_active',
+        'custom_permissions',
     ];
 
     protected $hidden = [
@@ -43,6 +44,7 @@ class Member extends Authenticatable
         'entry_year' => 'integer',
         'is_active' => 'boolean',
         'password' => 'hashed',
+        'custom_permissions' => 'array',
     ];
 
     /**
@@ -226,6 +228,100 @@ class Member extends Authenticatable
 
         if ($this->isPurna()) {
             return false;
+        }
+
+        return true;
+    }
+
+    /**
+     * Cek apakah user menggunakan kustomisasi hak akses spesifik (Granular)
+     */
+    public function hasCustomPermissions(): bool
+    {
+        return ! empty($this->custom_permissions)
+            && is_array($this->custom_permissions)
+            && ($this->custom_permissions['mode'] ?? '') === 'custom';
+    }
+
+    /**
+     * Cek apakah user berhak mengelola modul Manajemen Hak Akses Pengguna
+     * Hanya Super User, Pembina, dan Ketua Umum
+     */
+    public function canManagePermissions(): bool
+    {
+        if ($this->isSuperUser()) {
+            return true;
+        }
+
+        return in_array($this->role, ['superuser', 'pembina', 'ketua_umum'], true);
+    }
+
+    /**
+     * Cek izin untuk permission code tertentu
+     */
+    public function hasPermission(string $permissionCode): bool
+    {
+        if ($this->isSuperUser()) {
+            return true;
+        }
+
+        if ($this->hasCustomPermissions()) {
+            $allowed = $this->custom_permissions['allowed_menus'] ?? [];
+
+            return in_array($permissionCode, $allowed, true);
+        }
+
+        // Bawaan jabatan (Default RBAC)
+        return match ($permissionCode) {
+            'dashboard.view' => true,
+            'dashboard.clear_cache' => $this->isSuperUser() || in_array($this->role, ['pembina', 'ketua_umum'], true),
+            'articles.view', 'articles.create', 'articles.edit' => in_array($this->role, ['superuser', 'pembina', 'ketua_umum', 'bph', 'ketua_bidang', 'staff_bidang'], true),
+            'articles.delete' => $this->canDelete(),
+            'categories.view', 'categories.manage' => in_array($this->role, ['superuser', 'pembina', 'ketua_umum', 'bph', 'ketua_bidang', 'staff_bidang'], true),
+            'advisors.view', 'advisors.create', 'advisors.edit' => in_array($this->role, ['superuser', 'pembina', 'ketua_umum', 'bph'], true),
+            'advisors.delete' => $this->canDelete(),
+            'member_registrations.view', 'member_registrations.verify' => $this->canManageMembers(),
+            'member_registrations.delete' => $this->canDelete(),
+            'members.view', 'members.create', 'members.edit', 'members.print_kta', 'members.export' => $this->canManageMembers(),
+            'members.delete' => $this->canDelete(),
+            'content_setup.home', 'content_setup.about' => in_array($this->role, ['superuser', 'pembina', 'ketua_umum', 'bph', 'ketua_bidang'], true),
+            'media_manager.view', 'media_manager.upload', 'popup_banner.manage', 'background_music.manage', 'uks_hotline.manage', 'activities.view', 'activities.manage', 'gallery.view', 'gallery.manage', 'organization.view', 'organization.manage', 'prestasi.view', 'prestasi.manage', 'organization_guidelines.view', 'organization_guidelines.manage' => in_array($this->role, ['superuser', 'pembina', 'ketua_umum', 'bph', 'ketua_bidang'], true),
+            'media_manager.delete' => $this->canDelete(),
+            'competition_event.view', 'competition_event.manage', 'competition_bank_accounts.manage', 'competition_fees.manage', 'competition_quotas.manage', 'competition_registrations.view', 'competition_registrations.verify', 'competition_registrations.export', 'competition_checkin.view', 'competition_checkin.scan', 'competition_checkin.cancel', 'competition_juries.view', 'competition_juries.manage', 'competition_scores.view', 'competition_scores.input', 'competition_scores.master_sheet', 'competition_scores.export', 'competition_mascots.manage', 'competition_leaderboard.view', 'competition_leaderboard.publish', 'competition_participants.view', 'competition_participants.manage', 'competition_broadcast.send', 'competition_info_menus.manage' => in_array($this->role, ['superuser', 'pembina', 'ketua_umum', 'bph', 'ketua_bidang'], true),
+            'parking_locations.view', 'parking_locations.manage', 'parking_tickets.view', 'parking_tickets.assign', 'parking_tickets.scan', 'parking_tickets.print', 'parking_quotas.manage', 'parking.fares_manage', 'parking.export' => in_array($this->role, ['superuser', 'pembina', 'ketua_umum', 'bph', 'ketua_bidang'], true),
+            'blood_stocks.view', 'blood_stocks.update', 'blood_donation_events.view', 'blood_donation_events.manage', 'blood_donor_registrations.view', 'blood_donor_registrations.verify', 'blood_donor_registrations.export' => in_array($this->role, ['superuser', 'pembina', 'ketua_umum', 'bph', 'ketua_bidang'], true),
+            'user_permissions.view', 'user_permissions.manage' => $this->canManagePermissions(),
+            default => false,
+        };
+    }
+
+    /**
+     * Cek apakah user boleh melakukan aksi Hapus Data (DELETE)
+     */
+    public function canDeleteData(): bool
+    {
+        if ($this->isSuperUser()) {
+            return true;
+        }
+
+        if ($this->hasCustomPermissions()) {
+            return ! empty($this->custom_permissions['can_delete']);
+        }
+
+        return $this->canDelete();
+    }
+
+    /**
+     * Cek apakah user boleh melakukan aksi Cetak / Export ke Excel
+     */
+    public function canExportData(): bool
+    {
+        if ($this->isSuperUser()) {
+            return true;
+        }
+
+        if ($this->hasCustomPermissions()) {
+            return ! empty($this->custom_permissions['can_export']);
         }
 
         return true;
