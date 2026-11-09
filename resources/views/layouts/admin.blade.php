@@ -313,27 +313,6 @@
             @endif
 
             <!-- ========================================== -->
-            <!-- 4. HAK AKSES PENGGUNA (MENU KHUSUS RBAC) -->
-            <!-- ========================================== -->
-            @if(auth()->user()?->hasPermission('user_permissions.view') || auth()->user()?->canManagePermissions())
-            @php $isUserPermissionsActive = ($currentActiveSection === 'user_permissions'); @endphp
-            <div class="pt-1">
-                <a href="{{ route('admin.user-permissions.index') }}" 
-                   class="w-full flex items-center justify-between px-3 py-2 rounded-xl font-bold text-xs uppercase tracking-wider transition group {{ $isUserPermissionsActive ? 'bg-pmr-primary text-white shadow-md shadow-red-950/40' : 'hover:bg-slate-800 text-slate-300 bg-slate-800/40 border border-indigo-500/20' }}"
-                   title="Manajemen Hak Akses Pengguna & Granular Permissions">
-                    <div class="flex items-center gap-2.5 min-w-0">
-                        <i class="fa-solid fa-shield-halved text-xs text-indigo-400"></i>
-                        <span class="truncate">Hak Akses Pengguna</span>
-                        @if($isUserPermissionsActive)
-                            <span class="w-1.5 h-1.5 rounded-full bg-red-500 shrink-0"></span>
-                        @endif
-                    </div>
-                    <span class="text-[9px] bg-indigo-500/20 text-indigo-300 border border-indigo-400/30 px-1.5 py-0.2 rounded font-black uppercase shrink-0">RBAC</span>
-                </a>
-            </div>
-            @endif
-
-            <!-- ========================================== -->
             <!-- 4. SETUP KONTEN -->
             <!-- ========================================== -->
             @if(auth()->user()?->hasPermission('content_setup.home') || auth()->user()?->hasPermission('content_setup.about'))
@@ -764,6 +743,27 @@
                     </a>
                 </div>
             </div>
+
+            <!-- ========================================== -->
+            <!-- 10. HAK AKSES PENGGUNA (POSISI PALING BAWAH) -->
+            <!-- ========================================== -->
+            @if(auth()->user()?->hasPermission('user_permissions.view') || auth()->user()?->canManagePermissions())
+            @php $isUserPermissionsActive = ($currentActiveSection === 'user_permissions'); @endphp
+            <div class="pt-2 border-t border-slate-800/80 mt-2">
+                <a href="{{ route('admin.user-permissions.index') }}" 
+                   class="w-full flex items-center justify-between px-3 py-2.5 rounded-xl font-bold text-xs uppercase tracking-wider transition group {{ $isUserPermissionsActive ? 'bg-pmr-primary text-white shadow-md shadow-red-950/40' : 'hover:bg-slate-800 text-slate-300 bg-slate-800/40 border border-indigo-500/20' }}"
+                   title="Manajemen Hak Akses Pengguna (Granular Permissions)">
+                    <div class="flex items-center gap-2.5 min-w-0">
+                        <i class="fa-solid fa-shield-halved text-xs text-indigo-400"></i>
+                        <span class="truncate">Hak Akses Pengguna</span>
+                        @if($isUserPermissionsActive)
+                            <span class="w-1.5 h-1.5 rounded-full bg-red-500 shrink-0"></span>
+                        @endif
+                    </div>
+                    <span class="text-[9px] bg-indigo-500/20 text-indigo-300 border border-indigo-400/30 px-1.5 py-0.2 rounded font-black uppercase shrink-0">RBAC</span>
+                </a>
+            </div>
+            @endif
         </div>
 
         <!-- User Info & Logout -->
