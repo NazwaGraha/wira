@@ -488,5 +488,8 @@ class DatabaseSeeder extends Seeder
 
         // 10. Organization Guidelines (GBHO & PPUO 2026)
         OrganizationGuideline::current();
+
+        // 11. Modul Accounting & Multi-Project Master Data
+        $this->call(AccountingInitialSeeder::class);
     }
 }

@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Admin\AccountingController;
 use App\Http\Controllers\Admin\AchievementController;
 use App\Http\Controllers\Admin\ActivityController;
 use App\Http\Controllers\Admin\AdvisorController;
@@ -433,6 +434,38 @@ Route::prefix('admin')->name('admin.')->group(function () {
             Route::post('/officers/{id}/toggle-status', [ParkingManagementController::class, 'toggleOfficerStatus'])->name('officers.toggle-status');
         });
         Route::get('/parking-management', fn () => redirect()->route('admin.parking.index'));
+
+        // ================= MODUL AKUNTANSI & KAS MULTI-PROYEK (ACCURATE STYLE) =================
+        Route::prefix('accounting')->name('accounting.')->group(function () {
+            Route::get('/', [AccountingController::class, 'index'])->name('index');
+
+            // Proyek Kegiatan (Cost Centers)
+            Route::get('/projects', [AccountingController::class, 'projects'])->name('projects');
+            Route::post('/projects', [AccountingController::class, 'storeProject'])->name('projects.store');
+            Route::put('/projects/{project}', [AccountingController::class, 'updateProject'])->name('projects.update');
+            Route::delete('/projects/{project}', [AccountingController::class, 'destroyProject'])->name('projects.destroy');
+
+            // Bagan Akun (Chart of Accounts)
+            Route::get('/accounts', [AccountingController::class, 'accounts'])->name('accounts');
+            Route::post('/accounts', [AccountingController::class, 'storeAccount'])->name('accounts.store');
+            Route::put('/accounts/{account}', [AccountingController::class, 'updateAccount'])->name('accounts.update');
+            Route::delete('/accounts/{account}', [AccountingController::class, 'destroyAccount'])->name('accounts.destroy');
+
+            // Transaksi & Jurnal Kas
+            Route::get('/transactions', [AccountingController::class, 'transactions'])->name('transactions');
+            Route::post('/cash-in', [AccountingController::class, 'storeCashIn'])->name('cash-in.store');
+            Route::post('/cash-out', [AccountingController::class, 'storeCashOut'])->name('cash-out.store');
+            Route::post('/transfer', [AccountingController::class, 'storeTransfer'])->name('transfer.store');
+            Route::delete('/transactions/{transaction}', [AccountingController::class, 'destroyTransaction'])->name('transactions.destroy');
+
+            // Laporan Keuangan & Realisasi Proyek
+            Route::get('/reports', [AccountingController::class, 'reports'])->name('reports');
+            Route::get('/projects/{project}/lpj-pdf', [AccountingController::class, 'exportProjectPdf'])->name('projects.lpj-pdf');
+
+            // Jembatan Sinkronisasi Otomatis Kas
+            Route::post('/sync-competition-revenue', [AccountingController::class, 'syncCompetitionRevenue'])->name('sync-competition');
+            Route::post('/sync-parking-revenue', [AccountingController::class, 'syncParkingRevenue'])->name('sync-parking');
+        });
 
         // Otak & Pengetahuan Wira Agent AI (Sinkronisasi Konten Website)
         Route::post('/wira-agent/sync-knowledge', [WiraAgentKnowledgeController::class, 'sync'])->name('wira-agent.sync-knowledge');

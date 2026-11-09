@@ -29,6 +29,8 @@
         request()->routeIs('admin.parking.*')
     ) {
         $currentActiveSection = 'manajemen_lomba';
+    } elseif (request()->routeIs('admin.accounting.*')) {
+        $currentActiveSection = 'akuntansi_kas';
     } elseif (request()->routeIs('admin.blood-*')) {
         $currentActiveSection = 'donor_darah';
     }
@@ -79,6 +81,7 @@
                     setup_konten: false,
                     media_konten: false,
                     manajemen_lomba: false,
+                    akuntansi_kas: false,
                     donor_darah: false,
                     layanan_kemanusiaan: false,
                     akses_cepat: false,
@@ -618,6 +621,64 @@
                 </div>
             </div>
             @endif
+
+            <!-- ========================================== -->
+            <!-- 6b. AKUNTANSI & KAS (ACCOUNTING MULTI-PROYEK) -->
+            <!-- ========================================== -->
+            @php $isAccountingActive = ($currentActiveSection === 'akuntansi_kas'); @endphp
+            <div class="pt-1 space-y-1">
+                <button type="button" 
+                        @click="toggleSection('akuntansi_kas')" 
+                        class="w-full flex items-center justify-between px-3 py-2 text-left text-[11px] font-bold uppercase tracking-wider rounded-xl transition group select-none {{ $isAccountingActive ? 'text-white bg-slate-800/90' : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/50' }}">
+                    <div class="flex items-center gap-2.5 min-w-0">
+                        <i class="fa-solid fa-calculator text-xs {{ $isAccountingActive ? 'text-emerald-400' : 'text-slate-500 group-hover:text-slate-300' }}"></i>
+                        <span class="truncate">Akuntansi & Kas</span>
+                        @if($isAccountingActive)
+                            <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 shrink-0"></span>
+                        @endif
+                    </div>
+                    <div class="flex items-center gap-2 shrink-0">
+                        <span class="text-[9px] bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 px-1.5 py-0.2 rounded font-black uppercase">Accurate</span>
+                        <i class="fa-solid fa-chevron-down text-[10px] text-slate-400 transition-transform duration-200 shrink-0"
+                           :class="isOpen('akuntansi_kas') ? 'rotate-180 text-white' : ''"></i>
+                    </div>
+                </button>
+
+                <div x-show="isOpen('akuntansi_kas')" 
+                     x-transition:enter="transition ease-out duration-150"
+                     x-transition:enter-start="opacity-0 -translate-y-1"
+                     x-transition:enter-end="opacity-100 translate-y-0"
+                     x-transition:leave="transition ease-in duration-100"
+                     x-transition:leave-start="opacity-100 translate-y-0"
+                     x-transition:leave-end="opacity-0 -translate-y-1"
+                     class="pl-2 space-y-1 border-l-2 border-slate-800 ml-3.5 my-1">
+                    
+                    <a href="{{ route('admin.accounting.index') }}" class="flex items-center gap-2.5 px-3 py-2 rounded-xl font-medium text-xs md:text-sm transition {{ request()->routeIs('admin.accounting.index') ? 'bg-pmr-primary text-white shadow-md shadow-red-950/40' : 'hover:bg-slate-800 text-slate-300' }}">
+                        <i class="fa-solid fa-chart-pie w-4 text-center text-emerald-400"></i>
+                        <span class="truncate">Dashboard & Proyek</span>
+                    </a>
+
+                    <a href="{{ route('admin.accounting.projects') }}" class="flex items-center gap-2.5 px-3 py-2 rounded-xl font-medium text-xs md:text-sm transition {{ request()->routeIs('admin.accounting.projects*') ? 'bg-pmr-primary text-white shadow-md shadow-red-950/40' : 'hover:bg-slate-800 text-slate-300' }}">
+                        <i class="fa-solid fa-diagram-project w-4 text-center text-purple-400"></i>
+                        <span class="truncate">Master Proyek Kegiatan</span>
+                    </a>
+
+                    <a href="{{ route('admin.accounting.accounts') }}" class="flex items-center gap-2.5 px-3 py-2 rounded-xl font-medium text-xs md:text-sm transition {{ request()->routeIs('admin.accounting.accounts*') ? 'bg-pmr-primary text-white shadow-md shadow-red-950/40' : 'hover:bg-slate-800 text-slate-300' }}">
+                        <i class="fa-solid fa-list-ol w-4 text-center text-blue-400"></i>
+                        <span class="truncate">Bagan Akun (CoA)</span>
+                    </a>
+
+                    <a href="{{ route('admin.accounting.transactions') }}" class="flex items-center gap-2.5 px-3 py-2 rounded-xl font-medium text-xs md:text-sm transition {{ request()->routeIs('admin.accounting.transactions*') ? 'bg-pmr-primary text-white shadow-md shadow-red-950/40' : 'hover:bg-slate-800 text-slate-300' }}">
+                        <i class="fa-solid fa-receipt w-4 text-center text-amber-400"></i>
+                        <span class="truncate">Kas Masuk & Keluar</span>
+                    </a>
+
+                    <a href="{{ route('admin.accounting.reports') }}" class="flex items-center gap-2.5 px-3 py-2 rounded-xl font-medium text-xs md:text-sm transition {{ request()->routeIs('admin.accounting.reports*') ? 'bg-pmr-primary text-white shadow-md shadow-red-950/40' : 'hover:bg-slate-800 text-slate-300' }}">
+                        <i class="fa-solid fa-file-invoice-dollar w-4 text-center text-rose-400"></i>
+                        <span class="truncate">Laporan Keuangan</span>
+                    </a>
+                </div>
+            </div>
 
             <!-- ========================================== -->
             <!-- 7. KELOLA DONOR DARAH -->
