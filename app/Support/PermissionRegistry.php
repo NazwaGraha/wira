@@ -415,16 +415,16 @@ class PermissionRegistry
                         'routes' => ['admin.competition-leaderboard.publish', 'admin.competition-leaderboard.toggle'],
                     ],
                     'competition_participants.view' => [
-                        'label' => 'Lihat Peserta & Juara Lomba',
+                        'label' => 'Lihat Peserta & Laporan Lomba',
                         'type' => 'view',
                         'badge' => 'Lihat',
-                        'routes' => ['admin.competition-participants.index'],
+                        'routes' => ['admin.competition-participants.index', 'admin.competition-reports.*'],
                     ],
                     'competition_participants.manage' => [
                         'label' => 'Cetak Piagam & Sertifikat',
                         'type' => 'export',
                         'badge' => 'Piagam',
-                        'routes' => ['admin.competition-participants.*', 'admin.competition-certificates.*'],
+                        'routes' => ['admin.competition-participants.*', 'admin.competition-certificates.*', 'admin.competition-reports.*'],
                     ],
                     'competition_broadcast.send' => [
                         'label' => 'Kirim Siaran Email Broadcast',

@@ -234,9 +234,14 @@
                     <!-- Item 1: Rekap Peserta -->
                     <div class="flex items-center justify-between py-1 border-b border-slate-100">
                         <span class="font-bold text-slate-700">1. Rekap Tim Peserta Lomba</span>
-                        <a href="{{ route('admin.competition-participants.export-excel') }}" class="px-2.5 py-1 bg-white hover:bg-slate-100 border border-slate-200 rounded-lg text-[10px] font-black text-slate-700 flex items-center gap-1">
-                            <i class="fa-solid fa-file-excel text-emerald-600"></i> Unduh XLS
-                        </a>
+                        <div class="flex items-center gap-1">
+                            <a href="{{ route('admin.competition-reports.participants') }}" class="px-2 py-0.5 bg-slate-100 hover:bg-slate-200 rounded-md text-[10px] font-bold text-slate-700">
+                                Buka
+                            </a>
+                            <a href="{{ route('admin.competition-reports.export-excel') }}" class="px-2 py-0.5 bg-white hover:bg-slate-100 border border-slate-200 rounded-md text-[10px] font-black text-slate-700 flex items-center gap-1">
+                                <i class="fa-solid fa-file-excel text-emerald-600"></i> XLS
+                            </a>
+                        </div>
                     </div>
 
                     <!-- Item 2: Master Score Sheet -->

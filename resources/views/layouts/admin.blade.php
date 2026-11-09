@@ -592,6 +592,13 @@
                     </a>
                     @endif
                     @if(auth()->user()?->hasPermission('competition_participants.view'))
+                    <a href="{{ route('admin.competition-reports.participants') }}" class="flex items-center gap-2.5 px-3 py-2 rounded-xl font-medium text-xs md:text-sm transition {{ request()->routeIs('admin.competition-reports.*') ? 'bg-pmr-primary text-white shadow-md shadow-red-950/40' : 'hover:bg-slate-800 text-slate-300' }}" title="Laporan & Rekapitulasi Rinci Peserta Lomba (Pilah Tingkat & Pecah Kategori)">
+                        <i class="fa-solid fa-file-invoice w-4 text-center text-emerald-400"></i>
+                        <div class="flex items-center justify-between flex-grow min-w-0">
+                            <span class="truncate">Laporan Peserta Lomba</span>
+                            <span class="text-[9px] bg-emerald-500/20 text-emerald-300 border border-emerald-400/30 px-1.5 py-0.2 rounded font-black uppercase shrink-0 ml-1">Rekap</span>
+                        </div>
+                    </a>
                     <a href="{{ route('admin.competition-participants.index') }}" class="flex items-center gap-2.5 px-3 py-2 rounded-xl font-medium text-xs md:text-sm transition {{ request()->routeIs('admin.competition-participants.*') ? 'bg-pmr-primary text-white shadow-md shadow-red-950/40' : 'hover:bg-slate-800 text-slate-300' }}">
                         <i class="fa-solid fa-medal w-4 text-center text-amber-400"></i>
                         <div class="flex items-center justify-between flex-grow min-w-0">

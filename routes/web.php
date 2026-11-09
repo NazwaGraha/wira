@@ -23,6 +23,7 @@ use App\Http\Controllers\Admin\CompetitionMascotController;
 use App\Http\Controllers\Admin\CompetitionParticipantController;
 use App\Http\Controllers\Admin\CompetitionQuotaController;
 use App\Http\Controllers\Admin\CompetitionRegistrationController;
+use App\Http\Controllers\Admin\CompetitionReportController;
 use App\Http\Controllers\Admin\CompetitionScoreController;
 use App\Http\Controllers\Admin\ContentSetupController;
 use App\Http\Controllers\Admin\DashboardController;
@@ -322,6 +323,11 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::post('/competition-participants-bulk-orders', [CompetitionParticipantController::class, 'bulkUpdateOrders'])->name('competition-participants.bulk-update-orders');
         Route::post('/competition-participants-auto-orders', [CompetitionParticipantController::class, 'autoAssignOrders'])->name('competition-participants.auto-assign-orders');
         Route::get('/competition-participants-print', [CompetitionParticipantController::class, 'printSheet'])->name('competition-participants.print');
+
+        // Laporan & Rekapitulasi Rinci Peserta Lomba (Pilah Tingkat Mula/Madya/Wira & Pecah Kategori)
+        Route::get('/competition-reports/participants', [CompetitionReportController::class, 'participants'])->name('competition-reports.participants');
+        Route::get('/competition-reports/participants/export-excel', [CompetitionReportController::class, 'exportExcel'])->name('competition-reports.export-excel');
+        Route::get('/competition-reports/participants/print-pdf', [CompetitionReportController::class, 'printPdf'])->name('competition-reports.print-pdf');
 
         // Penilaian Lomba (Input Nilai Juri / Panitia)
         Route::get('/competition-scores', [CompetitionScoreController::class, 'index'])->name('competition-scores.index');
