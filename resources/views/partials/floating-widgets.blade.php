@@ -15,19 +15,19 @@
         </div>
 
         <!-- Button FAB Wira Agent -->
-        <button type="button" onclick="toggleWiraAgentModal()" id="wira-agent-fab" class="relative w-13 h-13 sm:w-14 sm:h-14 rounded-full bg-gradient-to-tr from-stone-900 via-pmr-primary to-red-600 text-white shadow-2xl hover:shadow-red-900/50 flex items-center justify-center border-2 border-white/60 transition-all duration-300 transform hover:scale-108 active:scale-95 cursor-pointer group" aria-label="Buka Chat Wira Agent AI" title="Tanya Wira Agent (Asisten AI PMR)">
+        <button type="button" onclick="toggleWiraAgentModal()" id="wira-agent-fab" class="relative w-14 h-14 sm:w-16 sm:h-16 rounded-full bg-gradient-to-tr from-stone-900 via-pmr-primary to-red-600 text-white shadow-2xl hover:shadow-red-900/50 flex items-center justify-center border-2 border-white/70 transition-all duration-300 transform hover:scale-108 active:scale-95 cursor-pointer group" aria-label="Buka Chat Wira Agent AI" title="Tanya Wira Agent (Asisten AI PMR)">
             <!-- Sparkle Ping -->
             <span class="absolute -inset-1 rounded-full bg-red-500 animate-ping opacity-30 pointer-events-none"></span>
 
             <!-- AI Floating Badge -->
-            <span class="absolute -top-1 -right-1 bg-amber-400 text-stone-950 text-[9px] font-black px-1.5 py-0.2 rounded-full border-2 border-white shadow-md flex items-center gap-0.5">
+            <span class="absolute -top-1 -right-1 bg-amber-400 text-stone-950 text-[9px] font-black px-1.5 py-0.2 rounded-full border-2 border-white shadow-md flex items-center gap-0.5 z-10">
                 <i class="fa-solid fa-wand-magic-sparkles text-[8px]"></i>
                 <span>AI</span>
             </span>
 
-            <!-- Icons Toggle (Robot vs Close) -->
-            <i id="wira-fab-open-icon" class="fa-solid fa-robot text-xl sm:text-2xl drop-shadow transition-transform group-hover:scale-110"></i>
-            <i id="wira-fab-close-icon" class="fa-solid fa-xmark text-xl hidden"></i>
+            <!-- Avatar Maskot Wira Agent / Icons Toggle -->
+            <img id="wira-fab-open-icon" src="{{ asset('images/wira-agent.png') }}" alt="Wira Agent" class="w-11 h-11 sm:w-13 sm:h-13 object-contain drop-shadow-md transition-transform group-hover:scale-110 pointer-events-none">
+            <i id="wira-fab-close-icon" class="fa-solid fa-xmark text-2xl hidden"></i>
         </button>
     </div>
 
@@ -61,8 +61,8 @@
     <!-- Modal Header -->
     <div class="relative bg-gradient-to-r from-stone-950 via-pmr-primary to-stone-900 text-white p-4 sm:p-4.5 flex items-center justify-between border-b border-white/10 shadow-md">
         <div class="flex items-center gap-3">
-            <div class="relative w-10 h-10 rounded-2xl bg-white/15 p-1 border border-white/20 flex items-center justify-center text-white text-lg shadow-inner">
-                <i class="fa-solid fa-robot text-red-300"></i>
+            <div class="relative w-11 h-11 rounded-2xl bg-white/20 p-1 border border-white/30 flex items-center justify-center overflow-hidden shadow-inner">
+                <img src="{{ asset('images/wira-agent.png') }}" alt="Wira Agent Avatar" class="w-full h-full object-contain drop-shadow">
                 <span class="absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full bg-emerald-400 border-2 border-stone-900"></span>
             </div>
             <div>
@@ -93,8 +93,8 @@
         
         <!-- Welcome Message Balloon dari Wira Agent -->
         <div class="flex items-start gap-2.5 mr-auto max-w-[90%]">
-            <div class="w-7 h-7 rounded-xl bg-red-100 text-pmr-primary flex items-center justify-center text-xs flex-shrink-0 mt-0.5 shadow-2xs font-bold border border-red-200">
-                <i class="fa-solid fa-robot"></i>
+            <div class="w-8 h-8 rounded-xl bg-white p-0.5 shadow-2xs border border-red-200 flex-shrink-0 mt-0.5 overflow-hidden flex items-center justify-center">
+                <img src="{{ asset('images/wira-agent.png') }}" alt="Wira Agent" class="w-full h-full object-contain">
             </div>
             <div class="bg-white border border-stone-200/90 rounded-2xl rounded-tl-xs p-3.5 text-stone-800 shadow-xs space-y-2">
                 <div class="text-[11px] font-bold text-pmr-primary flex items-center gap-1.5">
@@ -114,8 +114,8 @@
 
     <!-- Typing Indicator ("Wira Agent sedang mengetik...") -->
     <div id="wira-typing-indicator" class="hidden px-4 py-2 bg-slate-50 border-t border-slate-100 items-center gap-2 text-stone-500 text-xs">
-        <div class="w-5 h-5 rounded-lg bg-red-100 text-pmr-primary flex items-center justify-center text-[10px]">
-            <i class="fa-solid fa-robot"></i>
+        <div class="w-6 h-6 rounded-lg bg-white p-0.5 border border-red-200 flex items-center justify-center overflow-hidden flex-shrink-0">
+            <img src="{{ asset('images/wira-agent.png') }}" alt="Wira Agent" class="w-full h-full object-contain">
         </div>
         <span class="font-medium">Wira Agent sedang mengetik</span>
         <div class="flex items-center gap-1 ml-1">
@@ -197,6 +197,7 @@
 
 <!-- Script Logika Chat Wira Agent -->
 <script>
+    const wiraAvatarUrl = "{{ asset('images/wira-agent.png') }}";
     let wiraChatHistory = [];
     let wiraIsLoading = false;
 
@@ -248,8 +249,8 @@
         if (box) {
             box.innerHTML = `
                 <div class="flex items-start gap-2.5 mr-auto max-w-[90%]">
-                    <div class="w-7 h-7 rounded-xl bg-red-100 text-pmr-primary flex items-center justify-center text-xs flex-shrink-0 mt-0.5 shadow-2xs font-bold border border-red-200">
-                        <i class="fa-solid fa-robot"></i>
+                    <div class="w-8 h-8 rounded-xl bg-white p-0.5 shadow-2xs border border-red-200 flex-shrink-0 mt-0.5 overflow-hidden flex items-center justify-center">
+                        <img src="${wiraAvatarUrl}" alt="Wira Agent" class="w-full h-full object-contain">
                     </div>
                     <div class="bg-white border border-stone-200/90 rounded-2xl rounded-tl-xs p-3.5 text-stone-800 shadow-xs space-y-2">
                         <div class="text-[11px] font-bold text-pmr-primary flex items-center gap-1.5">
@@ -360,8 +361,8 @@
         } else {
             div.className = 'flex items-start gap-2.5 mr-auto max-w-[90%]';
             div.innerHTML = `
-                <div class="w-7 h-7 rounded-xl bg-red-100 text-pmr-primary flex items-center justify-center text-xs flex-shrink-0 mt-0.5 shadow-2xs font-bold border border-red-200">
-                    <i class="fa-solid fa-robot"></i>
+                <div class="w-8 h-8 rounded-xl bg-white p-0.5 shadow-2xs border border-red-200 flex-shrink-0 mt-0.5 overflow-hidden flex items-center justify-center">
+                    <img src="${wiraAvatarUrl}" alt="Wira Agent" class="w-full h-full object-contain">
                 </div>
                 <div class="bg-white border border-stone-200/90 rounded-2xl rounded-tl-xs p-3.5 text-stone-800 shadow-xs space-y-1.5">
                     <div class="text-[11px] font-bold text-pmr-primary flex items-center gap-1.5">

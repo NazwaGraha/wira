@@ -4,6 +4,7 @@ namespace App\Console\Commands;
 
 use App\Services\WiraKnowledgeSyncService;
 use Illuminate\Console\Command;
+use Illuminate\Support\Facades\Log;
 
 class SyncWiraKnowledgeCommand extends Command
 {
@@ -42,10 +43,12 @@ class SyncWiraKnowledgeCommand extends Command
             );
 
             $this->info('✅ Pengetahuan Wira Agent berhasil disinkronkan dari seluruh konten website!');
+            Log::info("Wira Agent automatic knowledge sync completed successfully at {$result['synced_at']}. Total topics: {$result['total_topics']}, Articles: {$result['articles_count']}.");
 
             return Command::SUCCESS;
         } catch (\Throwable $e) {
             $this->error('❌ Terjadi kesalahan saat sinkronisasi pengetahuan: '.$e->getMessage());
+            Log::error('Wira Agent knowledge sync failed: '.$e->getMessage(), ['exception' => $e]);
 
             return Command::FAILURE;
         }

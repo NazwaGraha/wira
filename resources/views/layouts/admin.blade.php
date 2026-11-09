@@ -801,6 +801,14 @@
                         <i class="fa-solid fa-arrow-up-right-from-square w-4 text-center"></i>
                         <span class="truncate">Lihat Web Publik</span>
                     </a>
+                    <form action="{{ route('admin.wira-agent.sync-knowledge') }}" method="POST" onsubmit="return confirm('Kompilasi dan sinkronkan seluruh materi website sekarang ke memori Wira Agent AI?')" class="w-full">
+                        @csrf
+                        <button type="submit" class="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl font-medium text-xs md:text-sm transition hover:bg-slate-800 text-amber-400 group cursor-pointer text-left">
+                            <i class="fa-solid fa-brain w-4 text-center"></i>
+                            <span class="truncate">Sinkron Otak AI Wira</span>
+                            <span class="text-[9px] bg-amber-500/20 text-amber-300 border border-amber-400/30 px-1.5 py-0.2 rounded font-black uppercase ml-auto shrink-0">Manual</span>
+                        </button>
+                    </form>
                 </div>
             </div>
 
