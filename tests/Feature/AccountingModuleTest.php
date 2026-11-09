@@ -42,7 +42,7 @@ class AccountingModuleTest extends TestCase
         $response = $this->actingAs($this->admin)->get(route('admin.accounting.index'));
 
         $response->assertStatus(200);
-        $response->assertSee('Akuntansi &amp; Kas', false);
+        $response->assertSee('Accounting Wira');
         $response->assertSee('PRJ-2026-SBB4');
         $response->assertSee('Kas Masuk');
         $response->assertSee('Kas Keluar');

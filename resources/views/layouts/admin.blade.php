@@ -623,7 +623,7 @@
             @endif
 
             <!-- ========================================== -->
-            <!-- 6b. AKUNTANSI & KAS (ACCOUNTING MULTI-PROYEK) -->
+            <!-- 6b. ACCOUNTING WIRA (MULTI-PROYEK)         -->
             <!-- ========================================== -->
             @php $isAccountingActive = ($currentActiveSection === 'akuntansi_kas'); @endphp
             <div class="pt-1 space-y-1">
@@ -632,13 +632,12 @@
                         class="w-full flex items-center justify-between px-3 py-2 text-left text-[11px] font-bold uppercase tracking-wider rounded-xl transition group select-none {{ $isAccountingActive ? 'text-white bg-slate-800/90' : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/50' }}">
                     <div class="flex items-center gap-2.5 min-w-0">
                         <i class="fa-solid fa-calculator text-xs {{ $isAccountingActive ? 'text-emerald-400' : 'text-slate-500 group-hover:text-slate-300' }}"></i>
-                        <span class="truncate">Akuntansi & Kas</span>
+                        <span class="truncate">Accounting Wira</span>
                         @if($isAccountingActive)
                             <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 shrink-0"></span>
                         @endif
                     </div>
                     <div class="flex items-center gap-2 shrink-0">
-                        <span class="text-[9px] bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 px-1.5 py-0.2 rounded font-black uppercase">Accurate</span>
                         <i class="fa-solid fa-chevron-down text-[10px] text-slate-400 transition-transform duration-200 shrink-0"
                            :class="isOpen('akuntansi_kas') ? 'rotate-180 text-white' : ''"></i>
                     </div>
