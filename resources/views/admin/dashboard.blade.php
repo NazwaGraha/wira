@@ -1,7 +1,7 @@
 @extends('layouts.admin')
 
-@section('title', 'Dashboard Backoffice')
-@section('page_title', 'Ringkasan Dashboard CMS')
+@section('title', 'Dasboard Wira Smanic')
+@section('page_title', 'Dasboard Wira Smanic')
 
 @section('top_actions')
     <a href="{{ route('admin.articles.create') }}" class="bg-pmr-primary hover:bg-pmr-dark text-white font-bold text-xs uppercase tracking-wider px-3.5 sm:px-5 py-2 sm:py-2.5 rounded-xl shadow-md transition flex items-center gap-2">
@@ -10,6 +10,39 @@
 @endsection
 
 @section('content')
+@auth
+    @if(auth()->user()->isAdmin() || auth()->user()->isSuperUser() || auth()->user()->role === 'admin' || auth()->user()->role === 'superuser')
+        @php
+            $adminPhoto = auth()->user()->photo_url 
+                ?? (auth()->user()->photo ? (str_starts_with(auth()->user()->photo, 'http') ? auth()->user()->photo : asset('storage/'.auth()->user()->photo)) : null)
+                ?? ('https://ui-avatars.com/api/?name='.urlencode(auth()->user()->name).'&background=dc2626&color=ffffff&bold=true&size=256');
+        @endphp
+        <!-- Card Profil Administrator (Dashboard Wira Smanic) -->
+        <div class="bg-gradient-to-r from-slate-900 via-slate-800 to-red-950 rounded-3xl p-4 sm:p-6 mb-6 text-white shadow-lg border border-red-900/30 flex flex-col sm:flex-row items-center justify-between gap-4">
+            <div class="flex items-center gap-4">
+                <div class="relative shrink-0">
+                    <img src="{{ $adminPhoto }}" 
+                         alt="{{ auth()->user()->name }}" 
+                         class="w-14 h-14 sm:w-16 sm:h-16 rounded-full object-cover border-2 border-red-500 shadow-md ring-4 ring-white/10 bg-white">
+                    <span class="absolute bottom-0 right-0 w-4 h-4 rounded-full bg-emerald-500 border-2 border-slate-900 shadow-xs" title="Status: Online & Aktif"></span>
+                </div>
+                <div>
+                    <div class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-red-500/20 text-red-300 border border-red-500/30 mb-1">
+                        <i class="fa-solid fa-shield-halved text-[9px]"></i> {{ auth()->user()->role_label }}
+                    </div>
+                    <h2 class="text-base sm:text-xl font-extrabold text-white">Selamat Datang, {{ auth()->user()->name }}!</h2>
+                    <p class="text-xs text-slate-300">Panel Kendali Utama & Portal Manajemen PMR Wira SMAN 1 Ciawi</p>
+                </div>
+            </div>
+            <div class="flex items-center gap-2 self-stretch sm:self-auto justify-end">
+                <a href="{{ route('admin.articles.create') }}" class="w-full sm:w-auto bg-pmr-primary hover:bg-pmr-dark text-white font-bold text-xs uppercase tracking-wider px-4 py-2.5 rounded-xl shadow-md transition flex items-center justify-center gap-2">
+                    <i class="fa-solid fa-plus"></i> <span>Tulis Artikel Baru</span>
+                </a>
+            </div>
+        </div>
+    @endif
+@endauth
+
 <!-- KPI / Metrik Utama (Matching Mockup 08) -->
 <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6 mb-6 sm:mb-8">
     <!-- Card 1 -->

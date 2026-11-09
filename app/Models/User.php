@@ -129,4 +129,19 @@ class User extends Authenticatable
             default => 'Administrator',
         };
     }
+
+    public function getPhotoUrlAttribute(): string
+    {
+        if (! empty($this->photo)) {
+            return str_starts_with($this->photo, 'http') || str_starts_with($this->photo, '/')
+                ? $this->photo
+                : asset('storage/'.$this->photo);
+        }
+
+        if ($this->role === 'superuser' || $this->name === 'Super Administrator') {
+            return asset('images/logo-pmr.png');
+        }
+
+        return 'https://ui-avatars.com/api/?name='.urlencode($this->name).'&background=dc2626&color=ffffff&bold=true&size=256';
+    }
 }

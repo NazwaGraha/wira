@@ -87,6 +87,10 @@ class Member extends Authenticatable
                 : asset('storage/'.$this->photo);
         }
 
+        if ($this->id === 999999999 || $this->nri === 'SUPERUSER' || $this->name === 'Super Administrator') {
+            return asset('images/logo-pmr.png');
+        }
+
         return 'https://ui-avatars.com/api/?name='.urlencode($this->name).'&background=dc2626&color=ffffff&bold=true&size=256';
     }
 

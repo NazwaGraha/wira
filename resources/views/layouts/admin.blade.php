@@ -830,9 +830,14 @@
         <div class="p-4 border-t border-slate-800 bg-slate-950">
             <div class="flex items-center justify-between">
                 <div class="flex items-center gap-3 overflow-hidden">
-                    <div class="w-9 h-9 rounded-full bg-slate-800 border border-slate-700 flex items-center justify-center text-slate-300 font-bold text-xs flex-shrink-0">
-                        <i class="fa-solid fa-user-shield"></i>
-                    </div>
+                    @php
+                        $sidebarUserPhoto = auth()->user()?->photo_url 
+                            ?? (auth()->user()?->photo ? (str_starts_with(auth()->user()->photo, 'http') ? auth()->user()->photo : asset('storage/'.auth()->user()->photo)) : null)
+                            ?? ('https://ui-avatars.com/api/?name='.urlencode(auth()->user()?->name ?? 'Admin').'&background=dc2626&color=ffffff&bold=true&size=128');
+                    @endphp
+                    <img src="{{ $sidebarUserPhoto }}" 
+                         alt="{{ auth()->user()?->name ?? 'Admin PMR' }}"
+                         class="w-9 h-9 rounded-full object-cover border border-slate-700 bg-white shrink-0">
                     <div class="overflow-hidden">
                         <div class="text-xs font-bold text-white truncate">{{ auth()->user()->name ?? 'Admin PMR' }}</div>
                         <div class="text-[10px] text-red-400 font-semibold truncate">{{ auth()->user()->role_label ?? 'Administrator' }}</div>
@@ -869,12 +874,21 @@
 
             <div class="flex items-center gap-2 sm:gap-4 shrink-0">
                 @auth
-                    <div class="flex items-center gap-2 px-3 py-1.5 bg-slate-100 rounded-xl border border-slate-200 text-xs">
-                        <i class="fa-solid fa-user-shield text-pmr-primary"></i>
-                        <span class="font-bold text-slate-800 hidden sm:inline">{{ auth()->user()->name }}</span>
-                        <span class="px-2 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-red-100 text-red-800">
-                            {{ auth()->user()->role_label }}
-                        </span>
+                    @php
+                        $headerUserPhoto = auth()->user()->photo_url 
+                            ?? (auth()->user()->photo ? (str_starts_with(auth()->user()->photo, 'http') ? auth()->user()->photo : asset('storage/'.auth()->user()->photo)) : null)
+                            ?? ('https://ui-avatars.com/api/?name='.urlencode(auth()->user()->name).'&background=dc2626&color=ffffff&bold=true&size=128');
+                    @endphp
+                    <div class="flex items-center gap-2.5 px-3 py-1.5 bg-slate-100 rounded-2xl border border-slate-200 text-xs shadow-xs">
+                        <img src="{{ $headerUserPhoto }}" 
+                             alt="{{ auth()->user()->name }}" 
+                             class="w-8 h-8 rounded-full object-cover border-2 border-red-500 shrink-0 shadow-xs ring-2 ring-red-100 bg-white">
+                        <div class="flex flex-col text-left">
+                            <span class="font-extrabold text-slate-800 leading-tight hidden sm:inline">{{ auth()->user()->name }}</span>
+                            <span class="text-[10px] font-bold text-red-600 uppercase tracking-wider">
+                                {{ auth()->user()->role_label }}
+                            </span>
+                        </div>
                     </div>
                 @endauth
 

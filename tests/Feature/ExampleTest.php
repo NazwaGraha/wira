@@ -98,7 +98,7 @@ class ExampleTest extends TestCase
         // Access dashboard
         $response = $this->actingAs($user)->get('/admin/dashboard');
         $response->assertStatus(200);
-        $response->assertSee('Ringkasan Dashboard CMS');
+        $response->assertSee('Dasboard Wira Smanic');
 
         // Access admin prestasi
         $response = $this->actingAs($user)->get('/admin/prestasi');
