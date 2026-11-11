@@ -2,10 +2,20 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="theme-color" content="#0f172a">
     <title>Login Petugas Parkir Lapangan - SBB IV 2026</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
+        body { min-height: 100vh; min-height: 100dvh; -webkit-font-smoothing: antialiased; }
+        button, a, input { touch-action: manipulation; -webkit-tap-highlight-color: transparent; }
+        @media screen and (max-width: 768px) {
+            input { font-size: 16px !important; }
+        }
+    </style>
 </head>
 <body class="bg-gradient-to-b from-slate-900 via-slate-900 to-slate-950 text-slate-100 min-h-screen flex flex-col font-sans select-none p-4 sm:p-6 justify-between">
 

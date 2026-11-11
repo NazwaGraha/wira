@@ -616,12 +616,19 @@ function checkinApp() {
                             audio: false
                         });
                     } catch (firstErr) {
-                        console.warn("getUserMedia dengan constraints detail gagal, mencoba fallback facingMode sederhana:", firstErr);
-                        // Fallback ke format sederhana
-                        this.mediaStream = await navigator.mediaDevices.getUserMedia({
-                            video: { facingMode: this.currentFacingMode },
-                            audio: false
-                        });
+                        console.warn("getUserMedia dengan constraints detail gagal, mencoba fallback facingMode ideal:", firstErr);
+                        try {
+                            this.mediaStream = await navigator.mediaDevices.getUserMedia({
+                                video: { facingMode: { ideal: this.currentFacingMode } },
+                                audio: false
+                            });
+                        } catch (secondErr) {
+                            console.warn("Fallback facingMode ideal gagal, mencoba fallback kamera default:", secondErr);
+                            this.mediaStream = await navigator.mediaDevices.getUserMedia({
+                                video: true,
+                                audio: false
+                            });
+                        }
                     }
 
                     video.srcObject = this.mediaStream;

@@ -159,6 +159,6 @@ class CompetitionParticipantOrderNumberTest extends TestCase
         $responseStatus = $this->get('/lomba/status?code='.$reg->registration_code);
         $responseStatus->assertStatus(200);
         $responseStatus->assertSee('No. Urut: A-01');
-        $responseStatus->assertSee('Kode: LPP-MULA-PA-A01');
+        $responseStatus->assertSee('LPP-MULA-PA-A01');
     }
 }

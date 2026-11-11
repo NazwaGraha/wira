@@ -4,7 +4,7 @@
     $waCleanNumber = $hotlineWidget ? $hotlineWidget->clean_phone : '6283872506817';
 @endphp
 <!-- Floating Widgets Dock (Pojok Kanan Bawah): Wira Agent AI + WhatsApp Berkedip -->
-<div class="fixed bottom-5 right-5 z-[90] flex flex-col items-end gap-3 select-none pointer-events-auto">
+<div class="fixed z-[90] flex flex-col items-end gap-3 select-none pointer-events-auto" style="bottom: calc(1.25rem + env(safe-area-inset-bottom, 0px)); right: calc(1.25rem + env(safe-area-inset-right, 0px));">
 
     <!-- 1. Floating Action Button: Wira Agent AI Chatbot -->
     <div class="relative group/wira flex items-center justify-end">
@@ -56,7 +56,7 @@
 </div>
 
 <!-- 3. Jendela Modal Chatbot AI: Wira Agent (~380px x 520px) -->
-<div id="wira-agent-modal" class="fixed bottom-24 right-4 sm:right-6 z-[100] hidden flex-col w-[calc(100vw-32px)] sm:w-[395px] h-[535px] max-h-[82vh] bg-white rounded-3xl shadow-2xl border border-stone-200/90 overflow-hidden transition-all duration-300 animate-in fade-in zoom-in-95 font-sans">
+<div id="wira-agent-modal" class="fixed z-[100] hidden flex-col w-[calc(100vw-32px)] sm:w-[395px] h-[535px] max-h-[82vh] bg-white rounded-3xl shadow-2xl border border-stone-200/90 overflow-hidden transition-all duration-300 animate-in fade-in zoom-in-95 font-sans" style="bottom: calc(5.5rem + env(safe-area-inset-bottom, 0px)); right: calc(1rem + env(safe-area-inset-right, 0px)); max-height: calc(82vh - env(safe-area-inset-bottom, 0px));">
     
     <!-- Modal Header -->
     <div class="relative bg-gradient-to-r from-stone-950 via-pmr-primary to-stone-900 text-white p-4 sm:p-4.5 flex items-center justify-between border-b border-white/10 shadow-md">

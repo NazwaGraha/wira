@@ -2,10 +2,17 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="theme-color" content="#980000">
     <title>E-Tiket Parkir - {{ $ticket->license_plate }}</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
+        body { min-height: 100vh; min-height: 100dvh; -webkit-font-smoothing: antialiased; }
+        button, a { touch-action: manipulation; -webkit-tap-highlight-color: transparent; }
+    </style>
 </head>
 <body class="bg-slate-900 min-h-screen py-6 px-4 flex flex-col items-center justify-center font-sans">
 

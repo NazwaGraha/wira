@@ -1268,7 +1268,7 @@
 
     <!-- Live Viewfinder Video Stream -->
     <div class="relative flex-1 m-3 rounded-3xl overflow-hidden border-2 border-slate-700 bg-black flex items-center justify-center">
-        <video id="camera-video" autoplay playsinline muted class="w-full h-full object-cover"></video>
+        <video id="camera-video" autoplay playsinline webkit-playsinline muted class="w-full h-full object-cover"></video>
         <canvas id="camera-canvas" class="hidden"></canvas>
 
         <div id="camera-flash" class="absolute inset-0 bg-white opacity-0 pointer-events-none transition-opacity duration-150"></div>
@@ -1286,7 +1286,7 @@
     </div>
 
     <!-- Bottom Controls Shutter -->
-    <div class="p-6 pb-8 bg-black/80 backdrop-blur-md border-t border-slate-800 flex items-center justify-around z-10">
+    <div class="p-6 pb-8 bg-black/80 backdrop-blur-md border-t border-slate-800 flex items-center justify-around z-10" style="padding-bottom: calc(2rem + env(safe-area-inset-bottom, 0px));">
         <button type="button" onclick="document.getElementById('fallback-camera-input').click()" class="w-12 h-12 rounded-2xl bg-slate-800 border border-slate-700 flex flex-col items-center justify-center text-[9px] text-slate-300 active:scale-95 transition">
             <i class="fa-solid fa-folder-open text-base text-blue-400"></i>
             <span>File</span>
@@ -1718,7 +1718,7 @@
         const constraints = {
             audio: false,
             video: {
-                facingMode: currentFacingMode,
+                facingMode: { ideal: currentFacingMode },
                 width: { ideal: 1280 },
                 height: { ideal: 960 }
             }
@@ -1727,6 +1727,9 @@
         try {
             currentStream = await navigator.mediaDevices.getUserMedia(constraints);
             video.srcObject = currentStream;
+            video.setAttribute('playsinline', 'true');
+            video.setAttribute('webkit-playsinline', 'true');
+            await video.play().catch(e => console.log('video.play notice:', e));
             badge.innerText = currentFacingMode === 'environment' ? '● KAMERA BELAKANG' : '● KAMERA DEPAN';
             badge.className = 'text-[9px] font-mono bg-black/70 ' + (currentFacingMode === 'environment' ? 'text-emerald-400 border-emerald-400/40' : 'text-sky-400 border-sky-400/40') + ' px-2.5 py-1 rounded-full border font-bold';
         } catch (err) {
@@ -1734,6 +1737,9 @@
             try {
                 currentStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
                 video.srcObject = currentStream;
+                video.setAttribute('playsinline', 'true');
+                video.setAttribute('webkit-playsinline', 'true');
+                await video.play().catch(e => console.log('fallback video.play notice:', e));
                 badge.innerText = '● KAMERA AKTIF';
             } catch (fallbackErr) {
                 alert('Tidak dapat mengakses kamera smartphone: ' + fallbackErr.message + '\nMengalihkan ke pembuka kamera bawaan HP...');

@@ -39,7 +39,9 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="theme-color" content="#0f172a">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>@yield('title', 'Admin Dashboard') | Backoffice PMR Wira SMAN 1 Ciawi</title>
     
@@ -119,6 +121,44 @@
             };
         }
     </script>
+    <style>
+        html {
+            -webkit-text-size-adjust: 100%;
+            text-size-adjust: 100%;
+            scrollbar-width: thin;
+            scrollbar-color: rgba(156, 163, 175, 0.4) transparent;
+        }
+        body {
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+        button, a, input, select, textarea {
+            touch-action: manipulation;
+            -webkit-tap-highlight-color: transparent;
+        }
+        @media screen and (max-width: 768px) {
+            input:not([type="checkbox"]):not([type="radio"]):not([type="range"]),
+            select,
+            textarea {
+                font-size: 16px !important;
+            }
+        }
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background-color: rgba(156, 163, 175, 0.4);
+            border-radius: 9999px;
+        }
+        .custom-scrollbar {
+            scrollbar-width: thin;
+            scrollbar-color: rgba(156, 163, 175, 0.4) transparent;
+        }
+    </style>
     @stack('styles')
 </head>
 <body x-data="adminSidebar()" class="bg-slate-100 text-slate-800 font-sans antialiased flex h-screen overflow-hidden relative">

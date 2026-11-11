@@ -2,7 +2,8 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <title>Aplikasi Petugas Parkir Lapangan - SBB IV 2026</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
@@ -10,6 +11,26 @@
     <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <style>
+        html {
+            -webkit-text-size-adjust: 100%;
+            text-size-adjust: 100%;
+        }
+        body {
+            min-height: 100vh;
+            min-height: 100dvh;
+            -webkit-font-smoothing: antialiased;
+        }
+        button, a, input, select, textarea {
+            touch-action: manipulation;
+            -webkit-tap-highlight-color: transparent;
+        }
+        @media screen and (max-width: 768px) {
+            input:not([type="checkbox"]):not([type="radio"]):not([type="range"]),
+            select,
+            textarea {
+                font-size: 16px !important;
+            }
+        }
         .laser-line {
             animation: laserScan 2s infinite ease-in-out;
         }
@@ -441,7 +462,7 @@
     </main>
 
     <!-- Bottom Navigation Bar (Thumb-Friendly 3 Tabs) -->
-    <nav class="fixed bottom-0 inset-x-0 bg-slate-900 border-t border-slate-800 px-4 py-2 z-40 flex items-center justify-around shadow-2xl backdrop-blur-md">
+    <nav class="fixed bottom-0 inset-x-0 bg-slate-900 border-t border-slate-800 px-4 py-2 z-40 flex items-center justify-around shadow-2xl backdrop-blur-md" style="padding-bottom: calc(0.5rem + env(safe-area-inset-bottom, 0px));">
         <!-- Tab 1: Scan QR -->
         <button type="button" onclick="switchTab('scan')" id="tab-btn-scan" class="flex flex-col items-center gap-1 text-rose-500 font-bold transition py-1">
             <div class="w-10 h-7 rounded-xl flex items-center justify-center text-base">
@@ -747,6 +768,15 @@
                 isScanning = true;
                 const notice = document.getElementById('cameraNotice');
                 if (notice) notice.classList.add('hidden');
+                
+                // Optimasi Safari iOS / WebKit: Pastikan video inline dan tidak memicu fullscreen
+                const videoEl = document.querySelector('#qr-reader video');
+                if (videoEl) {
+                    videoEl.setAttribute('playsinline', 'true');
+                    videoEl.setAttribute('webkit-playsinline', 'true');
+                    videoEl.setAttribute('muted', 'true');
+                }
+                
                 updateCameraUI();
             } catch (err) {
                 console.warn("Percobaan kamera pertama gagal:", target, err);

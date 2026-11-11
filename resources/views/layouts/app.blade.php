@@ -2,7 +2,9 @@
 <html lang="id" class="scroll-smooth">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="theme-color" content="#980000">
     <title>@yield('meta_title', trim($__env->yieldContent('title', 'PMR WIRA SMAN 1 CIAWI') . ' | Ragana Dwi Pantara 2026/2027'))</title>
     <meta name="description" content="@yield('meta_description', 'Portal Resmi PMR Wira SMAN 1 Ciawi - Unit Palang Merah Remaja Tingkat Wira Masa Bakti Ragana Dwi Pantara 2026/2027. Kemanusiaan, Kesiapsiagaan, dan Donor Darah.')">
     @yield('meta_tags')
@@ -44,11 +46,52 @@
         }
     </script>
     <style>
+        html {
+            -webkit-text-size-adjust: 100%;
+            text-size-adjust: 100%;
+            scrollbar-width: thin;
+            scrollbar-color: rgba(156, 163, 175, 0.4) transparent;
+        }
+        body {
+            min-height: 100vh;
+            min-height: 100dvh;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
         .gradient-pmr {
             background: linear-gradient(135deg, #7f0000 0%, #980000 50%, #5a0000 100%);
         }
         .text-shadow-sm {
             text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+        }
+        /* Touch & Tap optimisations across iOS Safari, Chrome, Firefox & Edge */
+        button, a, input, select, textarea {
+            touch-action: manipulation;
+            -webkit-tap-highlight-color: transparent;
+        }
+        /* Prevent iOS Safari from auto-zooming on focus when font-size < 16px */
+        @media screen and (max-width: 768px) {
+            input:not([type="checkbox"]):not([type="radio"]):not([type="range"]),
+            select,
+            textarea {
+                font-size: 16px !important;
+            }
+        }
+        /* Custom scrollbar compatibility */
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background-color: rgba(156, 163, 175, 0.4);
+            border-radius: 9999px;
+        }
+        .custom-scrollbar {
+            scrollbar-width: thin;
+            scrollbar-color: rgba(156, 163, 175, 0.4) transparent;
         }
     </style>
     @stack('styles')

@@ -2,7 +2,9 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="theme-color" content="#980000">
     <title>Portal Akses Backoffice & Area Anggota | PMR Wira SMAN 1 Ciawi</title>
     
     <!-- Google Fonts -->
@@ -38,6 +40,14 @@
             }
         }
     </script>
+    <style>
+        html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
+        body { min-height: 100vh; min-height: 100dvh; -webkit-font-smoothing: antialiased; }
+        button, a, input { touch-action: manipulation; -webkit-tap-highlight-color: transparent; }
+        @media screen and (max-width: 768px) {
+            input { font-size: 16px !important; }
+        }
+    </style>
 </head>
 <body class="bg-slate-100 text-slate-800 font-sans antialiased min-h-screen flex flex-col items-center justify-center p-4 selection:bg-red-500 selection:text-white">
 
