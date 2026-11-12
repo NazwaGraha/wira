@@ -459,96 +459,27 @@
 
                 <hr class="border-slate-100">
 
-                <!-- SECTION: Unggah Massal Berkas Peserta Lomba (1 File untuk Seluruh Regu) -->
-                <div id="mass-upload-section" class="bg-gradient-to-br from-emerald-50/70 via-white to-slate-50 border-2 border-dashed border-emerald-300 rounded-3xl p-5 sm:p-7 shadow-sm transition space-y-5">
-                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-emerald-100/90 pb-4">
-                        <div class="flex items-start sm:items-center gap-3.5">
-                            <div class="w-11 h-11 rounded-2xl bg-gradient-to-br from-[#107c41] to-emerald-700 text-white flex items-center justify-center text-xl shadow-md shrink-0">
-                                <i class="fa-solid fa-file-excel"></i>
-                            </div>
-                            <div>
-                                <div class="flex items-center gap-2 flex-wrap">
-                                    <h3 class="text-base sm:text-lg font-black text-slate-900 tracking-tight">Unggah Massal Berkas Peserta Lomba</h3>
-                                    <span class="bg-[#107c41] text-white text-[10px] font-black uppercase px-2.5 py-0.5 rounded-full shadow-2xs">Kolektif 1x Upload</span>
-                                </div>
-                                <p class="text-xs text-slate-600 mt-1 leading-relaxed">
-                                    Cukup unduh <strong>1 file template Excel</strong> yang otomatis memuat cabang yang Anda centang di atas, isi nama siswa, lalu unggah di sini untuk seluruh regu.
-                                </p>
-                            </div>
+                <!-- Pemberitahuan Pengunggahan Berkas Peserta (Dilakukan di Halaman Cek Status Setelah Terverifikasi) -->
+                <div class="bg-gradient-to-r from-emerald-50 via-teal-50/50 to-white border border-emerald-200 rounded-3xl p-5 sm:p-6 shadow-2xs flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                    <div class="flex items-start gap-3.5">
+                        <div class="w-12 h-12 rounded-2xl bg-gradient-to-br from-[#107c41] to-emerald-700 text-white flex items-center justify-center text-xl shadow-md shrink-0">
+                            <i class="fa-solid fa-file-excel"></i>
                         </div>
-
-                        <div class="shrink-0 flex items-center gap-2">
-                            <button type="button" onclick="downloadDynamicMassTemplate()" id="btn-download-mass-template" class="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-gradient-to-r from-[#107c41] to-emerald-700 hover:from-emerald-700 hover:to-emerald-800 active:scale-95 text-white font-bold text-xs rounded-xl shadow-sm hover:shadow transition shrink-0 cursor-pointer">
-                                <i class="fa-solid fa-cloud-arrow-down text-sm text-emerald-200"></i>
-                                <span>Unduh Template Excel Massal (.xlsx)</span>
-                            </button>
+                        <div>
+                            <div class="flex items-center gap-2 flex-wrap">
+                                <h4 class="text-sm sm:text-base font-black text-slate-900">Pengisian Berkas & Nama Anggota Peserta</h4>
+                                <span class="bg-emerald-700 text-white text-[10px] font-black uppercase px-2 py-0.5 rounded-full shadow-2xs">Setelah Verifikasi</span>
+                            </div>
+                            <p class="text-xs text-slate-600 mt-1 leading-relaxed max-w-2xl">
+                                Untuk kemudahan pendaftaran, Anda cukup mengisi identitas sekolah, memilih cabang lomba, dan mengunggah bukti pembayaran di bawah ini. Setelah pembayaran dinyatakan <strong>TERVERIFIKASI / LUNAS</strong> oleh panitia, sekolah Anda dapat mengunduh <strong>Template Excel Massal Resmi</strong> dan mengunggah berkas seluruh anggota regu langsung melalui <strong>Halaman Cek Status Pendaftaran</strong>.
+                            </p>
                         </div>
                     </div>
-
-                    <!-- Informasi Otomatis & Alur Ringkas -->
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-3 text-xs">
-                        <div class="bg-white/90 border border-emerald-200/90 rounded-2xl p-3.5 flex items-start gap-3 shadow-2xs">
-                            <span class="w-6 h-6 rounded-full bg-emerald-100 text-emerald-800 font-bold flex items-center justify-center shrink-0 text-xs">1</span>
-                            <div>
-                                <strong class="text-slate-800 text-xs">No. Registrasi Sistem</strong>
-                                <p class="text-[11px] text-slate-500 mt-0.5">Ditanam &amp; terkunci otomatis:</p>
-                                <span class="inline-block mt-1 font-mono text-red-600 font-black bg-red-50 px-2 py-0.5 rounded border border-red-200/60 text-xs" id="display-preview-reg-code">{{ $previewRegistrationCode ?? 'SBB-M54342H' }}</span>
-                            </div>
-                        </div>
-
-                        <div class="bg-white/90 border border-emerald-200/90 rounded-2xl p-3.5 flex items-start gap-3 shadow-2xs">
-                            <span class="w-6 h-6 rounded-full bg-emerald-100 text-emerald-800 font-bold flex items-center justify-center shrink-0 text-xs">2</span>
-                            <div>
-                                <strong class="text-slate-800 text-xs">Dropdown Cabang Pilihan</strong>
-                                <p class="text-[11px] text-slate-500 mt-0.5">Kolom <em>Cabang Lomba</em> otomatis hanya berisi pilihan cabang yang Anda centang pada Langkah 3 di atas.</p>
-                            </div>
-                        </div>
-
-                        <div class="bg-white/90 border border-emerald-200/90 rounded-2xl p-3.5 flex items-start gap-3 shadow-2xs">
-                            <span class="w-6 h-6 rounded-full bg-emerald-100 text-emerald-800 font-bold flex items-center justify-center shrink-0 text-xs">3</span>
-                            <div>
-                                <strong class="text-slate-800 text-xs">Otomatis Terpetakan</strong>
-                                <p class="text-[11px] text-slate-500 mt-0.5">Siswa otomatis tersimpan ke tabel regu &amp; kategori masing-masing di database sekolah.</p>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- File Upload Dropzone Area -->
-                    <div class="relative bg-white border-2 border-dashed border-emerald-300 hover:border-emerald-500 rounded-2xl p-6 text-center transition cursor-pointer group shadow-2xs" onclick="document.getElementById('mass_participants_file_input').click()">
-                        <input type="file" name="mass_participants_file" id="mass_participants_file_input" accept=".xlsx,.xls,.csv" class="hidden" onchange="handleMassExcelUpload(this)">
-                        <input type="hidden" name="registration_code" id="registration_code_input" value="{{ $previewRegistrationCode ?? 'SBB-M54342H' }}">
-
-                        <div class="flex flex-col items-center justify-center gap-2.5">
-                            <div class="w-14 h-14 rounded-2xl bg-emerald-50 group-hover:bg-emerald-100 text-emerald-600 flex items-center justify-center text-2xl transition">
-                                <i class="fa-solid fa-cloud-arrow-up"></i>
-                            </div>
-                            <div>
-                                <span class="text-sm font-bold text-slate-800 group-hover:text-emerald-700 transition">Klik untuk Memilih Berkas Excel Massal</span>
-                                <span class="text-xs text-slate-500 block mt-0.5">atau seret dan lepas berkas (.xlsx, .xls) ke area ini</span>
-                            </div>
-                            <div id="mass-file-info-badge" class="hidden inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-emerald-50 text-emerald-800 text-xs font-bold border border-emerald-300 mt-1 shadow-2xs">
-                                <i class="fa-solid fa-circle-check text-emerald-600 text-sm"></i>
-                                <span id="mass-file-name-text">Template_Massal.xlsx</span>
-                                <span id="mass-file-size-text" class="text-emerald-700/70 text-[10px]"></span>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Live Preview Container for Mass Excel -->
-                    <div id="mass-preview-container" class="hidden bg-emerald-50/70 border border-emerald-300 rounded-2xl p-4 sm:p-5 text-xs space-y-3.5 shadow-2xs">
-                        <div class="flex items-center justify-between gap-2 border-b border-emerald-200/90 pb-3">
-                            <div class="flex items-center gap-2 font-bold text-emerald-950 text-sm">
-                                <i class="fa-solid fa-circle-check text-emerald-600 text-base"></i>
-                                <span id="mass-preview-summary-title">0 Peserta Berhasil Terdeteksi</span>
-                            </div>
-                            <button type="button" onclick="toggleMassPreviewDetails()" class="text-xs font-bold text-emerald-700 hover:text-emerald-900 underline cursor-pointer" id="btn-toggle-mass-preview">
-                                Sembunyikan Rincian
-                            </button>
-                        </div>
-
-                        <div id="mass-preview-teams-list" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 max-h-72 overflow-y-auto pr-1">
-                            <!-- Dynamic Cards for each detected team -->
-                        </div>
+                    <div class="shrink-0 self-end sm:self-center">
+                        <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white border border-emerald-300 text-emerald-800 text-xs font-bold shadow-2xs">
+                            <i class="fa-solid fa-circle-check text-emerald-600"></i>
+                            <span>Di Halaman Cek Status</span>
+                        </span>
                     </div>
                 </div>
 

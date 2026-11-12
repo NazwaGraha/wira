@@ -318,6 +318,135 @@
                             </div>
                         </div>
                     </div>
+
+                    <!-- ================= 2.5 SECTION UNGGAH MASSAL BERKAS PESERTA LOMBA (KHUSUS STATUS TERVERIFIKASI) ================= -->
+                    @php
+                        $teamsWithMembers = $registration->teams->filter(fn($t) => !empty($t->members_list))->count();
+                        $totalTeamsCount = $registration->teams->count();
+                        $hasCompletedAllMembers = ($totalTeamsCount > 0 && $teamsWithMembers === $totalTeamsCount);
+                    @endphp
+                    <div id="mass-upload-verified-card" class="bg-gradient-to-br from-emerald-50/80 via-white to-teal-50/50 border-2 border-dashed border-emerald-400 rounded-3xl p-6 sm:p-8 shadow-sm transition space-y-6">
+                        
+                        <!-- Header Card -->
+                        <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-emerald-200/80 pb-5">
+                            <div class="flex items-start sm:items-center gap-3.5">
+                                <div class="w-12 h-12 rounded-2xl bg-gradient-to-br from-[#107c41] to-emerald-700 text-white flex items-center justify-center text-2xl shadow-md shrink-0">
+                                    <i class="fa-solid fa-file-excel"></i>
+                                </div>
+                                <div>
+                                    <div class="flex items-center gap-2 flex-wrap">
+                                        <h3 class="text-base sm:text-lg font-black text-slate-900 tracking-tight">Unggah Massal Berkas Peserta Lomba</h3>
+                                        <span class="bg-[#107c41] text-white text-[10px] font-black uppercase px-2.5 py-0.5 rounded-full shadow-2xs">Kolektif 1x Upload</span>
+                                        @if($hasCompletedAllMembers)
+                                            <span class="bg-emerald-100 text-emerald-800 text-[10px] font-extrabold uppercase px-2.5 py-0.5 rounded-full border border-emerald-300">
+                                                <i class="fa-solid fa-circle-check text-emerald-600"></i> Lengkap ({{ $teamsWithMembers }}/{{ $totalTeamsCount }} Regu)
+                                            </span>
+                                        @else
+                                            <span class="bg-amber-100 text-amber-900 text-[10px] font-extrabold uppercase px-2.5 py-0.5 rounded-full border border-amber-300">
+                                                <i class="fa-solid fa-clock text-amber-600"></i> Terisi {{ $teamsWithMembers }}/{{ $totalTeamsCount }} Regu
+                                            </span>
+                                        @endif
+                                    </div>
+                                    <p class="text-xs text-slate-600 mt-1 leading-relaxed">
+                                        Status pendaftaran sekolah Anda telah <strong>TERVERIFIKASI</strong>. Silakan unduh template Excel resmi di bawah ini yang telah memuat identitas dan cabang lomba kontingen Anda, lengkapi nama siswa, lalu unggah di sini untuk seluruh regu.
+                                    </p>
+                                </div>
+                            </div>
+
+                            <!-- Tombol Unduh Template Excel Massal (Langkah 1 yang Diwajibkan Sebelum Upload) -->
+                            <div class="shrink-0 flex items-center">
+                                <a href="{{ route('lomba.status.download-template', $registration->registration_code) }}" class="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-5 py-3 bg-gradient-to-r from-[#107c41] to-emerald-700 hover:from-emerald-700 hover:to-emerald-800 active:scale-95 text-white font-extrabold text-xs sm:text-sm rounded-2xl shadow-md hover:shadow-lg transition cursor-pointer group">
+                                    <i class="fa-solid fa-cloud-arrow-down text-base text-emerald-200 group-hover:animate-bounce"></i>
+                                    <span>Unduh Template Excel Massal (.xlsx)</span>
+                                </a>
+                            </div>
+                        </div>
+
+                        <!-- 3 Langkah Alur Pengisian & Unggah -->
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-3.5 text-xs">
+                            <div class="bg-white/95 border border-emerald-200 rounded-2xl p-4 shadow-2xs space-y-1.5">
+                                <div class="flex items-center gap-2 font-bold text-slate-800">
+                                    <span class="w-6 h-6 rounded-full bg-emerald-600 text-white flex items-center justify-center text-xs font-black shrink-0">1</span>
+                                    <span>Unduh Template Excel</span>
+                                </div>
+                                <p class="text-[11px] text-slate-500 leading-relaxed">
+                                    Klik tombol hijau di atas untuk mengunduh template Excel massal khusus kontingen Anda (No. Reg: <strong class="text-slate-700 font-mono">{{ $registration->registration_code }}</strong>).
+                                </p>
+                            </div>
+
+                            <div class="bg-white/95 border border-emerald-200 rounded-2xl p-4 shadow-2xs space-y-1.5">
+                                <div class="flex items-center gap-2 font-bold text-slate-800">
+                                    <span class="w-6 h-6 rounded-full bg-emerald-600 text-white flex items-center justify-center text-xs font-black shrink-0">2</span>
+                                    <span>Lengkapi Nama Peserta</span>
+                                </div>
+                                <p class="text-[11px] text-slate-500 leading-relaxed">
+                                    Buka file Excel, isi Nama Lengkap Siswa, NISN, Jenis Kelamin, Kelas, dan Jabatan untuk seluruh cabang lomba yang diikuti.
+                                </p>
+                            </div>
+
+                            <div class="bg-white/95 border border-emerald-200 rounded-2xl p-4 shadow-2xs space-y-1.5">
+                                <div class="flex items-center gap-2 font-bold text-slate-800">
+                                    <span class="w-6 h-6 rounded-full bg-emerald-600 text-white flex items-center justify-center text-xs font-black shrink-0">3</span>
+                                    <span>Unggah Berkas di Bawah</span>
+                                </div>
+                                <p class="text-[11px] text-slate-500 leading-relaxed">
+                                    Pilih file Excel yang telah selesai diisi, periksa ringkasan pratinjau peserta, lalu klik <strong>Unggah &amp; Simpan</strong>.
+                                </p>
+                            </div>
+                        </div>
+
+                        <!-- Form Unggah Berkas Massal -->
+                        <form action="{{ route('lomba.status.upload-mass-participants') }}" method="POST" enctype="multipart/form-data" class="space-y-4" id="form-upload-mass-status">
+                            @csrf
+                            <input type="hidden" name="registration_code" value="{{ $registration->registration_code }}">
+
+                            <!-- File Upload Dropzone Area -->
+                            <div class="relative bg-white border-2 border-dashed border-emerald-300 hover:border-emerald-500 rounded-2xl p-6 sm:p-8 text-center transition cursor-pointer group shadow-2xs" onclick="document.getElementById('status_mass_file_input').click()">
+                                <input type="file" name="mass_participants_file" id="status_mass_file_input" accept=".xlsx,.xls,.csv" class="hidden" onchange="handleStatusMassExcelUpload(this)" required>
+
+                                <div class="flex flex-col items-center justify-center gap-2.5">
+                                    <div class="w-14 h-14 rounded-2xl bg-emerald-50 group-hover:bg-emerald-100 text-emerald-600 flex items-center justify-center text-2xl transition">
+                                        <i class="fa-solid fa-cloud-arrow-up"></i>
+                                    </div>
+                                    <div>
+                                        <span class="text-sm font-bold text-slate-800 group-hover:text-emerald-700 transition">Klik untuk Memilih Berkas Excel Massal</span>
+                                        <span class="text-xs text-slate-500 block mt-0.5">atau seret dan lepas berkas (.xlsx, .xls) yang telah Anda lengkapi ke area ini</span>
+                                    </div>
+                                    <div id="status-mass-file-badge" class="hidden inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-emerald-50 text-emerald-800 text-xs font-bold border border-emerald-300 mt-1 shadow-2xs">
+                                        <i class="fa-solid fa-circle-check text-emerald-600 text-sm"></i>
+                                        <span id="status-mass-file-name">Template_Massal.xlsx</span>
+                                        <span id="status-mass-file-size" class="text-emerald-700/70 text-[10px]"></span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Live AJAX Preview Container -->
+                            <div id="status-mass-preview-container" class="hidden bg-emerald-50/80 border border-emerald-300 rounded-2xl p-4 sm:p-5 text-xs space-y-3.5 shadow-2xs">
+                                <div class="flex items-center justify-between gap-2 border-b border-emerald-200/90 pb-3">
+                                    <div class="flex items-center gap-2 font-bold text-emerald-950 text-sm">
+                                        <i class="fa-solid fa-circle-check text-emerald-600 text-base"></i>
+                                        <span id="status-mass-preview-title">0 Peserta Berhasil Terdeteksi</span>
+                                    </div>
+                                    <span class="text-[11px] text-emerald-700 font-semibold">Pratinjau Data Excel</span>
+                                </div>
+
+                                <div id="status-mass-preview-teams-list" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 max-h-72 overflow-y-auto pr-1">
+                                    <!-- Dynamic Cards for each detected team -->
+                                </div>
+                            </div>
+
+                            <!-- Submit Button -->
+                            <div class="flex flex-col sm:flex-row items-center justify-between gap-3 pt-2">
+                                <span class="text-xs text-slate-500">
+                                    <i class="fa-solid fa-shield-halved text-emerald-600"></i> Nama peserta akan otomatis terhubung ke Kartu Peserta resmi regu di bawah.
+                                </span>
+                                <button type="submit" id="btn-submit-status-mass" class="w-full sm:w-auto px-6 py-3 rounded-2xl bg-gradient-to-r from-[#107c41] to-emerald-700 hover:from-emerald-700 hover:to-emerald-800 text-white font-extrabold text-xs sm:text-sm shadow-md transition flex items-center justify-center gap-2 active:scale-95 cursor-pointer">
+                                    <i class="fa-solid fa-cloud-arrow-up"></i>
+                                    <span>Unggah &amp; Simpan Berkas Peserta Seluruh Regu</span>
+                                </button>
+                            </div>
+                        </form>
+                    </div>
                 @endif
 
                 <!-- ================= 3. TAB NAVIGASI KONTEN (TABS VIEW SWITCHER) ================= -->
@@ -1068,6 +1197,100 @@
                 }
             }
         };
+    }
+
+    function handleStatusMassExcelUpload(input) {
+        const file = input.files && input.files[0];
+        if (!file) return;
+
+        const badge = document.getElementById('status-mass-file-badge');
+        const nameEl = document.getElementById('status-mass-file-name');
+        const sizeEl = document.getElementById('status-mass-file-size');
+        const previewContainer = document.getElementById('status-mass-preview-container');
+        const previewTitle = document.getElementById('status-mass-preview-title');
+        const teamsList = document.getElementById('status-mass-preview-teams-list');
+
+        if (badge && nameEl) {
+            badge.classList.remove('hidden');
+            nameEl.textContent = `Membaca ${file.name}...`;
+            if (sizeEl) sizeEl.textContent = `(${(file.size / 1024).toFixed(1)} KB)`;
+        }
+
+        const formData = new FormData();
+        formData.append('excel_file', file);
+        formData.append('_token', '{{ csrf_token() }}');
+
+        fetch('{{ route("lomba.parse-mass-excel") }}', {
+            method: 'POST',
+            body: formData,
+            headers: {
+                'Accept': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest',
+            }
+        })
+        .then(res => {
+            if (!res.ok) {
+                return res.json().then(e => { throw new Error(e.message || 'Gagal membaca berkas Excel.'); });
+            }
+            return res.json();
+        })
+        .then(data => {
+            if (!data.success) {
+                throw new Error(data.message || 'Gagal membaca format Excel.');
+            }
+
+            if (nameEl) {
+                nameEl.textContent = `${file.name} (${data.total_participants} Peserta, ${data.teams_count} Regu)`;
+            }
+
+            if (previewContainer && previewTitle && teamsList) {
+                previewContainer.classList.remove('hidden');
+                previewTitle.innerHTML = `<i class="fa-solid fa-circle-check text-emerald-600"></i> ${data.total_participants} Peserta Terdeteksi (${data.teams_count} Regu)`;
+                teamsList.innerHTML = '';
+
+                if (Array.isArray(data.grouped) && data.grouped.length > 0) {
+                    data.grouped.forEach(grp => {
+                        const card = document.createElement('div');
+                        card.className = 'bg-white rounded-xl p-3 border border-emerald-200/80 shadow-2xs space-y-1.5';
+                        let membersHtml = '';
+                        if (Array.isArray(grp.members)) {
+                            membersHtml = grp.members.map((m, idx) => `
+                                <div class="flex items-center justify-between text-[11px] text-slate-700">
+                                    <span><strong>${idx + 1}.</strong> ${escapeStatusHtml(m.name || 'Peserta')}</span>
+                                    <span class="text-[10px] text-slate-400">${escapeStatusHtml(m.role || '')}</span>
+                                </div>
+                            `).join('');
+                        }
+
+                        card.innerHTML = `
+                            <div class="flex items-center justify-between border-b border-slate-100 pb-1.5">
+                                <span class="font-bold text-slate-800 text-xs">${escapeStatusHtml(grp.category_name)}</span>
+                                <span class="text-[10px] font-bold text-emerald-800 bg-emerald-100 px-1.5 py-0.5 rounded">${escapeStatusHtml(grp.team_label || 'Regu')}</span>
+                            </div>
+                            <div class="space-y-1 pt-1 max-h-36 overflow-y-auto">
+                                ${membersHtml || '<span class="text-slate-400 italic">Tidak ada nama anggota</span>'}
+                            </div>
+                        `;
+                        teamsList.appendChild(card);
+                    });
+                }
+            }
+        })
+        .catch(err => {
+            console.warn('Preview Excel Massal error:', err);
+            if (nameEl) {
+                nameEl.textContent = file.name;
+            }
+            if (previewContainer) {
+                previewContainer.classList.add('hidden');
+            }
+        });
+    }
+
+    function escapeStatusHtml(text) {
+        if (!text) return '';
+        const map = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' };
+        return String(text).replace(/[&<>"']/g, m => map[m]);
     }
 </script>
 @endpush
