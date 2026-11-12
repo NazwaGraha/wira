@@ -6,10 +6,32 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Facades\Storage;
 
 class CompetitionParticipantTeam extends Model
 {
     use HasFactory;
+
+    protected static function booted(): void
+    {
+        static::deleting(function (CompetitionParticipantTeam $team) {
+            // 1. Hapus berkas fisik Excel peserta jika ada
+            if ($team->members_file && Storage::disk('public')->exists($team->members_file)) {
+                Storage::disk('public')->delete($team->members_file);
+            }
+
+            // 2. Hapus foto-foto bukti penilaian juri dan berkas gambarnya di storage
+            $team->photos()->each(function ($photo) {
+                if ($photo->photo_path && Storage::disk('public')->exists($photo->photo_path)) {
+                    Storage::disk('public')->delete($photo->photo_path);
+                }
+                $photo->delete();
+            });
+
+            // 3. Hapus seluruh data nilai rubrik juri
+            $team->scores()->delete();
+        });
+    }
 
     protected $fillable = [
         'competition_registration_id',

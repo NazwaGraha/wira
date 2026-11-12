@@ -7,10 +7,51 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Facades\Storage;
 
 class CompetitionRegistration extends Model
 {
     use HasFactory;
+
+    protected static function booted(): void
+    {
+        static::deleting(function (CompetitionRegistration $registration) {
+            // 1. Hapus seluruh tiket parkir kontingen (bersih dari sistem parkir & aplikasi petugas)
+            $registration->parkingTickets()->each(function ($ticket) {
+                $ticket->delete();
+            });
+
+            // 2. Hapus berkas fisik bukti transfer pembayaran dari storage
+            if ($registration->payment_proof && Storage::disk('public')->exists($registration->payment_proof)) {
+                Storage::disk('public')->delete($registration->payment_proof);
+            }
+
+            // 3. Hapus seluruh regu peserta (ini juga akan memicu cascade delete skor juri dan foto penilaian)
+            $registration->teams()->each(function ($team) {
+                $team->delete();
+            });
+        });
+
+        static::updating(function (CompetitionRegistration $registration) {
+            // Jika nama sekolah diubah, sinkronkan nama regu otomatis
+            if ($registration->isDirty('school_name')) {
+                $oldName = $registration->getOriginal('school_name');
+                $newName = $registration->school_name;
+
+                if (! empty($oldName) && ! empty($newName)) {
+                    $registration->teams()->each(function ($team) use ($oldName, $newName) {
+                        if (str_contains($team->team_name, $oldName)) {
+                            $team->team_name = str_replace($oldName, $newName, $team->team_name);
+                            $team->saveQuietly();
+                        } elseif (empty($team->team_name)) {
+                            $team->team_name = "{$newName} ".($team->team_label ?: 'Regu');
+                            $team->saveQuietly();
+                        }
+                    });
+                }
+            }
+        });
+    }
 
     protected $fillable = [
         'competition_event_id',

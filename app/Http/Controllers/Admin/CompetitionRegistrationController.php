@@ -233,21 +233,10 @@ class CompetitionRegistrationController extends Controller
         $school = $registration->school_name;
 
         DB::transaction(function () use ($registration) {
-            // Delete file proof
-            if ($registration->payment_proof && Storage::disk('public')->exists($registration->payment_proof)) {
-                Storage::disk('public')->delete($registration->payment_proof);
-            }
-
-            // Delete teams and related scores
-            foreach ($registration->teams as $team) {
-                $team->scores()->delete();
-                $team->delete();
-            }
-
             $registration->delete();
         });
 
-        return redirect()->route('admin.competition-registrations.index')->with('success', "Data pendaftaran {$school} berhasil dihapus.");
+        return redirect()->route('admin.competition-registrations.index')->with('success', "Data pendaftaran {$school} berhasil dihapus beserta seluruh peserta, nilai juri, dan tiket kendaraannya.");
     }
 
     /**
@@ -272,7 +261,7 @@ class CompetitionRegistrationController extends Controller
         }
 
         try {
-            $registrations = CompetitionRegistration::with('teams.scores')->whereIn('id', $ids)->get();
+            $registrations = CompetitionRegistration::whereIn('id', $ids)->get();
             $count = $registrations->count();
 
             if ($count === 0) {
@@ -281,22 +270,11 @@ class CompetitionRegistrationController extends Controller
 
             DB::transaction(function () use ($registrations) {
                 foreach ($registrations as $reg) {
-                    // Hapus file fisik bukti transfer
-                    if ($reg->payment_proof && Storage::disk('public')->exists($reg->payment_proof)) {
-                        Storage::disk('public')->delete($reg->payment_proof);
-                    }
-
-                    // Hapus regu dan skor penilaian terkait
-                    foreach ($reg->teams as $team) {
-                        $team->scores()->delete();
-                        $team->delete();
-                    }
-
                     $reg->delete();
                 }
             });
 
-            return redirect()->route('admin.competition-registrations.index')->with('success', "Berhasil menghapus {$count} data pendaftaran kontingen terpilih beserta seluruh regu dan berkasnya.");
+            return redirect()->route('admin.competition-registrations.index')->with('success', "Berhasil menghapus {$count} data pendaftaran kontingen terpilih beserta seluruh peserta, nilai juri, dan tiket kendaraannya.");
         } catch (\Throwable $e) {
             Log::error('Gagal menghapus data pendaftaran masal: '.$e->getMessage());
 
