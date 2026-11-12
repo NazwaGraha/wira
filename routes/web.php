@@ -743,6 +743,7 @@ Route::prefix('lomba')->name('lomba.')->group(function () {
     Route::get('/status', [CompetitionController::class, 'status'])->name('status');
     Route::get('/status/download-template/{code}', [CompetitionController::class, 'downloadVerifiedSchoolMassTemplate'])->name('status.download-template');
     Route::post('/status/upload-mass-participants', [CompetitionController::class, 'uploadMassParticipantsStatus'])->name('status.upload-mass-participants');
+    Route::post('/status/save-web-participants', [CompetitionController::class, 'saveWebParticipantsStatus'])->name('status.save-web-participants');
     Route::post('/status/register-vehicles', [CompetitionController::class, 'registerVehicles'])->name('register-vehicles');
     Route::post('/status/delete-vehicle-ticket', [CompetitionController::class, 'deleteVehicleTicket'])->name('delete-vehicle-ticket');
     Route::get('/tiket-parkir/{token}', [ParkingOfficerController::class, 'publicTicket'])->name('parking-ticket');

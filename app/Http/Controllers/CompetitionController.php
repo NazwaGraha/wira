@@ -1001,6 +1001,121 @@ class CompetitionController extends Controller
     }
 
     /**
+     * Menyimpan data anggota peserta lomba langsung dari formulir web (Status Page)
+     */
+    public function saveWebParticipantsStatus(Request $request)
+    {
+        $validated = $request->validate([
+            'registration_code' => 'required|string|max:50',
+            'target_team_id' => 'nullable|integer',
+            'teams' => 'required|array|min:1',
+            'teams.*.team_id' => 'required|integer',
+            'teams.*.members' => 'nullable|array',
+            'teams.*.members.*.name' => 'nullable|string|max:150',
+            'teams.*.members.*.nisn' => 'nullable|string|max:30',
+            'teams.*.members.*.gender' => 'nullable|string|max:10',
+            'teams.*.members.*.class_grade' => 'nullable|string|max:30',
+            'teams.*.members.*.role' => 'nullable|string|max:50',
+        ]);
+
+        $code = trim($validated['registration_code']);
+        $registration = CompetitionRegistration::where('registration_code', $code)
+            ->with('teams.category')
+            ->first();
+
+        if (! $registration) {
+            if ($request->wantsJson() || $request->ajax()) {
+                return response()->json(['success' => false, 'message' => 'Nomor registrasi tidak ditemukan.'], 404);
+            }
+
+            return back()->with('error', 'Nomor registrasi tidak ditemukan.');
+        }
+
+        if ($registration->status !== 'verified') {
+            if ($request->wantsJson() || $request->ajax()) {
+                return response()->json(['success' => false, 'message' => 'Pengisian data peserta hanya dapat dilakukan setelah status terverifikasi.'], 403);
+            }
+
+            return back()->with('error', 'Pengisian data peserta hanya dapat dilakukan setelah status terverifikasi.');
+        }
+
+        $targetTeamId = ! empty($validated['target_team_id']) ? (int) $validated['target_team_id'] : null;
+        $updatedTeams = 0;
+        $totalMembers = 0;
+
+        foreach ($validated['teams'] as $teamInput) {
+            $teamId = (int) ($teamInput['team_id'] ?? 0);
+            if ($targetTeamId && $teamId !== $targetTeamId) {
+                continue;
+            }
+
+            $team = $registration->teams->firstWhere('id', $teamId);
+            if (! $team) {
+                continue;
+            }
+
+            $members = [];
+            $requiredQuota = $team->category ? $team->category->getRequiredTeamMembers() : 2;
+
+            if (! empty($teamInput['members']) && is_array($teamInput['members'])) {
+                $idxCount = 0;
+                foreach ($teamInput['members'] as $idx => $m) {
+                    $name = trim($m['name'] ?? '');
+                    if ($name === '') {
+                        continue;
+                    }
+
+                    $role = trim($m['role'] ?? '');
+                    if ($role === '') {
+                        if ($requiredQuota === 1) {
+                            $role = 'Peserta';
+                        } elseif ($idxCount === 0) {
+                            $role = 'Ketua Regu';
+                        } else {
+                            $role = 'Anggota '.$idxCount;
+                        }
+                    }
+
+                    $gender = strtoupper(trim($m['gender'] ?? ''));
+                    if (empty($gender) && $team->category?->gender_category) {
+                        $gender = in_array($team->category->gender_category, ['Putra', 'Putri'])
+                            ? ($team->category->gender_category === 'Putra' ? 'L' : 'P')
+                            : '';
+                    }
+
+                    $members[] = [
+                        'name' => ucwords(strtolower($name)),
+                        'nisn' => ! empty($m['nisn']) ? trim($m['nisn']) : null,
+                        'gender' => $gender ?: null,
+                        'class_grade' => ! empty($m['class_grade']) ? trim($m['class_grade']) : null,
+                        'role' => $role,
+                    ];
+                    $idxCount++;
+                }
+            }
+
+            $team->members_list = $members;
+            $team->save();
+            $updatedTeams++;
+            $totalMembers += count($members);
+        }
+
+        $message = "Berhasil menyimpan {$totalMembers} anggota peserta untuk {$updatedTeams} regu!";
+
+        if ($request->wantsJson() || $request->ajax()) {
+            return response()->json([
+                'success' => true,
+                'message' => $message,
+                'updated_teams' => $updatedTeams,
+                'total_members' => $totalMembers,
+            ]);
+        }
+
+        return redirect()->route('lomba.status', ['code' => $registration->registration_code])
+            ->with('success', $message);
+    }
+
+    /**
      * API AJAX untuk membaca & memvalidasi file Excel Massal Kolektif (Live Preview)
      */
     public function parseMassExcelPeserta(Request $request, CompetitionSpreadsheetService $spreadsheetService)

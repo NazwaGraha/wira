@@ -152,4 +152,142 @@ class MassParticipantUploadStatusTest extends TestCase
         $this->assertCount(2, $team2->members_list);
         $this->assertEquals('Fajar Hidayat', $team2->members_list[0]['name']);
     }
+
+    public function test_verified_registration_shows_web_participant_form_with_exact_quota_slots(): void
+    {
+        $data = $this->createEventWithRegistration('verified');
+
+        $response = $this->get('/lomba/status?code='.$data['registration']->registration_code);
+        $response->assertStatus(200);
+        $response->assertSee('Pengisian Data Anggota Peserta Lomba', false);
+        $response->assertSee('Form Web Langsung', false);
+        $response->assertSee(route('lomba.status.save-web-participants'), false);
+
+        // Pertolongan Pertama: Kuota 3 Orang
+        $response->assertSee('Kuota Resmi: <strong>3 Orang Anggota</strong>', false);
+        // Pastikan ada slot input untuk ke-3 anggota
+        $response->assertSee('name="teams['.$data['team1']->id.'][members][0][name]"', false);
+        $response->assertSee('name="teams['.$data['team1']->id.'][members][1][name]"', false);
+        $response->assertSee('name="teams['.$data['team1']->id.'][members][2][name]"', false);
+
+        // Ketangkasan Tandu: Kuota 2 Orang
+        $response->assertSee('Kuota Resmi: <strong>2 Orang Anggota</strong>', false);
+        $response->assertSee('name="teams['.$data['team2']->id.'][members][0][name]"', false);
+        $response->assertSee('name="teams['.$data['team2']->id.'][members][1][name]"', false);
+        $response->assertDontSee('name="teams['.$data['team2']->id.'][members][2][name]"', false);
+    }
+
+    public function test_save_web_participants_saves_all_3_members_for_team(): void
+    {
+        $data = $this->createEventWithRegistration('verified');
+
+        $payload = [
+            'registration_code' => $data['registration']->registration_code,
+            'teams' => [
+                [
+                    'team_id' => $data['team1']->id,
+                    'members' => [
+                        [
+                            'name' => 'Budi Santoso',
+                            'nisn' => '0012345678',
+                            'gender' => 'L',
+                            'class_grade' => '8A',
+                            'role' => 'Ketua Regu',
+                        ],
+                        [
+                            'name' => 'Andi Wijaya',
+                            'nisn' => '0012345679',
+                            'gender' => 'L',
+                            'class_grade' => '8B',
+                            'role' => 'Anggota 1',
+                        ],
+                        [
+                            'name' => 'Candra Gunawan',
+                            'nisn' => '0012345680',
+                            'gender' => 'L',
+                            'class_grade' => '8C',
+                            'role' => 'Anggota 2',
+                        ],
+                    ],
+                ],
+                [
+                    'team_id' => $data['team2']->id,
+                    'members' => [
+                        [
+                            'name' => 'Doni Kusuma',
+                            'nisn' => '0012345681',
+                            'gender' => 'L',
+                            'class_grade' => '9A',
+                            'role' => 'Peserta 1',
+                        ],
+                        [
+                            'name' => 'Eko Prasetyo',
+                            'nisn' => '0012345682',
+                            'gender' => 'L',
+                            'class_grade' => '9B',
+                            'role' => 'Peserta 2',
+                        ],
+                    ],
+                ],
+            ],
+        ];
+
+        $response = $this->post(route('lomba.status.save-web-participants'), $payload);
+
+        $response->assertRedirect('/lomba/status?code='.$data['registration']->registration_code);
+        $response->assertSessionHas('success');
+
+        // Pastikan ke-3 anggota regu 1 berhasil tersimpan
+        $team1 = $data['team1']->fresh();
+        $this->assertNotEmpty($team1->members_list);
+        $this->assertCount(3, $team1->members_list);
+        $this->assertEquals('Budi Santoso', $team1->members_list[0]['name']);
+        $this->assertEquals('Ketua Regu', $team1->members_list[0]['role']);
+        $this->assertEquals('Andi Wijaya', $team1->members_list[1]['name']);
+        $this->assertEquals('Anggota 1', $team1->members_list[1]['role']);
+        $this->assertEquals('Candra Gunawan', $team1->members_list[2]['name']);
+        $this->assertEquals('Anggota 2', $team1->members_list[2]['role']);
+
+        // Pastikan ke-2 anggota regu 2 berhasil tersimpan
+        $team2 = $data['team2']->fresh();
+        $this->assertNotEmpty($team2->members_list);
+        $this->assertCount(2, $team2->members_list);
+        $this->assertEquals('Doni Kusuma', $team2->members_list[0]['name']);
+        $this->assertEquals('Eko Prasetyo', $team2->members_list[1]['name']);
+    }
+
+    public function test_save_web_participants_can_save_single_targeted_team(): void
+    {
+        $data = $this->createEventWithRegistration('verified');
+
+        $payload = [
+            'registration_code' => $data['registration']->registration_code,
+            'target_team_id' => $data['team1']->id,
+            'teams' => [
+                [
+                    'team_id' => $data['team1']->id,
+                    'members' => [
+                        ['name' => 'Siswa Satu', 'role' => 'Ketua Regu'],
+                        ['name' => 'Siswa Dua', 'role' => 'Anggota 1'],
+                        ['name' => 'Siswa Tiga', 'role' => 'Anggota 2'],
+                    ],
+                ],
+                [
+                    'team_id' => $data['team2']->id,
+                    'members' => [
+                        ['name' => 'Siswa Jangan Simpan', 'role' => 'Peserta'],
+                    ],
+                ],
+            ],
+        ];
+
+        $response = $this->post(route('lomba.status.save-web-participants'), $payload);
+        $response->assertRedirect();
+
+        $team1 = $data['team1']->fresh();
+        $this->assertCount(3, $team1->members_list);
+
+        $team2 = $data['team2']->fresh();
+        $this->assertEmpty($team2->members_list);
+    }
 }

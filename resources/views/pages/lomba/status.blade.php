@@ -319,133 +319,347 @@
                         </div>
                     </div>
 
-                    <!-- ================= 2.5 SECTION UNGGAH MASSAL BERKAS PESERTA LOMBA (KHUSUS STATUS TERVERIFIKASI) ================= -->
+                    <!-- ================= 2.5 SECTION PENGELOLAAN DATA ANGGOTA PESERTA LOMBA (KHUSUS STATUS TERVERIFIKASI) ================= -->
                     @php
-                        $teamsWithMembers = $registration->teams->filter(fn($t) => !empty($t->members_list))->count();
+                        $totalRequiredQuota = $registration->teams->sum(fn($t) => $t->category ? $t->category->getRequiredTeamMembers() : 2);
+                        $totalFilledMembers = $registration->teams->sum(function($t) {
+                            $m = is_array($t->members_list) ? $t->members_list : (is_string($t->members_list) ? json_decode($t->members_list, true) : []);
+                            return is_array($m) ? count(array_filter($m, fn($item) => !empty(is_array($item) ? ($item['name'] ?? '') : $item))) : 0;
+                        });
+                        $teamsWithMembers = $registration->teams->filter(function($t) {
+                            $m = is_array($t->members_list) ? $t->members_list : (is_string($t->members_list) ? json_decode($t->members_list, true) : []);
+                            return is_array($m) && count(array_filter($m, fn($item) => !empty(is_array($item) ? ($item['name'] ?? '') : $item))) > 0;
+                        })->count();
                         $totalTeamsCount = $registration->teams->count();
-                        $hasCompletedAllMembers = ($totalTeamsCount > 0 && $teamsWithMembers === $totalTeamsCount);
+                        $hasCompletedAllMembers = ($totalTeamsCount > 0 && $teamsWithMembers === $totalTeamsCount && $totalFilledMembers >= $totalRequiredQuota);
+                        $percentFilled = $totalRequiredQuota > 0 ? min(100, round(($totalFilledMembers / $totalRequiredQuota) * 100)) : 0;
                     @endphp
-                    <div id="mass-upload-verified-card" class="bg-gradient-to-br from-emerald-50/80 via-white to-teal-50/50 border-2 border-dashed border-emerald-400 rounded-3xl p-6 sm:p-8 shadow-sm transition space-y-6">
+
+                    <div id="mass-upload-verified-card" x-data="{ participantInputMode: 'web', targetSavingId: null, isSaving: false }" class="bg-gradient-to-br from-emerald-50/90 via-white to-teal-50/60 border-2 border-emerald-400 rounded-3xl p-5 sm:p-7 shadow-sm transition space-y-6">
                         
-                        <!-- Header Card -->
-                        <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-emerald-200/80 pb-5">
+                        <!-- Header Card & Status Keterisian -->
+                        <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4 border-b border-emerald-200/80 pb-5">
                             <div class="flex items-start sm:items-center gap-3.5">
                                 <div class="w-12 h-12 rounded-2xl bg-gradient-to-br from-[#107c41] to-emerald-700 text-white flex items-center justify-center text-2xl shadow-md shrink-0">
-                                    <i class="fa-solid fa-file-excel"></i>
+                                    <i class="fa-solid fa-users-gear"></i>
                                 </div>
                                 <div>
                                     <div class="flex items-center gap-2 flex-wrap">
-                                        <h3 class="text-base sm:text-lg font-black text-slate-900 tracking-tight">Unggah Massal Berkas Peserta Lomba</h3>
-                                        <span class="bg-[#107c41] text-white text-[10px] font-black uppercase px-2.5 py-0.5 rounded-full shadow-2xs">Kolektif 1x Upload</span>
+                                        <h3 class="text-base sm:text-lg font-black text-slate-900 tracking-tight">Pengisian Data Anggota Peserta Lomba</h3>
+                                        <span class="bg-[#107c41] text-white text-[10px] font-black uppercase px-2.5 py-0.5 rounded-full shadow-2xs">Kontingen Resmi</span>
                                         @if($hasCompletedAllMembers)
                                             <span class="bg-emerald-100 text-emerald-800 text-[10px] font-extrabold uppercase px-2.5 py-0.5 rounded-full border border-emerald-300">
-                                                <i class="fa-solid fa-circle-check text-emerald-600"></i> Lengkap ({{ $teamsWithMembers }}/{{ $totalTeamsCount }} Regu)
+                                                <i class="fa-solid fa-circle-check text-emerald-600"></i> Kuota Lengkap ({{ $totalFilledMembers }}/{{ $totalRequiredQuota }} Peserta)
                                             </span>
                                         @else
                                             <span class="bg-amber-100 text-amber-900 text-[10px] font-extrabold uppercase px-2.5 py-0.5 rounded-full border border-amber-300">
-                                                <i class="fa-solid fa-clock text-amber-600"></i> Terisi {{ $teamsWithMembers }}/{{ $totalTeamsCount }} Regu
+                                                <i class="fa-solid fa-clock text-amber-600"></i> Terisi {{ $totalFilledMembers }}/{{ $totalRequiredQuota }} Peserta ({{ $percentFilled }}%)
                                             </span>
                                         @endif
                                     </div>
                                     <p class="text-xs text-slate-600 mt-1 leading-relaxed">
-                                        Status pendaftaran sekolah Anda telah <strong>TERVERIFIKASI</strong>. Silakan unduh template Excel resmi di bawah ini yang telah memuat identitas dan cabang lomba kontingen Anda, lengkapi nama siswa, lalu unggah di sini untuk seluruh regu.
+                                        Status pendaftaran sekolah Anda telah <strong>TERVERIFIKASI</strong>. Silakan isi seluruh nama anggota peserta lomba langsung melalui <strong>Form Web</strong> di bawah (jumlah anggota otomatis disesuaikan kuota resmi regu) atau melalui <strong>Unggah File Excel Massal</strong>.
                                     </p>
                                 </div>
                             </div>
 
-                            <!-- Tombol Unduh Template Excel Massal (Langkah 1 yang Diwajibkan Sebelum Upload) -->
-                            <div class="shrink-0 flex items-center">
-                                <a href="{{ route('lomba.status.download-template', $registration->registration_code) }}" class="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-5 py-3 bg-gradient-to-r from-[#107c41] to-emerald-700 hover:from-emerald-700 hover:to-emerald-800 active:scale-95 text-white font-extrabold text-xs sm:text-sm rounded-2xl shadow-md hover:shadow-lg transition cursor-pointer group">
-                                    <i class="fa-solid fa-cloud-arrow-down text-base text-emerald-200 group-hover:animate-bounce"></i>
+                            <!-- Dual-Method Switcher Buttons (Pill Toggle) -->
+                            <div class="shrink-0 flex items-center bg-emerald-100/70 p-1.5 rounded-2xl border border-emerald-300/80 gap-1.5 self-start lg:self-auto">
+                                <button type="button" @click="participantInputMode = 'web'" :class="participantInputMode === 'web' ? 'bg-gradient-to-r from-emerald-600 to-[#107c41] text-white shadow-xs font-black' : 'text-emerald-900 hover:bg-emerald-200/50 font-bold'" class="px-3.5 py-2 rounded-xl text-xs flex items-center gap-1.5 transition cursor-pointer">
+                                    <i class="fa-solid fa-pen-to-square"></i>
+                                    <span>Form Web Langsung</span>
+                                </button>
+                                <button type="button" @click="participantInputMode = 'excel'" :class="participantInputMode === 'excel' ? 'bg-gradient-to-r from-emerald-600 to-[#107c41] text-white shadow-xs font-black' : 'text-emerald-900 hover:bg-emerald-200/50 font-bold'" class="px-3.5 py-2 rounded-xl text-xs flex items-center gap-1.5 transition cursor-pointer">
+                                    <i class="fa-solid fa-file-excel"></i>
+                                    <span>Unggah File Excel</span>
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Progress Bar Keterisian Kuota Kontingen -->
+                        <div class="bg-white/90 border border-emerald-200 rounded-2xl p-4 shadow-2xs space-y-2">
+                            <div class="flex items-center justify-between text-xs">
+                                <div class="flex items-center gap-2">
+                                    <span class="font-extrabold text-slate-800">Progress Keterisian Anggota Kontingen:</span>
+                                    <span class="font-bold text-emerald-700 font-mono">{{ $totalFilledMembers }} dari {{ $totalRequiredQuota }} Peserta ({{ $percentFilled }}%)</span>
+                                </div>
+                                <span class="text-[11px] font-semibold text-slate-500">
+                                    {{ $teamsWithMembers }}/{{ $totalTeamsCount }} Regu Terisi
+                                </span>
+                            </div>
+                            <div class="w-full h-3 rounded-full bg-slate-100 overflow-hidden border border-slate-200/80">
+                                <div class="h-full bg-gradient-to-r from-emerald-500 to-teal-600 rounded-full transition-all duration-500" style="width: {{ $percentFilled }}%"></div>
+                            </div>
+                        </div>
+
+                        <!-- ================= METODE 1: FORM INPUT LANGSUNG DI WEB ================= -->
+                        <div x-show="participantInputMode === 'web'" x-cloak class="space-y-6">
+                            <form action="{{ route('lomba.status.save-web-participants') }}" method="POST" id="form-web-participants" @submit="isSaving = true">
+                                @csrf
+                                <input type="hidden" name="registration_code" value="{{ $registration->registration_code }}">
+                                <input type="hidden" name="target_team_id" id="target_team_id_input" value="">
+
+                                <div class="space-y-5">
+                                    @forelse($registration->teams as $tIdx => $team)
+                                        @php
+                                            $quota = $team->category ? $team->category->getRequiredTeamMembers() : 2;
+                                            $existingMembers = is_array($team->members_list) 
+                                                ? $team->members_list 
+                                                : (is_string($team->members_list) ? json_decode($team->members_list, true) : []);
+                                            if (!is_array($existingMembers)) $existingMembers = [];
+                                            $filledCount = count(array_filter($existingMembers, fn($item) => !empty(is_array($item) ? ($item['name'] ?? '') : $item)));
+                                            $isTeamComplete = ($filledCount >= $quota);
+                                        @endphp
+
+                                        <input type="hidden" name="teams[{{ $team->id }}][team_id]" value="{{ $team->id }}">
+
+                                        <!-- Kartu Per Regu -->
+                                        <div class="bg-white border-2 {{ $isTeamComplete ? 'border-emerald-300 shadow-2xs' : 'border-slate-200 hover:border-slate-300' }} rounded-2xl overflow-hidden transition space-y-0">
+                                            
+                                            <!-- Team Card Header -->
+                                            <div class="p-4 bg-gradient-to-r from-slate-50 via-emerald-50/40 to-slate-50 border-b border-slate-200 flex flex-col md:flex-row md:items-center justify-between gap-3">
+                                                <div class="space-y-1">
+                                                    <div class="flex items-center gap-2 flex-wrap">
+                                                        <span class="font-black text-slate-900 text-sm sm:text-base">
+                                                            {{ $tIdx + 1 }}. {{ $team->category->name }}
+                                                        </span>
+                                                        <span class="px-2 py-0.5 rounded text-[10px] font-extrabold uppercase {{ $team->category->gender_category === 'Putra' ? 'bg-blue-100 text-blue-800 border border-blue-200' : ($team->category->gender_category === 'Putri' ? 'bg-rose-100 text-rose-800 border border-rose-200' : 'bg-slate-200 text-slate-700 border border-slate-300') }}">
+                                                            {{ $team->category->gender_category }}
+                                                        </span>
+                                                        <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-slate-100 text-slate-800 border border-slate-200">
+                                                            {{ $team->team_label ?: $team->team_name }}
+                                                        </span>
+                                                        @if($team->order_number)
+                                                            <span class="px-2 py-0.5 rounded text-[10px] font-black font-mono bg-amber-100 text-amber-900 border border-amber-300">
+                                                                No. Tampil: {{ $team->order_number }}
+                                                            </span>
+                                                        @endif
+                                                    </div>
+                                                    <div class="flex items-center gap-3 text-xs text-slate-600">
+                                                        <span class="inline-flex items-center gap-1 font-semibold text-emerald-800 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
+                                                            <i class="fa-solid fa-user-check text-emerald-600"></i> Kuota Resmi: <strong>{{ $quota }} Orang Anggota</strong>
+                                                        </span>
+                                                        @if($isTeamComplete)
+                                                            <span class="text-emerald-700 font-bold inline-flex items-center gap-1">
+                                                                <i class="fa-solid fa-circle-check text-emerald-600"></i> Lengkap ({{ $filledCount }}/{{ $quota }})
+                                                            </span>
+                                                        @else
+                                                            <span class="text-amber-700 font-bold inline-flex items-center gap-1">
+                                                                <i class="fa-solid fa-circle-exclamation text-amber-500"></i> Terisi {{ $filledCount }}/{{ $quota }} Anggota
+                                                            </span>
+                                                        @endif
+                                                    </div>
+                                                </div>
+
+                                                <!-- Tombol Simpan Regu Ini -->
+                                                <button type="button" @click="saveSpecificTeam({{ $team->id }})" class="shrink-0 px-4 py-2 rounded-xl bg-slate-900 hover:bg-emerald-700 text-white font-bold text-xs shadow-xs transition flex items-center gap-1.5 self-start md:self-auto cursor-pointer">
+                                                    <i class="fa-solid fa-floppy-disk text-emerald-400"></i>
+                                                    <span>Simpan Regu Ini</span>
+                                                </button>
+                                            </div>
+
+                                            <!-- Form Baris Anggota Sesuai Kuota Resmi -->
+                                            <div class="p-4 sm:p-5 space-y-3 bg-slate-50/30">
+                                                <div class="hidden md:grid grid-cols-12 gap-3 text-[11px] font-extrabold text-slate-600 uppercase tracking-wider px-2">
+                                                    <div class="col-span-2">Posisi / Slot</div>
+                                                    <div class="col-span-4">Nama Lengkap Siswa <span class="text-rose-500">*</span></div>
+                                                    <div class="col-span-2">NISN</div>
+                                                    <div class="col-span-2">Jenis Kelamin</div>
+                                                    <div class="col-span-2">Kelas</div>
+                                                </div>
+
+                                                @for($slot = 0; $slot < $quota; $slot++)
+                                                    @php
+                                                        $member = $existingMembers[$slot] ?? null;
+                                                        $mName = is_array($member) ? ($member['name'] ?? ($member['nama'] ?? '')) : ($member ?? '');
+                                                        $mNisn = is_array($member) ? ($member['nisn'] ?? '') : '';
+                                                        $mGender = is_array($member) ? ($member['gender'] ?? '') : '';
+                                                        $mClass = is_array($member) ? ($member['class_grade'] ?? ($member['kelas'] ?? '')) : '';
+                                                        $mRole = is_array($member) ? ($member['role'] ?? ($member['peran'] ?? '')) : '';
+                                                        if (empty($mRole)) {
+                                                            if ($quota === 1) {
+                                                                $mRole = 'Peserta';
+                                                            } elseif ($slot === 0) {
+                                                                $mRole = 'Ketua Regu';
+                                                            } else {
+                                                                $mRole = 'Anggota ' . $slot;
+                                                            }
+                                                        }
+                                                        if (empty($mGender) && $team->category?->gender_category) {
+                                                            if ($team->category->gender_category === 'Putra') $mGender = 'L';
+                                                            elseif ($team->category->gender_category === 'Putri') $mGender = 'P';
+                                                        }
+                                                    @endphp
+
+                                                    <div class="bg-white p-3 rounded-xl border border-slate-200/90 shadow-2xs space-y-2 md:space-y-0 md:grid md:grid-cols-12 md:gap-3 md:items-center">
+                                                        
+                                                        <!-- Posisi & Slot -->
+                                                        <div class="md:col-span-2 flex items-center gap-2">
+                                                            <span class="w-6 h-6 rounded-full {{ $slot === 0 ? 'bg-emerald-600 text-white' : 'bg-slate-200 text-slate-700' }} flex items-center justify-center text-xs font-black shrink-0">
+                                                                {{ $slot + 1 }}
+                                                            </span>
+                                                            <div class="flex-1">
+                                                                <input type="text" name="teams[{{ $team->id }}][members][{{ $slot }}][role]" value="{{ $mRole }}" class="w-full text-xs font-bold text-slate-800 bg-slate-50 border border-slate-200 rounded-lg px-2 py-1 focus:ring-1 focus:ring-emerald-500 focus:outline-none" placeholder="Jabatan">
+                                                            </div>
+                                                        </div>
+
+                                                        <!-- Nama Lengkap Siswa -->
+                                                        <div class="md:col-span-4">
+                                                            <label class="block md:hidden text-[10px] font-bold text-slate-500 mb-0.5">Nama Lengkap Siswa *</label>
+                                                            <input type="text" name="teams[{{ $team->id }}][members][{{ $slot }}][name]" value="{{ $mName }}" placeholder="Nama lengkap siswa (Wajib)" class="w-full text-xs font-semibold text-slate-900 bg-white border border-slate-300 rounded-lg px-3 py-2 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 focus:outline-none placeholder:text-slate-400">
+                                                        </div>
+
+                                                        <!-- NISN -->
+                                                        <div class="md:col-span-2">
+                                                            <label class="block md:hidden text-[10px] font-bold text-slate-500 mb-0.5">NISN (10 Digit)</label>
+                                                            <input type="text" name="teams[{{ $team->id }}][members][{{ $slot }}][nisn]" value="{{ $mNisn }}" placeholder="NISN siswa" maxlength="20" class="w-full text-xs font-mono text-slate-700 bg-white border border-slate-300 rounded-lg px-3 py-2 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 focus:outline-none placeholder:text-slate-400">
+                                                        </div>
+
+                                                        <!-- Jenis Kelamin -->
+                                                        <div class="md:col-span-2">
+                                                            <label class="block md:hidden text-[10px] font-bold text-slate-500 mb-0.5">Jenis Kelamin</label>
+                                                            <select name="teams[{{ $team->id }}][members][{{ $slot }}][gender]" class="w-full text-xs font-semibold text-slate-700 bg-white border border-slate-300 rounded-lg px-2.5 py-2 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 focus:outline-none cursor-pointer">
+                                                                <option value="">Pilih Gender</option>
+                                                                <option value="L" {{ strtoupper($mGender) === 'L' ? 'selected' : '' }}>Laki-laki (L)</option>
+                                                                <option value="P" {{ strtoupper($mGender) === 'P' ? 'selected' : '' }}>Perempuan (P)</option>
+                                                            </select>
+                                                        </div>
+
+                                                        <!-- Kelas -->
+                                                        <div class="md:col-span-2">
+                                                            <label class="block md:hidden text-[10px] font-bold text-slate-500 mb-0.5">Kelas</label>
+                                                            <input type="text" name="teams[{{ $team->id }}][members][{{ $slot }}][class_grade]" value="{{ $mClass }}" placeholder="Misal: 5A, 6B" class="w-full text-xs font-semibold text-slate-700 bg-white border border-slate-300 rounded-lg px-3 py-2 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 focus:outline-none placeholder:text-slate-400">
+                                                        </div>
+                                                    </div>
+                                                @endfor
+                                            </div>
+                                        </div>
+                                    @empty
+                                        <div class="bg-white rounded-2xl p-8 text-center text-slate-500">
+                                            Belum ada regu yang terdaftar pada kontingen ini.
+                                        </div>
+                                    @endforelse
+                                </div>
+
+                                <!-- Action Footer Web Form: Simpan Seluruh Regu -->
+                                <div class="bg-white rounded-2xl p-4 sm:p-5 border border-emerald-300 shadow-md flex flex-col sm:flex-row items-center justify-between gap-4 mt-6">
+                                    <div class="text-xs text-slate-600 flex items-center gap-2">
+                                        <i class="fa-solid fa-shield-halved text-emerald-600 text-lg"></i>
+                                        <span>Data yang disimpan akan otomatis memperbarui <strong>Kartu Peserta Resmi</strong> seluruh regu.</span>
+                                    </div>
+                                    <button type="submit" @click="saveAllTeams()" class="w-full sm:w-auto px-7 py-3.5 rounded-2xl bg-gradient-to-r from-[#107c41] to-emerald-700 hover:from-emerald-700 hover:to-emerald-800 text-white font-black text-sm shadow-md hover:shadow-lg transition flex items-center justify-center gap-2 active:scale-95 cursor-pointer">
+                                        <i class="fa-solid fa-floppy-disk text-base"></i>
+                                        <span>Simpan &amp; Perbarui Seluruh Anggota Peserta</span>
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+
+                        <!-- ================= METODE 2: UNGGAH FILE EXCEL MASSAL ================= -->
+                        <div x-show="participantInputMode === 'excel'" x-cloak class="space-y-6">
+                            
+                            <!-- Header & Download Template Box -->
+                            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white/95 border border-emerald-200 rounded-2xl p-4 sm:p-5 shadow-2xs">
+                                <div>
+                                    <h4 class="font-extrabold text-slate-800 text-sm flex items-center gap-2">
+                                        <i class="fa-solid fa-file-excel text-emerald-600"></i>
+                                        <span>Unggah Massal Berkas Peserta Lomba (Excel)</span>
+                                    </h4>
+                                    <p class="text-xs text-slate-500 mt-0.5">
+                                        Unduh template resmi kontingen Anda yang sudah memuat seluruh cabang lomba dan kategori regu yang Anda ikuti.
+                                    </p>
+                                </div>
+                                <a href="{{ route('lomba.status.download-template', $registration->registration_code) }}" class="inline-flex items-center justify-center gap-2 px-5 py-2.5 bg-gradient-to-r from-[#107c41] to-emerald-700 hover:from-emerald-700 hover:to-emerald-800 text-white font-extrabold text-xs rounded-xl shadow-xs transition cursor-pointer">
+                                    <i class="fa-solid fa-cloud-arrow-down"></i>
                                     <span>Unduh Template Excel Massal (.xlsx)</span>
                                 </a>
                             </div>
-                        </div>
 
-                        <!-- 3 Langkah Alur Pengisian & Unggah -->
-                        <div class="grid grid-cols-1 md:grid-cols-3 gap-3.5 text-xs">
-                            <div class="bg-white/95 border border-emerald-200 rounded-2xl p-4 shadow-2xs space-y-1.5">
-                                <div class="flex items-center gap-2 font-bold text-slate-800">
-                                    <span class="w-6 h-6 rounded-full bg-emerald-600 text-white flex items-center justify-center text-xs font-black shrink-0">1</span>
-                                    <span>Unduh Template Excel</span>
+                            <!-- 3 Langkah Alur Pengisian & Unggah -->
+                            <div class="grid grid-cols-1 md:grid-cols-3 gap-3.5 text-xs">
+                                <div class="bg-white/95 border border-emerald-200 rounded-2xl p-4 shadow-2xs space-y-1.5">
+                                    <div class="flex items-center gap-2 font-bold text-slate-800">
+                                        <span class="w-6 h-6 rounded-full bg-emerald-600 text-white flex items-center justify-center text-xs font-black shrink-0">1</span>
+                                        <span>Unduh Template Excel</span>
+                                    </div>
+                                    <p class="text-[11px] text-slate-500 leading-relaxed">
+                                        Klik tombol hijau di atas untuk mengunduh template Excel massal khusus kontingen Anda (No. Reg: <strong class="text-slate-700 font-mono">{{ $registration->registration_code }}</strong>).
+                                    </p>
                                 </div>
-                                <p class="text-[11px] text-slate-500 leading-relaxed">
-                                    Klik tombol hijau di atas untuk mengunduh template Excel massal khusus kontingen Anda (No. Reg: <strong class="text-slate-700 font-mono">{{ $registration->registration_code }}</strong>).
-                                </p>
+
+                                <div class="bg-white/95 border border-emerald-200 rounded-2xl p-4 shadow-2xs space-y-1.5">
+                                    <div class="flex items-center gap-2 font-bold text-slate-800">
+                                        <span class="w-6 h-6 rounded-full bg-emerald-600 text-white flex items-center justify-center text-xs font-black shrink-0">2</span>
+                                        <span>Lengkapi Nama Peserta</span>
+                                    </div>
+                                    <p class="text-[11px] text-slate-500 leading-relaxed">
+                                        Buka file Excel, isi Nama Lengkap Siswa, NISN, Jenis Kelamin, Kelas, dan Jabatan untuk seluruh cabang lomba yang diikuti.
+                                    </p>
+                                </div>
+
+                                <div class="bg-white/95 border border-emerald-200 rounded-2xl p-4 shadow-2xs space-y-1.5">
+                                    <div class="flex items-center gap-2 font-bold text-slate-800">
+                                        <span class="w-6 h-6 rounded-full bg-emerald-600 text-white flex items-center justify-center text-xs font-black shrink-0">3</span>
+                                        <span>Unggah Berkas di Bawah</span>
+                                    </div>
+                                    <p class="text-[11px] text-slate-500 leading-relaxed">
+                                        Pilih file Excel yang telah selesai diisi, periksa ringkasan pratinjau peserta, lalu klik <strong>Unggah &amp; Simpan</strong>.
+                                    </p>
+                                </div>
                             </div>
 
-                            <div class="bg-white/95 border border-emerald-200 rounded-2xl p-4 shadow-2xs space-y-1.5">
-                                <div class="flex items-center gap-2 font-bold text-slate-800">
-                                    <span class="w-6 h-6 rounded-full bg-emerald-600 text-white flex items-center justify-center text-xs font-black shrink-0">2</span>
-                                    <span>Lengkapi Nama Peserta</span>
+                            <!-- Form Unggah Berkas Massal -->
+                            <form action="{{ route('lomba.status.upload-mass-participants') }}" method="POST" enctype="multipart/form-data" class="space-y-4" id="form-upload-mass-status">
+                                @csrf
+                                <input type="hidden" name="registration_code" value="{{ $registration->registration_code }}">
+
+                                <!-- File Upload Dropzone Area -->
+                                <div class="relative bg-white border-2 border-dashed border-emerald-300 hover:border-emerald-500 rounded-2xl p-6 sm:p-8 text-center transition cursor-pointer group shadow-2xs" onclick="document.getElementById('status_mass_file_input').click()">
+                                    <input type="file" name="mass_participants_file" id="status_mass_file_input" accept=".xlsx,.xls,.csv" class="hidden" onchange="handleStatusMassExcelUpload(this)" required>
+
+                                    <div class="flex flex-col items-center justify-center gap-2.5">
+                                        <div class="w-14 h-14 rounded-2xl bg-emerald-50 group-hover:bg-emerald-100 text-emerald-600 flex items-center justify-center text-2xl transition">
+                                            <i class="fa-solid fa-cloud-arrow-up"></i>
+                                        </div>
+                                        <div>
+                                            <span class="text-sm font-bold text-slate-800 group-hover:text-emerald-700 transition">Klik untuk Memilih Berkas Excel Massal</span>
+                                            <span class="text-xs text-slate-500 block mt-0.5">atau seret dan lepas berkas (.xlsx, .xls) yang telah Anda lengkapi ke area ini</span>
+                                        </div>
+                                        <div id="status-mass-file-badge" class="hidden inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-emerald-50 text-emerald-800 text-xs font-bold border border-emerald-300 mt-1 shadow-2xs">
+                                            <i class="fa-solid fa-circle-check text-emerald-600 text-sm"></i>
+                                            <span id="status-mass-file-name">Template_Massal.xlsx</span>
+                                            <span id="status-mass-file-size" class="text-emerald-700/70 text-[10px]"></span>
+                                        </div>
+                                    </div>
                                 </div>
-                                <p class="text-[11px] text-slate-500 leading-relaxed">
-                                    Buka file Excel, isi Nama Lengkap Siswa, NISN, Jenis Kelamin, Kelas, dan Jabatan untuk seluruh cabang lomba yang diikuti.
-                                </p>
-                            </div>
 
-                            <div class="bg-white/95 border border-emerald-200 rounded-2xl p-4 shadow-2xs space-y-1.5">
-                                <div class="flex items-center gap-2 font-bold text-slate-800">
-                                    <span class="w-6 h-6 rounded-full bg-emerald-600 text-white flex items-center justify-center text-xs font-black shrink-0">3</span>
-                                    <span>Unggah Berkas di Bawah</span>
+                                <!-- Live AJAX Preview Container -->
+                                <div id="status-mass-preview-container" class="hidden bg-emerald-50/80 border border-emerald-300 rounded-2xl p-4 sm:p-5 text-xs space-y-3.5 shadow-2xs">
+                                    <div class="flex items-center justify-between gap-2 border-b border-emerald-200/90 pb-3">
+                                        <div class="flex items-center gap-2 font-bold text-emerald-950 text-sm">
+                                            <i class="fa-solid fa-circle-check text-emerald-600 text-base"></i>
+                                            <span id="status-mass-preview-title">0 Peserta Berhasil Terdeteksi</span>
+                                        </div>
+                                        <span class="text-[11px] text-emerald-700 font-semibold">Pratinjau Data Excel</span>
+                                    </div>
+
+                                    <div id="status-mass-preview-teams-list" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 max-h-72 overflow-y-auto pr-1">
+                                        <!-- Dynamic Cards for each detected team -->
+                                    </div>
                                 </div>
-                                <p class="text-[11px] text-slate-500 leading-relaxed">
-                                    Pilih file Excel yang telah selesai diisi, periksa ringkasan pratinjau peserta, lalu klik <strong>Unggah &amp; Simpan</strong>.
-                                </p>
-                            </div>
-                        </div>
 
-                        <!-- Form Unggah Berkas Massal -->
-                        <form action="{{ route('lomba.status.upload-mass-participants') }}" method="POST" enctype="multipart/form-data" class="space-y-4" id="form-upload-mass-status">
-                            @csrf
-                            <input type="hidden" name="registration_code" value="{{ $registration->registration_code }}">
-
-                            <!-- File Upload Dropzone Area -->
-                            <div class="relative bg-white border-2 border-dashed border-emerald-300 hover:border-emerald-500 rounded-2xl p-6 sm:p-8 text-center transition cursor-pointer group shadow-2xs" onclick="document.getElementById('status_mass_file_input').click()">
-                                <input type="file" name="mass_participants_file" id="status_mass_file_input" accept=".xlsx,.xls,.csv" class="hidden" onchange="handleStatusMassExcelUpload(this)" required>
-
-                                <div class="flex flex-col items-center justify-center gap-2.5">
-                                    <div class="w-14 h-14 rounded-2xl bg-emerald-50 group-hover:bg-emerald-100 text-emerald-600 flex items-center justify-center text-2xl transition">
+                                <!-- Submit Button -->
+                                <div class="flex flex-col sm:flex-row items-center justify-between gap-3 pt-2">
+                                    <span class="text-xs text-slate-500">
+                                        <i class="fa-solid fa-shield-halved text-emerald-600"></i> File Excel yang diunggah akan otomatis memutakhirkan form web di atas dan Kartu Peserta resmi.
+                                    </span>
+                                    <button type="submit" id="btn-submit-status-mass" class="w-full sm:w-auto px-6 py-3 rounded-2xl bg-gradient-to-r from-[#107c41] to-emerald-700 hover:from-emerald-700 hover:to-emerald-800 text-white font-extrabold text-xs sm:text-sm shadow-md transition flex items-center justify-center gap-2 active:scale-95 cursor-pointer">
                                         <i class="fa-solid fa-cloud-arrow-up"></i>
-                                    </div>
-                                    <div>
-                                        <span class="text-sm font-bold text-slate-800 group-hover:text-emerald-700 transition">Klik untuk Memilih Berkas Excel Massal</span>
-                                        <span class="text-xs text-slate-500 block mt-0.5">atau seret dan lepas berkas (.xlsx, .xls) yang telah Anda lengkapi ke area ini</span>
-                                    </div>
-                                    <div id="status-mass-file-badge" class="hidden inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-emerald-50 text-emerald-800 text-xs font-bold border border-emerald-300 mt-1 shadow-2xs">
-                                        <i class="fa-solid fa-circle-check text-emerald-600 text-sm"></i>
-                                        <span id="status-mass-file-name">Template_Massal.xlsx</span>
-                                        <span id="status-mass-file-size" class="text-emerald-700/70 text-[10px]"></span>
-                                    </div>
+                                        <span>Unggah &amp; Simpan Berkas Peserta Seluruh Regu</span>
+                                    </button>
                                 </div>
-                            </div>
-
-                            <!-- Live AJAX Preview Container -->
-                            <div id="status-mass-preview-container" class="hidden bg-emerald-50/80 border border-emerald-300 rounded-2xl p-4 sm:p-5 text-xs space-y-3.5 shadow-2xs">
-                                <div class="flex items-center justify-between gap-2 border-b border-emerald-200/90 pb-3">
-                                    <div class="flex items-center gap-2 font-bold text-emerald-950 text-sm">
-                                        <i class="fa-solid fa-circle-check text-emerald-600 text-base"></i>
-                                        <span id="status-mass-preview-title">0 Peserta Berhasil Terdeteksi</span>
-                                    </div>
-                                    <span class="text-[11px] text-emerald-700 font-semibold">Pratinjau Data Excel</span>
-                                </div>
-
-                                <div id="status-mass-preview-teams-list" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 max-h-72 overflow-y-auto pr-1">
-                                    <!-- Dynamic Cards for each detected team -->
-                                </div>
-                            </div>
-
-                            <!-- Submit Button -->
-                            <div class="flex flex-col sm:flex-row items-center justify-between gap-3 pt-2">
-                                <span class="text-xs text-slate-500">
-                                    <i class="fa-solid fa-shield-halved text-emerald-600"></i> Nama peserta akan otomatis terhubung ke Kartu Peserta resmi regu di bawah.
-                                </span>
-                                <button type="submit" id="btn-submit-status-mass" class="w-full sm:w-auto px-6 py-3 rounded-2xl bg-gradient-to-r from-[#107c41] to-emerald-700 hover:from-emerald-700 hover:to-emerald-800 text-white font-extrabold text-xs sm:text-sm shadow-md transition flex items-center justify-center gap-2 active:scale-95 cursor-pointer">
-                                    <i class="fa-solid fa-cloud-arrow-up"></i>
-                                    <span>Unggah &amp; Simpan Berkas Peserta Seluruh Regu</span>
-                                </button>
-                            </div>
-                        </form>
+                            </form>
+                        </div>
                     </div>
                 @endif
 
@@ -1285,6 +1499,24 @@
                 previewContainer.classList.add('hidden');
             }
         });
+    }
+
+    function saveSpecificTeam(teamId) {
+        const targetInput = document.getElementById('target_team_id_input');
+        const form = document.getElementById('form-web-participants');
+        if (targetInput && form) {
+            targetInput.value = teamId;
+            form.submit();
+        }
+    }
+
+    function saveAllTeams() {
+        const targetInput = document.getElementById('target_team_id_input');
+        const form = document.getElementById('form-web-participants');
+        if (targetInput && form) {
+            targetInput.value = '';
+            form.submit();
+        }
     }
 
     function escapeStatusHtml(text) {
