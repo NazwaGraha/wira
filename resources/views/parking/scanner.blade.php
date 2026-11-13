@@ -57,44 +57,37 @@
         }
     </style>
 </head>
-<body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col font-sans select-none pb-20">
+<body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col font-sans select-none pb-20 overflow-x-hidden">
 
     <!-- Top App Bar -->
-    <header class="bg-slate-900 border-b border-slate-800 px-4 py-3 shrink-0 flex items-center justify-between sticky top-0 z-30 shadow-md">
-        <div class="flex items-center gap-2.5">
-            <div class="w-9 h-9 rounded-xl bg-gradient-to-br from-red-600 to-rose-700 flex items-center justify-center text-white text-base shadow-md">
+    <header class="bg-slate-900 border-b border-slate-800 px-3 sm:px-4 py-2.5 shrink-0 flex items-center justify-between sticky top-0 z-30 shadow-md">
+        <div class="flex items-center gap-2 min-w-0">
+            <div class="w-8 h-8 rounded-xl bg-gradient-to-br from-red-600 to-rose-700 flex items-center justify-center text-white text-sm shadow-md shrink-0">
                 <i class="fa-solid fa-square-parking"></i>
             </div>
-            <div>
+            <div class="min-w-0">
                 <div class="flex items-center gap-1.5">
-                    <span class="text-[9px] font-black text-rose-400 uppercase tracking-wider block">PETUGAS PARKIR LAPANGAN</span>
+                    <span class="text-[9px] font-black text-rose-400 uppercase tracking-wider truncate">PETUGAS PARKIR</span>
                     @if(isset($officer) && $officer)
-                        <span class="px-1.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 text-[8px] font-bold">
-                            <i class="fa-solid fa-circle-check"></i> Petugas
+                        <span class="px-1.5 py-0.2 rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 text-[8px] font-bold shrink-0">
+                            ● Online
                         </span>
                     @elseif(isset($adminUser) && $adminUser)
-                        <span class="px-1.5 py-0.5 rounded-full bg-amber-500/20 text-amber-400 border border-amber-500/30 text-[8px] font-bold">
-                            <i class="fa-solid fa-shield"></i> Panitia
+                        <span class="px-1.5 py-0.2 rounded-full bg-amber-500/20 text-amber-400 border border-amber-500/30 text-[8px] font-bold shrink-0">
+                            Panitia
                         </span>
                     @endif
                 </div>
-                <h1 class="text-xs font-black text-white truncate max-w-[170px] sm:max-w-[240px]">
+                <h1 class="text-xs font-black text-white truncate max-w-[150px] sm:max-w-[220px]">
                     {{ $activeLocation?->name ?? 'Pilih Kantong Parkir' }}
                 </h1>
             </div>
         </div>
 
         <!-- Location Dropdown Selector & Quick Actions -->
-        <div class="flex items-center gap-1.5">
-            <button type="button" onclick="switchCameraFacing()" class="w-8 h-8 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-rose-400 flex items-center justify-center text-xs transition border border-slate-700 active:scale-95" title="Ganti Kamera Depan / Belakang">
-                <i class="fa-solid fa-camera-rotate"></i>
-            </button>
-            <button type="button" onclick="toggleTorch()" id="btnTorch" class="w-8 h-8 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-yellow-400 flex items-center justify-center text-xs transition border border-slate-700 active:scale-95" title="Senter / Flashlight">
-                <i class="fa-solid fa-bolt"></i>
-            </button>
-
+        <div class="flex items-center gap-1.5 shrink-0">
             @if($locations->count() > 1)
-                <select onchange="window.location.href='?location_id=' + this.value" class="text-[11px] font-bold bg-slate-800 border border-slate-700 text-slate-200 rounded-xl px-2.5 py-1.5 focus:outline-none focus:ring-1 focus:ring-rose-500">
+                <select onchange="window.location.href='?location_id=' + this.value" class="text-[11px] font-bold bg-slate-800 border border-slate-700 text-slate-200 rounded-xl px-2.5 py-1.5 focus:outline-none focus:ring-1 focus:ring-rose-500 max-w-[110px] sm:max-w-[160px] truncate">
                     @foreach($locations as $loc)
                         <option value="{{ $loc->id }}" {{ $activeLocation?->id == $loc->id ? 'selected' : '' }}>
                             {{ $loc->code ?: $loc->name }}
@@ -102,9 +95,9 @@
                     @endforeach
                 </select>
             @elseif($activeLocation)
-                <div class="text-[10px] font-bold bg-slate-800 border border-slate-700 text-rose-300 rounded-xl px-2.5 py-1.5 flex items-center gap-1" title="Pos Terkunci Sesuai Tugas">
+                <div class="text-[10px] font-bold bg-slate-800 border border-slate-700 text-rose-300 rounded-xl px-2 py-1 flex items-center gap-1" title="Pos Terkunci Sesuai Tugas">
                     <i class="fa-solid fa-lock text-[9px] text-rose-400"></i>
-                    <span>{{ $activeLocation->code ?: $activeLocation->name }}</span>
+                    <span class="truncate max-w-[90px]">{{ $activeLocation->code ?: $activeLocation->name }}</span>
                 </div>
             @endif
 
@@ -181,43 +174,26 @@
     @endif
 
     <!-- Main Content Area with 3 Modes -->
-    <main class="flex-1 p-3 sm:p-4 max-w-lg mx-auto w-full">
+    <main class="flex-1 p-3 sm:p-4 max-w-lg mx-auto w-full overflow-x-hidden">
 
         <!-- ================= MODE 1: SCAN & CHECK-IN ================= -->
-        <div id="view-scan" class="space-y-3.5">
+        <div id="view-scan" class="space-y-3">
             
-            <!-- Camera Toolbar (Switcher Depan/Belakang & Status) -->
-            <div class="flex items-center justify-between gap-2 bg-slate-900/90 border border-slate-800 rounded-2xl p-2 px-3 shadow-md">
-                <div class="flex items-center gap-2 min-w-0 flex-1">
-                    <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse shrink-0"></span>
-                    <div class="min-w-0">
-                        <span class="text-[9px] uppercase font-black text-slate-400 block tracking-wider leading-none">Kamera Aktif</span>
-                        <span id="cameraLabel" class="text-xs font-bold text-slate-200 truncate block">Kamera Belakang</span>
-                    </div>
+            <!-- Compact Status Bar (Tidak Melebar) -->
+            <div class="flex items-center justify-between gap-2 px-1 text-xs">
+                <div class="flex items-center gap-2 min-w-0">
+                    <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse shrink-0"></span>
+                    <span class="text-[11px] font-bold text-slate-300 truncate">
+                        Kamera: <span id="cameraLabel" class="text-white">Kamera Belakang</span>
+                    </span>
                 </div>
-
-                <div class="flex items-center gap-1.5 shrink-0">
-                    <!-- Dropdown pilihan kamera jika terdeteksi banyak kamera (multi-lens smartphone / webcam) -->
-                    <select id="cameraSelect" onchange="onCameraSelectChange(this.value)" class="hidden text-[11px] font-bold bg-slate-800 border border-slate-700 text-slate-200 rounded-xl px-2 py-1.5 focus:outline-none focus:ring-1 focus:ring-rose-500 max-w-[130px] truncate">
-                    </select>
-
-                    <!-- Tombol Cepat Ganti Kamera (Depan / Belakang) -->
-                    <button type="button" onclick="switchCameraFacing()" id="btnSwitchCamera" class="px-2.5 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 active:scale-95 text-slate-200 text-xs font-bold transition flex items-center gap-1.5 border border-slate-700 shadow-xs" title="Ganti Kamera Depan / Belakang">
-                        <i class="fa-solid fa-camera-rotate text-rose-400 text-xs"></i>
-                        <span class="text-[10px] font-bold hidden sm:inline">Ganti</span>
-                    </button>
-
-                    <!-- Tombol Flashlight / Senter -->
-                    <button type="button" onclick="toggleTorch()" class="btn-torch-toggle w-8 h-8 rounded-xl bg-slate-800 hover:bg-slate-700 active:scale-95 text-slate-400 hover:text-yellow-400 flex items-center justify-center text-xs transition border border-slate-700" title="Senter / Flashlight">
-                        <i class="fa-solid fa-bolt"></i>
-                    </button>
-                </div>
+                <span class="text-[10px] text-slate-500 font-mono shrink-0">12 FPS • Ready</span>
             </div>
 
             <!-- Notice jika kamera belum diizinkan / error -->
             <div id="cameraNotice" class="hidden p-3 bg-rose-500/10 border border-rose-500/30 rounded-2xl flex items-start gap-2.5 text-xs text-rose-300">
                 <i class="fa-solid fa-triangle-exclamation text-rose-400 mt-0.5 shrink-0"></i>
-                <div class="flex-1">
+                <div class="flex-1 min-w-0">
                     <span id="cameraNoticeText">Kamera tidak aktif. Pastikan izin kamera browser telah diberikan.</span>
                     <button type="button" onclick="initScanner()" class="mt-1 block text-[11px] font-bold text-rose-400 underline hover:text-rose-200">
                         Coba Hubungkan Ulang Kamera
@@ -225,12 +201,12 @@
                 </div>
             </div>
 
-            <!-- Live Camera Container -->
+            <!-- Live Camera Container with Floating Glass Controls inside Viewfinder -->
             <div class="w-full aspect-square max-w-[340px] mx-auto bg-black rounded-3xl overflow-hidden border-2 border-slate-800 relative shadow-2xl flex items-center justify-center">
                 <div id="qr-reader" class="w-full h-full object-cover"></div>
 
                 <!-- Scanning Overlay Frame -->
-                <div class="absolute inset-4 pointer-events-none border-2 border-dashed border-rose-500/60 rounded-2xl flex items-center justify-center">
+                <div class="absolute inset-5 pointer-events-none border-2 border-dashed border-rose-500/60 rounded-2xl flex items-center justify-center">
                     <!-- Laser line -->
                     <div class="absolute left-0 right-0 h-0.5 bg-rose-500 shadow-[0_0_12px_#f43f5e] laser-line"></div>
                     <!-- Corner brackets -->
@@ -240,37 +216,50 @@
                     <div class="absolute -bottom-1 -right-1 w-6 h-6 border-b-4 border-r-4 border-rose-500 rounded-br-lg"></div>
                 </div>
 
-                <!-- Floating Quick Switch Button in Corner -->
-                <div class="absolute top-3 right-3 flex items-center gap-1.5 z-10">
-                    <button type="button" onclick="switchCameraFacing()" class="w-9 h-9 rounded-full bg-black/60 hover:bg-black/80 backdrop-blur-md text-white flex items-center justify-center text-xs border border-white/20 active:scale-95 transition shadow-lg" title="Ganti Kamera Depan / Belakang">
+                <!-- Floating Controls inside Viewfinder Top-Right Corner (Ergonomis) -->
+                <div class="absolute top-3 right-3 flex items-center gap-2 z-10">
+                    <!-- Torch (Senter) -->
+                    <button type="button" onclick="toggleTorch()" id="btnTorch" class="btn-torch-toggle w-9 h-9 rounded-full bg-black/60 hover:bg-black/80 backdrop-blur-md text-white flex items-center justify-center text-xs border border-white/20 active:scale-95 transition shadow-lg" title="Senter / Flashlight">
+                        <i class="fa-solid fa-bolt text-yellow-400"></i>
+                    </button>
+
+                    <!-- Switch Camera (Putar Kamera Depan/Belakang) -->
+                    <button type="button" onclick="switchCameraFacing()" id="btnSwitchCamera" class="w-9 h-9 rounded-full bg-black/60 hover:bg-black/80 backdrop-blur-md text-white flex items-center justify-center text-xs border border-white/20 active:scale-95 transition shadow-lg" title="Ganti Kamera Depan / Belakang">
                         <i class="fa-solid fa-camera-rotate text-rose-400"></i>
                     </button>
                 </div>
 
-                <!-- Hint text -->
-                <div class="absolute bottom-3 left-0 right-0 text-center pointer-events-none">
-                    <span class="px-3 py-1 bg-black/75 backdrop-blur-xs text-slate-300 text-[10px] font-bold rounded-full border border-slate-700">
-                        Arahkan ke QR Code Tiket Digital / Karcis
+                <!-- Hidden select for device switching if available -->
+                <select id="cameraSelect" onchange="onCameraSelectChange(this.value)" class="hidden"></select>
+
+                <!-- Hint text at bottom of viewfinder -->
+                <div class="absolute bottom-3 left-0 right-0 text-center pointer-events-none px-4">
+                    <span class="inline-block px-3 py-1 bg-black/75 backdrop-blur-xs text-slate-300 text-[10px] font-bold rounded-full border border-slate-700/80">
+                        Arahkan ke QR Code Tiket / Karcis
                     </span>
                 </div>
             </div>
 
-            <!-- Manual Input Fallback -->
-            <div class="flex gap-2">
-                <input type="text" id="manualCodeInput" placeholder="Ketik Plat No / Kode Tiket..." class="flex-1 bg-slate-900 border border-slate-800 rounded-2xl px-4 py-3 text-xs text-white font-mono uppercase focus:outline-none focus:ring-2 focus:ring-rose-500 shadow-inner">
-                <button type="button" onclick="handleManualVerify()" class="px-4 py-3 bg-gradient-to-r from-red-600 to-rose-600 hover:from-red-500 hover:to-rose-500 text-white font-black text-xs rounded-2xl transition shadow-md active:scale-95 shrink-0">
-                    <i class="fa-solid fa-magnifying-glass mr-1"></i> Cari Tiket
+            <!-- Integrated Search Pill (Terkunci Rapi, Tidak Melebar) -->
+            <div class="relative flex items-center w-full bg-slate-900 border border-slate-800 rounded-2xl p-1 shadow-inner focus-within:ring-2 focus-within:ring-rose-500 focus-within:border-transparent transition">
+                <div class="pl-3 pr-1 text-slate-500 text-xs shrink-0">
+                    <i class="fa-solid fa-magnifying-glass"></i>
+                </div>
+                <input type="text" id="manualCodeInput" onkeydown="if(event.key==='Enter') handleManualVerify()" placeholder="Ketik Plat No / Kode Tiket..." class="w-full bg-transparent px-2 py-2 text-xs text-white uppercase font-mono tracking-wider focus:outline-none placeholder:text-slate-500 placeholder:normal-case placeholder:font-sans">
+                <button type="button" onclick="handleManualVerify()" class="px-3.5 py-2 bg-gradient-to-r from-red-600 to-rose-600 hover:from-red-500 hover:to-rose-500 text-white font-black text-xs rounded-xl transition shadow-md active:scale-95 shrink-0 flex items-center gap-1.5">
+                    <span>Cari</span>
+                    <i class="fa-solid fa-arrow-right text-[10px]"></i>
                 </button>
             </div>
 
-            <!-- Hint Karcis Dadakan -->
-            <div class="p-3 bg-amber-500/10 border border-amber-500/30 rounded-2xl flex items-center justify-between text-xs">
-                <div class="flex items-center gap-2 text-amber-300">
-                    <i class="fa-solid fa-circle-info text-amber-400"></i>
-                    <span>Kendaraan belum terdaftar / umum?</span>
+            <!-- Hint Karcis Dadakan (Compact) -->
+            <div class="p-2.5 bg-amber-500/10 border border-amber-500/30 rounded-2xl flex items-center justify-between text-xs gap-2">
+                <div class="flex items-center gap-2 text-amber-300 min-w-0">
+                    <i class="fa-solid fa-circle-info text-amber-400 shrink-0"></i>
+                    <span class="text-[11px] truncate">Kendaraan umum / karcis baru?</span>
                 </div>
-                <button type="button" onclick="switchTab('pos')" class="px-3 py-1 bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-[11px] rounded-xl transition shadow-xs">
-                    Karcis Dadakan &rarr;
+                <button type="button" onclick="switchTab('pos')" class="px-2.5 py-1 bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-[10px] rounded-xl transition shadow-xs shrink-0">
+                    Karcis POS &rarr;
                 </button>
             </div>
 
@@ -763,10 +752,6 @@
                 }
                 selectEl.appendChild(opt);
             });
-
-            if (devices.length > 1) {
-                selectEl.classList.remove('hidden');
-            }
         }
 
         async function startCameraScanner(targetCamera = null) {
@@ -942,11 +927,11 @@
             const badge = document.getElementById('cameraLabel');
             if (!badge) return;
 
-            let text = (currentFacingMode === 'user') ? 'Kamera Depan / Laptop' : 'Kamera Belakang';
-            if (currentCameraId && availableCameras.length) {
-                const found = availableCameras.find(c => c.id === currentCameraId);
-                if (found && found.label) {
-                    text = found.label;
+            let text = (currentFacingMode === 'user') ? 'Kamera Depan' : 'Kamera Belakang';
+            if (availableCameras && availableCameras.length > 2 && currentCameraId) {
+                const idx = availableCameras.findIndex(c => c.id === currentCameraId);
+                if (idx !== -1) {
+                    text += ` #${idx + 1}`;
                 }
             }
             badge.innerText = text;
