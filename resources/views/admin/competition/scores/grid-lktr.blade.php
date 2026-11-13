@@ -122,7 +122,7 @@
             ['idx' => 3, 'min' => '2.1 - 3', 'range' => '151 - 200', 'desc' => '02:01 - 03:00', 'color' => 'slate'],
             ['idx' => 4, 'min' => '3.1 - 4', 'range' => '101 - 150', 'desc' => '03:01 - 04:00', 'color' => 'slate'],
             ['idx' => 5, 'min' => '4.1 - 5', 'range' => '51 - 100', 'desc' => '04:01 - 05:00', 'color' => 'slate'],
-            ['idx' => 6, 'min' => '5.1 - 5.6', 'range' => '0 - 51', 'desc' => '05:01 - 05:6', 'color' => 'rose'],
+            ['idx' => 6, 'min' => '5.1 - 6', 'range' => '0 - 51', 'desc' => '05:01 - 05:6', 'color' => 'rose'],
         ];
     }
 @endphp
@@ -514,7 +514,7 @@
                                         @if($isMula)
                                             Skala 10 Interval: 0-1m (271-300) s/d 9.1-10m (0-30) &bull; Toleransi Maks 10:00 Menit
                                         @else
-                                            Skala 6 Interval: 0-1m (251-300) s/d 5.1-5.6m (0-51) &bull; Toleransi Maks 05:6 Menit
+                                            Skala 6 Interval: 0-1m (251-300) s/d 5.1-6m (0-51) &bull; Toleransi Maks 05:6 Menit
                                         @endif
                                     </p>
                                 </div>
@@ -1171,7 +1171,7 @@
             if (seconds <= 180) return { tier: 3, text: '151 - 200 Poin', label: '2.1 - 3 Menit' };
             if (seconds <= 240) return { tier: 4, text: '101 - 150 Poin', label: '3.1 - 4 Menit' };
             if (seconds <= 300) return { tier: 5, text: '51 - 100 Poin', label: '4.1 - 5 Menit' };
-            if (seconds <= 330) return { tier: 6, text: '0 - 51 Poin', label: '5.1 - 5.6 Menit' };
+            if (seconds <= 330) return { tier: 6, text: '0 - 51 Poin', label: '5.1 - 6 Menit' };
             return { tier: 7, text: '0 Poin', label: '> 05:6 Menit' };
         }
     }
