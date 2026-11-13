@@ -34,9 +34,11 @@ class ParticipantPortalController extends Controller
                 $q->where('is_active', true)->orderBy('order_number')->orderBy('id');
             },
             'teams.category',
+            'teams.photos',
             'teams.scores' => function ($q) {
                 $q->latest('id');
             },
+            'teams.scores.photos',
         ])->find($regId);
 
         if (! $registration || $registration->status !== 'verified') {
@@ -142,9 +144,11 @@ class ParticipantPortalController extends Controller
                 $q->where('is_active', true)->orderBy('order_number')->orderBy('id');
             },
             'teams.category',
+            'teams.photos',
             'teams.scores' => function ($q) {
                 $q->latest('id');
             },
+            'teams.scores.photos',
         ])->find($regId);
 
         if (! $registration || $registration->status !== 'verified') {
@@ -181,9 +185,11 @@ class ParticipantPortalController extends Controller
                 $q->where('is_active', true)->orderBy('order_number')->orderBy('id');
             },
             'teams.category',
+            'teams.photos',
             'teams.scores' => function ($q) {
                 $q->latest('id');
             },
+            'teams.scores.photos',
         ])->findOrFail($regId);
 
         $categoryId = $request->query('category_id');
@@ -223,9 +229,11 @@ class ParticipantPortalController extends Controller
                 $q->where('is_active', true)->orderBy('order_number')->orderBy('id');
             },
             'teams.category',
+            'teams.photos',
             'teams.scores' => function ($q) {
                 $q->latest('id');
             },
+            'teams.scores.photos',
         ])->findOrFail($regId);
 
         $categoryId = $request->query('category_id');
@@ -348,6 +356,18 @@ class ParticipantPortalController extends Controller
                     $statusLabel = 'Selesai Dinilai';
                 }
 
+                // Format foto bukti lembar nilai yang difoto juri/panitia
+                $teamPhotos = $team->photos ?? collect();
+                $scorePhotos = $team->scores->flatMap->photos ?? collect();
+                $allPhotos = $teamPhotos->merge($scorePhotos)->unique('id')->values()->map(function ($p) {
+                    return [
+                        'id' => $p->id,
+                        'url' => $p->photo_url,
+                        'caption' => $p->caption ?: 'Lembar Nilai Juri',
+                        'created_at' => $p->created_at ? $p->created_at->format('d/m/Y H:i') : null,
+                    ];
+                })->toArray();
+
                 return [
                     'team_id' => $team->id,
                     'category_id' => $team->competition_category_id,
@@ -365,6 +385,7 @@ class ParticipantPortalController extends Controller
                     'is_disqualified' => $isDisqualified,
                     'status_label' => $statusLabel,
                     'scored_at' => $latestScore?->updated_at ? $latestScore->updated_at->format('H:i') : null,
+                    'photos' => $allPhotos,
                 ];
             });
     }

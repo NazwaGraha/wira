@@ -336,6 +336,42 @@
                                     @endforelse
                                 </div>
                             </div>
+
+                            <!-- Grid Foto Nilai Juri / Bukti Fisik Lembar Penilaian -->
+                            <div class="photo-section space-y-1.5 pt-2 border-t border-slate-800/80">
+                                <div class="flex items-center justify-between text-[10px] font-bold text-slate-400 uppercase">
+                                    <span class="flex items-center gap-1.5">
+                                        <i class="fa-solid fa-camera text-rose-400"></i>
+                                        <span>Foto Lembar Nilai Juri:</span>
+                                    </span>
+                                    <span class="photo-count-badge text-[9px] font-mono font-bold text-slate-400">
+                                        {{ count($t['photos']) }} Foto
+                                    </span>
+                                </div>
+
+                                <div class="photo-grid-wrapper">
+                                    @if(!empty($t['photos']))
+                                        <div class="grid grid-cols-2 sm:grid-cols-3 gap-1.5">
+                                            @foreach($t['photos'] as $pIdx => $photo)
+                                                <div class="relative group rounded-xl overflow-hidden bg-slate-950 border border-slate-800 aspect-[4/3] cursor-pointer" onclick="openPhotoModal('{{ $photo['url'] }}', '{{ addslashes($photo['caption']) }}', '{{ addslashes($t['category_name']) }}', '{{ $t['order_number'] }}')">
+                                                    <img src="{{ $photo['url'] }}" alt="{{ $photo['caption'] }}" class="w-full h-full object-cover transition group-hover:scale-105" loading="lazy">
+                                                    <div class="absolute inset-0 bg-gradient-to-t from-black/85 via-transparent to-transparent flex items-end p-1.5">
+                                                        <span class="text-[8.5px] font-bold text-white truncate w-full flex items-center justify-between">
+                                                            <span class="truncate">Foto {{ $pIdx + 1 }}</span>
+                                                            <i class="fa-solid fa-magnifying-glass-plus text-[9px] text-amber-400 ml-1 shrink-0"></i>
+                                                        </span>
+                                                    </div>
+                                                </div>
+                                            @endforeach
+                                        </div>
+                                    @else
+                                        <div class="p-2.5 bg-slate-950/60 border border-dashed border-slate-800/80 rounded-xl text-center text-slate-500 text-[10.5px]">
+                                            <i class="fa-regular fa-image mr-1 text-slate-600"></i>
+                                            <span>Belum ada foto lembar nilai yang diunggah juri</span>
+                                        </div>
+                                    @endif
+                                </div>
+                            </div>
                         </div>
 
                         <!-- Card Bottom Action: Export Per Mata Lomba -->
@@ -370,9 +406,52 @@
         </main>
     @endif
 
+    <!-- ================= MODAL PREVIEW FOTO LEMBAR NILAI JURI ================= -->
+    <div id="modalPhotoPreview" onclick="if(event.target === this) closePhotoModal()" class="fixed inset-0 bg-black/90 backdrop-blur-md z-50 flex items-center justify-center p-3 sm:p-5 hidden transition-opacity duration-200">
+        <div class="bg-slate-900 border border-slate-800 rounded-3xl w-full max-w-2xl max-h-[92dvh] flex flex-col overflow-hidden shadow-2xl animate-in zoom-in-95 duration-200">
+            <!-- Modal Header -->
+            <div class="p-3 sm:p-4 border-b border-slate-800 flex items-center justify-between gap-3 bg-slate-950/60 shrink-0">
+                <div class="min-w-0">
+                    <span id="previewCategory" class="text-[10px] font-mono font-bold text-rose-400 block truncate">
+                        Pertolongan Pertama
+                    </span>
+                    <h4 id="previewTitle" class="text-xs sm:text-sm font-black text-white truncate">
+                        Foto Lembar Nilai Juri
+                    </h4>
+                </div>
+                <div class="flex items-center gap-2 shrink-0">
+                    <a id="previewDownloadBtn" href="#" target="_blank" download class="w-8 h-8 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white flex items-center justify-center text-xs transition border border-slate-700 active:scale-95" title="Buka Gambar Resolusi Penuh">
+                        <i class="fa-solid fa-arrow-up-right-from-square"></i>
+                    </a>
+                    <button type="button" onclick="closePhotoModal()" class="w-8 h-8 rounded-xl bg-slate-800 hover:bg-rose-950 text-slate-400 hover:text-rose-400 flex items-center justify-center text-xs transition border border-slate-700 active:scale-95" title="Tutup">
+                        <i class="fa-solid fa-xmark"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Modal Image Body -->
+            <div class="p-2 sm:p-3 overflow-auto flex-1 flex items-center justify-center bg-black/60">
+                <img id="previewImage" src="" alt="Foto Lembar Nilai" class="max-w-full max-h-[72dvh] object-contain rounded-xl shadow-lg">
+            </div>
+        </div>
+    </div>
+
     <!-- JavaScript Portal Logic -->
     <script>
         const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+
+        function openPhotoModal(url, caption, category, order) {
+            document.getElementById('previewImage').src = url;
+            document.getElementById('previewCategory').innerText = `${category} (No. Undian: ${order})`;
+            document.getElementById('previewTitle').innerText = caption || 'Dokumentasi Lembar Nilai Juri';
+            document.getElementById('previewDownloadBtn').href = url;
+            document.getElementById('modalPhotoPreview').classList.remove('hidden');
+        }
+
+        function closePhotoModal() {
+            document.getElementById('modalPhotoPreview').classList.add('hidden');
+            document.getElementById('previewImage').src = '';
+        }
 
         // ================= LOGIN PORTAL VIA AJAX =================
         async function handlePortalLogin(e) {
@@ -488,6 +567,39 @@
                                     } else {
                                         scoreVal.className = 'score-value text-xs font-bold text-slate-500 italic block py-1.5';
                                         scoreVal.innerHTML = '<i class="fa-solid fa-hourglass-half mr-1 text-amber-400/80"></i> Menunggu Penilaian Juri';
+                                    }
+                                }
+
+                                // Photo grid dynamic update
+                                const photoBadge = card.querySelector('.photo-count-badge');
+                                const photoWrapper = card.querySelector('.photo-grid-wrapper');
+                                if (photoBadge && team.photos) {
+                                    photoBadge.innerText = `${team.photos.length} Foto`;
+                                }
+                                if (photoWrapper && team.photos) {
+                                    if (team.photos.length > 0) {
+                                        photoWrapper.innerHTML = `
+                                            <div class="grid grid-cols-2 sm:grid-cols-3 gap-1.5">
+                                                ${team.photos.map((photo, pIdx) => `
+                                                    <div class="relative group rounded-xl overflow-hidden bg-slate-950 border border-slate-800 aspect-[4/3] cursor-pointer" onclick="openPhotoModal('${photo.url}', '${(photo.caption || '').replace(/'/g, "\\'")}', '${(team.category_name || '').replace(/'/g, "\\'")}', '${team.order_number || ''}')">
+                                                        <img src="${photo.url}" alt="${photo.caption || ''}" class="w-full h-full object-cover transition group-hover:scale-105" loading="lazy">
+                                                        <div class="absolute inset-0 bg-gradient-to-t from-black/85 via-transparent to-transparent flex items-end p-1.5">
+                                                            <span class="text-[8.5px] font-bold text-white truncate w-full flex items-center justify-between">
+                                                                <span class="truncate">Foto ${pIdx + 1}</span>
+                                                                <i class="fa-solid fa-magnifying-glass-plus text-[9px] text-amber-400 ml-1 shrink-0"></i>
+                                                            </span>
+                                                        </div>
+                                                    </div>
+                                                `).join('')}
+                                            </div>
+                                        `;
+                                    } else {
+                                        photoWrapper.innerHTML = `
+                                            <div class="p-2.5 bg-slate-950/60 border border-dashed border-slate-800/80 rounded-xl text-center text-slate-500 text-[10.5px]">
+                                                <i class="fa-regular fa-image mr-1 text-slate-600"></i>
+                                                <span>Belum ada foto lembar nilai yang diunggah juri</span>
+                                            </div>
+                                        `;
                                     }
                                 }
                             }
