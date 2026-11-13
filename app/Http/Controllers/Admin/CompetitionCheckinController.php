@@ -80,6 +80,56 @@ class CompetitionCheckinController extends Controller
     }
 
     /**
+     * Tampilan Mobile Scanner Meja Daftar Ulang Peserta Lomba (Smartphone Native UI)
+     */
+    public function mobile(Request $request)
+    {
+        $allEvents = CompetitionEvent::orderByDesc('id')->get();
+        $selectedEventId = $request->query('event_id');
+        if ($selectedEventId) {
+            $event = CompetitionEvent::find($selectedEventId) ?: CompetitionEvent::where('is_active', true)->first();
+        } else {
+            $event = CompetitionEvent::where('is_active', true)->first() ?: $allEvents->first();
+        }
+
+        // Base query: HANYA yang sudah terverifikasi / lunas
+        $baseQuery = CompetitionRegistration::where('status', 'verified');
+        if ($event) {
+            $baseQuery->where('competition_event_id', $event->id);
+        }
+
+        // Hitung statistik
+        $totalVerified = (clone $baseQuery)->count();
+        $totalCheckedIn = (clone $baseQuery)->where('is_checked_in', true)->count();
+        $totalPending = $totalVerified - $totalCheckedIn;
+        $attendanceRate = $totalVerified > 0 ? round(($totalCheckedIn / $totalVerified) * 100, 1) : 0;
+
+        // Hitung per tingkat
+        $madyaCount = (clone $baseQuery)->where('level', 'madya')->count();
+        $wiraCount = (clone $baseQuery)->where('level', 'wira')->count();
+
+        // Ambil semua kontingen terverifikasi untuk tab daftar sekolah
+        $registrations = (clone $baseQuery)->with(['event', 'teams.category'])
+            ->orderBy('school_name', 'asc')
+            ->get();
+
+        $adminUser = Auth::user();
+
+        return view('admin.competition.checkin.mobile', compact(
+            'event',
+            'allEvents',
+            'registrations',
+            'totalVerified',
+            'totalCheckedIn',
+            'totalPending',
+            'attendanceRate',
+            'madyaCount',
+            'wiraCount',
+            'adminUser'
+        ));
+    }
+
+    /**
      * AJAX Lookup data pendaftar via Scan QR Code atau Input Manual Nomor Registrasi
      */
     public function lookup(Request $request)
@@ -117,9 +167,15 @@ class CompetitionCheckinController extends Controller
             ->first();
 
         if (! $registration) {
+            $registration = CompetitionRegistration::with(['event', 'teams.category'])
+                ->where('school_name', 'like', "%{$rawCode}%")
+                ->first();
+        }
+
+        if (! $registration) {
             return response()->json([
                 'success' => false,
-                'message' => "Nomor Registrasi '{$cleanCode}' tidak ditemukan dalam database.",
+                'message' => "Nomor Registrasi atau Sekolah '{$rawCode}' tidak ditemukan dalam database.",
             ], 404);
         }
 

@@ -4,6 +4,10 @@
 @section('page_title', 'Daftar Ulang / Presensi Peserta Lomba (Hari-H)')
 
 @section('top_actions')
+    <a href="{{ route('admin.competition-checkin.mobile') }}" class="bg-gradient-to-r from-red-600 to-rose-600 hover:from-red-500 hover:to-rose-500 text-white px-3 sm:px-4 py-2 sm:py-2.5 rounded-xl font-bold text-xs transition flex items-center gap-1.5 sm:gap-2 shadow-sm">
+        <i class="fa-solid fa-mobile-screen"></i>
+        <span>Mode Scanner HP (Mobile)</span>
+    </a>
     <a href="{{ route('admin.competition-participants.index') }}" class="bg-slate-800 hover:bg-slate-900 text-white px-3 sm:px-4 py-2 sm:py-2.5 rounded-xl font-bold text-xs transition flex items-center gap-1.5 sm:gap-2">
         <i class="fa-solid fa-users-viewfinder"></i> 
         <span class="hidden sm:inline">Lihat Peserta Terverifikasi</span>

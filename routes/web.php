@@ -312,6 +312,7 @@ Route::prefix('admin')->name('admin.')->group(function () {
 
         // Daftar Ulang / Check-In Peserta Lomba (Hari-H)
         Route::get('/competition-checkin', [CompetitionCheckinController::class, 'index'])->name('competition-checkin.index');
+        Route::get('/competition-checkin/mobile', [CompetitionCheckinController::class, 'mobile'])->name('competition-checkin.mobile');
         Route::get('/competition-checkin/lookup', [CompetitionCheckinController::class, 'lookup'])->name('competition-checkin.lookup');
         Route::post('/competition-checkin/process', [CompetitionCheckinController::class, 'process'])->name('competition-checkin.process');
         Route::post('/competition-checkin/{id}/cancel', [CompetitionCheckinController::class, 'cancel'])->name('competition-checkin.cancel');
@@ -757,6 +758,10 @@ Route::prefix('lomba')->name('lomba.')->group(function () {
     Route::post('/beli-tiket-parkir', [CompetitionController::class, 'storePublicParkingTicket'])->name('buy-parking-ticket');
     Route::get('/cek-tiket-parkir', [CompetitionController::class, 'checkPublicParkingTicket'])->name('check-parking-ticket');
 });
+
+// Shortcut URL Meja Daftar Ulang Mobile (Petugas Lapangan)
+Route::get('/checkin', fn () => redirect()->route('admin.competition-checkin.mobile'))->name('checkin.shortcut');
+Route::get('/daftar-ulang', fn () => redirect()->route('admin.competition-checkin.mobile'))->name('daftar-ulang.shortcut');
 
 // ================= PORTAL PENILAIAN JURI LAPANGAN (MOBILE-FIRST) =================
 Route::get('/juri/login', [JuryPortalController::class, 'showLogin'])->name('jury.login');

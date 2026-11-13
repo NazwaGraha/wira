@@ -81,4 +81,61 @@ class CompetitionCheckinTest extends TestCase
             ],
         ]);
     }
+
+    public function test_mobile_checkin_page_can_be_rendered(): void
+    {
+        CompetitionRegistration::create([
+            'competition_event_id' => $this->event->id,
+            'school_name' => 'SMAN 1 CIAWI BOGOR',
+            'registration_code' => 'SBB-W54342H',
+            'level' => 'Wira',
+            'advisor_name' => 'Ibu Siti Rahmawati',
+            'advisor_phone' => '081234567890',
+            'total_payment' => 500000,
+            'status' => 'verified',
+        ]);
+
+        $response = $this->actingAs($this->adminUser)
+            ->get(route('admin.competition-checkin.mobile'));
+
+        $response->assertStatus(200);
+        $response->assertSee('MEJA DAFTAR ULANG');
+        $response->assertSee('SMAN 1 CIAWI BOGOR');
+        $response->assertSee('peserta-valid.mp3');
+        $response->assertSee('peserta-invalid.mp3');
+    }
+
+    public function test_checkin_lookup_supports_school_name_fallback(): void
+    {
+        CompetitionRegistration::create([
+            'competition_event_id' => $this->event->id,
+            'school_name' => 'SMAN 1 CIAWI BOGOR',
+            'registration_code' => 'SBB-W54342H',
+            'level' => 'Wira',
+            'advisor_name' => 'Ibu Siti Rahmawati',
+            'advisor_phone' => '081234567890',
+            'total_payment' => 500000,
+            'status' => 'verified',
+        ]);
+
+        $response = $this->actingAs($this->adminUser)
+            ->get(route('admin.competition-checkin.lookup', ['code' => 'Ciawi']));
+
+        $response->assertStatus(200);
+        $response->assertJson([
+            'success' => true,
+            'registration' => [
+                'registration_code' => 'SBB-W54342H',
+                'school_name' => 'SMAN 1 CIAWI BOGOR',
+            ],
+        ]);
+    }
+
+    public function test_checkin_shortcut_redirects_to_mobile_page(): void
+    {
+        $response = $this->actingAs($this->adminUser)
+            ->get('/checkin');
+
+        $response->assertRedirect(route('admin.competition-checkin.mobile'));
+    }
 }
