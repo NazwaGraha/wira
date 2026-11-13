@@ -274,7 +274,7 @@
                             <i class="fa-solid fa-stopwatch text-amber-400"></i> WAKTU TEMPUH TANDU
                         </div>
                         <span class="text-[8.5px] font-bold px-2 py-0.5 rounded-full {{ $accentBgSoft }} border">
-                            {{ $catLevel === 'Mula' ? '10 Interval: Max 10:00' : '6 Interval: Max 05:6' }}
+                            {{ $catLevel === 'Mula' ? '10 Interval: Max 10:00' : '6 Interval: Max 06:00' }}
                         </span>
                     </div>
 
@@ -1399,13 +1399,13 @@
             const score = 300 - Math.round(seconds * 0.5);
             return Math.max(0, Math.min(300, score));
         } else {
-            if (seconds > 330) return 0;
+            if (seconds > 360) return 0;
             if (seconds <= 300) {
                 const score = 300 - Math.round(seconds * (250 / 300));
                 return Math.max(51, Math.min(300, score));
             } else {
                 const diff = seconds - 300;
-                const score = 51 - Math.round(diff * (51 / 30));
+                const score = 51 - Math.round(diff * (51 / 60));
                 return Math.max(0, Math.min(51, score));
             }
         }
@@ -1431,8 +1431,8 @@
             if (seconds <= 180) return { label: '2.1-3 Menit (151-200 Pts)' };
             if (seconds <= 240) return { label: '3.1-4 Menit (101-150 Pts)' };
             if (seconds <= 300) return { label: '4.1-5 Menit (51-100 Pts)' };
-            if (seconds <= 330) return { label: '5.1-6 Menit (0-51 Pts)' };
-            return { label: '> 05:6 Menit (0 Poin)' };
+            if (seconds <= 360) return { label: '5.1-6 Menit (0-51 Pts)' };
+            return { label: '> 06:00 Menit (0 Poin)' };
         }
     }
 
