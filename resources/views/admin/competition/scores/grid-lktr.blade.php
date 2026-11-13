@@ -514,7 +514,7 @@
                                         @if($isMula)
                                             Skala 10 Interval: 0-1m (271-300) s/d 9.1-10m (0-30) &bull; Toleransi Maks 10:00 Menit
                                         @else
-                                            Skala 6 Interval: 0-1m (251-300) s/d 5.1-5.6m (0-51) &bull; Toleransi Maks 05:30 Menit
+                                            Skala 6 Interval: 0-1m (251-300) s/d 5.1-5.6m (0-51) &bull; Toleransi Maks 05:6 Menit
                                         @endif
                                     </p>
                                 </div>
@@ -1136,7 +1136,7 @@
             const score = 300 - Math.round(seconds * 0.5);
             return Math.max(0, Math.min(300, score));
         } else {
-            // Madya & Wira 6 Interval Scale (Maks 05:30)
+            // Madya & Wira 6 Interval Scale (Maks 05:6)
             if (seconds > 330) return 0;
             if (seconds <= 300) {
                 const score = 300 - Math.round(seconds * (250 / 300));

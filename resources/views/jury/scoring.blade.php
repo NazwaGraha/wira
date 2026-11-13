@@ -274,7 +274,7 @@
                             <i class="fa-solid fa-stopwatch text-amber-400"></i> WAKTU TEMPUH TANDU
                         </div>
                         <span class="text-[8.5px] font-bold px-2 py-0.5 rounded-full {{ $accentBgSoft }} border">
-                            {{ $catLevel === 'Mula' ? '10 Interval: Max 10:00' : '6 Interval: Max 05:30' }}
+                            {{ $catLevel === 'Mula' ? '10 Interval: Max 10:00' : '6 Interval: Max 05:6' }}
                         </span>
                     </div>
 
