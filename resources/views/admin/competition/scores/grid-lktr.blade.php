@@ -566,7 +566,7 @@
                                 @endforeach
                             </div>
                             <div class="mt-2 text-[10px] text-rose-600 font-bold text-right">
-                                * Catatan: Waktu > {{ $isMula ? '10:00' : '05:30' }} Menit = 0 Poin
+                                * Catatan: Waktu > {{ $isMula ? '10:00' : '05:6' }} Menit = 0 Poin
                             </div>
                         </div>
 
@@ -1172,7 +1172,7 @@
             if (seconds <= 240) return { tier: 4, text: '101 - 150 Poin', label: '3.1 - 4 Menit' };
             if (seconds <= 300) return { tier: 5, text: '51 - 100 Poin', label: '4.1 - 5 Menit' };
             if (seconds <= 330) return { tier: 6, text: '0 - 51 Poin', label: '5.1 - 5.6 Menit' };
-            return { tier: 7, text: '0 Poin', label: '> 05:30 Menit' };
+            return { tier: 7, text: '0 Poin', label: '> 05:6 Menit' };
         }
     }
 

@@ -1432,7 +1432,7 @@
             if (seconds <= 240) return { label: '3.1-4 Menit (101-150 Pts)' };
             if (seconds <= 300) return { label: '4.1-5 Menit (51-100 Pts)' };
             if (seconds <= 330) return { label: '5.1-5.6 Menit (0-51 Pts)' };
-            return { label: '> 05:30 Menit (0 Poin)' };
+            return { label: '> 05:6 Menit (0 Poin)' };
         }
     }
 
