@@ -46,6 +46,7 @@ use App\Http\Controllers\Jury\JuryPortalController;
 use App\Http\Controllers\MemberAreaController;
 use App\Http\Controllers\PageController;
 use App\Http\Controllers\ParkingOfficerController;
+use App\Http\Controllers\ParticipantPortalController;
 use App\Http\Controllers\WiraAgentController;
 use App\Models\CompetitionInfoMenu;
 use App\Services\OrganizationSyncService;
@@ -762,6 +763,17 @@ Route::prefix('lomba')->name('lomba.')->group(function () {
 // Shortcut URL Meja Daftar Ulang Mobile (Petugas Lapangan)
 Route::get('/checkin', fn () => redirect()->route('admin.competition-checkin.mobile'))->name('checkin.shortcut');
 Route::get('/daftar-ulang', fn () => redirect()->route('admin.competition-checkin.mobile'))->name('daftar-ulang.shortcut');
+
+// ================= PORTAL RESMI PESERTA LOMBA (NILAI & ANGGOTA REGU) =================
+Route::prefix('peserta')->name('participant.')->group(function () {
+    Route::get('/', [ParticipantPortalController::class, 'index'])->name('portal');
+    Route::post('/login', [ParticipantPortalController::class, 'login'])->name('login');
+    Route::post('/logout', [ParticipantPortalController::class, 'logout'])->name('logout');
+    Route::get('/live-data', [ParticipantPortalController::class, 'liveData'])->name('live-data');
+    Route::get('/export-pdf', [ParticipantPortalController::class, 'exportPdf'])->name('export-pdf');
+    Route::get('/export-excel', [ParticipantPortalController::class, 'exportExcel'])->name('export-excel');
+});
+Route::get('/portal-peserta', fn () => redirect()->route('participant.portal'))->name('portal-peserta.shortcut');
 
 // ================= PORTAL PENILAIAN JURI LAPANGAN (MOBILE-FIRST) =================
 Route::get('/juri/login', [JuryPortalController::class, 'showLogin'])->name('jury.login');
