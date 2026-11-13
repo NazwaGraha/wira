@@ -419,6 +419,7 @@ Route::prefix('admin')->name('admin.')->group(function () {
 
             Route::post('/tickets', [ParkingManagementController::class, 'storeTicket'])->name('tickets.store');
             Route::put('/tickets/{ticket}', [ParkingManagementController::class, 'updateTicket'])->name('tickets.update');
+            Route::delete('/tickets/destroy-multiple', [ParkingManagementController::class, 'destroyMultipleTickets'])->name('tickets.destroy-multiple');
             Route::delete('/tickets/{ticket}', [ParkingManagementController::class, 'destroyTicket'])->name('tickets.destroy');
             Route::post('/tickets/assign-location', [ParkingManagementController::class, 'assignLocation'])->name('tickets.assign-location');
             Route::post('/tickets/{ticket}/status', [ParkingManagementController::class, 'updateStatus'])->name('tickets.update-status');

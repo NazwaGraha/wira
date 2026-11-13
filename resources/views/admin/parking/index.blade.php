@@ -592,8 +592,11 @@
                             <option value="{{ $l->id }}">{{ $l->name }} (Sisa R4: {{ $l->remaining_r4 }} | R2: {{ $l->remaining_r2 }})</option>
                         @endforeach
                     </select>
-                    <button type="button" onclick="submitBulkAssign()" class="px-3.5 py-1.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold transition flex items-center gap-1.5 shadow-xs">
+                    <button type="button" onclick="submitBulkAssign()" class="px-3.5 py-1.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold transition flex items-center gap-1.5 shadow-xs cursor-pointer">
                         <i class="fa-solid fa-arrows-split-up-and-left"></i> Terapkan Plotting
+                    </button>
+                    <button type="button" onclick="submitBulkDelete()" class="px-3.5 py-1.5 rounded-xl bg-rose-600 hover:bg-rose-700 text-white font-bold transition flex items-center gap-1.5 shadow-xs cursor-pointer" title="Hapus Tiket yang Dicentang">
+                        <i class="fa-solid fa-trash-can"></i> Hapus Terpilih
                     </button>
                 </div>
             </div>
@@ -700,6 +703,13 @@
                                         <button type="button" onclick="changeTicketStatus({{ $t->id }}, '{{ $t->status }}')" class="p-1.5 rounded-lg bg-emerald-50 hover:bg-emerald-100 text-emerald-700 text-xs transition" title="Ubah Status Masuk/Keluar">
                                             <i class="fa-solid fa-arrows-rotate"></i>
                                         </button>
+                                        <form action="{{ route('admin.parking.tickets.destroy', $t->id) }}" method="POST" class="inline" onsubmit="return confirm('Apakah Anda yakin ingin menghapus tiket parkir {{ $t->ticket_code }} ({{ $t->license_plate }})? Data tiket dan riwayat kendaraan ini akan dihapus permanen.');">
+                                            @csrf
+                                            @method('DELETE')
+                                            <button type="submit" class="p-1.5 rounded-lg bg-rose-50 hover:bg-rose-100 text-rose-600 text-xs transition cursor-pointer" title="Hapus Tiket Kendaraan">
+                                                <i class="fa-solid fa-trash-can"></i>
+                                            </button>
+                                        </form>
                                     </div>
                                 </td>
                             </tr>
@@ -1469,6 +1479,29 @@
             return;
         }
         document.getElementById('formBulkAssign').submit();
+    }
+
+    function submitBulkDelete() {
+        const count = document.querySelectorAll('.ticket-checkbox:checked').length;
+        if (count === 0) {
+            alert('Silakan centang minimal 1 tiket kendaraan untuk dihapus.');
+            return;
+        }
+        if (!confirm(`Apakah Anda yakin ingin menghapus ${count} tiket parkir kendaraan yang dipilih secara permanen? Data yang dihapus tidak dapat dikembalikan.`)) {
+            return;
+        }
+        const form = document.getElementById('formBulkAssign');
+        form.action = "{{ route('admin.parking.tickets.destroy-multiple') }}";
+        
+        let methodInput = form.querySelector('input[name="_method"]');
+        if (!methodInput) {
+            methodInput = document.createElement('input');
+            methodInput.type = 'hidden';
+            methodInput.name = '_method';
+            form.appendChild(methodInput);
+        }
+        methodInput.value = 'DELETE';
+        form.submit();
     }
 </script>
 @endsection

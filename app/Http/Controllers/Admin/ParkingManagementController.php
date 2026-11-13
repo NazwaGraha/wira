@@ -409,9 +409,24 @@ class ParkingManagementController extends Controller
 
     public function destroyTicket(ParkingTicket $ticket): RedirectResponse
     {
+        $code = $ticket->ticket_code;
+        $plate = $ticket->license_plate;
         $ticket->delete();
 
-        return back()->with('success', 'Tiket parkir berhasil dihapus.');
+        return back()->with('success', "Tiket parkir {$code} ({$plate}) berhasil dihapus.");
+    }
+
+    public function destroyMultipleTickets(Request $request): RedirectResponse
+    {
+        $ticketIds = $request->input('ticket_ids', []);
+
+        if (empty($ticketIds) || ! is_array($ticketIds)) {
+            return back()->with('error', 'Silakan pilih setidaknya satu tiket kendaraan untuk dihapus.');
+        }
+
+        $count = ParkingTicket::whereIn('id', $ticketIds)->delete();
+
+        return back()->with('success', "Sebanyak {$count} tiket parkir kendaraan terpilih berhasil dihapus permanen.");
     }
 
     public function printTicket(ParkingTicket $ticket): View

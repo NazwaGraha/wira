@@ -863,4 +863,52 @@ class ParkingManagementTest extends TestCase
             'status' => 'booked',
         ]);
     }
+
+    public function test_admin_can_delete_single_parking_ticket(): void
+    {
+        $ticket = ParkingTicket::create([
+            'competition_registration_id' => $this->registration->id,
+            'parking_location_id' => $this->locationA->id,
+            'vehicle_type' => 'r4_car',
+            'license_plate' => 'D 1234 DEL',
+            'driver_name' => 'Sopir Hapus',
+        ]);
+
+        $this->assertDatabaseHas('parking_tickets', ['id' => $ticket->id]);
+
+        $response = $this->actingAs($this->admin)->delete(route('admin.parking.tickets.destroy', $ticket->id));
+
+        $response->assertRedirect();
+        $response->assertSessionHas('success');
+        $this->assertDatabaseMissing('parking_tickets', ['id' => $ticket->id]);
+    }
+
+    public function test_admin_can_bulk_delete_parking_tickets(): void
+    {
+        $ticket1 = ParkingTicket::create([
+            'competition_registration_id' => $this->registration->id,
+            'parking_location_id' => $this->locationA->id,
+            'vehicle_type' => 'r4_car',
+            'license_plate' => 'D 1111 BULK',
+        ]);
+
+        $ticket2 = ParkingTicket::create([
+            'competition_registration_id' => $this->registration->id,
+            'parking_location_id' => $this->locationA->id,
+            'vehicle_type' => 'r2_motor',
+            'license_plate' => 'D 2222 BULK',
+        ]);
+
+        $this->assertDatabaseHas('parking_tickets', ['id' => $ticket1->id]);
+        $this->assertDatabaseHas('parking_tickets', ['id' => $ticket2->id]);
+
+        $response = $this->actingAs($this->admin)->delete(route('admin.parking.tickets.destroy-multiple'), [
+            'ticket_ids' => [$ticket1->id, $ticket2->id],
+        ]);
+
+        $response->assertRedirect();
+        $response->assertSessionHas('success');
+        $this->assertDatabaseMissing('parking_tickets', ['id' => $ticket1->id]);
+        $this->assertDatabaseMissing('parking_tickets', ['id' => $ticket2->id]);
+    }
 }
