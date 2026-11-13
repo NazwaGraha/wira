@@ -218,6 +218,11 @@
 
                 <!-- Floating Controls inside Viewfinder Top-Right Corner (Ergonomis) -->
                 <div class="absolute top-3 right-3 flex items-center gap-2 z-10">
+                    <!-- Audio Voice Test (Tes Suara Notifikasi) -->
+                    <button type="button" onclick="testAudioVoice()" id="btnAudioTest" class="w-9 h-9 rounded-full bg-black/60 hover:bg-black/80 backdrop-blur-md text-white flex items-center justify-center text-xs border border-white/20 active:scale-95 transition shadow-lg" title="Tes Suara Notifikasi (Perempuan / Laki-laki)">
+                        <i class="fa-solid fa-volume-high text-emerald-400"></i>
+                    </button>
+
                     <!-- Torch (Senter) -->
                     <button type="button" onclick="toggleTorch()" id="btnTorch" class="btn-torch-toggle w-9 h-9 rounded-full bg-black/60 hover:bg-black/80 backdrop-blur-md text-white flex items-center justify-center text-xs border border-white/20 active:scale-95 transition shadow-lg" title="Senter / Flashlight">
                         <i class="fa-solid fa-bolt text-yellow-400"></i>
@@ -595,6 +600,26 @@
         </div>
     </div>
 
+    <!-- ================= MODAL ERROR / TIKET TIDAK VALID ================= -->
+    <div id="modalError" onclick="if(event.target === this) closeErrorModal()" class="fixed inset-0 bg-black/80 backdrop-blur-xs z-50 flex items-center justify-center p-3 sm:p-4 hidden transition-opacity duration-200">
+        <div class="bg-slate-900 border border-rose-500/40 rounded-2xl sm:rounded-3xl w-full max-w-sm shadow-2xl p-5 flex flex-col items-center text-center animate-in zoom-in-95 duration-200">
+            <div class="w-14 h-14 rounded-2xl bg-rose-500/20 border border-rose-500/40 text-rose-400 flex items-center justify-center text-2xl mb-3 shadow-lg shadow-rose-950/50">
+                <i class="fa-solid fa-triangle-exclamation"></i>
+            </div>
+            <span class="px-2.5 py-0.5 rounded-full bg-rose-500/20 text-rose-400 border border-rose-500/30 text-[10px] font-black uppercase tracking-wider mb-1">
+                TIKET TIDAK VALID
+            </span>
+            <h3 class="text-sm sm:text-base font-black text-white mt-1">Tiket Tidak Ditemukan</h3>
+            <p id="modalErrorMessage" class="text-xs text-slate-300 mt-2 mb-4 leading-relaxed px-2">
+                Tiket tidak ditemukan dalam sistem. Pastikan QR code atau kode tiket valid.
+            </p>
+            <button type="button" onclick="closeErrorModal()" class="w-full py-2.5 bg-gradient-to-r from-red-600 to-rose-600 hover:from-red-500 hover:to-rose-500 text-white font-black text-xs rounded-xl shadow-md transition active:scale-95 flex items-center justify-center gap-2">
+                <i class="fa-solid fa-rotate-right text-xs"></i>
+                <span>Tutup & Scan Lagi</span>
+            </button>
+        </div>
+    </div>
+
     <!-- ================= MODAL SUKSES TIKET DADAKAN ================= -->
     <div id="modalPosSuccess" class="fixed inset-0 bg-black/80 backdrop-blur-xs z-50 flex items-center justify-center p-4 hidden">
         <div class="bg-slate-900 border border-slate-800 rounded-3xl w-full max-w-sm p-6 shadow-2xl text-center space-y-4">
@@ -644,7 +669,41 @@
         let selectedPosFare = {{ $fareSetting->fare_r4_car ?? 10000 }};
         let selectedPosPayment = 'cash';
 
-        // Web Audio API Synthesizer (Beep & Buzzer)
+        // ================= AUDIO NOTIFICATION SYSTEM (LOUD & HUMAN VOICE) =================
+        const audioValid = new Audio("{{ asset('audio/tiket-valid.mp3') }}");
+        const audioInvalid = new Audio("{{ asset('audio/tiket-invalid.mp3') }}");
+        audioValid.preload = 'auto';
+        audioInvalid.preload = 'auto';
+
+        let audioUnlocked = false;
+        function unlockAudio() {
+            if (audioUnlocked) return;
+            audioUnlocked = true;
+            try {
+                const ctx = new (window.AudioContext || window.webkitAudioContext)();
+                if (ctx.state === 'suspended') {
+                    ctx.resume();
+                }
+            } catch (e) {}
+
+            [audioValid, audioInvalid].forEach(a => {
+                try {
+                    a.volume = 0.01;
+                    const p = a.play();
+                    if (p !== undefined) {
+                        p.then(() => {
+                            a.pause();
+                            a.currentTime = 0;
+                            a.volume = 1.0;
+                        }).catch(() => {});
+                    }
+                } catch (e) {}
+            });
+        }
+        document.addEventListener('touchstart', unlockAudio, { passive: true, once: true });
+        document.addEventListener('click', unlockAudio, { passive: true, once: true });
+
+        // Web Audio API Synthesizer (Loud Crisp Chime & Warning Buzzer)
         function playBeep(type = 'success') {
             try {
                 const ctx = new (window.AudioContext || window.webkitAudioContext)();
@@ -654,23 +713,87 @@
                 gain.connect(ctx.destination);
 
                 if (type === 'success') {
-                    osc.frequency.setValueAtTime(800, ctx.currentTime);
-                    osc.frequency.exponentialRampToValueAtTime(1200, ctx.currentTime + 0.15);
-                    gain.gain.setValueAtTime(0.3, ctx.currentTime);
-                    gain.gain.linearRampToValueAtTime(0.01, ctx.currentTime + 0.15);
+                    // Crisp 2-tone high chime
+                    osc.frequency.setValueAtTime(880, ctx.currentTime);
+                    osc.frequency.exponentialRampToValueAtTime(1760, ctx.currentTime + 0.18);
+                    gain.gain.setValueAtTime(0.85, ctx.currentTime); // Volume tinggi
+                    gain.gain.linearRampToValueAtTime(0.01, ctx.currentTime + 0.18);
                     osc.start(ctx.currentTime);
-                    osc.stop(ctx.currentTime + 0.15);
+                    osc.stop(ctx.currentTime + 0.18);
                 } else {
+                    // Low warning buzzer
                     osc.type = 'sawtooth';
-                    osc.frequency.setValueAtTime(300, ctx.currentTime);
-                    osc.frequency.linearRampToValueAtTime(200, ctx.currentTime + 0.35);
-                    gain.gain.setValueAtTime(0.4, ctx.currentTime);
+                    osc.frequency.setValueAtTime(320, ctx.currentTime);
+                    osc.frequency.linearRampToValueAtTime(160, ctx.currentTime + 0.35);
+                    gain.gain.setValueAtTime(0.85, ctx.currentTime); // Volume tinggi
                     gain.gain.linearRampToValueAtTime(0.01, ctx.currentTime + 0.35);
                     osc.start(ctx.currentTime);
                     osc.stop(ctx.currentTime + 0.35);
                 }
             } catch (e) {
                 // Ignore audio context error
+            }
+        }
+
+        // Web Speech API Fallback (Jika file MP3 terhalang sistem HP)
+        function speakVoice(text, isFemale = true) {
+            if (!('speechSynthesis' in window)) return;
+            try {
+                window.speechSynthesis.cancel();
+                const utterance = new SpeechSynthesisUtterance(text);
+                utterance.lang = 'id-ID';
+                utterance.rate = 1.0;
+                utterance.pitch = isFemale ? 1.25 : 0.75;
+                utterance.volume = 1.0;
+
+                const voices = window.speechSynthesis.getVoices();
+                if (voices && voices.length) {
+                    const idVoice = voices.find(v => {
+                        const name = (v.name || '').toLowerCase();
+                        const lang = (v.lang || '').toLowerCase();
+                        if (!lang.startsWith('id')) return false;
+                        return isFemale 
+                            ? (name.includes('female') || name.includes('wanita') || name.includes('perempuan') || name.includes('gadis') || name.includes('damayanti'))
+                            : (name.includes('male') || name.includes('pria') || name.includes('laki') || name.includes('ardi'));
+                    });
+                    if (idVoice) utterance.voice = idVoice;
+                }
+                window.speechSynthesis.speak(utterance);
+            } catch (e) {
+                console.warn('Speech synthesis error:', e);
+            }
+        }
+
+        // Main Audio Notification: Suara Manusia (Perempuan = Valid, Laki-laki = Tidak Valid)
+        function playNotification(type = 'success') {
+            unlockAudio();
+            playBeep(type);
+
+            const audio = (type === 'success') ? audioValid : audioInvalid;
+            if (audio) {
+                audio.currentTime = 0;
+                audio.volume = 1.0;
+                const p = audio.play();
+                if (p !== undefined) {
+                    p.catch(err => {
+                        console.warn('Audio play blocked/failed, fallback to SpeechSynthesis:', err);
+                        speakVoice(type === 'success' ? 'Tiket parkir valid' : 'Tiket parkir tidak valid', type === 'success');
+                    });
+                }
+            } else {
+                speakVoice(type === 'success' ? 'Tiket parkir valid' : 'Tiket parkir tidak valid', type === 'success');
+            }
+        }
+
+        let lastAudioTestSuccess = false;
+        function testAudioVoice() {
+            unlockAudio();
+            if (!lastAudioTestSuccess) {
+                playNotification('success');
+                lastAudioTestSuccess = true;
+            } else {
+                playNotification('error');
+                lastAudioTestSuccess = false;
             }
         }
 
@@ -981,18 +1104,16 @@
 
                 const data = await res.json();
                 if (!data.success) {
-                    playBeep('error');
-                    alert(data.message || 'Tiket tidak ditemukan!');
-                    isProcessing = false;
+                    playNotification('error');
+                    showErrorModal(data.message || 'Tiket tidak ditemukan dalam sistem. Pastikan QR code atau kode tiket valid.');
                     return;
                 }
 
-                playBeep('success');
+                playNotification('success');
                 showResultModal(data);
             } catch (err) {
-                playBeep('error');
-                alert('Gagal memverifikasi tiket: ' + err.message);
-                isProcessing = false;
+                playNotification('error');
+                showErrorModal('Gagal memverifikasi tiket: ' + err.message);
             }
         }
 
@@ -1151,7 +1272,20 @@
             document.getElementById('modalResult').classList.add('hidden');
             setTimeout(() => {
                 isProcessing = false;
-            }, 1000);
+            }, 600);
+        }
+
+        function showErrorModal(message) {
+            const msgEl = document.getElementById('modalErrorMessage');
+            if (msgEl) msgEl.innerText = message;
+            document.getElementById('modalError').classList.remove('hidden');
+        }
+
+        function closeErrorModal() {
+            document.getElementById('modalError').classList.add('hidden');
+            setTimeout(() => {
+                isProcessing = false;
+            }, 600);
         }
 
         async function submitCheckIn() {
