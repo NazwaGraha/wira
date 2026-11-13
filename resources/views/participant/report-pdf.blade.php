@@ -133,22 +133,31 @@
 </head>
 <body>
 
-    <!-- Header Dokumen -->
-    <table class="header-table">
-        <tr>
-            <td style="width: 70px; text-align: left; vertical-align: middle;">
-                <img src="{{ public_path('images/logo-pmi.png') }}" alt="PMI" style="height: 52px;" onerror="this.style.display='none'">
-            </td>
-            <td class="header-title" style="vertical-align: middle;">
-                <h1>LAPORAN RESMI NILAI PESERTA LOMBA</h1>
-                <h2>SUA BHAKTI BERKARYA IV TAHUN 2026</h2>
-                <p>Palang Merah Remaja Wira SMA Negeri 1 Ciawi Bogor • Jln. Veteran III Desa Banjarwaru Kec. Ciawi</p>
-            </td>
-            <td style="width: 70px; text-align: right; vertical-align: middle;">
-                <img src="{{ public_path('images/logo-pmr.png') }}" alt="PMR" style="height: 52px;" onerror="this.style.display='none'">
-            </td>
-        </tr>
-    </table>
+    @php
+        $logoFile = public_path('images/logo_pmi_sman1ciawi_official.png');
+        if (!file_exists($logoFile)) {
+            $logoFile = public_path('images/logo_pmi_sman1ciawi.png');
+        }
+        $logoBase64 = file_exists($logoFile) ? base64_encode(file_get_contents($logoFile)) : null;
+    @endphp
+
+    <!-- Header Dokumen (Logo Tunggal di Atas Teks) -->
+    <div style="text-align: center; border-bottom: 2.5px solid #dc2626; padding-bottom: 10px; margin-bottom: 14px;">
+        @if($logoBase64)
+            <div style="margin-bottom: 8px;">
+                <img src="data:image/png;base64,{{ $logoBase64 }}" style="height: 48px; width: auto;" alt="Logo Palang Merah Indonesia & SMA Negeri 1 Ciawi">
+            </div>
+        @endif
+        <h1 style="font-size: 14px; font-weight: bold; color: #991b1b; margin: 0 0 3px 0; text-transform: uppercase; letter-spacing: 0.5px;">
+            LAPORAN RESMI NILAI PESERTA LOMBA
+        </h1>
+        <h2 style="font-size: 11.5px; font-weight: bold; color: #0f172a; margin: 0 0 3px 0; text-transform: uppercase;">
+            SUA BHAKTI BERKARYA IV TAHUN 2026
+        </h2>
+        <p style="font-size: 8.5px; color: #64748b; margin: 0;">
+            Palang Merah Remaja Wira SMA Negeri 1 Ciawi Bogor • Jln. Veteran III Desa Banjarwaru Kec. Ciawi
+        </p>
+    </div>
 
     <!-- Info Kontingen Sekolah -->
     <div class="info-card">
