@@ -304,6 +304,84 @@ class ParkingOfficerTest extends TestCase
         $response->assertJson(['success' => false]);
     }
 
+    public function test_officer_can_verify_ticket_by_code_and_scanned_qr_url(): void
+    {
+        $officer = ParkingOfficer::create([
+            'name' => 'Duke Petugas',
+            'username' => 'duke',
+            'password' => Hash::make('pass123'),
+            'is_active' => true,
+        ]);
+        $officer->locations()->attach([$this->locationA->id]);
+
+        $ticket = ParkingTicket::create([
+            'competition_registration_id' => $this->registration->id,
+            'parking_location_id' => $this->locationA->id,
+            'vehicle_type' => 'r4_car',
+            'license_plate' => 'F 1234 FAB',
+            'driver_name' => 'Ny. Naura Yusmira',
+            'status' => 'booked',
+            'is_public' => true,
+            'fee_amount' => 10000,
+            'payment_method' => 'qris',
+            'payment_status' => 'paid',
+        ]);
+
+        $this->actingAs($officer, 'parking_officer');
+
+        // 1. Verify dengan Ticket Code (misal manual input: PKR4-SBB4-0001)
+        $resCode = $this->postJson(route('parking.verify'), [
+            'code' => $ticket->ticket_code,
+            'location_id' => $this->locationA->id,
+        ]);
+        $resCode->assertOk();
+        $resCode->assertJson([
+            'success' => true,
+            'found' => true,
+            'ticket' => [
+                'ticket_code' => $ticket->ticket_code,
+                'license_plate' => 'F 1234 FAB',
+            ],
+        ]);
+
+        // 2. Verify dengan Scanned Full URL dari QR Code
+        $fullQrUrl = route('parking.public-ticket', $ticket->qr_code_token);
+        $resUrl = $this->postJson(route('parking.verify'), [
+            'code' => $fullQrUrl,
+            'location_id' => $this->locationA->id,
+        ]);
+        $resUrl->assertOk();
+        $resUrl->assertJson([
+            'success' => true,
+            'found' => true,
+            'ticket' => [
+                'ticket_code' => $ticket->ticket_code,
+            ],
+        ]);
+
+        // 3. Verify dengan Plat Nomor tanpa spasi
+        $resPlate = $this->postJson(route('parking.verify'), [
+            'code' => 'f1234fab',
+            'location_id' => $this->locationA->id,
+        ]);
+        $resPlate->assertOk();
+        $resPlate->assertJson([
+            'success' => true,
+            'found' => true,
+            'ticket' => [
+                'ticket_code' => $ticket->ticket_code,
+            ],
+        ]);
+
+        // 4. Verify kode palsu
+        $resInvalid = $this->postJson(route('parking.verify'), [
+            'code' => 'KODE-PALSU-999',
+            'location_id' => $this->locationA->id,
+        ]);
+        $resInvalid->assertStatus(404);
+        $resInvalid->assertJson(['found' => false]);
+    }
+
     public function test_officer_can_logout(): void
     {
         $officer = ParkingOfficer::create([

@@ -745,7 +745,27 @@
             const onScanSuccess = (decodedText) => {
                 if (!isProcessing) {
                     isProcessing = true;
-                    verifyCode(decodedText);
+
+                    // Bersihkan jika QR Code berisi URL lengkap (misal: https://.../parkir/tiket/{token})
+                    let cleanCode = decodedText ? decodedText.trim() : '';
+                    try {
+                        if (cleanCode.startsWith('http://') || cleanCode.startsWith('https://')) {
+                            const urlObj = new URL(cleanCode);
+                            const pathSegments = urlObj.pathname.split('/').filter(Boolean);
+                            if (pathSegments.length > 0) {
+                                cleanCode = pathSegments[pathSegments.length - 1];
+                            }
+                        } else if (cleanCode.includes('/')) {
+                            const parts = cleanCode.split('/').filter(Boolean);
+                            if (parts.length > 0) {
+                                cleanCode = parts[parts.length - 1].split('?')[0].split('#')[0];
+                            }
+                        }
+                    } catch (e) {
+                        console.warn('URL parsing fallback:', e);
+                    }
+
+                    verifyCode(cleanCode || decodedText);
                 }
             };
 

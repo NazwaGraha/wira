@@ -138,21 +138,52 @@ class ParkingOfficerController extends Controller
             ], 401);
         }
 
-        $code = trim($request->input('code', ''));
+        $rawCode = trim($request->input('code', ''));
         $currentLocationId = $request->input('location_id');
 
-        if (empty($code)) {
+        if (empty($rawCode)) {
             return response()->json([
                 'success' => false,
                 'message' => 'Kode tiket atau QR code tidak boleh kosong.',
             ], 422);
         }
 
+        // Kumpulkan kandidat identitas tiket (dukung input kode langsung maupun URL lengkap hasil scan QR)
+        $candidates = [$rawCode];
+
+        // Jika input berupa URL (misal scan QR code berisi https://domain/parkir/tiket/{token})
+        if (filter_var($rawCode, FILTER_VALIDATE_URL) || str_starts_with($rawCode, 'http://') || str_starts_with($rawCode, 'https://')) {
+            $path = parse_url($rawCode, PHP_URL_PATH);
+            if ($path) {
+                $segments = array_values(array_filter(explode('/', $path)));
+                if (! empty($segments)) {
+                    $candidates[] = trim(end($segments));
+                }
+            }
+        } elseif (str_contains($rawCode, '/')) {
+            $segments = array_values(array_filter(explode('/', $rawCode)));
+            if (! empty($segments)) {
+                $candidates[] = trim(end($segments));
+            }
+        }
+
+        $candidates = array_unique(array_filter($candidates));
+
+        // Normalisasi plat nomor untuk toleransi spasi (misal: "F 1234 FAB" vs "F1234FAB")
+        $cleanPlate = preg_replace('/[^A-Za-z0-9]/', '', $rawCode);
+
         $ticket = ParkingTicket::with(['location', 'registration'])
-            ->where(function ($q) use ($code) {
-                $q->where('qr_code_token', $code)
-                    ->orWhere('ticket_code', $code)
-                    ->orWhere('license_plate', strtoupper($code));
+            ->where(function ($q) use ($candidates, $cleanPlate) {
+                $q->whereIn('qr_code_token', $candidates)
+                    ->orWhereIn('ticket_code', $candidates);
+
+                foreach ($candidates as $cand) {
+                    $q->orWhere('license_plate', strtoupper($cand));
+                }
+
+                if (! empty($cleanPlate)) {
+                    $q->orWhereRaw("REPLACE(license_plate, ' ', '') = ?", [strtoupper($cleanPlate)]);
+                }
             })
             ->first();
 
