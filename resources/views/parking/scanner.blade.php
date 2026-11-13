@@ -489,64 +489,128 @@
     </nav>
 
     <!-- ================= SLIDE-UP SHEET HASIL SCAN ================= -->
-    <div id="modalResult" class="fixed inset-0 bg-black/80 backdrop-blur-xs z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 hidden">
-        <div class="bg-slate-900 border border-slate-800 rounded-t-3xl sm:rounded-3xl w-full max-w-md p-6 shadow-2xl animate-in slide-in-from-bottom duration-200">
+    <div id="modalResult" onclick="if(event.target === this) closeResultModal()" class="fixed inset-0 bg-black/85 backdrop-blur-sm z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 hidden transition-opacity duration-300">
+        <div class="bg-gradient-to-b from-slate-900 via-slate-900 to-slate-950 border-t sm:border border-slate-700/70 rounded-t-[2.2rem] sm:rounded-3xl w-full max-w-lg shadow-[0_-10px_40px_rgba(0,0,0,0.85)] max-h-[92vh] flex flex-col animate-in slide-in-from-bottom duration-300 overflow-hidden">
             
-            <!-- Result Status Header -->
-            <div id="resBadgeWrapper" class="text-center pb-4 border-b border-slate-800">
-                <div id="resIcon" class="w-14 h-14 mx-auto rounded-full bg-emerald-500/20 text-emerald-400 flex items-center justify-center text-2xl mb-2">
-                    <i class="fa-solid fa-check"></i>
-                </div>
-                <div id="resStatusBadge" class="inline-block px-3 py-1 rounded-full text-xs font-black uppercase tracking-wider bg-emerald-500/20 text-emerald-400 border border-emerald-500/40">
-                    TIKET VALID ✓
-                </div>
-                <div id="resMessage" class="text-xs text-slate-400 mt-1">Sesuai dengan Kantong Parkir Ini</div>
+            <!-- Mobile Drag Indicator & Close Bar -->
+            <div class="pt-3 pb-1 px-5 flex items-center justify-between shrink-0">
+                <div class="w-12 h-1.5 bg-slate-700/80 rounded-full mx-auto -mr-4"></div>
+                <button type="button" onclick="closeResultModal()" class="w-8 h-8 rounded-full bg-slate-800/80 hover:bg-slate-700 text-slate-400 hover:text-white flex items-center justify-center transition active:scale-95 text-xs">
+                    <i class="fa-solid fa-xmark text-sm"></i>
+                </button>
             </div>
 
-            <!-- Vehicle & School Details -->
-            <div class="py-4 space-y-2.5 text-xs">
-                <div class="flex items-center justify-between">
-                    <span class="text-slate-400">Nomor Polisi:</span>
-                    <span id="resPlate" class="px-3 py-1 bg-black rounded-xl font-mono font-black text-sm text-white tracking-widest border border-slate-800">
-                        F 1845 EA
-                    </span>
+            <!-- Scrollable Content Body -->
+            <div class="px-5 pb-4 pt-1 overflow-y-auto space-y-3.5 text-xs">
+                
+                <!-- Status Banner Card -->
+                <div id="resBadgeWrapper" class="text-center p-3 rounded-2xl border transition-all">
+                    <div id="resIcon" class="w-12 h-12 mx-auto rounded-full flex items-center justify-center text-xl mb-1.5 shadow-inner">
+                        <i class="fa-solid fa-check"></i>
+                    </div>
+                    <div id="resStatusBadge" class="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full text-xs font-black uppercase tracking-wider">
+                        TIKET VALID ✓ SESUAI KANTONG
+                    </div>
+                    <div id="resMessage" class="text-[11px] text-slate-400 mt-1 font-medium">Karcis pengunjung umum terdaftar resmi.</div>
                 </div>
-                <div class="flex items-center justify-between">
-                    <span class="text-slate-400">Asal Kontingen / Tipe:</span>
-                    <span id="resSchool" class="font-bold text-white text-right truncate max-w-[220px]">
-                        SMAN 1 Bogor
-                    </span>
+
+                <!-- Hero License Plate Card (Gaya Plat Kendaraan Indonesia) -->
+                <div class="bg-black/90 border-2 border-slate-700/90 rounded-2xl p-3 text-center shadow-lg relative overflow-hidden">
+                    <div class="flex items-center justify-between text-[10px] text-slate-400 font-mono font-bold tracking-wider mb-0.5 px-1">
+                        <span class="flex items-center gap-1 text-slate-400">
+                            <i class="fa-solid fa-shield-halved text-rose-500"></i> SBB IV 2026
+                        </span>
+                        <span id="resTicketCode" class="text-slate-300 font-black">PKR4-SBB4-0023</span>
+                    </div>
+                    
+                    <!-- Plat Nomor Timbul -->
+                    <div class="py-1">
+                        <span id="resPlate" class="font-mono font-black text-2xl sm:text-3xl text-white tracking-[0.22em] uppercase select-all">
+                            F 1234 FAB
+                        </span>
+                    </div>
+
+                    <!-- Subline info plat -->
+                    <div class="flex items-center justify-center gap-2 mt-0.5 text-[11px] font-bold text-slate-300">
+                        <span id="resVTypeBadge" class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-lg bg-slate-800/90 text-slate-200 border border-slate-700">
+                            <i id="resVTypeIcon" class="fa-solid fa-car text-[10px] text-amber-400"></i>
+                            <span id="resVType">Roda 4 Mobil Pribadi / MPV / SUV</span>
+                        </span>
+                    </div>
                 </div>
-                <div class="flex items-center justify-between">
-                    <span class="text-slate-400">Jenis Kendaraan:</span>
-                    <span id="resVType" class="font-bold text-slate-200">Roda 4 (Minibus HiAce)</span>
+
+                <!-- Group 1: Kantong Parkir & Alokasi (Paling Krusial) -->
+                <div id="resLocCard" class="bg-slate-950/80 rounded-2xl p-3 border border-slate-800 space-y-2">
+                    <div class="flex items-start justify-between gap-2">
+                        <div class="flex items-start gap-2.5">
+                            <div id="resLocIconBox" class="w-8 h-8 rounded-xl bg-emerald-500/20 text-emerald-400 flex items-center justify-center shrink-0 mt-0.5">
+                                <i class="fa-solid fa-location-dot"></i>
+                            </div>
+                            <div>
+                                <span class="text-[10px] font-bold uppercase tracking-wider text-slate-400 block">Kantong Parkir Tujuan</span>
+                                <div id="resAssignedLoc" class="font-bold text-white text-sm">Halaman SMAN 1 Ciawi Bogor</div>
+                            </div>
+                        </div>
+                        <span id="resLocMatchBadge" class="shrink-0 px-2 py-0.5 rounded-lg text-[10px] font-black uppercase tracking-wider bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
+                            ✓ Sesuai Pos Ini
+                        </span>
+                    </div>
                 </div>
-                <div class="flex items-center justify-between" id="rowResFee">
-                    <span class="text-slate-400">Biaya / Tarif:</span>
-                    <span id="resFee" class="font-bold text-amber-300 font-mono">Gratis</span>
+
+                <!-- Group 2: Detail Kendaraan & Asal -->
+                <div class="bg-slate-950/80 rounded-2xl p-3 border border-slate-800 divide-y divide-slate-800/80">
+                    <div class="flex items-center justify-between pb-2">
+                        <span class="text-slate-400 flex items-center gap-1.5">
+                            <i class="fa-solid fa-school text-slate-500 text-[11px]"></i> Asal / Kontingen
+                        </span>
+                        <span id="resSchool" class="font-bold text-white text-right max-w-[210px] truncate">
+                            Umum / Penonton
+                        </span>
+                    </div>
+
+                    <div class="flex items-center justify-between py-2" id="rowResFee">
+                        <span class="text-slate-400 flex items-center gap-1.5">
+                            <i class="fa-solid fa-receipt text-slate-500 text-[11px]"></i> Tarif / Status Biaya
+                        </span>
+                        <div class="text-right">
+                            <span id="resFee" class="font-mono font-black text-emerald-400 block">
+                                Rp 10.000
+                            </span>
+                            <span id="resFeeSub" class="text-[10px] text-slate-400 block font-medium">
+                                Lunas (QRIS Digital)
+                            </span>
+                        </div>
+                    </div>
+
+                    <div class="flex items-center justify-between pt-2">
+                        <span class="text-slate-400 flex items-center gap-1.5">
+                            <i class="fa-solid fa-user text-slate-500 text-[11px]"></i> Pengemudi
+                        </span>
+                        <div class="text-right">
+                            <span id="resDriver" class="font-bold text-slate-200 block max-w-[210px] truncate">
+                                Ny. Naura Yusmira
+                            </span>
+                            <span id="resPhone" class="text-[10px] font-mono text-slate-400 block">
+                                085819537553
+                            </span>
+                        </div>
+                    </div>
                 </div>
-                <div class="flex items-center justify-between">
-                    <span class="text-slate-400">Kantong Parkir Resmi:</span>
-                    <span id="resAssignedLoc" class="font-bold text-rose-400">Kantong Parkir A</span>
-                </div>
-                <div class="flex items-center justify-between">
-                    <span class="text-slate-400">Pengemudi:</span>
-                    <span id="resDriver" class="font-bold text-slate-200">Pak Hendra (081388991234)</span>
-                </div>
+
             </div>
 
-            <!-- Action Buttons -->
-            <div class="pt-3 border-t border-slate-800 space-y-2">
+            <!-- Sticky Bottom Actions (Ergonomis Tombol Jempol) -->
+            <div class="p-4 bg-slate-950/95 border-t border-slate-800/90 shrink-0 space-y-2">
                 <input type="hidden" id="currentTicketId">
-                <button type="button" id="btnCheckIn" onclick="submitCheckIn()" class="w-full py-3.5 bg-emerald-600 hover:bg-emerald-500 text-white font-extrabold text-sm rounded-2xl shadow-lg transition active:scale-95 flex items-center justify-center gap-2">
-                    <i class="fa-solid fa-right-to-bracket"></i> Check-In Masuk (Parkir)
+                <button type="button" id="btnCheckIn" onclick="submitCheckIn()" class="w-full py-3.5 bg-gradient-to-r from-emerald-600 via-emerald-500 to-teal-500 hover:from-emerald-500 hover:to-teal-400 text-white font-black text-sm rounded-2xl shadow-lg shadow-emerald-950/50 transition active:scale-[0.98] flex items-center justify-center gap-2.5">
+                    <i class="fa-solid fa-right-to-bracket text-base"></i> Check-In Masuk (Parkir)
                 </button>
                 <div class="grid grid-cols-2 gap-2">
-                    <button type="button" id="btnCheckOut" onclick="submitCheckOut()" class="py-2.5 bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold text-xs rounded-xl transition flex items-center justify-center gap-1.5">
-                        <i class="fa-solid fa-right-from-bracket"></i> Check-Out (Keluar)
+                    <button type="button" id="btnCheckOut" onclick="submitCheckOut()" class="py-2.5 bg-slate-800 hover:bg-slate-700 text-amber-300 font-bold text-xs rounded-xl border border-slate-700/80 transition flex items-center justify-center gap-1.5 active:scale-95">
+                        <i class="fa-solid fa-right-from-bracket text-[11px]"></i> Check-Out (Keluar)
                     </button>
-                    <button type="button" onclick="closeResultModal()" class="py-2.5 bg-slate-800 hover:bg-slate-700 text-slate-400 font-bold text-xs rounded-xl transition">
-                        Tutup / Scan Lagi
+                    <button type="button" onclick="closeResultModal()" class="py-2.5 bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold text-xs rounded-xl border border-slate-700/80 transition flex items-center justify-center gap-1.5 active:scale-95">
+                        <i class="fa-solid fa-qrcode text-[11px]"></i> Scan Lagi
                     </button>
                 </div>
             </div>
@@ -962,44 +1026,156 @@
         function showResultModal(data) {
             const t = data.ticket;
             document.getElementById('currentTicketId').value = t.id;
-            document.getElementById('resPlate').innerText = t.license_plate;
-            document.getElementById('resSchool').innerText = t.school_name;
-            document.getElementById('resVType').innerText = t.vehicle_type_label;
-            document.getElementById('resAssignedLoc').innerText = t.assigned_location_name;
-            document.getElementById('resDriver').innerText = `${t.driver_name} • ${t.driver_phone}`;
 
-            // Fee row
-            const feeEl = document.getElementById('resFee');
-            if (t.is_public) {
-                feeEl.innerText = `${t.formatted_fee} (${t.payment_status_label} - ${t.payment_method_label})`;
-                feeEl.className = t.payment_status === 'paid' ? 'font-mono font-black text-emerald-400' : 'font-mono font-black text-amber-400';
-            } else {
-                feeEl.innerText = "Gratis (Kuota Resmi Kontingen)";
-                feeEl.className = "font-bold text-emerald-400";
+            // Kode Tiket & Plat Nomor Hero
+            const codeEl = document.getElementById('resTicketCode');
+            if (codeEl) codeEl.innerText = t.ticket_code;
+
+            const plateEl = document.getElementById('resPlate');
+            if (plateEl) plateEl.innerText = t.license_plate;
+
+            // Asal Sekolah & Tipe Kendaraan
+            const schoolEl = document.getElementById('resSchool');
+            if (schoolEl) schoolEl.innerText = t.school_name;
+
+            const vtypeEl = document.getElementById('resVType');
+            if (vtypeEl) vtypeEl.innerText = t.vehicle_type_label;
+
+            const vtypeIcon = document.getElementById('resVTypeIcon');
+            if (vtypeIcon) {
+                const isMotor = (t.vehicle_type || '').includes('r2') || (t.vehicle_type || '').includes('motor');
+                vtypeIcon.className = isMotor ? 'fa-solid fa-motorcycle text-[10px] text-purple-400' : 'fa-solid fa-car text-[10px] text-amber-400';
             }
 
+            // Driver & Phone
+            const driverEl = document.getElementById('resDriver');
+            if (driverEl) driverEl.innerText = t.driver_name || '-';
+
+            const phoneEl = document.getElementById('resPhone');
+            if (phoneEl) phoneEl.innerText = t.driver_phone && t.driver_phone !== '-' ? t.driver_phone : '';
+
+            // Biaya & Status Bayar
+            const feeEl = document.getElementById('resFee');
+            const feeSubEl = document.getElementById('resFeeSub');
+            if (t.is_public) {
+                if (feeEl) {
+                    feeEl.innerText = t.formatted_fee;
+                    feeEl.className = t.payment_status === 'paid' ? 'font-mono font-black text-emerald-400' : 'font-mono font-black text-amber-400';
+                }
+                if (feeSubEl) {
+                    feeSubEl.innerText = `${t.payment_status_label} (${t.payment_method_label})`;
+                    feeSubEl.className = t.payment_status === 'paid' ? 'text-[10px] text-emerald-400/80 block font-medium' : 'text-[10px] text-amber-400/80 block font-medium';
+                }
+            } else {
+                if (feeEl) {
+                    feeEl.innerText = "Gratis Kuota";
+                    feeEl.className = "font-bold text-emerald-400";
+                }
+                if (feeSubEl) {
+                    feeSubEl.innerText = "Kuota Resmi Kontingen Lomba";
+                    feeSubEl.className = "text-[10px] text-slate-400 block font-medium";
+                }
+            }
+
+            // Kantong Parkir
+            const assignedLocEl = document.getElementById('resAssignedLoc');
+            if (assignedLocEl) assignedLocEl.innerText = t.assigned_location_name;
+
+            const locMatchBadge = document.getElementById('resLocMatchBadge');
+            const locIconBox = document.getElementById('resLocIconBox');
+
+            // Header Status & Dynamic Action Buttons
             const badge = document.getElementById('resStatusBadge');
             const icon = document.getElementById('resIcon');
             const msg = document.getElementById('resMessage');
+            const wrapper = document.getElementById('resBadgeWrapper');
+            const btnCheckIn = document.getElementById('btnCheckIn');
+            const btnCheckOut = document.getElementById('btnCheckOut');
 
             if (!data.is_matching_location) {
-                badge.className = "inline-block px-3 py-1 rounded-full text-xs font-black uppercase tracking-wider bg-rose-500/20 text-rose-400 border border-rose-500/40";
-                badge.innerText = "PERINGATAN: SALAH KANTONG PARKIR!";
-                icon.className = "w-14 h-14 mx-auto rounded-full bg-rose-500/20 text-rose-400 flex items-center justify-center text-2xl mb-2";
+                // SALAH KANTONG PARKIR
+                wrapper.className = "text-center p-3 rounded-2xl border bg-rose-500/10 border-rose-500/30";
+                badge.className = "inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-black uppercase tracking-wider bg-rose-500/20 text-rose-400 border border-rose-500/40";
+                badge.innerHTML = '<i class="fa-solid fa-triangle-exclamation"></i> SALAH KANTONG PARKIR';
+                icon.className = "w-12 h-12 mx-auto rounded-full bg-rose-500/20 text-rose-400 flex items-center justify-center text-xl mb-1.5 shadow-inner border border-rose-500/30";
                 icon.innerHTML = '<i class="fa-solid fa-triangle-exclamation"></i>';
                 msg.innerText = `Kendaraan ini dialokasikan ke: ${t.assigned_location_name}.`;
+                msg.className = "text-[11px] text-rose-300 font-semibold mt-1";
+
+                if (locMatchBadge) {
+                    locMatchBadge.className = "shrink-0 px-2 py-0.5 rounded-lg text-[10px] font-black uppercase tracking-wider bg-rose-500/20 text-rose-400 border border-rose-500/30";
+                    locMatchBadge.innerText = "⚠ Lokasi Berbeda";
+                }
+                if (locIconBox) {
+                    locIconBox.className = "w-8 h-8 rounded-xl bg-rose-500/20 text-rose-400 flex items-center justify-center shrink-0 mt-0.5";
+                }
+                if (assignedLocEl) {
+                    assignedLocEl.className = "font-black text-rose-400 text-sm";
+                }
+
+                if (btnCheckIn) {
+                    btnCheckIn.className = "w-full py-3.5 bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-500 hover:to-orange-500 text-white font-black text-sm rounded-2xl shadow-lg transition active:scale-[0.98] flex items-center justify-center gap-2.5";
+                    btnCheckIn.innerHTML = '<i class="fa-solid fa-right-to-bracket text-base"></i> Tetap Check-In (Alihkan)';
+                }
+                if (btnCheckOut) {
+                    btnCheckOut.className = "py-2.5 bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold text-xs rounded-xl border border-slate-700/80 transition flex items-center justify-center gap-1.5 active:scale-95";
+                }
             } else if (t.status === 'parked') {
-                badge.className = "inline-block px-3 py-1 rounded-full text-xs font-black uppercase tracking-wider bg-amber-500/20 text-amber-400 border border-amber-500/40";
-                badge.innerText = `SUDAH CHECK-IN (JAM ${t.check_in_at || '-'})`;
-                icon.className = "w-14 h-14 mx-auto rounded-full bg-amber-500/20 text-amber-400 flex items-center justify-center text-2xl mb-2";
+                // SUDAH CHECK-IN
+                wrapper.className = "text-center p-3 rounded-2xl border bg-amber-500/10 border-amber-500/30";
+                badge.className = "inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-black uppercase tracking-wider bg-amber-500/20 text-amber-400 border border-amber-500/40";
+                badge.innerHTML = `<i class="fa-solid fa-clock-rotate-left"></i> SUDAH CHECK-IN (JAM ${t.check_in_at || '-'})`;
+                icon.className = "w-12 h-12 mx-auto rounded-full bg-amber-500/20 text-amber-400 flex items-center justify-center text-xl mb-1.5 shadow-inner border border-amber-500/30";
                 icon.innerHTML = '<i class="fa-solid fa-clock-rotate-left"></i>';
-                msg.innerText = "Kendaraan tercatat sudah terparkir di lokasi ini.";
+                msg.innerText = "Kendaraan tercatat sedang aktif terparkir di lokasi ini.";
+                msg.className = "text-[11px] text-amber-300 font-semibold mt-1";
+
+                if (locMatchBadge) {
+                    locMatchBadge.className = "shrink-0 px-2 py-0.5 rounded-lg text-[10px] font-black uppercase tracking-wider bg-emerald-500/20 text-emerald-400 border border-emerald-500/30";
+                    locMatchBadge.innerText = "✓ Sesuai Pos Ini";
+                }
+                if (locIconBox) {
+                    locIconBox.className = "w-8 h-8 rounded-xl bg-emerald-500/20 text-emerald-400 flex items-center justify-center shrink-0 mt-0.5";
+                }
+                if (assignedLocEl) {
+                    assignedLocEl.className = "font-bold text-white text-sm";
+                }
+
+                if (btnCheckIn) {
+                    btnCheckIn.className = "w-full py-3.5 bg-slate-800 text-slate-400 font-bold text-sm rounded-2xl border border-slate-700 flex items-center justify-center gap-2.5 opacity-60 cursor-not-allowed";
+                    btnCheckIn.innerHTML = '<i class="fa-solid fa-check-double text-base"></i> Sudah Terparkir';
+                }
+                if (btnCheckOut) {
+                    btnCheckOut.className = "py-2.5 bg-gradient-to-r from-amber-600 to-amber-500 text-white font-black text-xs rounded-xl shadow transition flex items-center justify-center gap-1.5 active:scale-95";
+                }
             } else {
-                badge.className = "inline-block px-3 py-1 rounded-full text-xs font-black uppercase tracking-wider bg-emerald-500/20 text-emerald-400 border border-emerald-500/40";
-                badge.innerText = "TIKET VALID ✓ SESUAI KANTONG";
-                icon.className = "w-14 h-14 mx-auto rounded-full bg-emerald-500/20 text-emerald-400 flex items-center justify-center text-2xl mb-2";
+                // TIKET VALID & SESUAI KANTONG
+                wrapper.className = "text-center p-3 rounded-2xl border bg-emerald-500/10 border-emerald-500/30";
+                badge.className = "inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-black uppercase tracking-wider bg-emerald-500/20 text-emerald-400 border border-emerald-500/40";
+                badge.innerHTML = '<i class="fa-solid fa-circle-check"></i> TIKET VALID ✓ SESUAI KANTONG';
+                icon.className = "w-12 h-12 mx-auto rounded-full bg-emerald-500/20 text-emerald-400 flex items-center justify-center text-xl mb-1.5 shadow-inner border border-emerald-500/30";
                 icon.innerHTML = '<i class="fa-solid fa-check"></i>';
-                msg.innerText = t.is_public ? "Karcis pengunjung umum terdaftar resmi." : "Alokasi tempat parkir kontingen sudah tepat.";
+                msg.innerText = t.is_public ? "Karcis pengunjung umum terdaftar resmi & lunas." : "Alokasi tempat parkir kontingen resmi.";
+                msg.className = "text-[11px] text-slate-400 font-medium mt-1";
+
+                if (locMatchBadge) {
+                    locMatchBadge.className = "shrink-0 px-2 py-0.5 rounded-lg text-[10px] font-black uppercase tracking-wider bg-emerald-500/20 text-emerald-400 border border-emerald-500/30";
+                    locMatchBadge.innerText = "✓ Sesuai Pos Ini";
+                }
+                if (locIconBox) {
+                    locIconBox.className = "w-8 h-8 rounded-xl bg-emerald-500/20 text-emerald-400 flex items-center justify-center shrink-0 mt-0.5";
+                }
+                if (assignedLocEl) {
+                    assignedLocEl.className = "font-bold text-white text-sm";
+                }
+
+                if (btnCheckIn) {
+                    btnCheckIn.className = "w-full py-3.5 bg-gradient-to-r from-emerald-600 via-emerald-500 to-teal-500 hover:from-emerald-500 hover:to-teal-400 text-white font-black text-sm rounded-2xl shadow-lg shadow-emerald-950/50 transition active:scale-[0.98] flex items-center justify-center gap-2.5";
+                    btnCheckIn.innerHTML = '<i class="fa-solid fa-right-to-bracket text-base"></i> Check-In Masuk (Parkir)';
+                }
+                if (btnCheckOut) {
+                    btnCheckOut.className = "py-2.5 bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold text-xs rounded-xl border border-slate-700/80 transition flex items-center justify-center gap-1.5 active:scale-95";
+                }
             }
 
             document.getElementById('modalResult').classList.remove('hidden');
