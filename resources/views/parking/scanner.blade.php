@@ -67,7 +67,7 @@
             </div>
             <div class="min-w-0">
                 <div class="flex items-center gap-1.5">
-                    <span class="text-[9px] font-black text-rose-400 uppercase tracking-wider truncate">PETUGAS PARKIR</span>
+                    <span class="text-[9px] font-black text-rose-400 uppercase tracking-wider truncate">PETUGAS PARKIR LAPANGAN</span>
                     @if(isset($officer) && $officer)
                         <span class="px-1.5 py-0.2 rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 text-[8px] font-bold shrink-0">
                             ● Online

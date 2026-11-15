@@ -29,9 +29,30 @@
     <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@500;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
 
     <style>
+        html {
+            -webkit-text-size-adjust: 100%;
+            text-size-adjust: 100%;
+        }
         body {
             font-family: 'Plus Jakarta Sans', sans-serif;
+            min-height: 100vh;
+            min-height: 100dvh;
             -webkit-tap-highlight-color: transparent;
+            -webkit-font-smoothing: antialiased;
+        }
+        button, a, input, select, textarea {
+            touch-action: manipulation;
+        }
+        @media screen and (max-width: 768px) {
+            input:not([type="checkbox"]):not([type="radio"]):not([type="range"]),
+            select,
+            textarea {
+                font-size: 16px !important;
+            }
+        }
+        .backdrop-blur-md {
+            -webkit-backdrop-filter: blur(12px);
+            backdrop-filter: blur(12px);
         }
         .font-mono {
             font-family: 'JetBrains Mono', monospace;

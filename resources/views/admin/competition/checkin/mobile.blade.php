@@ -788,6 +788,8 @@
                 if (videoEl) {
                     videoEl.setAttribute('playsinline', 'true');
                     videoEl.setAttribute('webkit-playsinline', 'true');
+                    videoEl.setAttribute('muted', 'true');
+                    videoEl.muted = true;
                 }
             } catch (err) {
                 console.warn("Gagal memulai kamera scanner:", err);
@@ -797,8 +799,22 @@
                         currentFacingMode = "user";
                         await html5QrCode.start({ facingMode: "user" }, config, onScanSuccess, onScanError);
                         isScanning = true;
+                        const notice = document.getElementById('cameraNotice');
+                        if (notice) notice.classList.add('hidden');
                         return;
                     } catch (fallbackErr) {}
+                }
+
+                // Fallback jika ada daftar kamera terdeteksi
+                if (availableCameras && availableCameras.length > 0) {
+                    try {
+                        currentCameraId = availableCameras[0].id;
+                        await html5QrCode.start(currentCameraId, config, onScanSuccess, onScanError);
+                        isScanning = true;
+                        const notice = document.getElementById('cameraNotice');
+                        if (notice) notice.classList.add('hidden');
+                        return;
+                    } catch (fallbackCamErr) {}
                 }
 
                 const notice = document.getElementById('cameraNotice');
@@ -807,6 +823,20 @@
         }
 
         async function switchCameraFacing() {
+            if (availableCameras && availableCameras.length > 1) {
+                let currentIndex = availableCameras.findIndex(c => c.id === currentCameraId);
+                let nextIndex = (currentIndex + 1) % availableCameras.length;
+                currentCameraId = availableCameras[nextIndex].id;
+                const lbl = (availableCameras[nextIndex].label || '').toLowerCase();
+                if (lbl.includes('front') || lbl.includes('user') || lbl.includes('facetime') || lbl.includes('depan')) {
+                    currentFacingMode = 'user';
+                } else {
+                    currentFacingMode = 'environment';
+                }
+                await startCameraScanner(currentCameraId);
+                return;
+            }
+
             currentFacingMode = (currentFacingMode === "environment") ? "user" : "environment";
             currentCameraId = null;
             await startCameraScanner();

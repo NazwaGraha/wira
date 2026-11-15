@@ -638,7 +638,13 @@ function checkinApp() {
                     video.srcObject = this.mediaStream;
                     video.setAttribute("playsinline", "true");
                     video.setAttribute("webkit-playsinline", "true");
-                    await video.play();
+                    video.setAttribute("muted", "true");
+                    video.muted = true;
+                    try {
+                        await video.play();
+                    } catch (playErr) {
+                        console.warn("video.play notice (Safari auto-play):", playErr);
+                    }
 
                     this.isCameraLoading = false;
                     this.isCameraStreaming = true;

@@ -109,9 +109,18 @@ class CrossBrowserAndErrorPagesTest extends TestCase
         $checkinResponse->assertSee('webcam-video', false);
         $checkinResponse->assertSee('playsinline', false);
 
+        $checkinMobileResponse = $this->get('/admin/competition-checkin/mobile');
+        $checkinMobileResponse->assertStatus(200);
+        $checkinMobileResponse->assertSee('reader', false);
+        $checkinMobileResponse->assertSee('playsinline', false);
+
         $parkingScannerResponse = $this->get('/parkir');
         $parkingScannerResponse->assertStatus(200);
         $parkingScannerResponse->assertSee('qr-reader', false);
         $parkingScannerResponse->assertSee('playsinline', false);
+
+        $participantPortalResponse = $this->get('/peserta');
+        $participantPortalResponse->assertStatus(200);
+        $participantPortalResponse->assertSee('Portal', false);
     }
 }

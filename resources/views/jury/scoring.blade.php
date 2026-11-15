@@ -1932,13 +1932,33 @@
         }
     });
 
-    // ================= KAMERA SMARTPHONE (DEPAN & BELAKANG) =================
+    // ================= KAMERA SMARTPHONE & DESKTOP (DEPAN & BELAKANG) =================
     let currentStream = null;
     let currentFacingMode = 'environment';
+    let availableVideoDevices = [];
+    let currentDeviceIndex = 0;
 
     async function openCameraModal() {
         const modal = document.getElementById('camera-modal');
         modal.classList.remove('hidden');
+
+        // Validasi dukungan WebRTC browser (Chrome, Safari, Firefox, Edge, Opera, Samsung Internet)
+        if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+            alert('Browser Anda belum mengizinkan akses WebRTC kamera atau situs diakses melalui protokol tidak aman (non-HTTPS).\nSilakan gunakan opsi pilih file gambar dari galeri atau kamera bawaan.');
+            closeCameraModal();
+            const fallbackInput = document.getElementById('fallback-camera-input');
+            if (fallbackInput) fallbackInput.click();
+            return;
+        }
+
+        // Ambil daftar kamera jika izin sudah diberikan sebelumnya
+        try {
+            const devices = await navigator.mediaDevices.enumerateDevices();
+            availableVideoDevices = devices.filter(d => d.kind === 'videoinput');
+        } catch (e) {
+            console.log('Enumerate devices notice:', e);
+        }
+
         await startCameraStream();
     }
 
@@ -1948,41 +1968,99 @@
         modal.classList.add('hidden');
     }
 
-    async function startCameraStream() {
+    async function startCameraStream(preferredDeviceId = null) {
         stopCameraStream();
         const video = document.getElementById('camera-video');
         const badge = document.getElementById('camera-facing-badge');
 
-        const constraints = {
-            audio: false,
-            video: {
-                facingMode: { ideal: currentFacingMode },
-                width: { ideal: 1280 },
-                height: { ideal: 960 }
-            }
-        };
+        if (!video) return;
+
+        // Optimasi Safari iOS / WebKit
+        video.muted = true;
+        video.playsInline = true;
+        video.setAttribute('playsinline', 'true');
+        video.setAttribute('webkit-playsinline', 'true');
+        video.setAttribute('muted', 'true');
+
+        let constraints;
+        if (preferredDeviceId) {
+            constraints = {
+                audio: false,
+                video: {
+                    deviceId: { exact: preferredDeviceId },
+                    width: { ideal: 1280 },
+                    height: { ideal: 960 }
+                }
+            };
+        } else {
+            constraints = {
+                audio: false,
+                video: {
+                    facingMode: { ideal: currentFacingMode },
+                    width: { ideal: 1280 },
+                    height: { ideal: 960 }
+                }
+            };
+        }
 
         try {
             currentStream = await navigator.mediaDevices.getUserMedia(constraints);
-            video.srcObject = currentStream;
-            video.setAttribute('playsinline', 'true');
-            video.setAttribute('webkit-playsinline', 'true');
-            await video.play().catch(e => console.log('video.play notice:', e));
-            badge.innerText = currentFacingMode === 'environment' ? '● KAMERA BELAKANG' : '● KAMERA DEPAN';
-            badge.className = 'text-[9px] font-mono bg-black/70 ' + (currentFacingMode === 'environment' ? 'text-emerald-400 border-emerald-400/40' : 'text-sky-400 border-sky-400/40') + ' px-2.5 py-1 rounded-full border font-bold';
         } catch (err) {
-            console.warn('getUserMedia error with constraint, trying fallback:', err);
+            console.warn('getUserMedia dengan constraints ideal gagal, mencoba fallback facingMode:', err);
+            // Fallback 1: Jika kamera belakang tidak ada (misal PC/Laptop hanya punya webcam depan/user)
             try {
-                currentStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
-                video.srcObject = currentStream;
-                video.setAttribute('playsinline', 'true');
-                video.setAttribute('webkit-playsinline', 'true');
-                await video.play().catch(e => console.log('fallback video.play notice:', e));
-                badge.innerText = '● KAMERA AKTIF';
-            } catch (fallbackErr) {
-                alert('Tidak dapat mengakses kamera smartphone: ' + fallbackErr.message + '\nMengalihkan ke pembuka kamera bawaan HP...');
-                closeCameraModal();
-                document.getElementById('fallback-camera-input').click();
+                const oppositeFacing = currentFacingMode === 'environment' ? 'user' : 'environment';
+                currentStream = await navigator.mediaDevices.getUserMedia({
+                    audio: false,
+                    video: { facingMode: { ideal: oppositeFacing } }
+                });
+                currentFacingMode = oppositeFacing;
+            } catch (fallback1) {
+                console.warn('Fallback facingMode sebaliknya gagal, mencoba kamera default apapun:', fallback1);
+                // Fallback 2: Minta kamera umum tanpa batasan facingMode
+                try {
+                    currentStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
+                } catch (fallback2) {
+                    console.error('Seluruh upaya akses kamera gagal:', fallback2);
+                    alert('Tidak dapat mengakses kamera (' + (fallback2.name || fallback2.message || 'Izin ditolak') + ').\nPastikan izin kamera telah disetujui pada peramban Anda.\nMengalihkan ke file/kamera bawaan perangkat...');
+                    closeCameraModal();
+                    const fallbackInput = document.getElementById('fallback-camera-input');
+                    if (fallbackInput) fallbackInput.click();
+                    return;
+                }
+            }
+        }
+
+        if (currentStream && video) {
+            video.srcObject = currentStream;
+            video.muted = true;
+            try {
+                await video.play();
+            } catch (playErr) {
+                console.log('Video play error (Safari auto-play policy catch):', playErr);
+            }
+
+            // Perbarui daftar kamera setelah izin disetujui
+            try {
+                const devices = await navigator.mediaDevices.enumerateDevices();
+                availableVideoDevices = devices.filter(d => d.kind === 'videoinput');
+            } catch (e) {}
+
+            // Deteksi jenis kamera aktif
+            const activeTrack = currentStream.getVideoTracks()[0];
+            const trackSettings = activeTrack ? (typeof activeTrack.getSettings === 'function' ? activeTrack.getSettings() : {}) : {};
+            const trackLabel = (activeTrack && activeTrack.label) ? activeTrack.label.toLowerCase() : '';
+
+            const isBack = currentFacingMode === 'environment' || trackLabel.includes('back') || trackLabel.includes('belakang') || trackSettings.facingMode === 'environment';
+
+            if (badge) {
+                badge.innerText = isBack ? '● KAMERA BELAKANG' : '● KAMERA DEPAN';
+                badge.className = 'text-[9px] font-mono bg-black/70 ' + (isBack ? 'text-emerald-400 border-emerald-400/40' : 'text-sky-400 border-sky-400/40') + ' px-2.5 py-1 rounded-full border font-bold';
+            }
+
+            const flipLabel = document.getElementById('flip-label');
+            if (flipLabel) {
+                flipLabel.innerText = isBack ? 'Depan' : 'Belakang';
             }
         }
     }
@@ -1997,8 +2075,22 @@
     }
 
     function flipCamera() {
+        if (availableVideoDevices && availableVideoDevices.length > 1) {
+            currentDeviceIndex = (currentDeviceIndex + 1) % availableVideoDevices.length;
+            const nextDev = availableVideoDevices[currentDeviceIndex];
+            if (nextDev && nextDev.deviceId) {
+                const lbl = (nextDev.label || '').toLowerCase();
+                if (lbl.includes('front') || lbl.includes('user') || lbl.includes('facetime') || lbl.includes('selfie') || lbl.includes('depan')) {
+                    currentFacingMode = 'user';
+                } else {
+                    currentFacingMode = 'environment';
+                }
+                startCameraStream(nextDev.deviceId);
+                return;
+            }
+        }
+
         currentFacingMode = (currentFacingMode === 'environment') ? 'user' : 'environment';
-        document.getElementById('flip-label').innerText = currentFacingMode === 'environment' ? 'Depan' : 'Belakang';
         startCameraStream();
     }
 
@@ -2008,8 +2100,8 @@
         const flash = document.getElementById('camera-flash');
         const loading = document.getElementById('camera-uploading');
 
-        if (!video.videoWidth) {
-            alert('Kamera belum siap, tunggu sebentar...');
+        if (!video || !video.videoWidth) {
+            alert('Kamera sedang memuat gambar, tunggu 1 detik lalu tekan kembali...');
             return;
         }
 
