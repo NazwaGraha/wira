@@ -162,8 +162,11 @@
                                         <div class="font-black text-slate-900 text-xs sm:text-sm">
                                             {{ $school }}
                                         </div>
-                                        <div class="text-[11px] text-slate-500 font-medium mt-0.5">
-                                            {{ $team->team_name }}
+                                        <div class="text-[11px] text-slate-500 font-medium mt-0.5 flex items-center justify-between gap-2">
+                                            <span>{{ $team->team_name }}</span>
+                                            <button type="button" onclick="focusAdminPhotoTeam('{{ $team->id }}', '{{ addslashes($school . ' - ' . $team->team_name) }}')" class="inline-flex items-center gap-1 text-[9.5px] font-bold text-pink-600 hover:text-pink-800 bg-pink-50 hover:bg-pink-100 px-2 py-0.5 rounded-lg border border-pink-200 transition shrink-0 cursor-pointer">
+                                                <i class="fa-solid fa-camera"></i> Dokumen Grid
+                                            </button>
                                         </div>
                                     </td>
 
@@ -260,6 +263,14 @@
 
         </div>
     </form>
+
+    {{-- Fasilitas Foto Dokumen Grid, Upload Dokumen, dan View Dokumen Grid --}}
+    @include('admin.competition.scores.partials.document-photos', [
+        'team' => $currentTeam ?: $teams->first(),
+        'teams' => $teams,
+        'photos' => $existingPhotos ?? ($currentTeam ? $currentTeam->photos()->latest()->get() : ($teams->first() ? $teams->first()->photos()->latest()->get() : collect())),
+        'theme' => 'mula'
+    ])
 
 </div>
 

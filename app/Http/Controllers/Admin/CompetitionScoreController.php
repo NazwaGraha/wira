@@ -8,10 +8,13 @@ use App\Models\CompetitionEvent;
 use App\Models\CompetitionParticipantTeam;
 use App\Models\CompetitionRegistration;
 use App\Models\CompetitionScore;
+use App\Models\CompetitionScorePhoto;
 use App\Models\User;
 use App\Services\CompetitionSpreadsheetService;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Str;
@@ -1305,14 +1308,17 @@ class CompetitionScoreController extends Controller
         $prevTeam = ($currentTeamIndex !== false && $currentTeamIndex > 0) ? $teams[$currentTeamIndex - 1] : null;
         $nextTeam = ($currentTeamIndex !== false && $currentTeamIndex < $teams->count() - 1) ? $teams[$currentTeamIndex + 1] : null;
 
-        // Ambil nilai yang sudah tersimpan untuk tim yang sedang dinilai
+        // Ambil nilai dan foto dokumentasi yang sudah tersimpan untuk tim yang sedang dinilai
         $score = null;
         $existingRubric = [];
         $existingSubtotals = [];
         $existingTime = '05:00';
         $existingNotes = '';
+        $existingPhotos = collect();
 
         if ($currentTeam) {
+            $existingPhotos = $currentTeam->photos()->latest()->get();
+
             $score = CompetitionScore::where('competition_category_id', $category->id)
                 ->where('competition_participant_team_id', $currentTeam->id)
                 ->where('round_name', $round)
@@ -1363,6 +1369,7 @@ class CompetitionScoreController extends Controller
             'existingSubtotals',
             'existingTime',
             'existingNotes',
+            'existingPhotos',
             'scores'
         ));
     }
@@ -3532,5 +3539,155 @@ class CompetitionScoreController extends Controller
     public function olimpiadeExportExcel(CompetitionCategory $category, Request $request, CompetitionSpreadsheetService $spreadsheetService)
     {
         return $this->exportExcel($category, $request, $spreadsheetService);
+    }
+
+    /**
+     * Upload Foto / Berkas Dokumentasi Grid Nilai (Admin)
+     */
+    public function uploadPhoto(Request $request): JsonResponse
+    {
+        $teamId = $request->input('team_id');
+        $caption = $request->input('caption', 'Dokumentasi Grid Nilai');
+
+        if (! $teamId) {
+            return response()->json(['success' => false, 'message' => 'ID Regu peserta tidak valid.'], 400);
+        }
+
+        $team = CompetitionParticipantTeam::find($teamId);
+        if (! $team) {
+            return response()->json(['success' => false, 'message' => 'Data regu peserta tidak ditemukan.'], 404);
+        }
+
+        $destinationDir = storage_path("app/public/competition_evidences/{$team->competition_category_id}/{$team->id}");
+        File::ensureDirectoryExists($destinationDir, 0755, true);
+
+        $publicMirrorDir = public_path("storage/competition_evidences/{$team->competition_category_id}/{$team->id}");
+        File::ensureDirectoryExists($publicMirrorDir, 0755, true);
+
+        $filename = 'grid_evidence_'.time().'_'.Str::random(8);
+        $fileSizeFormatted = '300 KB';
+        $relativeStoragePath = '';
+
+        // Kasus 1: Upload via Base64 (Dari Bidik Kamera Webcam / HP)
+        if ($request->filled('image_base64')) {
+            $base64Data = (string) $request->input('image_base64');
+            if (preg_match('/^data:image\/(\w+);base64,/', $base64Data, $type)) {
+                $base64Data = substr($base64Data, strpos($base64Data, ',') + 1);
+                $ext = strtolower($type[1]);
+                if (! in_array($ext, ['jpg', 'jpeg', 'png', 'webp'])) {
+                    $ext = 'jpg';
+                }
+
+                $decodedData = base64_decode($base64Data);
+                if ($decodedData === false) {
+                    return response()->json(['success' => false, 'message' => 'Gagal memproses data gambar dari kamera.'], 422);
+                }
+
+                $filename .= '.'.$ext;
+                $fullPath = $destinationDir.'/'.$filename;
+                file_put_contents($fullPath, $decodedData);
+                @copy($fullPath, $publicMirrorDir.'/'.$filename);
+
+                $fileSize = strlen($decodedData);
+                $fileSizeFormatted = $fileSize > 1048576
+                    ? round($fileSize / 1048576, 1).' MB'
+                    : round($fileSize / 1024).' KB';
+
+                $relativeStoragePath = "competition_evidences/{$team->competition_category_id}/{$team->id}/".$filename;
+            }
+        }
+        // Kasus 2: Upload via File Upload (Galeri / File Picker)
+        elseif ($request->hasFile('photo_file')) {
+            $request->validate([
+                'photo_file' => ['required', 'file', 'mimes:jpeg,png,jpg,webp,pdf', 'max:15360'],
+            ]);
+
+            $file = $request->file('photo_file');
+            $ext = strtolower($file->getClientOriginalExtension() ?: 'jpg');
+            $filename .= '.'.$ext;
+
+            $file->move($destinationDir, $filename);
+            @copy($destinationDir.'/'.$filename, $publicMirrorDir.'/'.$filename);
+
+            $fileSize = File::size($destinationDir.'/'.$filename);
+            $fileSizeFormatted = $fileSize > 1048576
+                ? round($fileSize / 1048576, 1).' MB'
+                : round($fileSize / 1024).' KB';
+
+            $relativeStoragePath = "competition_evidences/{$team->competition_category_id}/{$team->id}/".$filename;
+        } else {
+            return response()->json(['success' => false, 'message' => 'Tidak ada berkas/gambar yang dikirimkan.'], 400);
+        }
+
+        // Cari atau hubungkan score jika ada
+        $existingScore = CompetitionScore::where('competition_participant_team_id', $team->id)->first();
+
+        $photo = CompetitionScorePhoto::create([
+            'competition_score_id' => $existingScore?->id,
+            'competition_participant_team_id' => $team->id,
+            'photo_path' => $relativeStoragePath,
+            'caption' => $caption,
+            'file_size' => $fileSizeFormatted,
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Dokumen grid berhasil diunggah dan disimpan.',
+            'photo' => [
+                'id' => $photo->id,
+                'photo_url' => $photo->photo_url,
+                'caption' => $photo->caption,
+                'file_size' => $photo->file_size,
+                'created_at' => $photo->created_at->format('H:i'),
+                'is_pdf' => str_ends_with(strtolower($photo->photo_path), '.pdf'),
+            ],
+        ]);
+    }
+
+    /**
+     * Hapus Foto Dokumentasi Grid (Admin)
+     */
+    public function deletePhoto(CompetitionScorePhoto $photo): JsonResponse
+    {
+        $filePath = storage_path('app/public/'.$photo->photo_path);
+        if (File::exists($filePath)) {
+            File::delete($filePath);
+        }
+
+        $publicPath = public_path('storage/'.$photo->photo_path);
+        if (File::exists($publicPath)) {
+            File::delete($publicPath);
+        }
+
+        $photo->delete();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Foto/dokumen grid berhasil dihapus.',
+        ]);
+    }
+
+    /**
+     * Ambil Foto-foto Dokumentasi untuk Tim Tertentu (JSON)
+     */
+    public function getTeamPhotos(CompetitionParticipantTeam $team): JsonResponse
+    {
+        $photos = $team->photos()->latest()->get()->map(function ($p) {
+            return [
+                'id' => $p->id,
+                'photo_url' => $p->photo_url,
+                'caption' => $p->caption,
+                'file_size' => $p->file_size,
+                'created_at' => $p->created_at->format('H:i'),
+                'is_pdf' => str_ends_with(strtolower($p->photo_path), '.pdf'),
+            ];
+        });
+
+        return response()->json([
+            'success' => true,
+            'team_id' => $team->id,
+            'team_name' => $team->team_name,
+            'photos' => $photos,
+        ]);
     }
 }

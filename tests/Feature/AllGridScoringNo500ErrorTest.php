@@ -9,6 +9,7 @@ use App\Models\CompetitionRegistration;
 use App\Models\CompetitionScore;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
 use Tests\TestCase;
@@ -123,6 +124,9 @@ class AllGridScoringNo500ErrorTest extends TestCase
 
             $this->assertNotEquals(500, $response->getStatusCode(), "GET /admin/competition-scores/{$category->id}/grid returned 500 for {$name} ({$level})");
             $response->assertOk();
+            $response->assertSee('Dokumentasi Foto &amp; Berkas Grid Nilai', false);
+            $response->assertSee('Foto Dokumen Grid', false);
+            $response->assertSee('Upload Dokumen Grid', false);
         }
 
         // Test LCT Grid view specifically
@@ -130,6 +134,63 @@ class AllGridScoringNo500ErrorTest extends TestCase
         $responseLct = $this->get("/admin/competition-scores/{$catLct->id}/lct");
         $this->assertNotEquals(500, $responseLct->getStatusCode(), "GET /admin/competition-scores/{$catLct->id}/lct returned 500");
         $responseLct->assertOk();
+        $responseLct->assertSee('Dokumentasi Foto &amp; Berkas Grid Nilai', false);
+
+        // Test Olimpiade Grid view specifically
+        [$catOlim, $teamOlim] = $this->createCategoryAndTeam('OLIM-MADYA', 'Olimpiade Kepalangmerahan', 'Madya');
+        $responseOlim = $this->get("/admin/competition-scores/{$catOlim->id}/olimpiade");
+        $this->assertNotEquals(500, $responseOlim->getStatusCode(), "GET /admin/competition-scores/{$catOlim->id}/olimpiade returned 500");
+        $responseOlim->assertOk();
+        $responseOlim->assertSee('Dokumentasi Foto &amp; Berkas Grid Nilai', false);
+    }
+
+    /**
+     * Test Admin can upload and delete photo document via API
+     */
+    public function test_admin_can_upload_and_delete_grid_document_photos(): void
+    {
+        $this->actingAs($this->admin);
+
+        [$cat, $team] = $this->createCategoryAndTeam('LPP-MADYA-PA', 'Pertolongan Pertama', 'Madya');
+
+        // 1. Upload via Base64
+        $fakeBase64 = 'data:image/png;base64,'.base64_encode('fake-image-binary-data');
+        $resBase64 = $this->postJson('/admin/competition-scores/upload-photo', [
+            'team_id' => $team->id,
+            'caption' => 'Lembar Nilai Fisik Lapangan',
+            'image_base64' => $fakeBase64,
+        ]);
+
+        $resBase64->assertOk();
+        $resBase64->assertJson(['success' => true]);
+        $photoId = $resBase64->json('photo.id');
+        $this->assertNotNull($photoId);
+
+        // 2. Get Team Photos
+        $resGet = $this->getJson("/admin/competition-scores/team-photos/{$team->id}");
+        $resGet->assertOk();
+        $resGet->assertJson(['success' => true]);
+        $this->assertCount(1, $resGet->json('photos'));
+
+        // 3. Upload via File
+        $fakeFile = UploadedFile::fake()->image('scan_lembar.jpg', 600, 800);
+        $resFile = $this->postJson('/admin/competition-scores/upload-photo', [
+            'team_id' => $team->id,
+            'caption' => 'Scan Lembar Juri 1',
+            'photo_file' => $fakeFile,
+        ]);
+        $resFile->assertOk();
+        $resFile->assertJson(['success' => true]);
+
+        // Verify count now 2
+        $this->assertDatabaseCount('competition_score_photos', 2);
+
+        // 4. Delete Photo
+        $resDel = $this->deleteJson("/admin/competition-scores/photo/{$photoId}");
+        $resDel->assertOk();
+        $resDel->assertJson(['success' => true]);
+
+        $this->assertDatabaseMissing('competition_score_photos', ['id' => $photoId]);
     }
 
     /**

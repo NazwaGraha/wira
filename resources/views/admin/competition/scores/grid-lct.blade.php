@@ -272,11 +272,18 @@
                                             <div class="font-extrabold text-slate-900 text-sm">
                                                 {{ $t->team_name ?? ($t->registration?->school_name ?? 'Regu ' . ($idx + 1)) }}
                                             </div>
-                                            @if($t->team_label)
-                                                <span class="inline-block px-2 py-0.5 rounded text-[10px] font-bold bg-slate-200 text-slate-700 mt-0.5">
-                                                    {{ $t->team_label }}
-                                                </span>
-                                            @endif
+                                            <div class="flex items-center justify-between gap-2 mt-0.5 flex-wrap">
+                                                @if($t->team_label)
+                                                    <span class="inline-block px-2 py-0.5 rounded text-[10px] font-bold bg-slate-200 text-slate-700">
+                                                        {{ $t->team_label }}
+                                                    </span>
+                                                @else
+                                                    <span></span>
+                                                @endif
+                                                <button type="button" onclick="focusAdminPhotoTeam('{{ $t->id }}', '{{ addslashes(($t->team_name ?? ($t->registration?->school_name ?? 'Regu ' . ($idx + 1)))) }}')" class="inline-flex items-center gap-1 text-[9.5px] font-bold text-red-600 hover:text-red-800 bg-red-50 hover:bg-red-100 px-2 py-0.5 rounded-lg border border-red-200 transition shrink-0 cursor-pointer">
+                                                    <i class="fa-solid fa-camera"></i> Dokumen
+                                                </button>
+                                            </div>
                                         </td>
                                         <td class="py-3 px-4 text-center">
                                             <input type="number" step="any" name="prelim_scores[{{ $t->id }}]" value="{{ $t->prelim_score }}" placeholder="0" class="prelim-score-input w-28 text-center font-mono font-bold text-sm bg-white border border-slate-300 rounded-xl py-1.5 px-2 focus:ring-2 focus:ring-red-500 focus:outline-none" data-team-id="{{ $t->id }}">
@@ -831,6 +838,14 @@
             </div>
         </div>
     @endif
+
+    {{-- Fasilitas Foto Dokumen Grid, Upload Dokumen, dan View Dokumen Grid --}}
+    @include('admin.competition.scores.partials.document-photos', [
+        'team' => $allTeams->first(),
+        'teams' => $allTeams,
+        'photos' => $allTeams->first() ? $allTeams->first()->photos()->latest()->get() : collect(),
+        'theme' => strtolower($category->level ?? 'madya')
+    ])
 
 </div>
 @endsection

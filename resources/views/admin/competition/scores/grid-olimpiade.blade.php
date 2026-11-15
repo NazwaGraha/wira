@@ -479,10 +479,15 @@
                                             <div class="font-bold text-slate-900 text-xs sm:text-[13px] leading-tight">
                                                 {{ $t->registration?->school_name ?? $t->team_name }}
                                             </div>
-                                            <div class="text-[10.5px] text-slate-500 font-medium mt-0.5 flex items-center gap-1.5">
-                                                <span class="text-slate-600 font-semibold">{{ $t->team_label ?: $t->team_name }}</span>
-                                                <span class="text-slate-300">&bull;</span>
-                                                <span class="font-mono text-[10px] text-slate-400">ID: OLIM-{{ $t->id }}</span>
+                                            <div class="text-[10.5px] text-slate-500 font-medium mt-0.5 flex items-center justify-between gap-1.5 flex-wrap">
+                                                <div class="flex items-center gap-1.5">
+                                                    <span class="text-slate-600 font-semibold">{{ $t->team_label ?: $t->team_name }}</span>
+                                                    <span class="text-slate-300">&bull;</span>
+                                                    <span class="font-mono text-[10px] text-slate-400">ID: OLIM-{{ $t->id }}</span>
+                                                </div>
+                                                <button type="button" onclick="focusAdminPhotoTeam('{{ $t->id }}', '{{ addslashes(($t->registration?->school_name ?? $t->team_name) . ' (' . ($t->team_label ?: $t->team_name) . ')') }}')" class="inline-flex items-center gap-1 text-[9.5px] font-bold text-blue-600 hover:text-blue-800 bg-blue-50 hover:bg-blue-100 px-2 py-0.5 rounded-lg border border-blue-200 transition shrink-0 cursor-pointer">
+                                                    <i class="fa-solid fa-camera"></i> Dokumen
+                                                </button>
                                             </div>
                                         </td>
 
@@ -648,6 +653,14 @@
             </form>
 
         </div>
+
+    {{-- Fasilitas Foto Dokumen Grid, Upload Dokumen, dan View Dokumen Grid --}}
+    @include('admin.competition.scores.partials.document-photos', [
+        'team' => $allTeams->first(),
+        'teams' => $allTeams,
+        'photos' => $allTeams->first() ? $allTeams->first()->photos()->latest()->get() : collect(),
+        'theme' => $isMadya ? 'madya' : 'wira'
+    ])
 
 </div>
 

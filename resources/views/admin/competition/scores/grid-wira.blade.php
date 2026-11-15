@@ -579,6 +579,13 @@
 
     </form>
 
+    {{-- Fasilitas Foto Dokumen Grid, Upload Dokumen, dan View Dokumen Grid --}}
+    @include('admin.competition.scores.partials.document-photos', [
+        'team' => $currentTeam,
+        'photos' => $existingPhotos,
+        'theme' => 'wira'
+    ])
+
 </div>
 @endsection
 

@@ -898,6 +898,13 @@
                 </div>
 
             </form>
+
+            {{-- Fasilitas Foto Dokumen Grid, Upload Dokumen, dan View Dokumen Grid --}}
+            @include('admin.competition.scores.partials.document-photos', [
+                'team' => $currentTeam,
+                'photos' => $existingPhotos,
+                'theme' => strtolower($category->level ?? 'madya')
+            ])
         @else
             <div class="bg-white rounded-3xl p-12 text-center text-slate-500 border border-slate-200 shadow-sm">
                 <div class="w-16 h-16 mx-auto mb-4 rounded-2xl bg-slate-100 flex items-center justify-center text-slate-400 text-2xl">

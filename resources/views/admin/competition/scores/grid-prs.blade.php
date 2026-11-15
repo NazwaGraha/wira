@@ -530,6 +530,13 @@
 
                 </form>
 
+                {{-- Fasilitas Foto Dokumen Grid, Upload Dokumen, dan View Dokumen Grid --}}
+                @include('admin.competition.scores.partials.document-photos', [
+                    'team' => $currentTeam,
+                    'photos' => $existingPhotos,
+                    'theme' => $isWira ? 'wira' : 'madya'
+                ])
+
             @else
                 <div class="text-center py-20 text-slate-400">
                     <i class="fa-solid fa-users text-5xl mb-3 text-slate-300"></i>

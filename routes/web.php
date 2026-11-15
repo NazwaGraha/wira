@@ -367,6 +367,11 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::post('/competition-scores/{category}/quick-add-team', [CompetitionScoreController::class, 'quickAddTeam'])->name('competition-scores.quick-add-team');
         Route::delete('/competition-scores/{category}/teams/{team}', [CompetitionScoreController::class, 'removeTeam'])->name('competition-scores.remove-team');
 
+        // Dokumentasi Foto & Berkas Grid Nilai
+        Route::post('/competition-scores/upload-photo', [CompetitionScoreController::class, 'uploadPhoto'])->name('competition-scores.upload-photo');
+        Route::delete('/competition-scores/photo/{photo}', [CompetitionScoreController::class, 'deletePhoto'])->name('competition-scores.delete-photo');
+        Route::get('/competition-scores/team-photos/{team}', [CompetitionScoreController::class, 'getTeamPhotos'])->name('competition-scores.team-photos');
+
         // Manajemen Gambar Maskot Lomba (Mula, Madya, Wira)
         Route::get('/competition-mascots', [CompetitionMascotController::class, 'index'])->name('competition-mascots.index');
         Route::post('/competition-mascots', [CompetitionMascotController::class, 'update'])->name('competition-mascots.update');
