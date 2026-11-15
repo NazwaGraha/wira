@@ -1383,6 +1383,9 @@ class CompetitionScoreController extends Controller
         $teamId = $request->input('competition_participant_team_id');
         $round = $request->input('round_name', 'Utama');
         $timeRecorded = trim((string) $request->input('time_recorded', '05:00'));
+        if ($request->filled('time_minutes') || $request->filled('time_seconds')) {
+            $timeRecorded = sprintf('%02d:%02d', (int) $request->input('time_minutes', 0), (int) $request->input('time_seconds', 0));
+        }
         $rubric = $request->input('rubric', []);
         $subtotals = $request->input('subtotals', []);
         $notes = $request->input('notes');

@@ -480,69 +480,226 @@
 
             @elseif ($isPRS)
                 <!-- ========================================================================= -->
-                <!-- 2. RUBRIK PENDIDIKAN REMAJA SEBAYA (PRS) -->
+                <!-- 2. RUBRIK PENDIDIKAN REMAJA SEBAYA (PRS) RESMI 11 ITEM (MADYA & WIRA) -->
                 <!-- ========================================================================= -->
 
                 @php
                     $isWira = ($catLevel === 'Wira');
-                    $prsItems = [
-                        'kreativitas' => [
-                            '1. Penguasaan Materi PRS',
-                            'Kedalaman materi tumbuh kembang remaja, NAPZA, kespro & norma.',
-                            $isWira ? [120, 160, 200] : [100, 140, 180],
-                            $isWira ? 200 : 180
+                    $optsAtributPrs = $isWira ? [20, 30, 55, 80] : [20, 30, 40, 50];
+                    $maxAtributPrs = $isWira ? 80 : 50;
+
+                    $prsGroups = [
+                        [
+                            'no' => '1',
+                            'title' => 'Materi',
+                            'icon' => 'fa-book-open',
+                            'max_badge' => 'Maks. 150',
+                            'items' => [
+                                [
+                                    'key' => 'materi_relevansi',
+                                    'label' => 'Relevansi materi dan pembahasan dengan judul atau tema',
+                                    'options' => [60, 90, 120, 150],
+                                    'max' => 150,
+                                    'has_empty_first' => false,
+                                ],
+                            ],
                         ],
-                        'kesesuaian_tema' => [
-                            '2. Kreativitas & Media Presentasi',
-                            'Inovasi alat peraga edukatif, simulasi peran & visual interaktif.',
-                            $isWira ? [120, 160, 200] : [100, 140, 180],
-                            $isWira ? 200 : 180
+                        [
+                            'no' => '2',
+                            'title' => 'Komunikasi',
+                            'icon' => 'fa-comments',
+                            'max_badge' => 'Maks. 480',
+                            'items' => [
+                                [
+                                    'key' => 'komunikasi_komunikatif',
+                                    'label' => 'a. Komunikatif',
+                                    'options' => [60, 80, 100, 120],
+                                    'max' => 120,
+                                    'has_empty_first' => false,
+                                ],
+                                [
+                                    'key' => 'komunikasi_tanya_jawab',
+                                    'label' => 'b. Penguasaan Materi (Tanya Jawab)',
+                                    'options' => [40, 60, 90, 120],
+                                    'max' => 120,
+                                    'has_empty_first' => false,
+                                ],
+                                [
+                                    'key' => 'komunikasi_suasana',
+                                    'label' => 'c. Kemampuan menghidupkan suasana audience',
+                                    'options' => [50, 60, 70, 80],
+                                    'max' => 80,
+                                    'has_empty_first' => false,
+                                ],
+                                [
+                                    'key' => 'komunikasi_percaya_diri',
+                                    'label' => 'd. Kepercayaan diri (Penyajian Menarik)',
+                                    'options' => [40, 60, 80],
+                                    'max' => 80,
+                                    'has_empty_first' => true,
+                                ],
+                                [
+                                    'key' => 'komunikasi_gestur',
+                                    'label' => 'e. Intonasi dan gestur tubuh',
+                                    'options' => [30, 45, 60, 80],
+                                    'max' => 80,
+                                    'has_empty_first' => false,
+                                ],
+                            ],
                         ],
-                        'kejelasan_bahasa' => [
-                            '3. Kemampuan Komunikasi & Bahasa',
-                            'Artikulasi jelas, bahasa mudah dipahami sebaya & gaya persuasif.',
-                            $isWira ? [60, 80, 100] : [50, 70, 90],
-                            $isWira ? 100 : 90
+                        [
+                            'no' => '3',
+                            'title' => 'Keterampilan',
+                            'icon' => 'fa-wand-magic-sparkles',
+                            'max_badge' => 'Maks. 180',
+                            'items' => [
+                                [
+                                    'key' => 'keterampilan_alat_peraga',
+                                    'label' => 'Kreativitas alat peraga',
+                                    'options' => [60, 80, 100, 120],
+                                    'max' => 120,
+                                    'has_empty_first' => false,
+                                ],
+                                [
+                                    'key' => 'keterampilan_logo',
+                                    'label' => 'Penggunaan Logo PMI dan Sekolah Penyelenggara',
+                                    'options' => [10, 25, 45, 60],
+                                    'max' => 60,
+                                    'has_empty_first' => false,
+                                ],
+                            ],
                         ],
-                        'presentasi' => [
-                            '4. Dinamika Kelompok & Audiens',
-                            'Interaksi dua arah, respon tanggap atas pertanyaan teman sebaya.',
-                            $isWira ? [240, 320, 400] : [200, 280, 360],
-                            $isWira ? 320 : 280
+                        [
+                            'no' => '4',
+                            'title' => 'Penampilan',
+                            'icon' => 'fa-shirt',
+                            'max_badge' => $isWira ? 'Maks. 130' : 'Maks. 100',
+                            'items' => [
+                                [
+                                    'key' => 'penampilan_kerapihan',
+                                    'label' => 'Kerapihan berpakaian',
+                                    'options' => [20, 30, 40, 50],
+                                    'max' => 50,
+                                    'has_empty_first' => false,
+                                ],
+                                [
+                                    'key' => 'penampilan_atribut',
+                                    'label' => 'Atribut sesuai dengan CID PMI' . ($isWira ? ' (WIRA)' : ' (MADYA)'),
+                                    'options' => $optsAtributPrs,
+                                    'max' => $maxAtributPrs,
+                                    'has_empty_first' => false,
+                                ],
+                            ],
                         ],
-                        'kecepatan_menjawab' => [
-                            '5. Sikap, Etika & Kekompakan',
-                            'Kesantunan etika, rasa percaya diri dan kerjasama tim.',
-                            $isWira ? [60, 80, 100] : [50, 70, 90],
-                            $isWira ? 100 : 90
+                        [
+                            'no' => '5',
+                            'title' => 'Manajemen Waktu',
+                            'icon' => 'fa-clock',
+                            'max_badge' => 'Maks. 60',
+                            'items' => [
+                                [
+                                    'key' => 'manajemen_waktu',
+                                    'label' => 'Manajemen Waktu',
+                                    'options' => [15, 30, 45, 60],
+                                    'max' => 60,
+                                    'has_empty_first' => false,
+                                ],
+                            ],
                         ],
                     ];
                 @endphp
 
-                <div class="space-y-2.5">
-                    @foreach ($prsItems as $key => [$label, $desc, $opts, $def])
-                        @php
-                            $currVal = intval($existingRubric[$key] ?? $def);
-                        @endphp
-                        <input type="hidden" name="rubric[{{ $key }}]" id="rubric_{{ $key }}" value="{{ $currVal }}" class="rubric-prs-item">
-                        <div class="bg-slate-900 rounded-2xl p-3 border border-slate-800">
-                            <div class="flex items-center justify-between mb-1">
-                                <span class="text-[11px] font-bold text-slate-200">{{ $label }}</span>
-                                <span id="display_{{ $key }}" class="font-mono font-black text-xs text-sky-400">
-                                    {{ $currVal }} / {{ $opts[2] }}
+                <div class="space-y-3">
+                    <!-- STOPWATCH DURASI TAMPIL PRS -->
+                    <div class="bg-slate-900 rounded-2xl p-3 border {{ $isWira ? 'border-amber-500/30' : 'border-blue-500/30' }} space-y-2.5 shadow-sm">
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center gap-1.5 text-slate-300 text-[10px] font-black uppercase">
+                                <i class="fa-solid fa-stopwatch {{ $isWira ? 'text-amber-400' : 'text-sky-400' }}"></i> Waktu Tampil Presentasi PRS
+                            </div>
+                            <span class="text-[8.5px] font-bold px-2.5 py-0.5 rounded-full {{ $isWira ? 'bg-amber-500/20 text-amber-300 border border-amber-500/30' : 'bg-blue-500/20 text-blue-300 border border-blue-500/30' }}">
+                                Tingkat {{ $catLevel }} &bull; Maks. 1.000 Poin
+                            </span>
+                        </div>
+
+                        <div class="flex items-center justify-between bg-black/60 rounded-xl p-3 border border-slate-800">
+                            <div>
+                                <div id="stopwatch-display-prs" class="text-3xl font-black font-mono text-white tracking-widest leading-none">
+                                    {{ sprintf('%02d:%02d', $recordedMinutes, $recordedSeconds) }}
+                                </div>
+                                <div class="text-[9px] text-slate-400 mt-1 font-bold">Durasi Tampil (Menit : Detik)</div>
+                            </div>
+                            <!-- Stopwatch Controls -->
+                            <div class="flex items-center gap-2">
+                                <button type="button" id="btn-timer-start-prs" onclick="toggleStopwatchPrs()" class="px-3.5 py-2 rounded-xl {{ $isWira ? 'bg-amber-500 hover:bg-amber-400 text-slate-950 font-black' : 'bg-blue-600 hover:bg-blue-500 text-white font-bold' }} text-xs flex items-center gap-1.5 shadow active:scale-95 transition">
+                                    <i id="icon-timer-btn-prs" class="fa-solid fa-play text-[10px]"></i> <span id="label-timer-btn-prs">Mulai</span>
+                                </button>
+                                <button type="button" onclick="resetStopwatchPrs()" class="p-2 px-3 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold text-xs border border-slate-700 active:scale-95 transition" title="Reset">
+                                    <i class="fa-solid fa-rotate-right"></i>
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Manual Time Input -->
+                        <div class="bg-slate-950/70 p-2.5 rounded-xl border border-slate-800/80 flex items-center justify-between text-xs">
+                            <span class="text-[10px] text-slate-300 font-bold flex items-center gap-1">
+                                <i class="fa-solid fa-pen text-[9px] text-slate-400"></i> Ketik Waktu Manual:
+                            </span>
+                            <div class="flex items-center gap-1.5 font-mono font-bold">
+                                <input type="number" id="input-minutes-prs" min="0" max="99" value="{{ $recordedMinutes }}" oninput="handlePrsManualTimeChange()" class="w-12 h-7 text-center font-bold text-xs bg-slate-900 text-white border border-slate-700 rounded-lg focus:outline-none {{ $isWira ? 'focus:border-amber-400' : 'focus:border-blue-500' }}" placeholder="00">
+                                <span class="text-slate-400 text-xs">m</span>
+                                <span class="text-slate-500">:</span>
+                                <input type="number" id="input-seconds-prs" min="0" max="59" value="{{ $recordedSeconds }}" oninput="handlePrsManualTimeChange()" class="w-12 h-7 text-center font-bold text-xs bg-slate-900 text-white border border-slate-700 rounded-lg focus:outline-none {{ $isWira ? 'focus:border-amber-400' : 'focus:border-blue-500' }}" placeholder="00">
+                                <span class="text-slate-400 text-xs">d</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- KARTU PENILAIAN PER KATEGORI -->
+                    @foreach ($prsGroups as $group)
+                        <div class="bg-slate-900 rounded-2xl p-3 border {{ $isWira ? 'border-amber-500/20' : 'border-blue-500/20' }} space-y-2.5">
+                            <div class="flex items-center justify-between pb-1.5 border-b border-slate-800">
+                                <span class="text-[11px] font-black {{ $isWira ? 'text-amber-400' : 'text-sky-400' }} uppercase tracking-wide flex items-center gap-1.5">
+                                    <i class="fa-solid {{ $group['icon'] }}"></i> {{ $group['no'] }}. {{ $group['title'] }}
+                                </span>
+                                <span class="text-[9px] font-mono font-bold px-2 py-0.5 rounded-full {{ $isWira ? 'bg-amber-500/10 text-amber-300 border border-amber-500/30' : 'bg-blue-500/10 text-sky-300 border border-blue-500/30' }}">
+                                    {{ $group['max_badge'] }}
                                 </span>
                             </div>
-                            <p class="text-[8.5px] text-slate-400 mb-2 leading-relaxed">{{ $desc }}</p>
-                            <div class="grid grid-cols-3 gap-1.5">
-                                <button type="button" onclick="setPrsScore('{{ $key }}', {{ $opts[0] }}, {{ $opts[2] }}, this)" class="btn-prs-{{ $key }} py-1.5 rounded-lg text-[9px] font-bold transition {{ $currVal == $opts[0] ? 'bg-blue-600 text-white shadow' : 'bg-slate-800 text-slate-400' }}">
-                                    Cukup ({{ $opts[0] }})
-                                </button>
-                                <button type="button" onclick="setPrsScore('{{ $key }}', {{ $opts[1] }}, {{ $opts[2] }}, this)" class="btn-prs-{{ $key }} py-1.5 rounded-lg text-[9px] font-bold transition {{ $currVal == $opts[1] ? 'bg-blue-600 text-white shadow' : 'bg-slate-800 text-slate-400' }}">
-                                    Baik ({{ $opts[1] }})
-                                </button>
-                                <button type="button" onclick="setPrsScore('{{ $key }}', {{ $opts[2] }}, {{ $opts[2] }}, this)" class="btn-prs-{{ $key }} py-1.5 rounded-lg text-[9px] font-bold transition {{ $currVal == $opts[2] ? 'bg-blue-600 text-white shadow' : 'bg-slate-800 text-slate-400' }}">
-                                    Sgt Baik ({{ $opts[2] }})
-                                </button>
+
+                            <div class="space-y-2">
+                                @foreach ($group['items'] as $item)
+                                    @php
+                                        $currVal = intval($existingRubric[$item['key']] ?? 0);
+                                    @endphp
+                                    <input type="hidden" name="rubric[{{ $item['key'] }}]" id="rubric_{{ $item['key'] }}" value="{{ $currVal > 0 ? $currVal : '' }}" class="rubric-prs-item">
+                                    <div class="bg-slate-950/70 rounded-xl p-2.5 border border-slate-800/80">
+                                        <div class="flex items-start justify-between gap-2 mb-1.5">
+                                            <span class="text-[10.5px] font-bold text-slate-200 leading-snug">{{ $item['label'] }}</span>
+                                            <span id="display_{{ $item['key'] }}" class="font-mono font-black text-xs {{ $isWira ? 'text-amber-400' : 'text-sky-400' }} shrink-0">
+                                                {{ $currVal > 0 ? $currVal . ' / ' . $item['max'] : '- / ' . $item['max'] }}
+                                            </span>
+                                        </div>
+                                        <div class="grid grid-cols-4 gap-1.5">
+                                            @if($item['has_empty_first'])
+                                                <div class="py-2 rounded-xl text-center text-xs font-mono font-bold bg-slate-900/40 text-slate-600 border border-slate-800/40">
+                                                    -
+                                                </div>
+                                            @endif
+                                            @foreach ($item['options'] as $optVal)
+                                                @php
+                                                    $isSelected = ($currVal === $optVal);
+                                                    $activeStyle = $isWira
+                                                        ? 'bg-gradient-to-r from-amber-500 to-yellow-500 text-slate-950 font-black shadow-md shadow-amber-500/40 border border-amber-300'
+                                                        : 'bg-gradient-to-r from-blue-600 to-sky-600 text-white font-black shadow-md shadow-blue-600/40 border border-blue-400';
+                                                    $inactiveStyle = 'bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700/60 font-bold';
+                                                @endphp
+                                                <button type="button" onclick="setPrsScore('{{ $item['key'] }}', {{ $optVal }}, {{ $item['max'] }}, this)" class="btn-prs-{{ $item['key'] }} py-2 rounded-xl text-xs transition active:scale-95 {{ $isSelected ? $activeStyle : $inactiveStyle }}">
+                                                    {{ $optVal }}
+                                                </button>
+                                            @endforeach
+                                        </div>
+                                    </div>
+                                @endforeach
                             </div>
                         </div>
                     @endforeach
@@ -1484,24 +1641,102 @@
     // 2. PRS
     function setPrsScore(key, val, max, btn) {
         document.getElementById('rubric_' + key).value = val;
-        document.getElementById('display_' + key).innerText = val + ' / ' + max;
+        const displayEl = document.getElementById('display_' + key);
+        if (displayEl) {
+            displayEl.innerText = val + ' / ' + max;
+        }
         document.querySelectorAll('.btn-prs-' + key).forEach(b => {
-            b.className = 'btn-prs-' + key + ' py-1.5 rounded-lg text-[9px] font-bold transition bg-slate-800 text-slate-400';
+            b.className = 'btn-prs-' + key + ' py-2 rounded-xl text-xs transition active:scale-95 bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700/60 font-bold';
         });
-        btn.className = 'btn-prs-' + key + ' py-1.5 rounded-lg text-[9px] font-bold transition bg-blue-600 text-white shadow';
+        if (CAT_LEVEL === 'Wira') {
+            btn.className = 'btn-prs-' + key + ' py-2 rounded-xl text-xs transition active:scale-95 bg-gradient-to-r from-amber-500 to-yellow-500 text-slate-950 font-black shadow-md shadow-amber-500/40 border border-amber-300';
+        } else {
+            btn.className = 'btn-prs-' + key + ' py-2 rounded-xl text-xs transition active:scale-95 bg-gradient-to-r from-blue-600 to-sky-600 text-white font-black shadow-md shadow-blue-600/40 border border-blue-400';
+        }
         recalculatePrs();
     }
 
     function recalculatePrs() {
         let total = 0;
+        let filledCount = 0;
         document.querySelectorAll('.rubric-prs-item').forEach(el => {
-            total += parseFloat(el.value) || 0;
+            const v = parseFloat(el.value) || 0;
+            if (v > 0) {
+                total += v;
+                filledCount++;
+            }
         });
-        const maxScore = (CAT_LEVEL === 'Wira') ? 1000 : 900;
         document.getElementById('input-final-score').value = total;
-        document.getElementById('bottom-bar-subtitle').innerText = 'TOTAL SKOR PRS';
+        document.getElementById('bottom-bar-subtitle').innerText = 'TOTAL SKOR PRS (' + filledCount + '/11 ITEM)';
         document.getElementById('bottom-bar-score').innerText = total;
-        document.getElementById('bottom-bar-max').innerText = '/ ' + maxScore;
+        document.getElementById('bottom-bar-max').innerText = '/ 1000 POIN';
+    }
+
+    // PRS TIMER & STOPWATCH
+    let timerIntervalPrs = null;
+    let stopwatchSecondsPrs = (parseInt('{{ $recordedMinutes }}') * 60) + parseInt('{{ $recordedSeconds }}') || 0;
+
+    function updateStopwatchUIPrs() {
+        const m = Math.floor(stopwatchSecondsPrs / 60);
+        const s = stopwatchSecondsPrs % 60;
+        const formatted = (m < 10 ? '0' : '') + m + ':' + (s < 10 ? '0' : '') + s;
+        const displayEl = document.getElementById('stopwatch-display-prs');
+        if (displayEl) displayEl.innerText = formatted;
+
+        const mBox = document.getElementById('input-minutes-prs');
+        const sBox = document.getElementById('input-seconds-prs');
+        if (mBox && document.activeElement !== mBox) mBox.value = (m < 10 ? '0' : '') + m;
+        if (sBox && document.activeElement !== sBox) sBox.value = (s < 10 ? '0' : '') + s;
+
+        const hidM = document.getElementById('input-minutes');
+        const hidS = document.getElementById('input-seconds');
+        if (hidM) hidM.value = m;
+        if (hidS) hidS.value = s;
+    }
+
+    function toggleStopwatchPrs() {
+        const btnLabel = document.getElementById('label-timer-btn-prs');
+        const icon = document.getElementById('icon-timer-btn-prs');
+        if (timerIntervalPrs) {
+            clearInterval(timerIntervalPrs);
+            timerIntervalPrs = null;
+            if (btnLabel) btnLabel.innerText = 'Lanjut';
+            if (icon) icon.className = 'fa-solid fa-play text-[10px]';
+        } else {
+            timerIntervalPrs = setInterval(() => {
+                stopwatchSecondsPrs++;
+                updateStopwatchUIPrs();
+            }, 1000);
+            if (btnLabel) btnLabel.innerText = 'Pause';
+            if (icon) icon.className = 'fa-solid fa-pause text-[10px]';
+        }
+    }
+
+    function resetStopwatchPrs() {
+        if (timerIntervalPrs) {
+            clearInterval(timerIntervalPrs);
+            timerIntervalPrs = null;
+        }
+        stopwatchSecondsPrs = 0;
+        updateStopwatchUIPrs();
+        const btnLabel = document.getElementById('label-timer-btn-prs');
+        const icon = document.getElementById('icon-timer-btn-prs');
+        if (btnLabel) btnLabel.innerText = 'Mulai';
+        if (icon) icon.className = 'fa-solid fa-play text-[10px]';
+    }
+
+    function handlePrsManualTimeChange() {
+        const m = parseInt(document.getElementById('input-minutes-prs')?.value) || 0;
+        const s = parseInt(document.getElementById('input-seconds-prs')?.value) || 0;
+        stopwatchSecondsPrs = (m * 60) + s;
+        const displayEl = document.getElementById('stopwatch-display-prs');
+        if (displayEl) {
+            displayEl.innerText = (m < 10 ? '0' : '') + m + ':' + (s < 10 ? '0' : '') + s;
+        }
+        const hidM = document.getElementById('input-minutes');
+        const hidS = document.getElementById('input-seconds');
+        if (hidM) hidM.value = m;
+        if (hidS) hidS.value = s;
     }
 
     // 3. MEWARNAI
@@ -1679,7 +1914,10 @@
     // Inisialisasi perhitungan saat halaman dimuat
     document.addEventListener('DOMContentLoaded', () => {
         if (IS_LKTR) recalculateLktr();
-        else if (IS_PRS) recalculatePrs();
+        else if (IS_PRS) {
+            recalculatePrs();
+            updateStopwatchUIPrs();
+        }
         else if (IS_MEWARNAI) recalculateMewarnai();
         else if (IS_PP) {
             document.querySelectorAll('[id^="subtotal-input-"]').forEach(subInp => {
