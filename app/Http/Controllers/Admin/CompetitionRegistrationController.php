@@ -264,9 +264,13 @@ class CompetitionRegistrationController extends Controller
 
         $followupId = $request->query('followup_id');
         if ($followupId) {
-            foreach ($registration->getFollowupHistory() as $fItem) {
-                if (($fItem['id'] ?? '') === $followupId && ! empty($fItem['payment_proof'])) {
-                    $targetPath = $fItem['payment_proof'];
+            foreach ($registration->getFollowupHistory() as $idx => $fItem) {
+                $proofCandidate = $fItem['payment_proof'] ?? ($fItem['proof_file'] ?? null);
+                if (
+                    ((string) ($fItem['id'] ?? '') === (string) $followupId || (string) ($idx + 1) === (string) $followupId || (string) $idx === (string) $followupId)
+                    && ! empty($proofCandidate)
+                ) {
+                    $targetPath = $proofCandidate;
                     break;
                 }
             }

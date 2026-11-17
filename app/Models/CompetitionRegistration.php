@@ -402,9 +402,14 @@ class CompetitionRegistration extends Model
             $initialAmount = max(0, floatval($this->total_payment) - floatval($this->getFollowupTotalAmount()));
             $proofs[] = [
                 'type' => 'primary',
+                'id' => 'primary',
+                'label' => 'Bukti Utama',
                 'title' => 'Bukti Transfer Pendaftaran Awal',
                 'path' => $this->payment_proof,
+                'payment_proof' => $this->payment_proof,
+                'url' => route('admin.competition-registrations.proof', $this->id),
                 'created_at' => $this->created_at,
+                'date' => $this->created_at ? $this->created_at->toDateTimeString() : null,
                 'status' => $this->status,
                 'amount' => $initialAmount,
                 'teams_count' => null,
@@ -413,13 +418,19 @@ class CompetitionRegistration extends Model
         }
 
         foreach ($this->getFollowupHistory() as $idx => $item) {
-            if (! empty($item['payment_proof'])) {
+            $proofFile = $item['payment_proof'] ?? ($item['proof_file'] ?? null);
+            if (! empty($proofFile)) {
+                $fId = $item['id'] ?? (string) ($idx + 1);
                 $proofs[] = [
                     'type' => 'followup',
-                    'id' => $item['id'] ?? ($idx + 1),
-                    'title' => 'Bukti Transfer Susulan '.($idx + 1),
-                    'path' => $item['payment_proof'],
+                    'id' => $fId,
+                    'label' => 'Bukti Susulan #'.($idx + 1),
+                    'title' => 'Bukti Transfer Susulan #'.($idx + 1),
+                    'path' => $proofFile,
+                    'payment_proof' => $proofFile,
+                    'url' => route('admin.competition-registrations.proof', ['registration' => $this->id, 'followup_id' => $fId]),
                     'created_at' => isset($item['registered_at']) ? Carbon::parse($item['registered_at']) : null,
+                    'date' => $item['registered_at'] ?? null,
                     'status' => $item['status'] ?? 'pending',
                     'amount' => floatval($item['amount'] ?? 0),
                     'teams_count' => $item['teams_count'] ?? 1,

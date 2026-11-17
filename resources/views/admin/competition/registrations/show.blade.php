@@ -253,16 +253,32 @@
                                 </div>
                             @endif
 
-                            <div class="rounded-xl overflow-hidden border border-slate-200 bg-white">
-                                <a href="{{ $proof['url'] }}" target="_blank">
-                                    <img src="{{ $proof['url'] }}" class="w-full h-48 object-cover hover:scale-105 transition duration-300" alt="{{ $proof['label'] }}">
-                                </a>
-                            </div>
-                            <div class="mt-2 text-center">
-                                <a href="{{ $proof['url'] }}" target="_blank" class="text-[11px] text-blue-600 hover:underline font-bold inline-flex items-center gap-1">
-                                    <i class="fa-solid fa-arrow-up-right-from-square text-[10px]"></i> Buka Gambar Resolusi Penuh
-                                </a>
-                            </div>
+                            @php
+                                $isPdf = str_ends_with(strtolower($proof['path'] ?? ''), '.pdf');
+                            @endphp
+
+                            @if($isPdf)
+                                <div class="rounded-xl p-6 bg-slate-100 border border-slate-200 text-center">
+                                    <i class="fa-solid fa-file-pdf text-rose-500 text-4xl mb-2"></i>
+                                    <div class="text-xs font-bold text-slate-700">Dokumen Bukti Transfer (PDF)</div>
+                                    <div class="mt-3">
+                                        <a href="{{ $proof['url'] }}" target="_blank" class="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-lg bg-rose-600 text-white font-bold text-xs hover:bg-rose-700 transition shadow-xs">
+                                            <i class="fa-solid fa-arrow-up-right-from-square"></i> Buka Dokumen PDF
+                                        </a>
+                                    </div>
+                                </div>
+                            @else
+                                <div class="rounded-xl overflow-hidden border border-slate-200 bg-white">
+                                    <a href="{{ $proof['url'] }}" target="_blank">
+                                        <img src="{{ $proof['url'] }}" class="w-full h-48 object-cover hover:scale-105 transition duration-300" alt="{{ $proof['label'] }}">
+                                    </a>
+                                </div>
+                                <div class="mt-2 text-center">
+                                    <a href="{{ $proof['url'] }}" target="_blank" class="text-[11px] text-blue-600 hover:underline font-bold inline-flex items-center gap-1">
+                                        <i class="fa-solid fa-arrow-up-right-from-square text-[10px]"></i> Buka Gambar Resolusi Penuh
+                                    </a>
+                                </div>
+                            @endif
                         </div>
                     @endforeach
                 </div>

@@ -340,31 +340,35 @@
                                 @endif
                             </td>
                             <td class="px-6 py-4">
-                                <div class="font-mono font-bold text-slate-900 text-xs">Rp {{ number_format($reg->total_payment, 0, ',', '.') }}</div>
-                                <div class="flex flex-col gap-1 mt-1">
-                                    @if($reg->payment_proof)
-                                        <a href="{{ route('admin.competition-registrations.proof', $reg->id) }}" target="_blank" class="text-[11px] text-blue-600 hover:underline inline-flex items-center gap-1 font-semibold">
-                                            <i class="fa-solid fa-receipt"></i> Bukti Utama
-                                        </a>
-                                    @else
-                                        <span class="text-[10px] text-slate-400">Tidak ada file</span>
-                                    @endif
+                                <div class="font-mono font-black text-slate-900 text-xs">Rp {{ number_format($reg->total_payment, 0, ',', '.') }}</div>
+                                
+                                <div class="flex flex-col gap-1.5 mt-2">
+                                    @php
+                                        $allProofs = $reg->getAllPaymentProofs();
+                                    @endphp
 
-                                    @if(count($reg->getFollowupHistory()) > 0)
-                                        @foreach($reg->getFollowupHistory() as $idx => $fItem)
-                                            <div class="flex items-center gap-1 text-[10px]">
-                                                @if(!empty($fItem['proof_file']))
-                                                    <a href="{{ route('admin.competition-registrations.proof', ['registration' => $reg->id, 'followup_id' => $fItem['id'] ?? $idx]) }}" target="_blank" class="text-amber-700 hover:underline inline-flex items-center gap-1 font-bold">
-                                                        <i class="fa-solid fa-receipt text-amber-500"></i> Bukti Susulan #{{ $idx + 1 }}
-                                                    </a>
-                                                @endif
-                                                @if(($fItem['status'] ?? '') === 'pending')
-                                                    <span class="px-1.5 py-0.2 rounded text-[9px] font-black uppercase bg-amber-200 text-amber-900 animate-pulse">Pending</span>
-                                                @else
-                                                    <span class="px-1.5 py-0.2 rounded text-[9px] font-black uppercase bg-emerald-100 text-emerald-800">Lunas</span>
+                                    @if(count($allProofs) > 0)
+                                        @foreach($allProofs as $pIdx => $proof)
+                                            <div class="flex items-center gap-1.5 flex-wrap">
+                                                <a href="{{ $proof['url'] }}" target="_blank" class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[11px] font-bold transition shadow-2xs {{ ($proof['type'] ?? '') === 'followup' ? (($proof['status'] ?? '') === 'pending' ? 'bg-amber-100 text-amber-900 border border-amber-300 hover:bg-amber-200 ring-2 ring-amber-400/40' : 'bg-slate-100 text-slate-700 border border-slate-200 hover:bg-slate-200') : 'bg-blue-50 text-blue-700 border border-blue-200 hover:bg-blue-100' }}" title="Klik untuk membuka {{ $proof['label'] }} (Rp {{ number_format($proof['amount'] ?? 0, 0, ',', '.') }})">
+                                                    <i class="fa-solid fa-receipt {{ ($proof['type'] ?? '') === 'followup' ? 'text-amber-600' : 'text-blue-600' }}"></i>
+                                                    <span>{{ $proof['label'] }}</span>
+                                                    @if(($proof['type'] ?? '') === 'followup' && ($proof['status'] ?? '') === 'pending')
+                                                        <span class="w-1.5 h-1.5 rounded-full bg-amber-500 animate-ping"></span>
+                                                    @endif
+                                                </a>
+
+                                                @if(($proof['type'] ?? '') === 'followup')
+                                                    @if(($proof['status'] ?? '') === 'pending')
+                                                        <span class="px-1.5 py-0.5 rounded text-[9px] font-black uppercase tracking-wider bg-amber-500 text-white animate-pulse">Menunggu Verif</span>
+                                                    @else
+                                                        <span class="px-1.5 py-0.5 rounded text-[9px] font-black uppercase tracking-wider bg-emerald-100 text-emerald-800">Lunas</span>
+                                                    @endif
                                                 @endif
                                             </div>
                                         @endforeach
+                                    @else
+                                        <span class="text-[10px] text-slate-400 italic">Tidak ada file</span>
                                     @endif
                                 </div>
                             </td>
