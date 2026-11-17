@@ -966,8 +966,8 @@
                     for (let i = cat.remaining_slots; i < rows.length; i++) {
                         rows[i].remove();
                     }
-                    updateRemoveButtons(catId);
                 }
+                updateRemoveButtons(catId);
             }
             if (btnAdd) {
                 const currentRows = container ? container.querySelectorAll('.team-input-row').length : 0;
@@ -1572,6 +1572,13 @@
         const rows = container.querySelectorAll('.team-input-row');
         const alreadyRegistered = parseInt(card ? (card.dataset.alreadyRegistered || '0') : '0');
 
+        let existing = [];
+        try {
+            existing = JSON.parse(card ? (card.dataset.existingLabels || '[]') : '[]').map(l => l.trim().toUpperCase());
+        } catch (e) {
+            existing = [];
+        }
+
         rows.forEach((r, idx) => {
             const letter = String.fromCharCode(65 + idx + alreadyRegistered);
             const removeBtn = r.querySelector('.btn-remove-team');
@@ -1590,6 +1597,19 @@
             if (labelInput) {
                 labelInput.name = `team_labels[${catId}][${idx}]`;
                 labelInput.placeholder = `Label Regu (cth: Regu ${letter})`;
+
+                const currentVal = labelInput.value.trim();
+                const currentUpper = currentVal.toUpperCase();
+
+                // Cek apakah nilai input masih berupa default otomatis (cth: 'Regu A') atau bertabrakan dengan regu yang sudah terdaftar
+                const isGenericDefault = !currentVal || /^REGU\s+[A-Z]$/i.test(currentVal);
+                const isCollidingWithPrevious = existing.some(ex => {
+                    return ex === currentUpper || ex.replace(/^REGU\s+/i, '') === currentUpper.replace(/^REGU\s+/i, '');
+                });
+
+                if (isGenericDefault || isCollidingWithPrevious) {
+                    labelInput.value = `Regu ${letter}`;
+                }
             }
             const fileInput = r.querySelector('.team-file-input');
             if (fileInput) fileInput.name = `team_files[${catId}][${idx}]`;
