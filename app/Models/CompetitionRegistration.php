@@ -393,6 +393,67 @@ class CompetitionRegistration extends Model
     }
 
     /**
+     * Dapatkan rincian seluruh tahapan pendaftaran (Pendaftaran Ke-1, Ke-2, Ke-3, dst.)
+     * beserta status verifikasi, tanggal, nominal, dan jumlah regu masing-masing.
+     */
+    public function getRegistrationStages(): array
+    {
+        $stages = [];
+        $followups = $this->getFollowupHistory();
+        $totalFollowupAmount = $this->getFollowupTotalAmount();
+        $initialAmount = max(0, floatval($this->total_payment) - floatval($totalFollowupAmount));
+
+        // Hitung perkiraan jumlah regu pendaftaran awal
+        $followupTeamsCount = 0;
+        foreach ($followups as $f) {
+            $followupTeamsCount += intval($f['teams_count'] ?? 1);
+        }
+        $totalTeamsCount = $this->teams()->count();
+        $initialTeamsCount = max(1, $totalTeamsCount - $followupTeamsCount);
+
+        // Tahap 1: Pendaftaran Awal
+        $stages[] = [
+            'stage_number' => 1,
+            'stage_name' => 'Pendaftaran Ke-1 (Awal)',
+            'registered_at' => $this->created_at,
+            'date_formatted' => $this->created_at ? $this->created_at->translatedFormat('d M Y, H:i') : '-',
+            'amount' => $initialAmount,
+            'teams_count' => $initialTeamsCount,
+            'status' => $this->status === 'rejected' ? 'rejected' : ($this->status === 'verified' ? 'verified' : 'pending'),
+            'status_label' => $this->status === 'rejected' ? 'Ditolak' : ($this->status === 'verified' ? 'Terverifikasi / Lunas' : 'Menunggu Verifikasi'),
+            'is_verified' => $this->status === 'verified',
+            'is_pending' => $this->status === 'pending',
+            'is_rejected' => $this->status === 'rejected',
+            'has_proof' => ! empty($this->payment_proof),
+        ];
+
+        // Tahap 2, 3, 4, dst.: Pendaftaran Susulan
+        foreach ($followups as $idx => $f) {
+            $stageNum = $idx + 2;
+            $fStatus = $f['status'] ?? 'pending';
+            $regAt = isset($f['registered_at']) ? Carbon::parse($f['registered_at']) : null;
+
+            $stages[] = [
+                'stage_number' => $stageNum,
+                'stage_name' => "Pendaftaran Ke-{$stageNum} (Susulan)",
+                'registered_at' => $regAt,
+                'date_formatted' => $regAt ? $regAt->translatedFormat('d M Y, H:i') : '-',
+                'amount' => floatval($f['amount'] ?? 0),
+                'teams_count' => intval($f['teams_count'] ?? 1),
+                'teams_labels' => $f['teams_labels'] ?? [],
+                'status' => $fStatus,
+                'status_label' => $fStatus === 'verified' ? 'Terverifikasi / Lunas' : ($fStatus === 'rejected' ? 'Ditolak' : 'Menunggu Verifikasi Panitia'),
+                'is_verified' => $fStatus === 'verified',
+                'is_pending' => $fStatus === 'pending',
+                'is_rejected' => $fStatus === 'rejected',
+                'has_proof' => ! empty($f['payment_proof'] ?? ($f['proof_file'] ?? null)),
+            ];
+        }
+
+        return $stages;
+    }
+
+    /**
      * Dapatkan seluruh berkas bukti pembayaran (pendaftaran awal + seluruh pendaftaran susulan).
      */
     public function getAllPaymentProofs(): array

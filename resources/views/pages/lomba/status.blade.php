@@ -53,6 +53,9 @@
                 $isVerified = ($registration->status === 'verified');
                 $isPending = ($registration->status === 'pending');
                 $isRejected = ($registration->status === 'rejected');
+                $stages = $registration->getRegistrationStages();
+                $hasFollowup = count($stages) > 1;
+                $hasPendingFollowup = $registration->hasPendingFollowup();
                 $parkingTickets = $registration->parkingTickets;
                 $hasTickets = $parkingTickets->isNotEmpty();
                 $criteria = $registration->parking_priority_criteria ?? [];
@@ -129,27 +132,70 @@
 
                         <!-- Status Badge Prestisius -->
                         <div class="shrink-0">
-                            @if($isVerified)
-                                <div class="bg-gradient-to-br from-emerald-50 to-teal-50 border-2 border-emerald-400 text-emerald-800 px-5 py-3 rounded-2xl shadow-sm text-center">
-                                    <div class="inline-flex items-center gap-2 font-black text-sm text-emerald-700">
-                                        <i class="fa-solid fa-circle-check text-emerald-500 text-lg"></i> TERVERIFIKASI / LUNAS
+                            @if($hasFollowup)
+                                @if($hasPendingFollowup)
+                                    <div class="bg-gradient-to-br from-amber-500/10 via-amber-50 to-orange-50 border-2 border-amber-400 text-amber-950 px-5 py-3.5 rounded-2xl shadow-sm text-left">
+                                        <div class="inline-flex items-center gap-2 font-black text-xs sm:text-sm text-amber-900">
+                                            <span class="relative flex h-2.5 w-2.5">
+                                                <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-500 opacity-75"></span>
+                                                <span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-amber-600"></span>
+                                            </span>
+                                            <span>SUSULAN MENUNGGU VERIFIKASI</span>
+                                        </div>
+                                        <div class="text-[11px] text-slate-700 font-semibold mt-1.5 flex flex-col gap-1 border-t border-amber-200/80 pt-1.5">
+                                            @foreach($stages as $stg)
+                                                <div class="flex items-center justify-between gap-3 text-[10px]">
+                                                    <span class="font-bold text-slate-800">{{ $stg['stage_name'] }}:</span>
+                                                    @if($stg['is_verified'])
+                                                        <span class="px-2 py-0.5 rounded-md font-black bg-emerald-100 text-emerald-800 border border-emerald-300 flex items-center gap-1">
+                                                            <i class="fa-solid fa-circle-check text-emerald-600"></i> Lunas
+                                                        </span>
+                                                    @elseif($stg['is_pending'])
+                                                        <span class="px-2 py-0.5 rounded-md font-black bg-amber-200 text-amber-950 border border-amber-300 animate-pulse flex items-center gap-1">
+                                                            <i class="fa-solid fa-clock text-amber-600"></i> Menunggu Verifikasi
+                                                        </span>
+                                                    @else
+                                                        <span class="px-2 py-0.5 rounded-md font-black bg-rose-100 text-rose-800 border border-rose-300 flex items-center gap-1">
+                                                            <i class="fa-solid fa-circle-xmark text-rose-600"></i> Ditolak
+                                                        </span>
+                                                    @endif
+                                                </div>
+                                            @endforeach
+                                        </div>
                                     </div>
-                                    <span class="block text-[10px] text-emerald-600 font-bold mt-0.5">Berkas & Pembayaran Resmi Diterima</span>
-                                </div>
-                            @elseif($isPending)
-                                <div class="bg-gradient-to-br from-amber-50 to-yellow-50 border-2 border-amber-400 text-amber-800 px-5 py-3 rounded-2xl shadow-sm text-center">
-                                    <div class="inline-flex items-center gap-2 font-black text-sm text-amber-700">
-                                        <i class="fa-solid fa-clock-rotate-left text-amber-500 text-lg"></i> MENUNGGU VERIFIKASI
+                                @else
+                                    <div class="bg-gradient-to-br from-emerald-50 to-teal-50 border-2 border-emerald-400 text-emerald-800 px-5 py-3.5 rounded-2xl shadow-sm text-center">
+                                        <div class="inline-flex items-center gap-2 font-black text-xs sm:text-sm text-emerald-700">
+                                            <i class="fa-solid fa-circle-check text-emerald-500 text-lg"></i> TERVERIFIKASI / LUNAS (LENGKAP)
+                                        </div>
+                                        <span class="block text-[10px] text-emerald-600 font-bold mt-0.5">
+                                            Pendaftaran Ke-1 s/d Ke-{{ count($stages) }} Seluruhnya Sah &amp; Diterima
+                                        </span>
                                     </div>
-                                    <span class="block text-[10px] text-amber-600 font-bold mt-0.5">Sedang Dalam Pemeriksaan Panitia</span>
-                                </div>
+                                @endif
                             @else
-                                <div class="bg-gradient-to-br from-rose-50 to-red-50 border-2 border-rose-400 text-rose-800 px-5 py-3 rounded-2xl shadow-sm text-center">
-                                    <div class="inline-flex items-center gap-2 font-black text-sm text-rose-700">
-                                        <i class="fa-solid fa-circle-xmark text-rose-500 text-lg"></i> DITOLAK
+                                @if($isVerified)
+                                    <div class="bg-gradient-to-br from-emerald-50 to-teal-50 border-2 border-emerald-400 text-emerald-800 px-5 py-3 rounded-2xl shadow-sm text-center">
+                                        <div class="inline-flex items-center gap-2 font-black text-sm text-emerald-700">
+                                            <i class="fa-solid fa-circle-check text-emerald-500 text-lg"></i> TERVERIFIKASI / LUNAS
+                                        </div>
+                                        <span class="block text-[10px] text-emerald-600 font-bold mt-0.5">Berkas & Pembayaran Resmi Diterima</span>
                                     </div>
-                                    <span class="block text-[10px] text-rose-600 font-bold mt-0.5">Perlu Konfirmasi Perbaikan Data</span>
-                                </div>
+                                @elseif($isPending)
+                                    <div class="bg-gradient-to-br from-amber-50 to-yellow-50 border-2 border-amber-400 text-amber-800 px-5 py-3 rounded-2xl shadow-sm text-center">
+                                        <div class="inline-flex items-center gap-2 font-black text-sm text-amber-700">
+                                            <i class="fa-solid fa-clock-rotate-left text-amber-500 text-lg"></i> MENUNGGU VERIFIKASI
+                                        </div>
+                                        <span class="block text-[10px] text-amber-600 font-bold mt-0.5">Sedang Dalam Pemeriksaan Panitia</span>
+                                    </div>
+                                @else
+                                    <div class="bg-gradient-to-br from-rose-50 to-red-50 border-2 border-rose-400 text-rose-800 px-5 py-3 rounded-2xl shadow-sm text-center">
+                                        <div class="inline-flex items-center gap-2 font-black text-sm text-rose-700">
+                                            <i class="fa-solid fa-circle-xmark text-rose-500 text-lg"></i> DITOLAK
+                                        </div>
+                                        <span class="block text-[10px] text-rose-600 font-bold mt-0.5">Perlu Konfirmasi Perbaikan Data</span>
+                                    </div>
+                                @endif
                             @endif
                         </div>
                     </div>
@@ -168,16 +214,24 @@
                                 <i class="fa-solid fa-circle-check text-emerald-400"></i>
                                 <div>
                                     <span class="block font-black text-[11px]">1. Formulir Terkirim</span>
-                                    <span class="text-[9px] text-emerald-200/80">Data tersimpan di sistem</span>
+                                    <span class="text-[9px] text-emerald-200/80">{{ $hasFollowup ? count($stages) . 'x Pendaftaran Masuk' : 'Data tersimpan di sistem' }}</span>
                                 </div>
                             </div>
 
                             <!-- Step 2 -->
-                            <div class="p-2.5 rounded-xl {{ $isVerified ? 'bg-emerald-500/15 border border-emerald-500/40 text-emerald-300' : 'bg-amber-500/15 border border-amber-500/40 text-amber-300' }} flex items-center gap-2">
-                                <i class="fa-solid {{ $isVerified ? 'fa-circle-check text-emerald-400' : 'fa-hourglass-half text-amber-400 animate-pulse' }}"></i>
+                            <div class="p-2.5 rounded-xl {{ ($isVerified && !$hasPendingFollowup) ? 'bg-emerald-500/15 border border-emerald-500/40 text-emerald-300' : 'bg-amber-500/15 border border-amber-500/40 text-amber-300' }} flex items-center gap-2">
+                                <i class="fa-solid {{ ($isVerified && !$hasPendingFollowup) ? 'fa-circle-check text-emerald-400' : 'fa-hourglass-half text-amber-400 animate-pulse' }}"></i>
                                 <div>
                                     <span class="block font-black text-[11px]">2. Verifikasi & Kwitansi</span>
-                                    <span class="text-[9px] {{ $isVerified ? 'text-emerald-200/80' : 'text-amber-200/80' }}">{{ $isVerified ? 'Lunas & Sah' : 'Sedang diverifikasi' }}</span>
+                                    <span class="text-[9px] {{ ($isVerified && !$hasPendingFollowup) ? 'text-emerald-200/80' : 'text-amber-200/80' }}">
+                                        @if($hasFollowup && $hasPendingFollowup)
+                                            Ke-1 Lunas &bull; Susulan Dicek
+                                        @elseif($isVerified)
+                                            {{ $hasFollowup ? 'Lunas Seluruh Tahap' : 'Lunas & Sah' }}
+                                        @else
+                                            Sedang diverifikasi
+                                        @endif
+                                    </span>
                                 </div>
                             </div>
 
@@ -201,7 +255,24 @@
                         </div>
                     </div>
 
-                    @if($isRejected)
+                    @if($hasPendingFollowup)
+                        <!-- Catatan Pendaftaran Susulan Sedang Ditinjau -->
+                        <div class="p-5 sm:p-6 bg-gradient-to-r from-amber-50 via-yellow-50 to-amber-50 border-t border-amber-200 text-amber-950 flex items-start gap-3.5">
+                            <div class="w-10 h-10 rounded-2xl bg-amber-500 text-white flex items-center justify-center text-lg shrink-0 shadow-2xs mt-0.5">
+                                <i class="fa-solid fa-bell"></i>
+                            </div>
+                            <div class="space-y-1">
+                                <div class="flex items-center gap-2 flex-wrap">
+                                    <span class="px-2.5 py-0.5 rounded text-[10px] font-black uppercase tracking-wider bg-amber-500 text-white shadow-2xs">Pemberitahuan Pendaftaran Susulan</span>
+                                    <span class="text-xs text-amber-800 font-bold">Total Terdaftar: {{ count($stages) }}x Pendaftaran</span>
+                                </div>
+                                <h4 class="font-black text-sm text-amber-950">Pendaftaran Awal Telah Lunas &bull; Pendaftaran Susulan Sedang Diperiksa Panitia</h4>
+                                <p class="text-xs text-amber-800 leading-relaxed">
+                                    Pendaftaran awal kontingen Anda (Pendaftaran Ke-1) telah <strong>LUNAS</strong>. Sistem mencatat adanya penambahan regu susulan dengan tambahan pembayaran sebesar <strong>Rp {{ number_format($registration->getPendingFollowupAmount(), 0, ',', '.') }}</strong> yang sedang diperiksa oleh bendahara panitia. Dokumen e-Kwitansi &amp; Kartu Peserta resmi akan otomatis diperbarui memuat seluruh <strong>{{ $registration->teams->count() }} regu</strong> setelah verifikasi selesai.
+                                </p>
+                            </div>
+                        </div>
+                    @elseif($isRejected)
                         <!-- Catatan Penolakan -->
                         <div class="p-6 bg-rose-50 border-t border-rose-200 text-rose-800">
                             <h3 class="font-bold text-sm flex items-center gap-2">
@@ -226,6 +297,109 @@
                     @endif
                 </div>
 
+                <!-- ================= 1.5 DETAIL RIWAYAT TAHAPAN PENDAFTARAN (JIKA LEBIH DARI 1 KALI) ================= -->
+                @if($hasFollowup)
+                    <div class="bg-white rounded-3xl shadow-sm border border-slate-200 overflow-hidden">
+                        <div class="p-5 sm:p-6 bg-gradient-to-r from-slate-50 via-white to-slate-50 border-b border-slate-200 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                            <div class="flex items-center gap-3">
+                                <div class="w-10 h-10 rounded-2xl bg-indigo-50 text-indigo-600 flex items-center justify-center text-lg font-black shrink-0">
+                                    <i class="fa-solid fa-layer-group"></i>
+                                </div>
+                                <div>
+                                    <h3 class="font-black text-slate-900 text-base">Riwayat Tahapan Pendaftaran Kontingen</h3>
+                                    <p class="text-xs text-slate-500 mt-0.5">Rincian status verifikasi pendaftaran Ke-1, Ke-2, Ke-3, dst. untuk kontingen {{ $registration->school_name }}</p>
+                                </div>
+                            </div>
+                            <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-black uppercase tracking-wider bg-slate-900 text-white self-start sm:self-auto shadow-2xs">
+                                <i class="fa-solid fa-calendar-check text-rose-400"></i> Total {{ count($stages) }}x Pendaftaran
+                            </span>
+                        </div>
+
+                        <div class="p-5 sm:p-6 space-y-4">
+                            <div class="grid grid-cols-1 md:grid-cols-{{ min(3, count($stages)) }} gap-4">
+                                @foreach($stages as $stg)
+                                    <div class="rounded-2xl p-4 sm:p-5 border transition flex flex-col justify-between space-y-3 {{ $stg['is_verified'] ? 'bg-emerald-50/50 border-emerald-300' : ($stg['is_pending'] ? 'bg-amber-50/60 border-amber-300 ring-2 ring-amber-400/40' : 'bg-rose-50/50 border-rose-300') }}">
+                                        <div>
+                                            <div class="flex items-center justify-between gap-2 mb-2">
+                                                <span class="font-black text-sm text-slate-900 flex items-center gap-1.5">
+                                                    <i class="fa-solid {{ $stg['stage_number'] === 1 ? 'fa-flag text-blue-600' : 'fa-plus-circle text-amber-600' }}"></i>
+                                                    {{ $stg['stage_name'] }}
+                                                </span>
+                                                @if($stg['is_verified'])
+                                                    <span class="px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-emerald-600 text-white shadow-2xs flex items-center gap-1">
+                                                        <i class="fa-solid fa-circle-check text-[9px]"></i> Lunas
+                                                    </span>
+                                                @elseif($stg['is_pending'])
+                                                    <span class="px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-amber-500 text-white shadow-2xs animate-pulse flex items-center gap-1">
+                                                        <i class="fa-solid fa-clock text-[9px]"></i> Menunggu Verif
+                                                    </span>
+                                                @else
+                                                    <span class="px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-rose-600 text-white shadow-2xs flex items-center gap-1">
+                                                        <i class="fa-solid fa-circle-xmark text-[9px]"></i> Ditolak
+                                                    </span>
+                                                @endif
+                                            </div>
+
+                                            <div class="text-[11px] text-slate-500 flex items-center gap-1.5 mb-3">
+                                                <i class="fa-regular fa-clock text-slate-400"></i>
+                                                <span>{{ $stg['date_formatted'] }} WIB</span>
+                                            </div>
+
+                                            <div class="bg-white rounded-xl p-3 border border-slate-200/80 space-y-1.5 text-xs shadow-2xs">
+                                                <div class="flex items-center justify-between text-slate-600">
+                                                    <span>Regu Terdaftar:</span>
+                                                    <strong class="text-slate-900 font-bold">{{ $stg['teams_count'] }} Regu</strong>
+                                                </div>
+                                                <div class="flex items-center justify-between text-slate-600 border-t border-slate-100 pt-1.5">
+                                                    <span>Nominal Pembayaran:</span>
+                                                    <strong class="text-slate-900 font-mono font-bold">Rp {{ number_format($stg['amount'], 0, ',', '.') }}</strong>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div class="pt-2 border-t border-slate-200/60 text-[11px]">
+                                            @if($stg['is_verified'])
+                                                <span class="text-emerald-700 font-semibold flex items-center gap-1">
+                                                    <i class="fa-solid fa-check-double text-emerald-600"></i> Berkas &amp; pembayaran telah diverifikasi panitia.
+                                                </span>
+                                            @elseif($stg['is_pending'])
+                                                <span class="text-amber-800 font-semibold flex items-center gap-1">
+                                                    <i class="fa-solid fa-hourglass-half text-amber-600"></i> Sedang menunggu konfirmasi mutasi panitia.
+                                                </span>
+                                            @else
+                                                <span class="text-rose-700 font-semibold flex items-center gap-1">
+                                                    <i class="fa-solid fa-circle-exclamation text-rose-600"></i> Pembayaran tahap ini ditolak panitia.
+                                                </span>
+                                            @endif
+                                        </div>
+                                    </div>
+                                @endforeach
+                            </div>
+
+                            <!-- Footer Rekap Total Akumulasi -->
+                            <div class="p-4 rounded-2xl bg-slate-900 text-white flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                                <div class="flex items-center gap-3">
+                                    <div class="w-9 h-9 rounded-xl bg-white/10 flex items-center justify-center text-rose-400 font-bold shrink-0">
+                                        <i class="fa-solid fa-calculator"></i>
+                                    </div>
+                                    <div>
+                                        <div class="text-xs font-bold text-slate-300">Total Akumulasi Seluruh Pendaftaran</div>
+                                        <div class="text-[11px] text-slate-400">Total gabungan seluruh regu dari Pendaftaran Ke-1 s/d Ke-{{ count($stages) }}</div>
+                                    </div>
+                                </div>
+                                <div class="text-right sm:text-right">
+                                    <div class="font-mono text-base sm:text-lg font-black text-yellow-300">
+                                        Rp {{ number_format($registration->total_payment, 0, ',', '.') }}
+                                    </div>
+                                    <div class="text-[10px] text-slate-300 font-semibold">
+                                        Total: <strong>{{ $registration->teams->count() }} Regu Lomba</strong>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                @endif
+
                 <!-- ================= 2. PUSAT AKSI CEPAT 3 KOLOM (QUICK ACTION HUB) ================= -->
                 @if($isVerified)
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
@@ -248,6 +422,11 @@
                                 <a href="{{ url('/lomba/kartu-peserta/' . ($registration->registration_code ?: $registration->id)) }}" target="_blank" class="w-full bg-slate-900 hover:bg-slate-800 text-white font-extrabold text-xs px-4 py-2.5 rounded-xl shadow-md transition flex items-center justify-center gap-2">
                                     <i class="fa-solid fa-id-card"></i> Cetak Kartu Peserta ({{ $registration->teams->count() }} Regu)
                                 </a>
+                                @if($hasPendingFollowup)
+                                    <div class="p-2.5 rounded-xl bg-amber-50 border border-amber-200 text-[10px] text-amber-900 leading-relaxed">
+                                        <i class="fa-solid fa-circle-info text-amber-600"></i> <strong>Catatan:</strong> Dokumen saat ini memuat regu Pendaftaran Ke-1 (Lunas). Regu pendaftaran susulan akan otomatis masuk setelah diverifikasi panitia.
+                                    </div>
+                                @endif
                                 @if($registration->advisor_email)
                                     <span class="block text-[10px] text-emerald-800 font-semibold text-center truncate" title="{{ $registration->advisor_email }}">
                                         <i class="fa-solid fa-envelope-circle-check"></i> Email: {{ $registration->advisor_email }}
@@ -713,6 +892,20 @@
                                                     <span class="px-2 py-0.5 rounded text-[10px] font-extrabold uppercase {{ $team->category->gender_category === 'Putra' ? 'bg-blue-100 text-blue-800' : ($team->category->gender_category === 'Putri' ? 'bg-rose-100 text-rose-800' : 'bg-slate-200 text-slate-700') }}">
                                                         {{ $team->category->gender_category }}
                                                     </span>
+                                                    @if($hasFollowup)
+                                                        @php
+                                                            $isFollowupTeam = $team->created_at && $registration->created_at && $team->created_at->gt($registration->created_at->addMinutes(1));
+                                                        @endphp
+                                                        @if($isFollowupTeam)
+                                                            <span class="px-2 py-0.5 rounded text-[10px] font-black uppercase tracking-wider {{ $hasPendingFollowup ? 'bg-amber-100 text-amber-900 border border-amber-300 animate-pulse' : 'bg-indigo-100 text-indigo-900 border border-indigo-200' }}">
+                                                                <i class="fa-solid fa-plus-circle text-amber-600"></i> Pendaftaran Susulan
+                                                            </span>
+                                                        @else
+                                                            <span class="px-2 py-0.5 rounded text-[10px] font-bold uppercase bg-slate-100 text-slate-700 border border-slate-200">
+                                                                Pendaftaran Ke-1
+                                                            </span>
+                                                        @endif
+                                                    @endif
                                                 </div>
                                                 <div class="text-xs font-bold text-slate-700 mt-1">
                                                     {{ $team->team_name }}
