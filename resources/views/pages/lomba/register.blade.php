@@ -912,6 +912,9 @@
 
         const isGloballyFull = card.dataset.isFull === 'true';
 
+        card.dataset.alreadyRegistered = String(cat.already_registered || 0);
+        card.dataset.existingLabels = JSON.stringify(cat.existing_labels || []);
+
         if (cat.is_full) {
             // Kuota sekolah sudah penuh untuk cabang ini
             if (cb) {
@@ -1003,6 +1006,8 @@
 
         const defaultMax = card.dataset.defaultMaxTeams || '2';
         card.dataset.maxTeams = defaultMax;
+        card.dataset.alreadyRegistered = '0';
+        card.dataset.existingLabels = '[]';
         updateRemoveButtons(catId);
     }
 
@@ -1352,6 +1357,121 @@
         }
     }
 
+    function getNextAvailableTeamLetter(catId, fallbackIdx) {
+        const card = document.getElementById('cat-card-' + catId);
+        let existing = [];
+        try {
+            existing = JSON.parse(card ? (card.dataset.existingLabels || '[]') : '[]');
+        } catch (e) {
+            existing = [];
+        }
+
+        const container = document.getElementById('teams-container-' + catId);
+        const currentInputs = container ? Array.from(container.querySelectorAll('.team-label-input')).map(i => i.value.trim().toUpperCase()) : [];
+
+        const taken = existing.map(l => l.trim().toUpperCase()).concat(currentInputs);
+        const letters = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J'];
+
+        for (let l of letters) {
+            const patternRegu = 'REGU ' + l;
+            const isTaken = taken.some(t => t === l || t === patternRegu || t.endsWith(' ' + l));
+            if (!isTaken) {
+                return l;
+            }
+        }
+
+        const alreadyRegistered = parseInt(card ? (card.dataset.alreadyRegistered || '0') : '0');
+        return String.fromCharCode(65 + fallbackIdx + alreadyRegistered);
+    }
+
+    function onTeamLabelChange(input, catId) {
+        validateCategoryTeamLabels(catId);
+        calculateFee();
+    }
+
+    function validateCategoryTeamLabels(catId) {
+        const card = document.getElementById('cat-card-' + catId);
+        if (!card) return true;
+
+        let existing = [];
+        try {
+            existing = JSON.parse(card.dataset.existingLabels || '[]').map(l => l.trim().toUpperCase());
+        } catch (e) {
+            existing = [];
+        }
+
+        const container = document.getElementById('teams-container-' + catId);
+        if (!container) return true;
+
+        const rows = container.querySelectorAll('.team-input-row');
+        let hasError = false;
+        const seenInRows = {};
+
+        rows.forEach(r => {
+            const input = r.querySelector('.team-label-input');
+            const errorEl = r.querySelector('.team-label-error-msg');
+            if (!input) return;
+
+            const rawVal = input.value.trim();
+            const upperVal = rawVal.toUpperCase();
+
+            // Reset status error awal
+            input.classList.remove('border-rose-500', 'bg-rose-50/50');
+            if (errorEl) {
+                errorEl.classList.add('hidden');
+                errorEl.innerHTML = '';
+            }
+
+            if (!rawVal) return;
+
+            // 1. Cek duplikasi dengan regu yang sudah terdaftar sebelumnya dari sekolah ini
+            const matchesExisting = existing.some(ex => {
+                if (ex === upperVal) return true;
+                const cleanEx = ex.replace(/^REGU\s+/i, '');
+                const cleanInput = upperVal.replace(/^REGU\s+/i, '');
+                return cleanEx === cleanInput;
+            });
+
+            if (matchesExisting) {
+                input.classList.add('border-rose-500', 'bg-rose-50/50');
+                if (errorEl) {
+                    errorEl.classList.remove('hidden');
+                    errorEl.innerHTML = `<i class="fa-solid fa-circle-exclamation text-rose-500"></i> <span>Nama regu "${escapeHtml(rawVal)}" sudah pernah didaftarkan sekolah Anda sebelumnya. Nama regu tidak boleh sama.</span>`;
+                }
+                hasError = true;
+                return;
+            }
+
+            // 2. Cek duplikasi antar regu yang sedang diisi dalam cabang yang sama
+            if (seenInRows[upperVal]) {
+                input.classList.add('border-rose-500', 'bg-rose-50/50');
+                if (errorEl) {
+                    errorEl.classList.remove('hidden');
+                    errorEl.innerHTML = `<i class="fa-solid fa-circle-exclamation text-rose-500"></i> <span>Nama regu "${escapeHtml(rawVal)}" tidak boleh sama dalam satu cabang lomba.</span>`;
+                }
+                hasError = true;
+            } else {
+                seenInRows[upperVal] = true;
+            }
+        });
+
+        return !hasError;
+    }
+
+    function validateAllTeamLabels() {
+        const checkedCategories = document.querySelectorAll('.cat-checkbox:checked');
+        for (let cb of checkedCategories) {
+            const catId = cb.value;
+            const valid = validateCategoryTeamLabels(catId);
+            if (!valid) {
+                const card = document.getElementById('cat-card-' + catId);
+                const catName = card ? (card.querySelector('.font-black.text-slate-900')?.innerText || 'Cabang Lomba') : 'Cabang Lomba';
+                return `Nama regu pada cabang "${catName}" tidak boleh sama dalam satu sekolah. Silakan gunakan nama regu yang berbeda (contoh: Regu A, Regu B).`;
+            }
+        }
+        return null;
+    }
+
     function addTeamRow(catId) {
         const card = document.getElementById('cat-card-' + catId);
         const isMulti = card ? card.dataset.multi === 'true' : true;
@@ -1376,18 +1496,21 @@
             return;
         }
 
-        const letter = String.fromCharCode(65 + count);
-        const labelText = isMulti ? `Regu ${letter}:` : 'Regu A:';
-        const defaultVal = isMulti ? `Regu ${letter}` : 'Regu A';
+        const letter = getNextAvailableTeamLetter(catId, count);
+        const labelText = isMulti ? `Regu ${letter}:` : `Regu ${letter}:`;
+        const defaultVal = isMulti ? `Regu ${letter}` : `Regu ${letter}`;
 
         const row = document.createElement('div');
         row.className = 'team-input-row bg-white border border-slate-200/90 rounded-xl p-3 shadow-2xs space-y-2.5 transition';
         row.innerHTML = `
-            <div class="flex items-center gap-2">
-                <span class="text-[11px] font-bold text-slate-600 w-24 shrink-0 row-index-label">${labelText}</span>
-                <input type="text" name="team_labels[${catId}][${count}]" value="${defaultVal}" placeholder="Label Regu (cth: Regu ${letter})" class="team-label-input flex-grow text-xs bg-slate-50 border border-slate-200 px-3 py-2 rounded-xl focus:bg-white focus:outline-none focus:border-red-500 shadow-2xs font-semibold text-slate-800" oninput="calculateFee()">
+            <div class="flex items-start gap-2">
+                <span class="text-[11px] font-bold text-slate-600 w-24 shrink-0 row-index-label pt-2">${labelText}</span>
+                <div class="flex-grow">
+                    <input type="text" name="team_labels[${catId}][${count}]" value="${defaultVal}" placeholder="Label Regu (cth: Regu ${letter})" class="team-label-input w-full text-xs bg-slate-50 border border-slate-200 px-3 py-2 rounded-xl focus:bg-white focus:outline-none focus:border-red-500 shadow-2xs font-semibold text-slate-800 transition" oninput="onTeamLabelChange(this, ${catId})">
+                    <div class="team-label-error-msg hidden text-[11px] text-rose-600 font-bold flex items-center gap-1 mt-1"></div>
+                </div>
                 ${isMulti ? `
-                <button type="button" onclick="removeTeamRow(this, ${catId})" class="btn-remove-team text-slate-400 hover:text-rose-600 hover:bg-rose-50 p-2 rounded-lg transition" title="Hapus Regu Ini">
+                <button type="button" onclick="removeTeamRow(this, ${catId})" class="btn-remove-team text-slate-400 hover:text-rose-600 hover:bg-rose-50 p-2 rounded-lg transition mt-0.5" title="Hapus Regu Ini">
                     <i class="fa-solid fa-trash-can text-xs"></i>
                 </button>` : ''}
             </div>
@@ -1447,8 +1570,10 @@
         const container = document.getElementById('teams-container-' + catId);
         if (!container) return;
         const rows = container.querySelectorAll('.team-input-row');
+        const alreadyRegistered = parseInt(card ? (card.dataset.alreadyRegistered || '0') : '0');
+
         rows.forEach((r, idx) => {
-            const letter = String.fromCharCode(65 + idx);
+            const letter = String.fromCharCode(65 + idx + alreadyRegistered);
             const removeBtn = r.querySelector('.btn-remove-team');
             if (removeBtn) {
                 if (rows.length > 1) {
@@ -1471,6 +1596,8 @@
             const membersInput = r.querySelector('.team-members-json');
             if (membersInput) membersInput.name = `team_members[${catId}][${idx}]`;
         });
+
+        validateCategoryTeamLabels(catId);
 
         // Toggle btn-add-team state
         const btnAdd = document.getElementById('btn-add-team-' + catId);
@@ -1573,6 +1700,24 @@
         // Jalankan pengecekan kuota awal jika nama sekolah telah terisi (misal setelah validasi form/old input)
         if (schoolInput && schoolInput.value.trim().length >= 3) {
             checkSchoolQuotaAvailability();
+        }
+
+        // Cegah pengiriman formulir jika ada nama regu yang sama / duplikat dalam satu cabang lomba
+        const regForm = document.getElementById('registration-form');
+        if (regForm) {
+            regForm.addEventListener('submit', function(e) {
+                const errorMsg = validateAllTeamLabels();
+                if (errorMsg) {
+                    e.preventDefault();
+                    alert(errorMsg);
+                    const firstErrorInput = document.querySelector('.team-label-input.border-rose-500');
+                    if (firstErrorInput) {
+                        firstErrorInput.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                        firstErrorInput.focus();
+                    }
+                    return false;
+                }
+            });
         }
 
         document.querySelectorAll('.cat-checkbox:checked').forEach(cb => {

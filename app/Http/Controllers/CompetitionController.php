@@ -216,12 +216,17 @@ class CompetitionController extends Controller
             ]);
         }
 
-        // Hitung akumulasi regu yang sudah terdaftar per kategori lomba
+        // Hitung akumulasi regu dan daftar label regu yang sudah terdaftar per kategori lomba
         $registeredCounts = [];
+        $existingTeamLabelsPerCat = [];
         foreach ($matchedRegs as $mReg) {
             foreach ($mReg->teams as $team) {
                 $catId = $team->competition_category_id;
                 $registeredCounts[$catId] = ($registeredCounts[$catId] ?? 0) + 1;
+                $lbl = trim($team->team_label ?? '');
+                if ($lbl !== '') {
+                    $existingTeamLabelsPerCat[$catId][] = $lbl;
+                }
             }
         }
 
@@ -244,6 +249,7 @@ class CompetitionController extends Controller
                 'name' => $cat->name,
                 'gender_category' => $cat->gender_category,
                 'already_registered' => $alreadyCount,
+                'existing_labels' => array_values(array_unique($existingTeamLabelsPerCat[$cat->id] ?? [])),
                 'max_allowed' => $cat->isUnlimitedTeams() ? 'Tak Terbatas' : $maxAllowed,
                 'remaining_slots' => $remainingSlots,
                 'is_full' => $isFull,
@@ -341,6 +347,26 @@ class CompetitionController extends Controller
                         ]);
                 }
             }
+
+            // Validasi keunikan nama regu dalam form yang sedang didaftarkan
+            if (is_array($labels)) {
+                $seenInSubmission = [];
+                foreach ($labels as $lbl) {
+                    $trimmed = trim($lbl ?? '');
+                    if ($trimmed === '') {
+                        continue;
+                    }
+                    $normalized = strtoupper(preg_replace('/\s+/', ' ', $trimmed));
+                    if (in_array($normalized, $seenInSubmission, true)) {
+                        return redirect()->back()
+                            ->withInput()
+                            ->withErrors([
+                                'categories' => "Pendaftaran Ditolak: Nama regu '{$trimmed}' pada cabang '{$cat->name}{$genderLabel}' tidak boleh sama / duplikat dalam satu sekolah. Silakan gunakan nama/label regu yang berbeda (contoh: Regu A, Regu B).",
+                            ]);
+                    }
+                    $seenInSubmission[] = $normalized;
+                }
+            }
         }
 
         // Cek apakah sekolah sudah pernah terdaftar di kategori yang sama pada event ini (dengan pencocokan alfanumerik & kontak)
@@ -378,8 +404,17 @@ class CompetitionController extends Controller
                 $newCount = is_array($labels) ? count(array_filter($labels, fn ($l) => $l !== null && trim($l) !== '')) : 1;
 
                 $previouslyRegisteredCount = 0;
+                $existingLabelsInCat = [];
                 foreach ($existingRegs as $er) {
-                    $previouslyRegisteredCount += $er->teams->where('competition_category_id', $catId)->count();
+                    foreach ($er->teams->where('competition_category_id', $catId) as $existingTeam) {
+                        $previouslyRegisteredCount++;
+                        if (! empty($existingTeam->team_label)) {
+                            $existingLabelsInCat[] = strtoupper(preg_replace('/\s+/', ' ', trim($existingTeam->team_label)));
+                        }
+                        if (! empty($existingTeam->team_name)) {
+                            $existingLabelsInCat[] = strtoupper(preg_replace('/\s+/', ' ', trim($existingTeam->team_name)));
+                        }
+                    }
                 }
 
                 $maxAllowed = $cat->maxTeamsPerSchool();
@@ -401,6 +436,26 @@ class CompetitionController extends Controller
                         ->withErrors([
                             'categories' => "Pendaftaran Ditolak: Sekolah {$validated['school_name']} sebelumnya sudah mendaftarkan {$previouslyRegisteredCount} regu pada cabang '{$cat->name}{$genderLabel}'. Sisa kuota untuk sekolah Anda hanya {$remainingSlots} regu lagi. Anda mencoba mendaftarkan {$newCount} regu (Total menjadi ".($previouslyRegisteredCount + $newCount).' regu).',
                         ]);
+                }
+
+                // Cek agar nama regu tidak sama dengan yang sudah terdaftar sebelumnya dari sekolah ini
+                if (! empty($existingLabelsInCat)) {
+                    $submittedLabels = is_array($labels) ? $labels : [$labels];
+                    foreach ($submittedLabels as $nLbl) {
+                        $trimmed = trim($nLbl ?? '');
+                        if ($trimmed === '') {
+                            continue;
+                        }
+                        $norm = strtoupper(preg_replace('/\s+/', ' ', $trimmed));
+                        $fullTeamNameNorm = strtoupper(preg_replace('/\s+/', ' ', $validated['school_name'].' '.$trimmed));
+                        if (in_array($norm, $existingLabelsInCat, true) || in_array($fullTeamNameNorm, $existingLabelsInCat, true)) {
+                            return redirect()->back()
+                                ->withInput()
+                                ->withErrors([
+                                    'categories' => "Pendaftaran Ditolak: Nama regu '{$trimmed}' pada cabang '{$cat->name}{$genderLabel}' sudah pernah didaftarkan oleh sekolah Anda sebelumnya. Nama regu dalam satu cabang lomba tidak boleh sama. Silakan gunakan nama/label regu yang berbeda (contoh: Regu B).",
+                                ]);
+                        }
+                    }
                 }
             }
         }
@@ -433,6 +488,15 @@ class CompetitionController extends Controller
         foreach ($validated['categories'] as $catId) {
             $cat = $categoriesMap->get($catId);
             $labels = $request->input("team_labels.{$catId}");
+
+            // Hitung berapa regu yang sudah terdaftar sebelumnya untuk penomoran huruf default (jika kosong)
+            $prevCount = 0;
+            if ($existingRegs->isNotEmpty()) {
+                foreach ($existingRegs as $er) {
+                    $prevCount += $er->teams->where('competition_category_id', $catId)->count();
+                }
+            }
+
             if (is_array($labels)) {
                 $filtered = array_values(array_filter($labels, fn ($l) => $l !== null && trim($l) !== ''));
                 if (empty($filtered)) {
@@ -443,14 +507,21 @@ class CompetitionController extends Controller
                 $filtered = array_slice($filtered, 0, $maxAllowed);
 
                 foreach ($filtered as $idx => $lbl) {
+                    $cleanLbl = trim($lbl);
+                    if ($cleanLbl === '') {
+                        $cleanLbl = 'Regu '.chr(65 + $idx + $prevCount);
+                    }
                     $teamsToCreate[] = [
                         'category_id' => $catId,
-                        'label' => trim($lbl),
+                        'label' => $cleanLbl,
                         'index' => $idx,
                     ];
                 }
             } else {
                 $lbl = trim($labels ?? '');
+                if ($lbl === '') {
+                    $lbl = 'Regu '.chr(65 + $prevCount);
+                }
                 $teamsToCreate[] = [
                     'category_id' => $catId,
                     'label' => $lbl,
