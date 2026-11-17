@@ -130,6 +130,141 @@ class CompetitionController extends Controller
         return view('pages.lomba.register', compact('event', 'categoriesByLevel', 'activeWave', 'waveLabel', 'countdownTarget', 'bankAccounts', 'previewRegistrationCode'));
     }
 
+    /**
+     * Normalisasi nama sekolah menjadi format alfanumerik tanpa spasi & tanda baca untuk pencocokan akurat.
+     */
+    private function normalizeSchoolKey(?string $name): string
+    {
+        if (! $name) {
+            return '';
+        }
+
+        return strtoupper(preg_replace('/[^a-zA-Z0-9]/', '', $name));
+    }
+
+    /**
+     * Normalisasi nomor telepon menjadi 9 digit terakhir untuk mencocokkan variasi nomor WhatsApp.
+     */
+    private function normalizePhoneKey(?string $phone): string
+    {
+        if (! $phone) {
+            return '';
+        }
+
+        $digits = preg_replace('/[^0-9]/', '', $phone);
+
+        return strlen($digits) >= 9 ? substr($digits, -9) : $digits;
+    }
+
+    /**
+     * Cek status riwayat pendaftaran sekolah dan ketersediaan kuota cabang lomba secara real-time.
+     */
+    public function checkSchoolQuota(Request $request)
+    {
+        $schoolName = trim($request->input('school_name', ''));
+        $level = trim($request->input('level', ''));
+        $advisorPhone = trim($request->input('advisor_phone', ''));
+
+        if (empty($schoolName) || strlen($schoolName) < 3) {
+            return response()->json([
+                'has_history' => false,
+                'categories' => [],
+            ]);
+        }
+
+        $event = CompetitionEvent::where('is_active', true)->first();
+        if (! $event) {
+            return response()->json([
+                'has_history' => false,
+                'categories' => [],
+            ]);
+        }
+
+        $targetSchoolKey = $this->normalizeSchoolKey($schoolName);
+        $targetPhoneKey = $this->normalizePhoneKey($advisorPhone);
+
+        $query = CompetitionRegistration::where('competition_event_id', $event->id)
+            ->where('status', '!=', 'rejected')
+            ->with(['teams.category']);
+
+        if (! empty($level) && in_array($level, ['Mula', 'Madya', 'Wira'])) {
+            $query->where('level', $level);
+        }
+
+        $allRegs = $query->get();
+
+        $matchedRegs = $allRegs->filter(function ($reg) use ($targetSchoolKey, $targetPhoneKey) {
+            $regSchoolKey = $this->normalizeSchoolKey($reg->school_name);
+            if (! empty($targetSchoolKey) && $regSchoolKey === $targetSchoolKey) {
+                return true;
+            }
+            if (! empty($targetPhoneKey) && strlen($targetPhoneKey) >= 8) {
+                $regPhoneKey = $this->normalizePhoneKey($reg->advisor_phone);
+                if ($regPhoneKey === $targetPhoneKey) {
+                    return true;
+                }
+            }
+
+            return false;
+        });
+
+        if ($matchedRegs->isEmpty()) {
+            return response()->json([
+                'has_history' => false,
+                'school_name' => $schoolName,
+                'categories' => [],
+            ]);
+        }
+
+        // Hitung akumulasi regu yang sudah terdaftar per kategori lomba
+        $registeredCounts = [];
+        foreach ($matchedRegs as $mReg) {
+            foreach ($mReg->teams as $team) {
+                $catId = $team->competition_category_id;
+                $registeredCounts[$catId] = ($registeredCounts[$catId] ?? 0) + 1;
+            }
+        }
+
+        // Ambil daftar kategori pada level ini
+        $categoriesQuery = CompetitionCategory::where('competition_event_id', $event->id);
+        if (! empty($level) && in_array($level, ['Mula', 'Madya', 'Wira'])) {
+            $categoriesQuery->where('level', $level);
+        }
+        $categories = $categoriesQuery->get();
+
+        $catStatus = [];
+        foreach ($categories as $cat) {
+            $alreadyCount = $registeredCounts[$cat->id] ?? 0;
+            $maxAllowed = $cat->isUnlimitedTeams() ? 999 : $cat->maxTeamsPerSchool();
+            $remainingSlots = max(0, $maxAllowed - $alreadyCount);
+            $isFull = (! $cat->isUnlimitedTeams() && $alreadyCount >= $maxAllowed);
+
+            $catStatus[$cat->id] = [
+                'category_id' => $cat->id,
+                'name' => $cat->name,
+                'gender_category' => $cat->gender_category,
+                'already_registered' => $alreadyCount,
+                'max_allowed' => $cat->isUnlimitedTeams() ? 'Tak Terbatas' : $maxAllowed,
+                'remaining_slots' => $remainingSlots,
+                'is_full' => $isFull,
+                'is_unlimited' => $cat->isUnlimitedTeams(),
+            ];
+        }
+
+        $primaryReg = $matchedRegs->first();
+
+        return response()->json([
+            'has_history' => true,
+            'matched_count' => $matchedRegs->count(),
+            'primary_code' => $primaryReg->registration_code,
+            'registration_codes' => $matchedRegs->pluck('registration_code')->values(),
+            'school_name' => $primaryReg->school_name,
+            'level' => $level ?: $primaryReg->level,
+            'total_teams_registered' => $matchedRegs->sum(fn ($r) => $r->teams->count()),
+            'categories' => $catStatus,
+        ]);
+    }
+
     public function store(Request $request)
     {
         $event = CompetitionEvent::where('is_active', true)->firstOrFail();
@@ -208,12 +343,29 @@ class CompetitionController extends Controller
             }
         }
 
-        // Cek apakah sekolah sudah pernah terdaftar di kategori yang sama pada event ini
+        // Cek apakah sekolah sudah pernah terdaftar di kategori yang sama pada event ini (dengan pencocokan alfanumerik & kontak)
+        $targetSchoolKey = $this->normalizeSchoolKey($validated['school_name']);
+        $targetPhoneKey = $this->normalizePhoneKey($validated['advisor_phone'] ?? '');
+
         $existingRegs = CompetitionRegistration::where('competition_event_id', $event->id)
-            ->where('school_name', $schoolNameClean)
+            ->where('level', $validated['level'])
             ->where('status', '!=', 'rejected')
             ->with('teams.category')
-            ->get();
+            ->get()
+            ->filter(function ($reg) use ($targetSchoolKey, $targetPhoneKey) {
+                $regSchoolKey = $this->normalizeSchoolKey($reg->school_name);
+                if (! empty($targetSchoolKey) && $regSchoolKey === $targetSchoolKey) {
+                    return true;
+                }
+                if (! empty($targetPhoneKey) && strlen($targetPhoneKey) >= 8) {
+                    $regPhoneKey = $this->normalizePhoneKey($reg->advisor_phone);
+                    if ($regPhoneKey === $targetPhoneKey) {
+                        return true;
+                    }
+                }
+
+                return false;
+            });
 
         if ($existingRegs->isNotEmpty()) {
             foreach ($validated['categories'] as $catId) {
@@ -231,13 +383,23 @@ class CompetitionController extends Controller
                 }
 
                 $maxAllowed = $cat->maxTeamsPerSchool();
+                $genderLabel = $cat->gender_category !== 'Umum' ? " ({$cat->gender_category})" : '';
+
+                if ($previouslyRegisteredCount >= $maxAllowed) {
+                    return redirect()->back()
+                        ->withInput()
+                        ->withErrors([
+                            'categories' => "Pendaftaran Ditolak: Sekolah {$validated['school_name']} sebelumnya sudah mendaftarkan {$previouslyRegisteredCount} regu pada cabang '{$cat->name}{$genderLabel}'. Sesuai regulasi panitia, batas kuota cabang ini adalah {$maxAllowed} regu per sekolah (Kuota sekolah Anda sudah penuh).",
+                        ]);
+                }
+
                 if (($previouslyRegisteredCount + $newCount) > $maxAllowed) {
-                    $genderLabel = $cat->gender_category !== 'Umum' ? " {$cat->gender_category}" : '';
+                    $remainingSlots = max(0, $maxAllowed - $previouslyRegisteredCount);
 
                     return redirect()->back()
                         ->withInput()
                         ->withErrors([
-                            'categories' => "Sekolah {$schoolNameClean} sudah mendaftarkan {$previouslyRegisteredCount} regu pada cabang '{$cat->name}{$genderLabel}'. Cabang ini dibatasi maksimal {$maxAllowed} regu per sekolah (Total menjadi ".($previouslyRegisteredCount + $newCount).' regu).',
+                            'categories' => "Pendaftaran Ditolak: Sekolah {$validated['school_name']} sebelumnya sudah mendaftarkan {$previouslyRegisteredCount} regu pada cabang '{$cat->name}{$genderLabel}'. Sisa kuota untuk sekolah Anda hanya {$remainingSlots} regu lagi. Anda mencoba mendaftarkan {$newCount} regu (Total menjadi ".($previouslyRegisteredCount + $newCount).' regu).',
                         ]);
                 }
             }

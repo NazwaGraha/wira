@@ -247,6 +247,27 @@
                         </a>
                     </div>
 
+                    <!-- Banner Dinamis: Riwayat & Validasi Kuota Sekolah Terdaftar -->
+                    <div id="school-quota-history-banner" class="hidden mb-4 p-4 rounded-2xl bg-gradient-to-r from-amber-50 via-orange-50 to-amber-50 border-2 border-amber-300 text-amber-950 shadow-xs transition-all duration-300">
+                        <div class="flex items-start gap-3">
+                            <div class="w-9 h-9 rounded-xl bg-amber-500 text-white flex items-center justify-center shrink-0 shadow-xs text-base">
+                                <i class="fa-solid fa-school-circle-check"></i>
+                            </div>
+                            <div class="flex-grow space-y-1">
+                                <div class="flex items-center justify-between gap-2 flex-wrap">
+                                    <div class="font-extrabold text-xs text-amber-900 flex items-center gap-1.5 flex-wrap">
+                                        <span id="history-school-name" class="uppercase font-black text-slate-900"></span>
+                                        <span class="bg-amber-200 text-amber-900 text-[10px] font-black uppercase px-2 py-0.5 rounded-full">Terdaftar Sebelumnya</span>
+                                    </div>
+                                    <span id="history-reg-code-badge" class="font-mono text-[11px] font-bold text-amber-900 bg-white border border-amber-300 px-2 py-0.5 rounded-lg shadow-2xs"></span>
+                                </div>
+                                <p class="text-[11px] text-amber-900/90 leading-relaxed" id="history-banner-desc">
+                                    Sekolah ini sudah terdaftar sebelumnya di sistem. Pendaftaran saat ini difasilitasi sebagai <strong>penambahan cabang/regu susulan</strong>. Sistem otomatis menerapkan regulasi kuota: cabang lomba yang kuota per sekolahnya telah terpenuhi otomatis dinonaktifkan, sedangkan cabang lomba yang masih memiliki sisa kuota atau belum didaftarkan tetap dapat Anda ikuti.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+
                     @foreach(['Mula', 'Madya', 'Wira'] as $lvl)
                         <div id="category-group-{{ $lvl }}" class="category-level-group space-y-3 {{ $currentLevel == $lvl ? '' : 'hidden' }}">
                             @foreach($categoriesByLevel->get($lvl, []) as $cat)
@@ -269,7 +290,7 @@
                                     $maxAllowed = $isCritical ? 1 : $baseMaxAllowed;
                                     $isChecked = ! $isFull && in_array($cat->id, old('categories', []));
                                 @endphp
-                                <div class="border {{ $isFull ? 'border-slate-300 bg-slate-100/90 opacity-75' : ($isCritical ? 'border-amber-300 bg-amber-50/25' : ($isPa ? 'border-blue-200 bg-blue-50/20' : ($isPi ? 'border-rose-200 bg-rose-50/20' : 'border-slate-200 bg-slate-50/40'))) }} rounded-2xl p-4 hover:border-red-400 hover:shadow-xs transition space-y-3" id="cat-card-{{ $cat->id }}" data-multi="{{ $isMulti ? 'true' : 'false' }}" data-max-teams="{{ $maxAllowed }}" data-is-full="{{ $isFull ? 'true' : 'false' }}" data-is-critical="{{ $isCritical ? 'true' : 'false' }}" data-remaining="{{ $remQuota }}">
+                                <div class="border {{ $isFull ? 'border-slate-300 bg-slate-100/90 opacity-75' : ($isCritical ? 'border-amber-300 bg-amber-50/25' : ($isPa ? 'border-blue-200 bg-blue-50/20' : ($isPi ? 'border-rose-200 bg-rose-50/20' : 'border-slate-200 bg-slate-50/40'))) }} rounded-2xl p-4 hover:border-red-400 hover:shadow-xs transition space-y-3" id="cat-card-{{ $cat->id }}" data-multi="{{ $isMulti ? 'true' : 'false' }}" data-max-teams="{{ $maxAllowed }}" data-default-max-teams="{{ $maxAllowed }}" data-is-full="{{ $isFull ? 'true' : 'false' }}" data-is-critical="{{ $isCritical ? 'true' : 'false' }}" data-remaining="{{ $remQuota }}">
                                     <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                                         <label class="flex items-start sm:items-center gap-3 {{ $isFull ? 'cursor-not-allowed' : 'cursor-pointer' }} flex-grow select-none">
                                             <input type="checkbox" name="categories[]" value="{{ $cat->id }}" data-fee="{{ intval($currentCatFee) }}" class="cat-checkbox mt-1 sm:mt-0 w-5 h-5 text-red-600 rounded border-slate-300 focus:ring-red-500 disabled:opacity-40 disabled:cursor-not-allowed" {{ $isChecked ? 'checked' : '' }} {{ $isFull ? 'disabled' : '' }} onchange="onCategoryToggle({{ $cat->id }})">
@@ -322,6 +343,9 @@
                                                     <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-black uppercase tracking-wider bg-slate-100 text-slate-700 border border-slate-300" title="Aturan jumlah anggota per regu">
                                                         <i class="fa-solid fa-users text-slate-500"></i> {{ $cat->getRequiredTeamMembers() }} Orang / Regu
                                                     </span>
+
+                                                    <!-- Container Dinamis Kuota Sekolah Terdaftar -->
+                                                    <span id="school-quota-pill-{{ $cat->id }}" class="hidden"></span>
                                                 </div>
 
                                                 <div class="text-xs text-slate-500 mt-1 flex items-center gap-2 flex-wrap">
@@ -375,6 +399,21 @@
                                                         </div>
                                                     </div>
                                                 @endif
+
+                                                <!-- Callout Dinamis Kuota Sekolah Penuh -->
+                                                <div id="school-full-alert-{{ $cat->id }}" class="hidden mt-2.5 bg-rose-50 border border-rose-300 rounded-xl p-2.5 flex items-start sm:items-center gap-2.5 text-rose-900 text-xs">
+                                                    <i class="fa-solid fa-ban text-rose-600 text-sm mt-0.5 sm:mt-0 shrink-0"></i>
+                                                    <div class="font-medium">
+                                                        <strong>Kuota Sekolah Penuh:</strong> Pangkalan sekolah Anda sebelumnya sudah mendaftarkan kuota maksimal pada cabang ini. Sesuai regulasi, pendaftaran tambahan tidak dapat dilakukan.
+                                                    </div>
+                                                </div>
+
+                                                <!-- Callout Dinamis Sisa Kuota Sekolah -->
+                                                <div id="school-remaining-alert-{{ $cat->id }}" class="hidden mt-2.5 bg-blue-50 border border-blue-300 rounded-xl p-2.5 flex items-start sm:items-center gap-2.5 text-blue-950 text-xs">
+                                                    <i class="fa-solid fa-circle-info text-blue-600 text-sm mt-0.5 sm:mt-0 shrink-0"></i>
+                                                    <div class="font-medium" id="school-remaining-text-{{ $cat->id }}">
+                                                    </div>
+                                                </div>
                                             </div>
                                         </label>
 
@@ -792,6 +831,186 @@
         });
 
         calculateFee();
+        checkSchoolQuotaAvailability();
+    }
+
+    let quotaCheckTimeout = null;
+
+    function triggerSchoolQuotaCheck() {
+        if (quotaCheckTimeout) clearTimeout(quotaCheckTimeout);
+        quotaCheckTimeout = setTimeout(() => {
+            checkSchoolQuotaAvailability();
+        }, 350);
+    }
+
+    function checkSchoolQuotaAvailability() {
+        const schoolInput = document.querySelector('input[name="school_name"]');
+        const phoneInput = document.querySelector('input[name="advisor_phone"]');
+        const levelRadio = document.querySelector('input[name="level"]:checked');
+
+        const schoolName = (schoolInput ? schoolInput.value : '').trim();
+        const advisorPhone = (phoneInput ? phoneInput.value : '').trim();
+        const level = levelRadio ? levelRadio.value : 'Madya';
+
+        const historyBanner = document.getElementById('school-quota-history-banner');
+        const historySchoolName = document.getElementById('history-school-name');
+        const historyRegCodeBadge = document.getElementById('history-reg-code-badge');
+
+        if (!schoolName || schoolName.length < 3) {
+            if (historyBanner) historyBanner.classList.add('hidden');
+            resetAllCategoryQuotaStates();
+            return;
+        }
+
+        const url = `{{ route('lomba.check-school-quota') }}?school_name=${encodeURIComponent(schoolName)}&level=${encodeURIComponent(level)}&advisor_phone=${encodeURIComponent(advisorPhone)}`;
+
+        fetch(url, {
+            headers: {
+                'Accept': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data && data.has_history) {
+                // Tampilkan banner riwayat pendaftaran
+                if (historyBanner) {
+                    historyBanner.classList.remove('hidden');
+                    if (historySchoolName) historySchoolName.textContent = data.school_name || schoolName;
+                    if (historyRegCodeBadge) historyRegCodeBadge.textContent = 'No. Pendaftaran Utama: ' + data.primary_code;
+                }
+
+                // Terapkan kuota masing-masing kategori
+                if (data.categories) {
+                    Object.values(data.categories).forEach(cat => {
+                        applyCategoryQuotaState(cat);
+                    });
+                }
+            } else {
+                if (historyBanner) historyBanner.classList.add('hidden');
+                resetAllCategoryQuotaStates();
+            }
+            calculateFee();
+        })
+        .catch(err => {
+            console.error('Error checking school quota:', err);
+        });
+    }
+
+    function applyCategoryQuotaState(cat) {
+        const catId = cat.category_id;
+        const card = document.getElementById('cat-card-' + catId);
+        if (!card) return;
+
+        const cb = card.querySelector(`input[name="categories[]"][value="${catId}"]`);
+        const pill = document.getElementById('school-quota-pill-' + catId);
+        const fullAlert = document.getElementById('school-full-alert-' + catId);
+        const remAlert = document.getElementById('school-remaining-alert-' + catId);
+        const remText = document.getElementById('school-remaining-text-' + catId);
+        const container = document.getElementById('teams-container-' + catId);
+        const btnAdd = document.getElementById('btn-add-team-' + catId);
+
+        const isGloballyFull = card.dataset.isFull === 'true';
+
+        if (cat.is_full) {
+            // Kuota sekolah sudah penuh untuk cabang ini
+            if (cb) {
+                cb.checked = false;
+                cb.disabled = true;
+            }
+            card.classList.add('opacity-60', 'bg-slate-100', 'border-rose-300');
+            card.classList.remove('border-blue-200', 'border-rose-200', 'border-slate-200', 'hover:border-red-400');
+            if (container) container.classList.add('hidden');
+            if (btnAdd) btnAdd.classList.add('hidden');
+
+            if (pill) {
+                pill.className = 'inline-flex items-center gap-1 px-2.5 py-0.5 rounded-md text-[10px] font-black uppercase tracking-wider bg-rose-600 text-white shadow-2xs animate-pulse';
+                pill.innerHTML = `<i class="fa-solid fa-ban"></i> Kuota Sekolah Penuh (${cat.already_registered}/${cat.max_allowed} Regu)`;
+                pill.classList.remove('hidden');
+            }
+
+            if (fullAlert) fullAlert.classList.remove('hidden');
+            if (remAlert) remAlert.classList.add('hidden');
+
+            card.dataset.maxTeams = '0';
+        } else if (cat.already_registered > 0) {
+            // Masih ada sisa slot untuk sekolah ini
+            if (cb && !isGloballyFull) {
+                cb.disabled = false;
+            }
+            card.classList.remove('opacity-60', 'bg-slate-100');
+
+            if (pill) {
+                pill.className = 'inline-flex items-center gap-1 px-2.5 py-0.5 rounded-md text-[10px] font-black uppercase tracking-wider bg-blue-600 text-white shadow-2xs';
+                pill.innerHTML = `<i class="fa-solid fa-circle-info"></i> Sisa Kuota: ${cat.remaining_slots} Regu Lagi (${cat.already_registered}/${cat.max_allowed} Terdaftar)`;
+                pill.classList.remove('hidden');
+            }
+
+            if (fullAlert) fullAlert.classList.add('hidden');
+            if (remAlert) {
+                remAlert.classList.remove('hidden');
+                if (remText) {
+                    remText.innerHTML = `Sekolah Anda sebelumnya telah mendaftarkan <strong>${cat.already_registered} regu</strong>. Sisa kuota yang diizinkan untuk sekolah Anda pada cabang ini adalah <strong>${cat.remaining_slots} regu lagi</strong>.`;
+                }
+            }
+
+            card.dataset.maxTeams = String(cat.remaining_slots);
+
+            // Jika jumlah baris regu yang terbuka melebihi sisa kuota, pangkas
+            if (container) {
+                const rows = container.querySelectorAll('.team-input-row');
+                if (rows.length > cat.remaining_slots) {
+                    for (let i = cat.remaining_slots; i < rows.length; i++) {
+                        rows[i].remove();
+                    }
+                    updateRemoveButtons(catId);
+                }
+            }
+            if (btnAdd) {
+                const currentRows = container ? container.querySelectorAll('.team-input-row').length : 0;
+                if (currentRows >= cat.remaining_slots) {
+                    btnAdd.disabled = true;
+                    btnAdd.classList.add('opacity-40', 'cursor-not-allowed');
+                } else if (cb && cb.checked) {
+                    btnAdd.disabled = false;
+                    btnAdd.classList.remove('opacity-40', 'cursor-not-allowed', 'hidden');
+                }
+            }
+        } else {
+            // Belum pernah mendaftar pada cabang ini
+            resetSingleCategoryQuotaState(card, catId);
+        }
+    }
+
+    function resetSingleCategoryQuotaState(card, catId) {
+        if (!card) return;
+        const cb = card.querySelector(`input[name="categories[]"][value="${catId}"]`);
+        const pill = document.getElementById('school-quota-pill-' + catId);
+        const fullAlert = document.getElementById('school-full-alert-' + catId);
+        const remAlert = document.getElementById('school-remaining-alert-' + catId);
+        const isGloballyFull = card.dataset.isFull === 'true';
+
+        if (cb && !isGloballyFull) {
+            cb.disabled = false;
+        }
+        card.classList.remove('opacity-60', 'bg-slate-100', 'border-rose-300');
+        if (pill) {
+            pill.classList.add('hidden');
+            pill.innerHTML = '';
+        }
+        if (fullAlert) fullAlert.classList.add('hidden');
+        if (remAlert) remAlert.classList.add('hidden');
+
+        const defaultMax = card.dataset.defaultMaxTeams || '2';
+        card.dataset.maxTeams = defaultMax;
+        updateRemoveButtons(catId);
+    }
+
+    function resetAllCategoryQuotaStates() {
+        document.querySelectorAll('[id^="cat-card-"]').forEach(card => {
+            const catId = card.id.replace('cat-card-', '');
+            resetSingleCategoryQuotaState(card, catId);
+        });
     }
 
     function onCategoryToggle(catId) {
@@ -1337,6 +1556,24 @@
                 }
             });
         });
+
+        // Bind input listeners untuk pengecekan kuota riwayat pendaftaran sekolah
+        const schoolInput = document.querySelector('input[name="school_name"]');
+        if (schoolInput) {
+            schoolInput.addEventListener('input', triggerSchoolQuotaCheck);
+            schoolInput.addEventListener('blur', checkSchoolQuotaAvailability);
+        }
+
+        const phoneInput = document.querySelector('input[name="advisor_phone"]');
+        if (phoneInput) {
+            phoneInput.addEventListener('input', triggerSchoolQuotaCheck);
+            phoneInput.addEventListener('blur', checkSchoolQuotaAvailability);
+        }
+
+        // Jalankan pengecekan kuota awal jika nama sekolah telah terisi (misal setelah validasi form/old input)
+        if (schoolInput && schoolInput.value.trim().length >= 3) {
+            checkSchoolQuotaAvailability();
+        }
 
         document.querySelectorAll('.cat-checkbox:checked').forEach(cb => {
             updateRemoveButtons(cb.value);

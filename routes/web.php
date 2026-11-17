@@ -742,6 +742,7 @@ Route::get('/storage/{path}', function ($path) {
 Route::prefix('lomba')->name('lomba.')->group(function () {
     Route::get('/', [CompetitionController::class, 'index'])->name('index');
     Route::get('/daftar', [CompetitionController::class, 'register'])->name('register');
+    Route::get('/check-school-quota', [CompetitionController::class, 'checkSchoolQuota'])->name('check-school-quota');
     Route::post('/daftar', [CompetitionController::class, 'store'])->name('store');
     Route::get('/template-peserta', [CompetitionController::class, 'downloadParticipantTemplate'])->name('template-peserta');
     Route::get('/template-peserta-regu', [CompetitionController::class, 'downloadParticipantTemplate']);
