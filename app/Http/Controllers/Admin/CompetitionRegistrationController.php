@@ -10,6 +10,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\Storage;
 
 class CompetitionRegistrationController extends Controller
@@ -35,7 +36,14 @@ class CompetitionRegistrationController extends Controller
             $query->where('competition_event_id', $event->id);
         }
 
-        if ($status) {
+        if ($status === 'followup') {
+            $query->where(function ($q) {
+                if (Schema::hasColumn('competition_registrations', 'has_pending_followup')) {
+                    $q->where('has_pending_followup', true);
+                }
+                $q->orWhere('checkin_notes', 'like', '%"status":"pending"%');
+            });
+        } elseif ($status) {
             $query->where('status', $status);
         }
 
@@ -64,6 +72,12 @@ class CompetitionRegistrationController extends Controller
             'pending' => (clone $countsQuery)->where('status', 'pending')->count(),
             'verified' => (clone $countsQuery)->where('status', 'verified')->count(),
             'rejected' => (clone $countsQuery)->where('status', 'rejected')->count(),
+            'followup' => (clone $countsQuery)->where(function ($q) {
+                if (Schema::hasColumn('competition_registrations', 'has_pending_followup')) {
+                    $q->where('has_pending_followup', true);
+                }
+                $q->orWhere('checkin_notes', 'like', '%"status":"pending"%');
+            })->count(),
         ];
 
         // Statistik perbandingan tahunan antar event / edisi
@@ -191,13 +205,78 @@ class CompetitionRegistrationController extends Controller
         return redirect()->back()->with('success', "Pendaftaran {$registration->school_name} telah ditolak.");
     }
 
-    public function proof(CompetitionRegistration $registration)
+    public function verifyFollowup($id)
     {
-        if (! $registration->payment_proof) {
+        $registration = CompetitionRegistration::with(['event', 'teams.category'])->findOrFail($id);
+        $history = $registration->getFollowupHistory();
+        $adminName = auth()->user()->name ?? 'Admin';
+
+        // Tandai seluruh entri susulan pending menjadi terverifikasi
+        $updatedHistory = [];
+        $verifiedCount = 0;
+        foreach ($history as $entry) {
+            if (($entry['status'] ?? '') === 'pending') {
+                $entry['status'] = 'verified';
+                $entry['verified_at'] = now()->toDateTimeString();
+                $entry['verified_by'] = $adminName;
+                $verifiedCount++;
+            }
+            $updatedHistory[] = $entry;
+        }
+
+        $registration->has_pending_followup = false;
+        $registration->followup_history = $updatedHistory;
+        $registration->status = 'verified'; // Pastikan status kontingen lunas
+        $registration->verified_at = now();
+        $registration->verified_by = $adminName;
+
+        // Catat riwayat di checkin_notes
+        $catatan = "Pembayaran susulan telah diverifikasi oleh {$adminName} pada ".now()->format('d/m/Y H:i');
+        $cleanOldNotes = trim(preg_replace('/\[FOLLOWUP_HISTORY\].*?\[\/FOLLOWUP_HISTORY\]/s', '', $registration->checkin_notes ?? ''));
+        $newNotes = trim(($cleanOldNotes ? $cleanOldNotes.' | ' : '')."{$catatan}");
+        $newNotes .= "\n[FOLLOWUP_HISTORY]".json_encode($updatedHistory).'[/FOLLOWUP_HISTORY]';
+        $registration->checkin_notes = $newNotes;
+
+        $registration->save();
+
+        // Kirim email e-Kwitansi & Kartu Peserta terakumulasi terbaru ke pembina
+        $emailSent = false;
+        if (! empty($registration->advisor_email) && filter_var($registration->advisor_email, FILTER_VALIDATE_EMAIL)) {
+            try {
+                Mail::to($registration->advisor_email)->send(new RegistrationVerifiedMail($registration));
+                $emailSent = true;
+            } catch (\Throwable $e) {
+                Log::error("Gagal mengirim email verifikasi susulan ke {$registration->advisor_email}: ".$e->getMessage());
+            }
+        }
+
+        $successMsg = "Pembayaran susulan untuk {$registration->school_name} ({$registration->registration_code}) berhasil diverifikasi!";
+        if ($emailSent) {
+            $successMsg .= " Dokumen e-Kwitansi & Kartu Peserta terbaru telah dikirimkan ke {$registration->advisor_email}.";
+        }
+
+        return redirect()->back()->with('success', $successMsg);
+    }
+
+    public function proof(Request $request, CompetitionRegistration $registration)
+    {
+        $targetPath = $registration->payment_proof;
+
+        $followupId = $request->query('followup_id');
+        if ($followupId) {
+            foreach ($registration->getFollowupHistory() as $fItem) {
+                if (($fItem['id'] ?? '') === $followupId && ! empty($fItem['payment_proof'])) {
+                    $targetPath = $fItem['payment_proof'];
+                    break;
+                }
+            }
+        }
+
+        if (! $targetPath) {
             abort(404, 'Bukti pembayaran belum diunggah untuk pendaftaran ini.');
         }
 
-        $cleanPath = ltrim(str_replace('storage/', '', $registration->payment_proof), '/');
+        $cleanPath = ltrim(str_replace('storage/', '', $targetPath), '/');
 
         $candidatePaths = [
             Storage::disk('public')->path($cleanPath),

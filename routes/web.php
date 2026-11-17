@@ -308,6 +308,7 @@ Route::prefix('admin')->name('admin.')->group(function () {
         ]);
         Route::get('/competition-registrations/{registration}/proof', [CompetitionRegistrationController::class, 'proof'])->name('competition-registrations.proof');
         Route::post('/competition-registrations/{registration}/verify', [CompetitionRegistrationController::class, 'verify'])->name('competition-registrations.verify');
+        Route::post('/competition-registrations/{registration}/verify-followup', [CompetitionRegistrationController::class, 'verifyFollowup'])->name('competition-registrations.verify-followup');
         Route::post('/competition-registrations/{registration}/reject', [CompetitionRegistrationController::class, 'reject'])->name('competition-registrations.reject');
         Route::post('/competition-registrations/{registration}/resend-email', [CompetitionRegistrationController::class, 'resendEmail'])->name('competition-registrations.resend-email');
 

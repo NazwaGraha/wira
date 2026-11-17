@@ -539,20 +539,62 @@ class CompetitionController extends Controller
             $totalPayment += $fee;
         }
 
-        $registration = CompetitionRegistration::create([
-            'competition_event_id' => $event->id,
-            'registration_code' => $code,
-            'school_name' => strtoupper(trim($validated['school_name'])),
-            'level' => $validated['level'],
-            'advisor_name' => $validated['advisor_name'],
-            'advisor_phone' => $validated['advisor_phone'],
-            'advisor_email' => $validated['advisor_email'] ?? null,
-            'school_address' => $validated['school_address'] ?? null,
-            'payment_proof' => $proofPath,
-            'total_payment' => $totalPayment,
-            'registration_wave' => $waveInt,
-            'status' => 'pending',
-        ]);
+        $isFollowup = $existingRegs->isNotEmpty();
+
+        if ($isFollowup) {
+            $registration = $existingRegs->first();
+            $code = $registration->registration_code;
+
+            // Akumulasikan total pembayaran induk
+            $registration->total_payment = (float) $registration->total_payment + $totalPayment;
+
+            // Buat entri riwayat pembayaran susulan baru
+            $followupEntry = [
+                'id' => Str::random(8),
+                'registered_at' => now()->toDateTimeString(),
+                'amount' => $totalPayment,
+                'payment_proof' => $proofPath,
+                'teams_count' => count($teamsToCreate),
+                'teams_labels' => array_column($teamsToCreate, 'label'),
+                'advisor_name' => $validated['advisor_name'],
+                'advisor_phone' => $validated['advisor_phone'],
+                'status' => 'pending',
+                'verified_at' => null,
+                'verified_by' => null,
+            ];
+
+            $currentHistory = $registration->getFollowupHistory();
+            $currentHistory[] = $followupEntry;
+
+            $registration->has_pending_followup = true;
+            $registration->followup_history = $currentHistory;
+
+            // Catat di checkin_notes untuk cadangan audit & fallback jika kolom JSON belum termigrasi
+            $catatanSusulan = 'Susulan '.now()->format('d/m H:i').': '.count($teamsToCreate).' regu (+Rp '.number_format($totalPayment, 0, ',', '.').')';
+            $cleanOldNotes = trim(preg_replace('/\[FOLLOWUP_HISTORY\].*?\[\/FOLLOWUP_HISTORY\]/s', '', $registration->checkin_notes ?? ''));
+            $newNotes = trim(($cleanOldNotes ? $cleanOldNotes.' | ' : '')."{$catatanSusulan}");
+            $newNotes .= "\n[FOLLOWUP_HISTORY]".json_encode($currentHistory).'[/FOLLOWUP_HISTORY]';
+            $registration->checkin_notes = $newNotes;
+
+            $registration->save();
+        } else {
+            $registration = CompetitionRegistration::create([
+                'competition_event_id' => $event->id,
+                'registration_code' => $code,
+                'school_name' => strtoupper(trim($validated['school_name'])),
+                'level' => $validated['level'],
+                'advisor_name' => $validated['advisor_name'],
+                'advisor_phone' => $validated['advisor_phone'],
+                'advisor_email' => $validated['advisor_email'] ?? null,
+                'school_address' => $validated['school_address'] ?? null,
+                'payment_proof' => $proofPath,
+                'total_payment' => $totalPayment,
+                'registration_wave' => $waveInt,
+                'status' => 'pending',
+                'has_pending_followup' => false,
+                'followup_history' => [],
+            ]);
+        }
 
         $spreadsheetService = app(CompetitionSpreadsheetService::class);
 
@@ -711,7 +753,13 @@ class CompetitionController extends Controller
             }
         }
 
-        return redirect()->route('lomba.status', ['code' => $code])->with('success', "Pendaftaran berhasil dikirim untuk {$totalTeams} regu! Kode Pendaftaran Anda: {$code}. Silakan simpan kode ini untuk mengecek status verifikasi panitia.");
+        if ($isFollowup) {
+            $successMsg = "Pendaftaran susulan berhasil digabungkan ke nomor pendaftaran utama ({$code})! Sebanyak {$totalTeams} regu baru telah ditambahkan ke kontingen {$registration->school_name}. Bukti pembayaran susulan sedang menunggu verifikasi panitia.";
+        } else {
+            $successMsg = "Pendaftaran berhasil dikirim untuk {$totalTeams} regu! Kode Pendaftaran Anda: {$code}. Silakan simpan kode ini untuk mengecek status verifikasi panitia.";
+        }
+
+        return redirect()->route('lomba.status', ['code' => $code])->with('success', $successMsg);
     }
 
     public function status(Request $request)

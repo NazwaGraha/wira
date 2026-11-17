@@ -37,7 +37,7 @@
     @include('admin.competition.partials.event-selector')
 
     <!-- Metric Counts Cards -->
-    <div class="grid grid-cols-1 sm:grid-cols-4 gap-4">
+    <div class="grid grid-cols-2 sm:grid-cols-5 gap-4">
         <a href="{{ route('admin.competition-registrations.index', request()->except('status')) }}" class="p-5 rounded-2xl border transition {{ !$status ? 'bg-slate-900 text-white border-slate-900 shadow-md' : 'bg-white text-slate-800 border-slate-200 hover:border-slate-300' }}">
             <div class="text-xs font-semibold {{ !$status ? 'text-slate-400' : 'text-slate-500' }}">Total Pendaftar</div>
             <div class="text-2xl font-black mt-1">{{ $counts['all'] }}</div>
@@ -46,6 +46,24 @@
         <a href="{{ route('admin.competition-registrations.index', array_merge(request()->query(), ['status' => 'pending'])) }}" class="p-5 rounded-2xl border transition {{ $status == 'pending' ? 'bg-amber-500 text-white border-amber-500 shadow-md' : 'bg-white text-slate-800 border-slate-200 hover:border-slate-300' }}">
             <div class="text-xs font-semibold {{ $status == 'pending' ? 'text-amber-100' : 'text-slate-500' }}">Perlu Verifikasi</div>
             <div class="text-2xl font-black mt-1">{{ $counts['pending'] }}</div>
+        </a>
+
+        <a href="{{ route('admin.competition-registrations.index', array_merge(request()->query(), ['status' => 'followup'])) }}" class="p-5 rounded-2xl border transition relative {{ $status == 'followup' ? 'bg-orange-500 text-white border-orange-500 shadow-md' : 'bg-white text-slate-800 border-slate-200 hover:border-slate-300' }}">
+            <div class="text-xs font-semibold flex items-center justify-between {{ $status == 'followup' ? 'text-orange-100' : 'text-slate-500' }}">
+                <span>Ada Susulan</span>
+                @if(($counts['followup'] ?? 0) > 0)
+                    <span class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-black uppercase tracking-wider {{ $status == 'followup' ? 'bg-white text-orange-600' : 'bg-amber-100 text-amber-800 animate-pulse' }}">Perlu Verif</span>
+                @endif
+            </div>
+            <div class="text-2xl font-black mt-1 flex items-center gap-2">
+                <span>{{ $counts['followup'] ?? 0 }}</span>
+                @if(($counts['followup'] ?? 0) > 0)
+                    <span class="relative flex h-2.5 w-2.5">
+                        <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75"></span>
+                        <span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-amber-500"></span>
+                    </span>
+                @endif
+            </div>
         </a>
 
         <a href="{{ route('admin.competition-registrations.index', array_merge(request()->query(), ['status' => 'verified'])) }}" class="p-5 rounded-2xl border transition {{ $status == 'verified' ? 'bg-emerald-600 text-white border-emerald-600 shadow-md' : 'bg-white text-slate-800 border-slate-200 hover:border-slate-300' }}">
@@ -284,7 +302,7 @@
                 </thead>
                 <tbody class="divide-y divide-slate-200">
                     @forelse($registrations as $reg)
-                        <tr id="reg-row-{{ $reg->id }}" class="hover:bg-slate-50 transition">
+                        <tr id="reg-row-{{ $reg->id }}" class="transition {{ $reg->hasPendingFollowup() ? 'bg-amber-50/60 hover:bg-amber-50 border-l-4 border-amber-500' : 'hover:bg-slate-50' }}">
                             <td class="px-4 py-4 text-center">
                                 <input type="checkbox" name="registration_ids[]" value="{{ $reg->id }}" onchange="updateSelectedCount()" class="reg-checkbox w-4 h-4 rounded text-red-600 focus:ring-red-500 border-slate-300 cursor-pointer">
                             </td>
@@ -293,7 +311,14 @@
                                     <span class="font-mono text-[11px] font-bold text-slate-600 bg-slate-100 px-2 py-0.5 rounded">{{ $reg->registration_code }}</span>
                                     <span class="px-2 py-0.5 rounded text-[10px] font-bold {{ $reg->registration_wave == 2 ? 'bg-emerald-100 text-emerald-800 border border-emerald-200' : 'bg-amber-100 text-amber-900 border border-amber-200' }}">Gel. {{ $reg->registration_wave ?? 1 }}</span>
                                 </div>
-                                <div class="font-extrabold text-slate-900 text-sm mt-1 uppercase">{{ $reg->school_name }}</div>
+                                <div class="font-extrabold text-slate-900 text-sm mt-1 uppercase flex items-center gap-2 flex-wrap">
+                                    <span>{{ $reg->school_name }}</span>
+                                    @if($reg->hasPendingFollowup())
+                                        <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-amber-500 text-white shadow-xs animate-pulse" title="Ada pendaftaran regu susulan yang memerlukan verifikasi pembayaran">
+                                            <i class="fa-solid fa-bell"></i> Ada Susulan (+Rp {{ number_format($reg->getPendingFollowupAmount(), 0, ',', '.') }})
+                                        </span>
+                                    @endif
+                                </div>
                                 <div class="text-[11px] text-slate-400">{{ $reg->created_at ? $reg->created_at->translatedFormat('d M Y, H:i') : '-' }}</div>
                             </td>
                             <td class="px-6 py-4">
@@ -316,19 +341,43 @@
                             </td>
                             <td class="px-6 py-4">
                                 <div class="font-mono font-bold text-slate-900 text-xs">Rp {{ number_format($reg->total_payment, 0, ',', '.') }}</div>
-                                @if($reg->payment_proof)
-                                    <a href="{{ route('admin.competition-registrations.proof', $reg->id) }}" target="_blank" class="text-[11px] text-blue-600 hover:underline inline-flex items-center gap-1 mt-0.5 font-semibold">
-                                        <i class="fa-solid fa-receipt"></i> Bukti Bayar
-                                    </a>
-                                @else
-                                    <span class="text-[10px] text-slate-400">Tidak ada file</span>
-                                @endif
+                                <div class="flex flex-col gap-1 mt-1">
+                                    @if($reg->payment_proof)
+                                        <a href="{{ route('admin.competition-registrations.proof', $reg->id) }}" target="_blank" class="text-[11px] text-blue-600 hover:underline inline-flex items-center gap-1 font-semibold">
+                                            <i class="fa-solid fa-receipt"></i> Bukti Utama
+                                        </a>
+                                    @else
+                                        <span class="text-[10px] text-slate-400">Tidak ada file</span>
+                                    @endif
+
+                                    @if(count($reg->getFollowupHistory()) > 0)
+                                        @foreach($reg->getFollowupHistory() as $idx => $fItem)
+                                            <div class="flex items-center gap-1 text-[10px]">
+                                                @if(!empty($fItem['proof_file']))
+                                                    <a href="{{ route('admin.competition-registrations.proof', ['registration' => $reg->id, 'followup_id' => $fItem['id'] ?? $idx]) }}" target="_blank" class="text-amber-700 hover:underline inline-flex items-center gap-1 font-bold">
+                                                        <i class="fa-solid fa-receipt text-amber-500"></i> Bukti Susulan #{{ $idx + 1 }}
+                                                    </a>
+                                                @endif
+                                                @if(($fItem['status'] ?? '') === 'pending')
+                                                    <span class="px-1.5 py-0.2 rounded text-[9px] font-black uppercase bg-amber-200 text-amber-900 animate-pulse">Pending</span>
+                                                @else
+                                                    <span class="px-1.5 py-0.2 rounded text-[9px] font-black uppercase bg-emerald-100 text-emerald-800">Lunas</span>
+                                                @endif
+                                            </div>
+                                        @endforeach
+                                    @endif
+                                </div>
                             </td>
                             <td class="px-6 py-4">
                                 @if($reg->status == 'verified')
                                     <span class="bg-emerald-50 text-emerald-700 border border-emerald-200 text-[11px] font-extrabold px-3 py-1 rounded-full flex items-center gap-1 w-max">
                                         <i class="fa-solid fa-circle-check text-emerald-500"></i> Lunas
                                     </span>
+                                    @if($reg->hasPendingFollowup())
+                                        <span class="mt-1.5 bg-amber-50 text-amber-800 border border-amber-300 text-[10px] font-extrabold px-2.5 py-0.5 rounded-full flex items-center gap-1 w-max animate-pulse">
+                                            <i class="fa-solid fa-clock text-amber-600"></i> Susulan Menunggu Verif
+                                        </span>
+                                    @endif
                                 @elseif($reg->status == 'pending')
                                     <span class="bg-amber-50 text-amber-700 border border-amber-200 text-[11px] font-extrabold px-3 py-1 rounded-full flex items-center gap-1 w-max">
                                         <i class="fa-solid fa-clock text-amber-500"></i> Pending
@@ -341,6 +390,15 @@
                             </td>
                             <td class="px-6 py-4 text-right">
                                 <div class="flex items-center justify-end gap-1.5">
+                                    @if($reg->hasPendingFollowup())
+                                        <form action="{{ route('admin.competition-registrations.verify-followup', $reg->id) }}" method="POST" onsubmit="return confirm('Verifikasi pembayaran susulan sebesar Rp {{ number_format($reg->getPendingFollowupAmount(), 0, ',', '.') }} untuk {{ $reg->school_name }}?');">
+                                            @csrf
+                                            <button type="submit" class="w-8 h-8 rounded-lg bg-amber-500 text-white flex items-center justify-center hover:bg-amber-600 transition shadow-xs" title="Verifikasi Pembayaran Susulan">
+                                                <i class="fa-solid fa-check-double"></i>
+                                            </button>
+                                        </form>
+                                    @endif
+
                                     <a href="{{ route('admin.competition-registrations.show', $reg->id) }}" class="w-8 h-8 rounded-lg bg-slate-100 text-slate-600 flex items-center justify-center hover:bg-slate-800 hover:text-white transition" title="Lihat Detail">
                                         <i class="fa-solid fa-eye"></i>
                                     </a>

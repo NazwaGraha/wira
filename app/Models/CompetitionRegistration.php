@@ -26,6 +26,12 @@ class CompetitionRegistration extends Model
                 Storage::disk('public')->delete($registration->payment_proof);
             }
 
+            foreach ($registration->getFollowupHistory() as $fItem) {
+                if (! empty($fItem['payment_proof']) && Storage::disk('public')->exists($fItem['payment_proof'])) {
+                    Storage::disk('public')->delete($fItem['payment_proof']);
+                }
+            }
+
             // 3. Hapus seluruh regu peserta (ini juga akan memicu cascade delete skor juri dan foto penilaian)
             $registration->teams()->each(function ($team) {
                 $team->delete();
@@ -80,6 +86,8 @@ class CompetitionRegistration extends Model
         'parking_priority_score',
         'parking_priority_rank',
         'parking_priority_criteria',
+        'has_pending_followup',
+        'followup_history',
     ];
 
     protected $casts = [
@@ -93,6 +101,8 @@ class CompetitionRegistration extends Model
         'parking_priority_score' => 'decimal:2',
         'parking_priority_rank' => 'integer',
         'parking_priority_criteria' => 'array',
+        'has_pending_followup' => 'boolean',
+        'followup_history' => 'array',
     ];
 
     public function event(): BelongsTo
@@ -305,5 +315,119 @@ class CompetitionRegistration extends Model
     public function getWhatsappGroupUrl(): string
     {
         return $this->getWhatsappGroupUrlAttribute();
+    }
+
+    /**
+     * Cek apakah pendaftaran memiliki pembayaran/regu susulan yang masih menunggu verifikasi admin.
+     */
+    public function hasPendingFollowup(): bool
+    {
+        if ($this->has_pending_followup) {
+            return true;
+        }
+
+        foreach ($this->getFollowupHistory() as $item) {
+            if (($item['status'] ?? '') === 'pending') {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * Ambil riwayat pendaftaran & pembayaran susulan.
+     */
+    public function getFollowupHistory(): array
+    {
+        if (! empty($this->followup_history) && is_array($this->followup_history)) {
+            return $this->followup_history;
+        }
+
+        if (is_string($this->followup_history)) {
+            $decoded = json_decode($this->followup_history, true);
+            if (is_array($decoded)) {
+                return $decoded;
+            }
+        }
+
+        // Fallback jika disimpan di checkin_notes
+        if (! empty($this->checkin_notes) && str_contains($this->checkin_notes, '[FOLLOWUP_HISTORY]')) {
+            if (preg_match('/\[FOLLOWUP_HISTORY\](.*?)\[\/FOLLOWUP_HISTORY\]/s', $this->checkin_notes, $matches)) {
+                $decoded = json_decode($matches[1], true);
+                if (is_array($decoded)) {
+                    return $decoded;
+                }
+            }
+        }
+
+        return [];
+    }
+
+    /**
+     * Dapatkan total nominal pembayaran susulan yang belum diverifikasi.
+     */
+    public function getPendingFollowupAmount(): float
+    {
+        $amount = 0;
+        foreach ($this->getFollowupHistory() as $item) {
+            if (($item['status'] ?? '') === 'pending') {
+                $amount += floatval($item['amount'] ?? 0);
+            }
+        }
+
+        return $amount;
+    }
+
+    /**
+     * Dapatkan total nominal seluruh pembayaran susulan (baik pending maupun terverifikasi).
+     */
+    public function getFollowupTotalAmount(): float
+    {
+        $total = 0;
+        foreach ($this->getFollowupHistory() as $item) {
+            $total += floatval($item['amount'] ?? 0);
+        }
+
+        return $total;
+    }
+
+    /**
+     * Dapatkan seluruh berkas bukti pembayaran (pendaftaran awal + seluruh pendaftaran susulan).
+     */
+    public function getAllPaymentProofs(): array
+    {
+        $proofs = [];
+        if ($this->payment_proof) {
+            $initialAmount = max(0, floatval($this->total_payment) - floatval($this->getFollowupTotalAmount()));
+            $proofs[] = [
+                'type' => 'primary',
+                'title' => 'Bukti Transfer Pendaftaran Awal',
+                'path' => $this->payment_proof,
+                'created_at' => $this->created_at,
+                'status' => $this->status,
+                'amount' => $initialAmount,
+                'teams_count' => null,
+                'teams_labels' => [],
+            ];
+        }
+
+        foreach ($this->getFollowupHistory() as $idx => $item) {
+            if (! empty($item['payment_proof'])) {
+                $proofs[] = [
+                    'type' => 'followup',
+                    'id' => $item['id'] ?? ($idx + 1),
+                    'title' => 'Bukti Transfer Susulan '.($idx + 1),
+                    'path' => $item['payment_proof'],
+                    'created_at' => isset($item['registered_at']) ? Carbon::parse($item['registered_at']) : null,
+                    'status' => $item['status'] ?? 'pending',
+                    'amount' => floatval($item['amount'] ?? 0),
+                    'teams_count' => $item['teams_count'] ?? 1,
+                    'teams_labels' => $item['teams_labels'] ?? [],
+                ];
+            }
+        }
+
+        return $proofs;
     }
 }

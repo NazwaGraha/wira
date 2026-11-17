@@ -10,6 +10,35 @@
 @endsection
 
 @section('content')
+@if($registration->hasPendingFollowup())
+    <div class="mb-6 p-5 sm:p-6 bg-gradient-to-r from-amber-500 via-amber-600 to-orange-500 text-white rounded-2xl shadow-lg border border-amber-400 flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div class="flex items-start gap-3.5">
+            <div class="w-12 h-12 rounded-xl bg-white/20 backdrop-blur-sm flex items-center justify-center text-2xl shrink-0 text-white">
+                <i class="fa-solid fa-triangle-exclamation"></i>
+            </div>
+            <div>
+                <div class="flex items-center gap-2">
+                    <span class="px-2 py-0.5 rounded text-[10px] font-black uppercase tracking-wider bg-white text-amber-800 shadow-xs">Pemberitahuan Penting</span>
+                    <span class="text-xs text-amber-100 font-bold">Pendaftaran Susulan Masuk</span>
+                </div>
+                <h3 class="text-lg font-black mt-1">Sekolah ini melakukan pendaftaran regu susulan!</h3>
+                <p class="text-xs text-amber-50 mt-1 max-w-2xl leading-relaxed">
+                    Terdapat penambahan regu baru dengan tambahan pembayaran sebesar <strong class="text-white underline">Rp {{ number_format($registration->getPendingFollowupAmount(), 0, ',', '.') }}</strong> yang memerlukan verifikasi bukti transfer. Bukti transfer susulan telah terlampir di kolom bukti pembayaran di bawah.
+                </p>
+            </div>
+        </div>
+        <div class="shrink-0 flex items-center gap-2">
+            <form action="{{ route('admin.competition-registrations.verify-followup', $registration->id) }}" method="POST" onsubmit="return confirm('Sahkan & verifikasi pembayaran susulan sebesar Rp {{ number_format($registration->getPendingFollowupAmount(), 0, ',', '.') }}? Kwitansi dan Kartu Peserta akan mencakup seluruh regu baru.');">
+                @csrf
+                <button type="submit" class="w-full sm:w-auto px-5 py-3 rounded-xl bg-white text-amber-800 hover:bg-amber-50 font-black text-xs shadow-md transition flex items-center justify-center gap-2">
+                    <i class="fa-solid fa-check-double text-amber-600"></i>
+                    <span>Verifikasi Pembayaran Susulan (Lunas)</span>
+                </button>
+            </form>
+        </div>
+    </div>
+@endif
+
 <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
     
     <!-- Left Details -->
@@ -135,6 +164,24 @@
                 <div class="text-xl font-black text-red-600 font-mono mt-0.5">Rp {{ number_format($registration->total_payment, 0, ',', '.') }}</div>
             </div>
 
+            @if($registration->hasPendingFollowup())
+                <div class="p-4 bg-amber-50 border border-amber-200 rounded-xl mb-4 text-xs space-y-2.5">
+                    <div class="flex items-center gap-2 font-bold text-amber-800">
+                        <i class="fa-solid fa-bell text-amber-600"></i>
+                        <span>Pendaftaran Susulan Perlu Verifikasi!</span>
+                    </div>
+                    <div class="text-slate-600">
+                        Nominal Susulan: <strong class="text-amber-800 font-mono text-sm">Rp {{ number_format($registration->getPendingFollowupAmount(), 0, ',', '.') }}</strong>
+                    </div>
+                    <form action="{{ route('admin.competition-registrations.verify-followup', $registration->id) }}" method="POST" onsubmit="return confirm('Verifikasi pembayaran susulan sebesar Rp {{ number_format($registration->getPendingFollowupAmount(), 0, ',', '.') }}?');">
+                        @csrf
+                        <button type="submit" class="w-full bg-amber-500 hover:bg-amber-600 text-white font-bold py-2.5 rounded-lg transition text-xs flex items-center justify-center gap-2 shadow-xs">
+                            <i class="fa-solid fa-check-double"></i> Verifikasi Susulan (Lunas)
+                        </button>
+                    </form>
+                </div>
+            @endif
+
             @if($registration->status == 'pending')
                 <div class="space-y-3">
                     <form action="{{ route('admin.competition-registrations.verify', $registration->id) }}" method="POST">
@@ -175,14 +222,50 @@
 
         <!-- Payment Proof Image Box -->
         <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
-            <h3 class="font-extrabold text-sm text-slate-800 uppercase tracking-wider mb-4">Bukti Pembayaran</h3>
-            @if($registration->payment_proof)
-                <div class="rounded-xl overflow-hidden border border-slate-200">
-                    <a href="{{ route('admin.competition-registrations.proof', $registration->id) }}" target="_blank">
-                        <img src="{{ route('admin.competition-registrations.proof', $registration->id) }}" class="w-full h-auto object-cover hover:scale-105 transition duration-300" alt="Bukti Transfer">
-                    </a>
+            @php $allProofs = $registration->getAllPaymentProofs(); @endphp
+            <div class="flex items-center justify-between mb-4">
+                <h3 class="font-extrabold text-sm text-slate-800 uppercase tracking-wider">Bukti Pembayaran</h3>
+                <span class="text-xs font-bold text-slate-500 bg-slate-100 px-2 py-0.5 rounded-full">{{ count($allProofs) }} File</span>
+            </div>
+
+            @if(count($allProofs) > 0)
+                <div class="space-y-5">
+                    @foreach($allProofs as $pIdx => $proof)
+                        <div class="p-3.5 rounded-xl border {{ ($proof['type'] ?? '') === 'followup' ? 'bg-amber-50/50 border-amber-200' : 'bg-slate-50 border-slate-200' }}">
+                            <div class="flex items-center justify-between mb-2">
+                                <div class="flex items-center gap-1.5 flex-wrap">
+                                    <span class="text-xs font-black {{ ($proof['type'] ?? '') === 'followup' ? 'text-amber-900' : 'text-slate-800' }}">{{ $proof['label'] }}</span>
+                                    @if(($proof['type'] ?? '') === 'followup')
+                                        @if(($proof['status'] ?? '') === 'pending')
+                                            <span class="px-2 py-0.5 rounded text-[9px] font-black uppercase tracking-wider bg-amber-500 text-white animate-pulse">Menunggu Verif</span>
+                                        @else
+                                            <span class="px-2 py-0.5 rounded text-[9px] font-black uppercase tracking-wider bg-emerald-600 text-white">Terverifikasi</span>
+                                        @endif
+                                    @endif
+                                </div>
+                                <span class="font-mono text-xs font-black text-slate-800">Rp {{ number_format($proof['amount'] ?? 0, 0, ',', '.') }}</span>
+                            </div>
+
+                            @if(!empty($proof['date']))
+                                <div class="text-[11px] text-slate-400 mb-2 flex items-center gap-1">
+                                    <i class="fa-regular fa-clock text-[10px]"></i>
+                                    <span>{{ \Carbon\Carbon::parse($proof['date'])->translatedFormat('d M Y, H:i') }} WIB</span>
+                                </div>
+                            @endif
+
+                            <div class="rounded-xl overflow-hidden border border-slate-200 bg-white">
+                                <a href="{{ $proof['url'] }}" target="_blank">
+                                    <img src="{{ $proof['url'] }}" class="w-full h-48 object-cover hover:scale-105 transition duration-300" alt="{{ $proof['label'] }}">
+                                </a>
+                            </div>
+                            <div class="mt-2 text-center">
+                                <a href="{{ $proof['url'] }}" target="_blank" class="text-[11px] text-blue-600 hover:underline font-bold inline-flex items-center gap-1">
+                                    <i class="fa-solid fa-arrow-up-right-from-square text-[10px]"></i> Buka Gambar Resolusi Penuh
+                                </a>
+                            </div>
+                        </div>
+                    @endforeach
                 </div>
-                <div class="text-[11px] text-slate-400 mt-2 text-center">Klik gambar untuk melihat resolusi penuh</div>
             @else
                 <div class="text-xs text-slate-400 italic text-center py-6">Tidak ada lampiran bukti transfer</div>
             @endif
