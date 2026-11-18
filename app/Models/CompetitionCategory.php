@@ -186,14 +186,18 @@ class CompetitionCategory extends Model
             return (int) ($this->max_teams_per_school_pi ?? 2);
         }
 
-        // Kategori Umum / Campuran
-        if ($this->max_teams_per_school_mix !== null) {
+        $name = strtolower($this->name ?? '');
+        if (str_contains($name, 'olimpiade') || str_contains($name, 'olympiade')) {
+            if ($this->max_teams_per_school_mix === null || (int) $this->max_teams_per_school_mix <= 2) {
+                return 3;
+            }
+
             return (int) $this->max_teams_per_school_mix;
         }
 
-        $name = strtolower($this->name ?? '');
-        if (str_contains($name, 'olimpiade') || str_contains($name, 'olympiade')) {
-            return 3;
+        // Kategori Umum / Campuran
+        if ($this->max_teams_per_school_mix !== null) {
+            return (int) $this->max_teams_per_school_mix;
         }
 
         return 2;
