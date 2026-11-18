@@ -442,11 +442,14 @@
                                                 $rowVal = (isset($lbl) && trim((string)$lbl) !== '' && !in_array($lbl, ['Regu Putra', 'Regu Putri'])) ? $lbl : ('Regu ' . $letter);
                                             @endphp
                                             <div class="team-input-row bg-white border border-slate-200/90 rounded-xl p-3 shadow-2xs space-y-2.5 transition">
-                                                <div class="flex items-center gap-2">
-                                                    <span class="text-[11px] font-bold text-slate-600 w-24 shrink-0 row-index-label">{{ $rowLabel }}</span>
-                                                    <input type="text" name="team_labels[{{ $cat->id }}][{{ $idx }}]" value="{{ $rowVal }}" placeholder="Label Regu (cth: Regu {{ $letter }})" class="team-label-input flex-grow text-xs bg-slate-50 border border-slate-200 px-3 py-2 rounded-xl focus:bg-white focus:outline-none focus:border-red-500 shadow-2xs font-semibold text-slate-800" oninput="calculateFee()">
+                                                <div class="flex items-start gap-2">
+                                                    <span class="text-[11px] font-bold text-slate-600 w-24 shrink-0 row-index-label pt-2">{{ $rowLabel }}</span>
+                                                    <div class="flex-grow">
+                                                        <input type="text" name="team_labels[{{ $cat->id }}][{{ $idx }}]" value="{{ $rowVal }}" placeholder="Label Regu (cth: Regu {{ $letter }})" class="team-label-input w-full text-xs bg-slate-50 border border-slate-200 px-3 py-2 rounded-xl focus:bg-white focus:outline-none focus:border-red-500 shadow-2xs font-semibold text-slate-800 transition" oninput="onTeamLabelChange(this, {{ $cat->id }})">
+                                                        <div class="team-label-error-msg hidden text-[11px] text-rose-600 font-bold flex items-center gap-1 mt-1"></div>
+                                                    </div>
                                                     @if($isMulti)
-                                                        <button type="button" onclick="removeTeamRow(this, {{ $cat->id }})" class="btn-remove-team {{ count($oldLabels) > 1 ? '' : 'hidden' }} text-slate-400 hover:text-rose-600 hover:bg-rose-50 p-2 rounded-lg transition" title="Hapus Regu Ini">
+                                                        <button type="button" onclick="removeTeamRow(this, {{ $cat->id }})" class="btn-remove-team {{ count($oldLabels) > 1 ? '' : 'hidden' }} text-slate-400 hover:text-rose-600 hover:bg-rose-50 p-2 rounded-lg transition mt-0.5" title="Hapus Regu Ini">
                                                             <i class="fa-solid fa-trash-can text-xs"></i>
                                                         </button>
                                                     @endif
@@ -952,8 +955,11 @@
             if (fullAlert) fullAlert.classList.add('hidden');
             if (remAlert) {
                 remAlert.classList.remove('hidden');
+                const registeredList = (cat.existing_labels && cat.existing_labels.length > 0)
+                    ? ` (sudah terdaftar: <strong>${cat.existing_labels.join(', ')}</strong>)`
+                    : '';
                 if (remText) {
-                    remText.innerHTML = `Sekolah Anda sebelumnya telah mendaftarkan <strong>${cat.already_registered} regu</strong>. Sisa kuota yang diizinkan untuk sekolah Anda pada cabang ini adalah <strong>${cat.remaining_slots} regu lagi</strong>.`;
+                    remText.innerHTML = `Sekolah Anda sebelumnya telah mendaftarkan <strong>${cat.already_registered} regu</strong>${registeredList}. Sisa kuota yang diizinkan untuk sekolah Anda pada cabang ini adalah <strong>${cat.remaining_slots} regu lagi</strong>.<div class="mt-1 text-[11px] text-blue-700 font-semibold flex items-center gap-1.5"><i class="fa-solid fa-lightbulb text-amber-500"></i> <span>Tips: Nama regu susulan otomatis disesuaikan agar tidak sama dengan regu yang sudah terdaftar.</span></div>`;
                 }
             }
 
@@ -1357,7 +1363,7 @@
         }
     }
 
-    function getNextAvailableTeamLetter(catId, fallbackIdx) {
+    function getNextAvailableTeamLetter(catId, fallbackIdx = 0, excludeInput = null) {
         const card = document.getElementById('cat-card-' + catId);
         let existing = [];
         try {
@@ -1367,15 +1373,32 @@
         }
 
         const container = document.getElementById('teams-container-' + catId);
-        const currentInputs = container ? Array.from(container.querySelectorAll('.team-label-input')).map(i => i.value.trim().toUpperCase()) : [];
+        let currentInputs = [];
+        if (container) {
+            const inputs = Array.from(container.querySelectorAll('.team-label-input'));
+            currentInputs = inputs
+                .filter(i => i !== excludeInput)
+                .map(i => i.value.trim().toUpperCase())
+                .filter(v => v !== '');
+        }
 
-        const taken = existing.map(l => l.trim().toUpperCase()).concat(currentInputs);
-        const letters = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J'];
+        const cleanExisting = existing.map(l => l.trim().toUpperCase());
+        const letters = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L'];
 
         for (let l of letters) {
             const patternRegu = 'REGU ' + l;
-            const isTaken = taken.some(t => t === l || t === patternRegu || t.endsWith(' ' + l));
-            if (!isTaken) {
+            const isTakenInExisting = cleanExisting.some(ex => {
+                if (ex === l || ex === patternRegu || ex.endsWith(' ' + l)) return true;
+                const cleanEx = ex.replace(/^REGU\s+/i, '');
+                return cleanEx === l;
+            });
+            const isTakenInInputs = currentInputs.some(inp => {
+                if (inp === l || inp === patternRegu || inp.endsWith(' ' + l)) return true;
+                const cleanInp = inp.replace(/^REGU\s+/i, '');
+                return cleanInp === l;
+            });
+
+            if (!isTakenInExisting && !isTakenInInputs) {
                 return l;
             }
         }
@@ -1434,9 +1457,11 @@
 
             if (matchesExisting) {
                 input.classList.add('border-rose-500', 'bg-rose-50/50');
+                const nextAvail = getNextAvailableTeamLetter(catId, 0, input);
+                const suggested = nextAvail ? ` (Saran: gunakan "Regu ${nextAvail}")` : '';
                 if (errorEl) {
                     errorEl.classList.remove('hidden');
-                    errorEl.innerHTML = `<i class="fa-solid fa-circle-exclamation text-rose-500"></i> <span>Nama regu "${escapeHtml(rawVal)}" sudah pernah didaftarkan sekolah Anda sebelumnya. Nama regu tidak boleh sama.</span>`;
+                    errorEl.innerHTML = `<i class="fa-solid fa-circle-exclamation text-rose-500"></i> <span>Nama regu "${escapeHtml(rawVal)}" sudah pernah didaftarkan sekolah Anda sebelumnya. Silakan gunakan nama regu yang berbeda${suggested}.</span>`;
                 }
                 hasError = true;
                 return;
@@ -1466,7 +1491,16 @@
             if (!valid) {
                 const card = document.getElementById('cat-card-' + catId);
                 const catName = card ? (card.querySelector('.font-black.text-slate-900')?.innerText || 'Cabang Lomba') : 'Cabang Lomba';
-                return `Nama regu pada cabang "${catName}" tidak boleh sama dalam satu sekolah. Silakan gunakan nama regu yang berbeda (contoh: Regu A, Regu B).`;
+                const firstErrorInput = card ? card.querySelector('.team-label-input.border-rose-500') : null;
+                const errVal = firstErrorInput ? firstErrorInput.value.trim() : '';
+                const nextLetter = getNextAvailableTeamLetter(catId, 0, firstErrorInput);
+                const suggestion = nextLetter ? ` (contoh yang belum terpakai: Regu ${nextLetter})` : '';
+
+                if (errVal) {
+                    return `Pendaftaran cabang "${catName}" ditolak:\nNama regu "${errVal}" sudah pernah didaftarkan oleh sekolah Anda sebelumnya atau terdapat nama regu yang sama.\n\nSilakan gunakan nama regu yang berbeda${suggestion}.`;
+                }
+
+                return `Nama regu pada cabang "${catName}" tidak boleh sama dalam satu sekolah. Silakan gunakan nama regu yang berbeda${suggestion}.`;
             }
         }
         return null;
@@ -1580,7 +1614,7 @@
         }
 
         rows.forEach((r, idx) => {
-            const letter = String.fromCharCode(65 + idx + alreadyRegistered);
+            const letter = getNextAvailableTeamLetter(catId, idx, r.querySelector('.team-label-input'));
             const removeBtn = r.querySelector('.btn-remove-team');
             if (removeBtn) {
                 if (rows.length > 1) {
