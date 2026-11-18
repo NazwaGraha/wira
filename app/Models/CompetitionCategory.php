@@ -114,11 +114,17 @@ class CompetitionCategory extends Model
 
     /**
      * Cek apakah cabang lomba memperbolehkan pendaftaran lebih dari 1 regu.
-     * Semua cabang lomba kini mengizinkan multi regu (2 regu untuk cabang umum & mewarnai, 3 regu untuk olimpiade).
+     * Khusus PMR Favorite hanya 1 regu per sekolah, sedangkan cabang lainnya memperbolehkan multi regu
+     * (2 regu untuk cabang umum & mewarnai, 3 regu untuk olimpiade).
      */
     public function isMultiTeamAllowed(): bool
     {
-        return true;
+        $name = strtolower($this->name ?? '');
+        if (str_contains($name, 'favorite') || str_contains($name, 'favorit')) {
+            return false;
+        }
+
+        return $this->maxTeamsPerSchool() > 1;
     }
 
     /**
@@ -178,6 +184,13 @@ class CompetitionCategory extends Model
             return 999;
         }
 
+        $name = strtolower($this->name ?? '');
+
+        // PMR Favorite dibatasi maksimal 1 regu per sekolah
+        if (str_contains($name, 'favorite') || str_contains($name, 'favorit')) {
+            return 1;
+        }
+
         if ($this->gender_category === 'Putra') {
             return (int) ($this->max_teams_per_school_pa ?? 2);
         }
@@ -186,13 +199,18 @@ class CompetitionCategory extends Model
             return (int) ($this->max_teams_per_school_pi ?? 2);
         }
 
-        $name = strtolower($this->name ?? '');
+        // Olimpiade Kepalangmerahan dibatasi maksimal 3 regu per sekolah
         if (str_contains($name, 'olimpiade') || str_contains($name, 'olympiade')) {
             if ($this->max_teams_per_school_mix === null || (int) $this->max_teams_per_school_mix <= 2) {
                 return 3;
             }
 
             return (int) $this->max_teams_per_school_mix;
+        }
+
+        // Lomba Mewarnai (Mula) dibatasi maksimal 2 regu per sekolah
+        if (str_contains($name, 'mewarnai')) {
+            return (int) ($this->max_teams_per_school_mix ?? 2);
         }
 
         // Kategori Umum / Campuran

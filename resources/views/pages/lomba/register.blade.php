@@ -206,8 +206,10 @@
                             <div>
                                 <strong class="text-amber-900 text-xs">Ketentuan Kuota Regu per Sekolah:</strong>
                                 <ul class="list-disc pl-4 space-y-0.5 text-amber-900/90 mt-0.5">
-                                    <li>Setiap sekolah maksimal mengirimkan 2 regu putra dan 2 regu putri untuk masing-masing cabang lomba umum.</li>
-                                    <li>Khusus cabang Olimpiade Kepalangmerahan masing-masing sekolah dibatasi maksimum 3 regu dan untuk cabang Mewarnai tidak dibatasi.</li>
+                                    <li><strong>Cabang Lomba Umum (PP & Tandu):</strong> Maksimal 2 regu putra dan 2 regu putri per pangkalan sekolah.</li>
+                                    <li><strong>Cabang Lomba Kategori Umum (PRS, LCT, Mading, Mewarnai Mula):</strong> Maksimal 2 regu per pangkalan sekolah.</li>
+                                    <li><strong>Olimpiade Kepalangmerahan:</strong> Maksimal 3 regu per pangkalan sekolah.</li>
+                                    <li><strong>PMR Favorite:</strong> Maksimal 1 regu per pangkalan sekolah (Kategori Umum).</li>
                                 </ul>
                             </div>
                             <div class="pt-1.5 border-t border-amber-200/80">
@@ -220,6 +222,7 @@
                                     <div class="flex items-center gap-1.5"><i class="fa-solid fa-circle-check text-amber-600 text-[9px]"></i> <span><strong>Cepat Tepat:</strong> 3 orang / regu</span></div>
                                     <div class="flex items-center gap-1.5"><i class="fa-solid fa-circle-check text-amber-600 text-[9px]"></i> <span><strong>Pendidikan Remaja Sebaya:</strong> 2 orang / regu</span></div>
                                     <div class="flex items-center gap-1.5"><i class="fa-solid fa-circle-check text-amber-600 text-[9px]"></i> <span><strong>Olimpiade Kepalangmerahan:</strong> 1 orang / regu</span></div>
+                                    <div class="flex items-center gap-1.5"><i class="fa-solid fa-circle-check text-amber-600 text-[9px]"></i> <span><strong>PMR Favorite:</strong> 2 orang / regu</span></div>
                                 </div>
                             </div>
                         </div>
