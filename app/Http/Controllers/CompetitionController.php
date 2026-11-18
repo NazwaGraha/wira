@@ -566,8 +566,12 @@ class CompetitionController extends Controller
             $currentHistory = $registration->getFollowupHistory();
             $currentHistory[] = $followupEntry;
 
-            $registration->has_pending_followup = true;
-            $registration->followup_history = $currentHistory;
+            if (Schema::hasColumn('competition_registrations', 'has_pending_followup')) {
+                $registration->has_pending_followup = true;
+            }
+            if (Schema::hasColumn('competition_registrations', 'followup_history')) {
+                $registration->followup_history = $currentHistory;
+            }
 
             // Catat di checkin_notes untuk cadangan audit & fallback jika kolom JSON belum termigrasi
             $catatanSusulan = 'Susulan '.now()->format('d/m H:i').': '.count($teamsToCreate).' regu (+Rp '.number_format($totalPayment, 0, ',', '.').')';
@@ -578,7 +582,7 @@ class CompetitionController extends Controller
 
             $registration->save();
         } else {
-            $registration = CompetitionRegistration::create([
+            $regInsertData = [
                 'competition_event_id' => $event->id,
                 'registration_code' => $code,
                 'school_name' => strtoupper(trim($validated['school_name'])),
@@ -591,9 +595,16 @@ class CompetitionController extends Controller
                 'total_payment' => $totalPayment,
                 'registration_wave' => $waveInt,
                 'status' => 'pending',
-                'has_pending_followup' => false,
-                'followup_history' => [],
-            ]);
+            ];
+
+            if (Schema::hasColumn('competition_registrations', 'has_pending_followup')) {
+                $regInsertData['has_pending_followup'] = false;
+            }
+            if (Schema::hasColumn('competition_registrations', 'followup_history')) {
+                $regInsertData['followup_history'] = [];
+            }
+
+            $registration = CompetitionRegistration::create($regInsertData);
         }
 
         $spreadsheetService = app(CompetitionSpreadsheetService::class);

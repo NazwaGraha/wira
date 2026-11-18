@@ -224,8 +224,12 @@ class CompetitionRegistrationController extends Controller
             $updatedHistory[] = $entry;
         }
 
-        $registration->has_pending_followup = false;
-        $registration->followup_history = $updatedHistory;
+        if (Schema::hasColumn('competition_registrations', 'has_pending_followup')) {
+            $registration->has_pending_followup = false;
+        }
+        if (Schema::hasColumn('competition_registrations', 'followup_history')) {
+            $registration->followup_history = $updatedHistory;
+        }
         $registration->status = 'verified'; // Pastikan status kontingen lunas
         $registration->verified_at = now();
         $registration->verified_by = $adminName;

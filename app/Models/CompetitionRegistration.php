@@ -322,7 +322,7 @@ class CompetitionRegistration extends Model
      */
     public function hasPendingFollowup(): bool
     {
-        if ($this->has_pending_followup) {
+        if (! empty($this->attributes['has_pending_followup'])) {
             return true;
         }
 
@@ -431,7 +431,14 @@ class CompetitionRegistration extends Model
         foreach ($followups as $idx => $f) {
             $stageNum = $idx + 2;
             $fStatus = $f['status'] ?? 'pending';
-            $regAt = isset($f['registered_at']) ? Carbon::parse($f['registered_at']) : null;
+            $regAt = null;
+            if (! empty($f['registered_at'])) {
+                try {
+                    $regAt = Carbon::parse($f['registered_at']);
+                } catch (\Throwable $e) {
+                    $regAt = null;
+                }
+            }
 
             $stages[] = [
                 'stage_number' => $stageNum,
@@ -482,6 +489,15 @@ class CompetitionRegistration extends Model
             $proofFile = $item['payment_proof'] ?? ($item['proof_file'] ?? null);
             if (! empty($proofFile)) {
                 $fId = $item['id'] ?? (string) ($idx + 1);
+                $regAt = null;
+                if (! empty($item['registered_at'])) {
+                    try {
+                        $regAt = Carbon::parse($item['registered_at']);
+                    } catch (\Throwable $e) {
+                        $regAt = null;
+                    }
+                }
+
                 $proofs[] = [
                     'type' => 'followup',
                     'id' => $fId,
@@ -490,7 +506,7 @@ class CompetitionRegistration extends Model
                     'path' => $proofFile,
                     'payment_proof' => $proofFile,
                     'url' => route('admin.competition-registrations.proof', ['registration' => $this->id, 'followup_id' => $fId]),
-                    'created_at' => isset($item['registered_at']) ? Carbon::parse($item['registered_at']) : null,
+                    'created_at' => $regAt,
                     'date' => $item['registered_at'] ?? null,
                     'status' => $item['status'] ?? 'pending',
                     'amount' => floatval($item['amount'] ?? 0),
