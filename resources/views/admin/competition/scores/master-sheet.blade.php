@@ -211,7 +211,17 @@
                             $timeRecorded = $score?->time_recorded ?: null;
                             $finalScore = $score?->final_score;
 
-                            $isGridPP = in_array($cat?->level, ['Mula', 'Madya', 'Wira']) && (str_contains(strtolower($cat?->name ?? ''), 'pertolongan pertama') || str_starts_with($cat?->code ?? '', 'LPP'));
+                            $catNameLower = strtolower($cat?->name ?? '');
+                            $catCode = strtoupper($cat?->code ?? '');
+
+                            $isGridPP = in_array($cat?->level, ['Mula', 'Madya', 'Wira']) && (str_contains($catNameLower, 'pertolongan pertama') || str_starts_with($catCode, 'LPP'));
+                            $isGridLKTR = str_contains($catNameLower, 'tandu') || str_starts_with($catCode, 'LKTR');
+                            $isGridPRS = str_contains($catNameLower, 'pendidikan remaja sebaya') || str_contains($catNameLower, 'prs') || str_starts_with($catCode, 'PRS');
+                            $isGridMewarnai = str_contains($catNameLower, 'mewarnai') || str_starts_with($catCode, 'MEWARNAI');
+                            $isLCT = str_contains($catNameLower, 'cepat tepat') || str_contains($catNameLower, 'cerdas cermat') || str_starts_with($catCode, 'LCT');
+                            $isOlim = str_contains($catNameLower, 'olimpiade') || str_contains($catNameLower, 'olympiade') || str_starts_with($catCode, 'OLIM');
+
+                            $hasGridRubric = $isGridPP || $isGridLKTR || $isGridPRS || $isGridMewarnai;
 
                             // Badge color by level
                             $levelBadgeClass = match($cat?->level) {
@@ -344,9 +354,17 @@
                             <!-- Aksi Pintas -->
                             <td class="py-3.5 px-3 text-center">
                                 <div class="flex items-center justify-center gap-1.5">
-                                    @if($isGridPP)
-                                        <a href="{{ route('admin.competition-scores.grid', ['category' => $cat->id, 'team_id' => $team->id]) }}" class="px-2.5 py-1.5 rounded-xl bg-red-600 hover:bg-red-700 text-white font-bold text-[11px] shadow-2xs transition flex items-center gap-1" title="Buka Formulir Grid Nilai Pertolongan Pertama">
+                                    @if($hasGridRubric)
+                                        <a href="{{ route('admin.competition-scores.grid', ['category' => $cat->id, 'team_id' => $team->id]) }}" class="px-2.5 py-1.5 rounded-xl bg-red-600 hover:bg-red-700 text-white font-bold text-[11px] shadow-2xs transition flex items-center gap-1" title="Buka Formulir Grid Nilai {{ $cat?->name }}">
                                             <i class="fa-solid fa-table-cells text-[10px]"></i> Grid
+                                        </a>
+                                    @elseif($isLCT)
+                                        <a href="{{ route('admin.competition-scores.lct', $cat->id) }}" class="px-2.5 py-1.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-[11px] shadow-2xs transition flex items-center gap-1" title="Buka Sistem Penilaian Cepat Tepat (LCT)">
+                                            <i class="fa-solid fa-bolt text-[10px]"></i> LCT
+                                        </a>
+                                    @elseif($isOlim)
+                                        <a href="{{ route('admin.competition-scores.olimpiade', $cat->id) }}" class="px-2.5 py-1.5 rounded-xl bg-purple-600 hover:bg-purple-700 text-white font-bold text-[11px] shadow-2xs transition flex items-center gap-1" title="Buka Sistem Penilaian Olimpiade Kepalangmerahan">
+                                            <i class="fa-solid fa-award text-[10px]"></i> Olim
                                         </a>
                                     @endif
                                     @if($cat)
