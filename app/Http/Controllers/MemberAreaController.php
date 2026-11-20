@@ -26,11 +26,15 @@ class MemberAreaController extends Controller
      */
     public function updateProfile(Request $request)
     {
-        /** @var Member $member */
+        /** @var Member|Advisor|null $member */
         $member = Auth::user();
 
-        if ($member->isSuperUser()) {
-            return back()->with('info', 'Profil Super Administrator bersifat virtual.');
+        if (! $member) {
+            return redirect()->route('admin.login');
+        }
+
+        if (method_exists($member, 'isSuperUser') && $member->isSuperUser()) {
+            return redirect()->route('member.profile')->with('info', 'Profil Super Administrator bersifat virtual.');
         }
 
         $request->validate([
@@ -59,7 +63,7 @@ class MemberAreaController extends Controller
 
         $member->save();
 
-        return back()->with('success', 'Biodata profil Anda berhasil diperbarui.');
+        return redirect()->route('member.profile')->with('success', 'Biodata profil Anda berhasil diperbarui.');
     }
 
     /**
@@ -67,11 +71,15 @@ class MemberAreaController extends Controller
      */
     public function updatePassword(Request $request)
     {
-        /** @var Member $member */
+        /** @var Member|Advisor|null $member */
         $member = Auth::user();
 
-        if ($member->isSuperUser()) {
-            return back()->with('error', 'Kata sandi Super Administrator dikonfigurasi melalui sistem keamanan utama.');
+        if (! $member) {
+            return redirect()->route('admin.login');
+        }
+
+        if (method_exists($member, 'isSuperUser') && $member->isSuperUser()) {
+            return redirect()->route('member.profile')->with('error', 'Kata sandi Super Administrator dikonfigurasi melalui sistem keamanan utama.');
         }
 
         $request->validate([
@@ -85,12 +93,12 @@ class MemberAreaController extends Controller
         ]);
 
         if (! Hash::check($request->current_password, $member->password)) {
-            return back()->withErrors(['current_password' => 'Kata sandi saat ini tidak cocok.']);
+            return redirect()->route('member.profile')->withErrors(['current_password' => 'Kata sandi saat ini tidak cocok.'])->withInput();
         }
 
         $member->password = Hash::make($request->password);
         $member->save();
 
-        return back()->with('success', 'Kata sandi Anda berhasil diubah.');
+        return redirect()->route('member.profile')->with('success', 'Kata sandi Anda berhasil diubah.');
     }
 }

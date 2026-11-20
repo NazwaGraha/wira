@@ -54,6 +54,13 @@
             </div>
         @endif
 
+        @if(session('error'))
+            <div class="mb-6 p-4 bg-red-50 border-l-4 border-red-600 text-red-800 rounded-2xl text-sm flex items-center gap-3 shadow-sm">
+                <i class="fa-solid fa-circle-exclamation text-red-600 text-lg"></i>
+                <div>{{ session('error') }}</div>
+            </div>
+        @endif
+
         @if(session('info'))
             <div class="mb-6 p-4 bg-sky-50 border-l-4 border-sky-600 text-sky-800 rounded-2xl text-sm flex items-center gap-3 shadow-sm">
                 <i class="fa-solid fa-circle-info text-sky-600 text-lg"></i>

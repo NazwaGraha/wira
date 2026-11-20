@@ -516,8 +516,11 @@ Route::prefix('admin')->name('admin.')->group(function () {
 */
 Route::prefix('member')->name('member.')->middleware('auth')->group(function () {
     Route::get('/profile', [MemberAreaController::class, 'profile'])->name('profile');
-    Route::put('/profile', [MemberAreaController::class, 'updateProfile'])->name('profile.update');
-    Route::put('/password', [MemberAreaController::class, 'updatePassword'])->name('password.update');
+    Route::match(['PUT', 'POST'], '/profile', [MemberAreaController::class, 'updateProfile'])->name('profile.update');
+    Route::get('/password', function () {
+        return redirect()->route('member.profile');
+    });
+    Route::match(['PUT', 'POST'], '/password', [MemberAreaController::class, 'updatePassword'])->name('password.update');
 });
 
 // Endpoint Darurat Sinkronisasi Server (Bisa diakses langsung jika cache routing terkunci)
