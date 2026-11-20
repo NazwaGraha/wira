@@ -672,6 +672,13 @@
             <!-- ========================================== -->
             <!-- 6b. ACCOUNTING WIRA (MULTI-PROYEK)         -->
             <!-- ========================================== -->
+            @if(
+                auth()->user()?->hasPermission('accounting.view') ||
+                auth()->user()?->hasPermission('accounting.projects') ||
+                auth()->user()?->hasPermission('accounting.accounts') ||
+                auth()->user()?->hasPermission('accounting.transactions') ||
+                auth()->user()?->hasPermission('accounting.reports')
+            )
             @php $isAccountingActive = ($currentActiveSection === 'akuntansi_kas'); @endphp
             <div class="pt-1 space-y-1">
                 <button type="button" 
@@ -699,32 +706,43 @@
                      x-transition:leave-end="opacity-0 -translate-y-1"
                      class="pl-2 space-y-1 border-l-2 border-slate-800 ml-3.5 my-1">
                     
+                    @if(auth()->user()?->hasPermission('accounting.view'))
                     <a href="{{ route('admin.accounting.index') }}" class="flex items-center gap-2.5 px-3 py-2 rounded-xl font-medium text-xs md:text-sm transition {{ request()->routeIs('admin.accounting.index') ? 'bg-pmr-primary text-white shadow-md shadow-red-950/40' : 'hover:bg-slate-800 text-slate-300' }}">
                         <i class="fa-solid fa-chart-pie w-4 text-center text-emerald-400"></i>
                         <span class="truncate">Dashboard & Proyek</span>
                     </a>
+                    @endif
 
+                    @if(auth()->user()?->hasPermission('accounting.projects'))
                     <a href="{{ route('admin.accounting.projects') }}" class="flex items-center gap-2.5 px-3 py-2 rounded-xl font-medium text-xs md:text-sm transition {{ request()->routeIs('admin.accounting.projects*') ? 'bg-pmr-primary text-white shadow-md shadow-red-950/40' : 'hover:bg-slate-800 text-slate-300' }}">
                         <i class="fa-solid fa-diagram-project w-4 text-center text-purple-400"></i>
                         <span class="truncate">Master Proyek Kegiatan</span>
                     </a>
+                    @endif
 
+                    @if(auth()->user()?->hasPermission('accounting.accounts'))
                     <a href="{{ route('admin.accounting.accounts') }}" class="flex items-center gap-2.5 px-3 py-2 rounded-xl font-medium text-xs md:text-sm transition {{ request()->routeIs('admin.accounting.accounts*') ? 'bg-pmr-primary text-white shadow-md shadow-red-950/40' : 'hover:bg-slate-800 text-slate-300' }}">
                         <i class="fa-solid fa-list-ol w-4 text-center text-blue-400"></i>
                         <span class="truncate">Bagan Akun (CoA)</span>
                     </a>
+                    @endif
 
+                    @if(auth()->user()?->hasPermission('accounting.transactions'))
                     <a href="{{ route('admin.accounting.transactions') }}" class="flex items-center gap-2.5 px-3 py-2 rounded-xl font-medium text-xs md:text-sm transition {{ request()->routeIs('admin.accounting.transactions*') ? 'bg-pmr-primary text-white shadow-md shadow-red-950/40' : 'hover:bg-slate-800 text-slate-300' }}">
                         <i class="fa-solid fa-receipt w-4 text-center text-amber-400"></i>
                         <span class="truncate">Kas Masuk & Keluar</span>
                     </a>
+                    @endif
 
+                    @if(auth()->user()?->hasPermission('accounting.reports'))
                     <a href="{{ route('admin.accounting.reports') }}" class="flex items-center gap-2.5 px-3 py-2 rounded-xl font-medium text-xs md:text-sm transition {{ request()->routeIs('admin.accounting.reports*') ? 'bg-pmr-primary text-white shadow-md shadow-red-950/40' : 'hover:bg-slate-800 text-slate-300' }}">
                         <i class="fa-solid fa-file-invoice-dollar w-4 text-center text-rose-400"></i>
                         <span class="truncate">Laporan Keuangan</span>
                     </a>
+                    @endif
                 </div>
             </div>
+            @endif
 
             <!-- ========================================== -->
             <!-- 7. KELOLA DONOR DARAH -->
