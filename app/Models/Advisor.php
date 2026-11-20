@@ -90,14 +90,19 @@ class Advisor extends Authenticatable
         return false;
     }
 
+    public function getAuthIdentifier()
+    {
+        return 'advisor_'.$this->getKey();
+    }
+
     public function isAktif(): bool
     {
-        return (bool) $this->is_active;
+        return $this->is_active === null || (bool) $this->is_active;
     }
 
     public function canAccessBackoffice(): bool
     {
-        return (bool) $this->is_active;
+        return $this->is_active === null || (bool) $this->is_active;
     }
 
     public function isSuperUser(): bool

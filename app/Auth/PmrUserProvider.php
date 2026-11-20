@@ -78,6 +78,14 @@ class PmrUserProvider implements UserProvider
             return self::createTempAdmin();
         }
 
+        if (is_string($identifier) && str_starts_with($identifier, 'advisor_')) {
+            $advisorId = (int) substr($identifier, 8);
+            $advisor = Advisor::find($advisorId);
+            if ($advisor) {
+                return $advisor;
+            }
+        }
+
         $model = $this->model::find($identifier);
         if ($model) {
             return $model;
@@ -98,9 +106,14 @@ class PmrUserProvider implements UserProvider
             return null;
         }
 
-        $model = $this->model::where('id', $identifier)->first();
-        if (! $model) {
-            $model = Advisor::where('id', $identifier)->first();
+        if (is_string($identifier) && str_starts_with($identifier, 'advisor_')) {
+            $advisorId = (int) substr($identifier, 8);
+            $model = Advisor::find($advisorId);
+        } else {
+            $model = $this->model::where('id', $identifier)->first();
+            if (! $model) {
+                $model = Advisor::where('id', $identifier)->first();
+            }
         }
 
         if (! $model) {
@@ -143,6 +156,16 @@ class PmrUserProvider implements UserProvider
             return null;
         }
 
+        // 1. Cek Advisor terlebih dahulu berdasarkan NIP atau Email jika ada
+        $advisor = Advisor::where('nip', $loginId)
+            ->orWhere('email', $loginId)
+            ->first();
+
+        if ($advisor) {
+            return $advisor;
+        }
+
+        // 2. Cek Member berdasarkan NRI atau NIP
         $member = $this->model::where(function ($query) use ($loginId) {
             $query->where('nri', $loginId)
                 ->orWhere('nip', $loginId);
@@ -150,14 +173,6 @@ class PmrUserProvider implements UserProvider
 
         if ($member) {
             return $member;
-        }
-
-        $advisor = Advisor::where('nip', $loginId)
-            ->orWhere('email', $loginId)
-            ->first();
-
-        if ($advisor) {
-            return $advisor;
         }
 
         return User::where('username', $loginId)

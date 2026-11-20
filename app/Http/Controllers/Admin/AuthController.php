@@ -77,23 +77,19 @@ class AuthController extends Controller
             return redirect()->route('home')->with('auth_error', 'Akses Ditolak: Kata sandi Admin darurat tidak sesuai.');
         }
 
-        // 3. Pencarian Data Anggota berdasarkan NRI / NIP, atau Pembina berdasarkan NIP
-        $user = Member::where(function ($query) use ($loginId) {
-            $query->where('nri', $loginId)
-                ->orWhere('nip', $loginId);
-        })->first();
+        // 3. Pencarian Data Pembina atau Anggota
+        $advisor = Advisor::where('nip', $loginId)->orWhere('email', $loginId)->first();
+        $member = Member::where('nri', $loginId)->orWhere('nip', $loginId)->first();
+
+        $user = $advisor ?: $member;
 
         if (! $user) {
-            $user = Advisor::where('nip', $loginId)->first();
-        }
-
-        if (! $user) {
-            return redirect()->route('home')->with('auth_error', 'Akses Ditolak: Nomor NRI Anggota atau NIP Pembina tidak ditemukan dalam basis data.');
+            return redirect()->route('admin.login')->with('auth_error', 'Akses Ditolak: Nomor NRI Anggota atau NIP Pembina tidak ditemukan dalam basis data.');
         }
 
         // 4. Login Pertama Kali (Aktivasi Akun & Pembuatan Password)
         if (empty($user->password)) {
-            $identKey = $user instanceof Advisor ? $user->nip : ($user->nri ?? $user->nip);
+            $identKey = $user instanceof Advisor ? ($user->nip ?: $user->email) : ($user->nri ?? $user->nip);
 
             return redirect()->route('admin.activate', ['nri' => $identKey])
                 ->with('info', 'Nomor identitas terverifikasi! Karena ini login pertama kali, silakan buat kata sandi untuk akun Anda.');
@@ -114,7 +110,7 @@ class AuthController extends Controller
         }
 
         // Jika password salah
-        return redirect()->route('home')->with('auth_error', 'Akses Ditolak: Kata sandi yang Anda masukkan salah.');
+        return redirect()->route('admin.login')->with('auth_error', 'Akses Ditolak: Kata sandi yang Anda masukkan salah.');
     }
 
     /**
@@ -126,10 +122,9 @@ class AuthController extends Controller
         $member = null;
 
         if ($nri) {
-            $member = Member::where('nri', $nri)->orWhere('nip', $nri)->first();
-            if (! $member) {
-                $member = Advisor::where('nip', $nri)->first();
-            }
+            $advisor = Advisor::where('nip', $nri)->orWhere('email', $nri)->first();
+            $memberRecord = Member::where('nri', $nri)->orWhere('nip', $nri)->first();
+            $member = $advisor ?: $memberRecord;
         }
 
         return view('admin.activate', compact('member', 'nri'));
@@ -153,30 +148,34 @@ class AuthController extends Controller
 
         $loginId = trim($request->input('nri'));
 
-        $user = Member::where(function ($query) use ($loginId) {
-            $query->where('nri', $loginId)
-                ->orWhere('nip', $loginId);
-        })->first();
+        $advisor = Advisor::where('nip', $loginId)->orWhere('email', $loginId)->first();
+        $member = Member::where('nri', $loginId)->orWhere('nip', $loginId)->first();
 
-        if (! $user) {
-            $user = Advisor::where('nip', $loginId)->first();
-        }
-
-        if (! $user) {
+        if (! $advisor && ! $member) {
             return back()->withErrors(['nri' => 'Data anggota atau pembina dengan nomor tersebut tidak ditemukan.'])->withInput();
         }
 
-        if (! empty($user->password)) {
-            return redirect()->route('admin.login')->with('info', 'Akun Anda sudah aktif sebelumnya. Silakan langsung login.');
+        $hashedPassword = Hash::make($request->input('password'));
+
+        if ($advisor) {
+            $advisor->password = $hashedPassword;
+            if ($request->filled('email') && empty($advisor->email)) {
+                $advisor->email = trim($request->input('email'));
+            }
+            $advisor->is_active = true;
+            $advisor->save();
         }
 
-        $user->password = Hash::make($request->input('password'));
-
-        if ($request->filled('email') && empty($user->email)) {
-            $user->email = trim($request->input('email'));
+        if ($member) {
+            $member->password = $hashedPassword;
+            if ($request->filled('email') && empty($member->email)) {
+                $member->email = trim($request->input('email'));
+            }
+            if (str_contains(strtolower($member->position ?? ''), 'pembina') || ! empty($member->nip)) {
+                $member->member_status = 'Aktif';
+            }
+            $member->save();
         }
-
-        $user->save();
 
         return redirect()->route('admin.login')->with('success', 'Aktivasi akun berhasil! Kata sandi baru Anda telah aktif. Silakan masuk sekarang.');
     }

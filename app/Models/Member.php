@@ -169,6 +169,11 @@ class Member extends Authenticatable
             return false;
         }
 
+        // Pembina dan akun dengan NIP tidak pernah berstatus Purna
+        if ($this->role === 'pembina' || str_contains(strtolower(trim($this->position ?? '')), 'pembina') || ! empty($this->nip)) {
+            return false;
+        }
+
         $status = strtolower(trim((string) ($this->member_status ?? '')));
         if ($status === 'purna' || $status === 'alumni') {
             return true;
