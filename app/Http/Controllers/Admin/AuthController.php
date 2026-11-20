@@ -102,7 +102,23 @@ class AuthController extends Controller
             /** @var Member|Advisor $loggedInUser */
             $loggedInUser = Auth::user();
 
+            // Auto-heal status Pembina agar selalu aktif di database
+            if ($loggedInUser instanceof Member && ($loggedInUser->role === 'pembina' || ! empty($loggedInUser->nip) || str_contains(strtolower($loggedInUser->position ?? ''), 'pembina'))) {
+                if ($loggedInUser->member_status !== 'Aktif') {
+                    $loggedInUser->member_status = 'Aktif';
+                    $loggedInUser->save();
+                }
+            }
+
             if (method_exists($loggedInUser, 'canAccessBackoffice') && $loggedInUser->canAccessBackoffice()) {
+                $intended = session()->get('url.intended');
+                // Jika intended url adalah rute client area member atau kosong, arahkan langsung ke admin dashboard
+                if (empty($intended) || str_contains($intended, '/member')) {
+                    session()->forget('url.intended');
+
+                    return redirect()->route('admin.dashboard');
+                }
+
                 return redirect()->intended(route('admin.dashboard'));
             }
 

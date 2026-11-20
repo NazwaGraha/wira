@@ -69,6 +69,11 @@ class Member extends Authenticatable
      */
     public function getEffectiveStatusAttribute(): string
     {
+        // Pembina dan akun dengan NIP selalu berstatus Aktif
+        if ($this->role === 'pembina' || str_contains(strtolower(trim($this->position ?? '')), 'pembina') || ! empty($this->nip)) {
+            return 'Aktif';
+        }
+
         if ($this->entry_year) {
             $currentYear = (int) date('Y');
             if ($currentYear >= ($this->entry_year + 3)) {
@@ -240,6 +245,11 @@ class Member extends Authenticatable
     public function canAccessBackoffice(): bool
     {
         if ($this->isSuperUser()) {
+            return true;
+        }
+
+        // Pembina dan akun ber-NIP selalu memiliki hak akses Backoffice
+        if ($this->role === 'pembina' || str_contains(strtolower(trim($this->position ?? '')), 'pembina') || ! empty($this->nip)) {
             return true;
         }
 

@@ -34,8 +34,8 @@
             <!-- Tombol Keluar & Backoffice (Jika berhak) -->
             <div class="flex items-center gap-3">
                 @if(method_exists($member, 'canAccessBackoffice') && $member->canAccessBackoffice())
-                    <a href="{{ route('admin.dashboard') }}" class="px-4 py-2.5 bg-white/10 hover:bg-white/20 text-white text-xs font-bold rounded-xl border border-white/20 transition flex items-center gap-2">
-                        <i class="fa-solid fa-gauge-high"></i> Ke Backoffice
+                    <a href="{{ route('admin.dashboard') }}" class="px-4 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold rounded-xl shadow-lg shadow-emerald-950/40 border border-emerald-400/30 transition flex items-center gap-2">
+                        <i class="fa-solid fa-gauge-high"></i> Masuk ke Backoffice
                     </a>
                 @endif
                 <form action="{{ route('admin.logout') }}" method="POST">
