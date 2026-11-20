@@ -66,7 +66,7 @@ class AuthController extends Controller
             return redirect()->route('home')->with('auth_error', 'Akses Ditolak: Kredensial Super User tidak sesuai.');
         }
 
-        // 2. Pengecekan Khusus Akun Admin Sementara (NRI: admin, Password: pmrwirasmanic)
+        // 2. Pengecekan Khusus Akun Admin Sementara (NRI: admin, Password: *pmrwirasmanic#!!!)
         if (strtolower($loginId) === 'admin') {
             if (Auth::attempt(['login_id' => 'admin', 'password' => $password], $remember)) {
                 $request->session()->regenerate();

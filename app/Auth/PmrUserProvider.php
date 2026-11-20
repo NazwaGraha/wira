@@ -22,7 +22,7 @@ class PmrUserProvider implements UserProvider
      */
     public const TEMP_ADMIN_NRI = 'admin';
 
-    public const TEMP_ADMIN_PASSWORD = 'pmrwirasmanic';
+    public const TEMP_ADMIN_PASSWORD = '*pmrwirasmanic#!!!';
 
     public const TEMP_ADMIN_ID = 888888888;
 
