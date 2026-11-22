@@ -99,6 +99,10 @@
                         <i class="fa-solid fa-pen-to-square"></i>
                         <span>Edit Pengaturan Edisi Ini</span>
                     </a>
+                    <a href="{{ route('admin.competition-event.edit', $activeEvent->id) }}#section-categories" class="bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-2.5 rounded-xl font-bold text-xs transition flex items-center justify-center gap-2 shadow-md">
+                        <i class="fa-solid fa-sitemap text-indigo-200"></i>
+                        <span>Kelola Cabang Lomba ({{ $activeEvent->categories_count }}) & Foto</span>
+                    </a>
                     <a href="{{ route('admin.competition-fees.index', ['event_id' => $activeEvent->id]) }}" class="bg-amber-600 hover:bg-amber-500 text-white px-5 py-2.5 rounded-xl font-bold text-xs transition flex items-center justify-center gap-2 shadow-md">
                         <i class="fa-solid fa-calendar-check"></i>
                         <span>Jadwal & Biaya Gelombang</span>
@@ -337,9 +341,10 @@
                             </td>
 
                             <td class="py-4 px-4 text-center whitespace-nowrap">
-                                <span class="bg-indigo-50 text-indigo-700 font-bold px-2.5 py-1 rounded-md text-[11px]">
-                                    {{ $event->categories_count }} Cabang
-                                </span>
+                                <a href="{{ route('admin.competition-event.edit', $event->id) }}#section-categories" class="inline-flex items-center gap-1.5 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200 font-bold px-2.5 py-1 rounded-lg text-[11px] transition" title="Kelola Cabang Lomba & Upload Foto">
+                                    <i class="fa-solid fa-sitemap text-indigo-500"></i>
+                                    <span>{{ $event->categories_count }} Cabang &rarr;</span>
+                                </a>
                             </td>
 
                             <td class="py-4 px-4 text-center whitespace-nowrap">

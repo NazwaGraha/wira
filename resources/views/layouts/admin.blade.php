@@ -548,10 +548,22 @@
                      x-transition:leave-end="opacity-0 -translate-y-1"
                      class="pl-2 space-y-1 border-l-2 border-slate-800 ml-3.5 my-1">
                     @if(auth()->user()?->hasPermission('competition_event.view'))
-                    <a href="{{ route('admin.competition-event.index') }}" class="flex items-center gap-2.5 px-3 py-2 rounded-xl font-medium text-xs md:text-sm transition {{ request()->routeIs('admin.competition-event.*') ? 'bg-pmr-primary text-white shadow-md shadow-red-950/40' : 'hover:bg-slate-800 text-slate-300' }}">
+                    <a href="{{ route('admin.competition-event.index') }}" class="flex items-center gap-2.5 px-3 py-2 rounded-xl font-medium text-xs md:text-sm transition {{ request()->routeIs('admin.competition-event.index') ? 'bg-pmr-primary text-white shadow-md shadow-red-950/40' : 'hover:bg-slate-800 text-slate-300' }}">
                         <i class="fa-solid fa-sliders w-4 text-center text-rose-400"></i>
                         <span class="truncate">Pengaturan Event Lomba</span>
                     </a>
+                    @php
+                        $sidebarActiveEv = \App\Models\CompetitionEvent::where('is_active', true)->first() ?: \App\Models\CompetitionEvent::latest()->first();
+                    @endphp
+                    @if($sidebarActiveEv)
+                    <a href="{{ route('admin.competition-event.edit', $sidebarActiveEv->id) }}#section-categories" class="flex items-center gap-2.5 px-3 py-2 rounded-xl font-medium text-xs md:text-sm transition {{ (request()->routeIs('admin.competition-event.edit') || request()->routeIs('admin.competition-event.categories.*')) ? 'bg-indigo-600/90 text-white shadow-md shadow-indigo-950/40' : 'hover:bg-slate-800 text-slate-300' }}">
+                        <i class="fa-solid fa-sitemap w-4 text-center text-indigo-400"></i>
+                        <div class="flex items-center justify-between flex-grow min-w-0">
+                            <span class="truncate">Cabang Mata Lomba</span>
+                            <span class="text-[9px] bg-indigo-500/20 text-indigo-300 border border-indigo-500/30 px-1.5 py-0.2 rounded font-black uppercase shrink-0 ml-1">{{ $sidebarActiveEv->categories()->count() }} Lomba</span>
+                        </div>
+                    </a>
+                    @endif
                     @endif
                     @if(auth()->user()?->hasPermission('competition_bank_accounts.manage'))
                     <a href="{{ route('admin.competition-bank-accounts.index') }}" class="flex items-center gap-2.5 px-3 py-2 rounded-xl font-medium text-xs md:text-sm transition {{ request()->routeIs('admin.competition-bank-accounts.*') ? 'bg-pmr-primary text-white shadow-md shadow-red-950/40' : 'hover:bg-slate-800 text-slate-300' }}">

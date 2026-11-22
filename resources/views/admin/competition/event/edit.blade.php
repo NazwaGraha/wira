@@ -1,5 +1,13 @@
 @extends('layouts.admin')
 
+@php
+    $categoriesByLevel = $categoriesByLevel ?? [
+        'Mula' => $event->categories->where('level', 'Mula'),
+        'Madya' => $event->categories->where('level', 'Madya'),
+        'Wira' => $event->categories->where('level', 'Wira'),
+    ];
+@endphp
+
 @section('title', 'Edit ' . $event->title)
 @section('page_title', 'Edit Pengaturan: ' . $event->title)
 
@@ -692,7 +700,7 @@
             <div class="p-3.5 bg-blue-50/60 rounded-2xl border border-blue-100 flex items-center justify-between">
                 <div>
                     <div class="text-[11px] font-bold text-blue-600 uppercase tracking-wider">PMR Mula (SD)</div>
-                    <div class="text-xl font-black text-blue-900 mt-0.5">{{ $categoriesByLevel['Mula']->count() }} <span class="text-xs font-normal text-blue-600">Lomba</span></div>
+                    <div class="text-xl font-black text-blue-900 mt-0.5">{{ ($categoriesByLevel['Mula'] ?? collect())->count() }} <span class="text-xs font-normal text-blue-600">Lomba</span></div>
                 </div>
                 <div class="w-8 h-8 rounded-xl bg-blue-100 text-blue-600 flex items-center justify-center text-sm font-bold">
                     <i class="fa-solid fa-child-reaching"></i>
@@ -702,7 +710,7 @@
             <div class="p-3.5 bg-red-50/60 rounded-2xl border border-red-100 flex items-center justify-between">
                 <div>
                     <div class="text-[11px] font-bold text-red-600 uppercase tracking-wider">PMR Madya (SMP)</div>
-                    <div class="text-xl font-black text-red-900 mt-0.5">{{ $categoriesByLevel['Madya']->count() }} <span class="text-xs font-normal text-red-600">Lomba</span></div>
+                    <div class="text-xl font-black text-red-900 mt-0.5">{{ ($categoriesByLevel['Madya'] ?? collect())->count() }} <span class="text-xs font-normal text-red-600">Lomba</span></div>
                 </div>
                 <div class="w-8 h-8 rounded-xl bg-red-100 text-red-600 flex items-center justify-center text-sm font-bold">
                     <i class="fa-solid fa-user-group"></i>
@@ -712,7 +720,7 @@
             <div class="p-3.5 bg-amber-50/60 rounded-2xl border border-amber-100 flex items-center justify-between">
                 <div>
                     <div class="text-[11px] font-bold text-amber-600 uppercase tracking-wider">PMR Wira (SMA)</div>
-                    <div class="text-xl font-black text-amber-900 mt-0.5">{{ $categoriesByLevel['Wira']->count() }} <span class="text-xs font-normal text-amber-600">Lomba</span></div>
+                    <div class="text-xl font-black text-amber-900 mt-0.5">{{ ($categoriesByLevel['Wira'] ?? collect())->count() }} <span class="text-xs font-normal text-amber-600">Lomba</span></div>
                 </div>
                 <div class="w-8 h-8 rounded-xl bg-amber-100 text-amber-600 flex items-center justify-center text-sm font-bold">
                     <i class="fa-solid fa-graduation-cap"></i>
