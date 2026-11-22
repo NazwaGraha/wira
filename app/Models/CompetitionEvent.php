@@ -77,6 +77,10 @@ class CompetitionEvent extends Model
 
         $mode = $this->display_mode ?? 'auto';
 
+        if (in_array($mode, ['empty', 'completed', 'offseason'], true)) {
+            return 'empty';
+        }
+
         if ($mode === 'teaser') {
             return 'teaser';
         }
@@ -92,6 +96,11 @@ class CompetitionEvent extends Model
         }
 
         $now = now();
+
+        // Jika tanggal akhir lomba telah terlewati dan pendaftaran sudah ditutup, otomatis masuk mode selesai / off-season
+        if ($this->end_date && $now->startOfDay()->gt($this->end_date->endOfDay())) {
+            return 'empty';
+        }
 
         // If wave 1 start date is in the future (> 7 days), show teaser
         if ($this->wave1_start_date && $now->lt($this->wave1_start_date)) {

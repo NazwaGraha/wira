@@ -194,13 +194,16 @@
                     </label>
                     <select name="display_mode" class="w-full px-3 py-2.5 rounded-xl border border-slate-300 bg-white text-xs font-bold text-slate-800 focus:outline-none focus:border-red-500">
                         <option value="auto" {{ old('display_mode', 'auto') === 'auto' ? 'selected' : '' }}>
-                            ⚙️ Otomatis Sesuai Jadwal (Teaser jika masih lama, Aktif jika buka)
+                            ⚙️ Otomatis Sesuai Jadwal (Teaser jika masih lama, Aktif jika buka, Selesai jika tanggal lewat)
                         </option>
                         <option value="active" {{ old('display_mode') === 'active' ? 'selected' : '' }}>
                             🟢 Paksa Mode Aktif (Buka Pendaftaran / Countdown Gelombang)
                         </option>
                         <option value="teaser" {{ old('display_mode') === 'teaser' ? 'selected' : '' }}>
                             🟡 Paksa Mode Akan Datang (Teaser / Save the Date Beberapa Bulan Lagi)
+                        </option>
+                        <option value="empty" {{ old('display_mode') === 'empty' ? 'selected' : '' }}>
+                            🏆 Paksa Mode Selesai / Off-Season (Kilas Balik Lomba & Hall of Fame)
                         </option>
                     </select>
                 </div>

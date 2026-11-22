@@ -137,13 +137,23 @@
                 </p>
 
                 <!-- Action Buttons (Ultra Mobile Friendly) -->
-                <div class="flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4 max-w-md sm:max-w-none mx-auto">
-                    <a href="{{ route('home') }}" class="w-full sm:w-auto bg-red-600 hover:bg-red-700 text-white px-7 py-3.5 rounded-xl font-bold shadow-lg shadow-red-900/40 transition flex items-center justify-center gap-2 text-sm sm:text-base">
+                <div class="flex flex-wrap items-center justify-center gap-3 sm:gap-4 max-w-2xl mx-auto">
+                    <a href="{{ route('home') }}" class="w-full sm:w-auto bg-red-600 hover:bg-red-700 text-white px-6 py-3 rounded-xl font-bold shadow-lg shadow-red-900/40 transition flex items-center justify-center gap-2 text-xs sm:text-sm">
                         <i class="fa-solid fa-house"></i>
                         <span>Kembali ke Beranda</span>
                     </a>
 
-                    <button type="button" onclick="openInfoModal()" class="w-full sm:w-auto bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-200 hover:text-white px-6 py-3.5 rounded-xl font-bold transition flex items-center justify-center gap-2 text-sm sm:text-base cursor-pointer">
+                    <a href="{{ route('lomba.scoreboard') }}" class="w-full sm:w-auto bg-emerald-600 hover:bg-emerald-500 text-white px-6 py-3 rounded-xl font-bold shadow-lg shadow-emerald-950/30 transition flex items-center justify-center gap-2 text-xs sm:text-sm">
+                        <i class="fa-solid fa-trophy"></i>
+                        <span>Papan Skor & Klasemen</span>
+                    </a>
+
+                    <a href="{{ route('lomba.status') }}" class="w-full sm:w-auto bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-200 hover:text-white px-6 py-3 rounded-xl font-bold transition flex items-center justify-center gap-2 text-xs sm:text-sm">
+                        <i class="fa-solid fa-id-card"></i>
+                        <span>Cek Status & Sertifikat</span>
+                    </a>
+
+                    <button type="button" onclick="openInfoModal()" class="w-full sm:w-auto bg-slate-800/80 hover:bg-slate-700 border border-slate-700 text-slate-300 hover:text-white px-5 py-3 rounded-xl font-bold transition flex items-center justify-center gap-2 text-xs sm:text-sm cursor-pointer">
                         <i class="fa-solid fa-folder-open"></i>
                         <span>Arsip Informasi</span>
                     </button>
