@@ -1637,15 +1637,20 @@
     </section>
 
     <!-- Mata Lomba Section -->
-    <section class="py-14 sm:py-20 bg-slate-50">
+    <section class="py-14 sm:py-20 bg-slate-50 border-t border-slate-200">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="text-center max-w-2xl mx-auto mb-10 sm:mb-16">
+            <div class="text-center max-w-3xl mx-auto mb-10 sm:mb-14">
+                <div class="inline-flex items-center gap-2 bg-red-100 text-red-800 border border-red-200 px-3.5 py-1 rounded-full text-xs font-black uppercase tracking-wider mb-2.5 shadow-2xs">
+                    <i class="fa-solid fa-chart-pie text-red-600"></i> Kuota & Status Pendaftaran Real-Time
+                </div>
                 <h2 class="text-2xl sm:text-3xl font-extrabold text-slate-900">Mata Lomba yang Dipertandingkan</h2>
-                <p class="text-slate-600 text-xs sm:text-sm mt-2">Pilih tingkatan sekolah Anda untuk melihat cabang lomba yang tersedia.</p>
+                <p class="text-slate-600 text-xs sm:text-sm mt-2">
+                    Pantau kapasitas kuota maksimal, jumlah regu yang telah mendaftar, dan sisa slot yang masih dapat diperebutkan di setiap tingkatan sekolah.
+                </p>
             </div>
 
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                <!-- MULA (SD / MI) -->
+                <!-- 1. MULA (SD / MI) -->
                 <div class="bg-white rounded-3xl p-6 sm:p-7 shadow-sm hover:shadow-xl border-2 border-emerald-500/40 hover:border-emerald-500 transition-all flex flex-col relative overflow-hidden group">
                     <div class="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-emerald-500 to-green-600"></div>
                     <div class="flex items-center justify-between pb-4 border-b border-emerald-100/70 mb-5">
@@ -1666,14 +1671,62 @@
                         <span>{{ $categoriesByLevel->get('Mula', collect())->count() }} Cabang Lomba Tersedia</span>
                     </div>
 
-                    <ul class="space-y-3 flex-grow text-sm text-slate-600 mb-6">
+                    <!-- List Cabang Lomba dengan Detail Kuota -->
+                    <div class="space-y-2.5 flex-grow mb-6">
                         @foreach($categoriesByLevel->get('Mula', []) as $cat)
-                            <li class="flex items-start gap-2.5">
-                                <i class="fa-solid fa-circle-check text-emerald-500 mt-1 shrink-0"></i>
-                                <span class="text-slate-700"><strong>{{ $cat->name }}</strong> @if($cat->gender_category !== 'Umum') <span class="text-xs font-semibold text-emerald-700 bg-emerald-50 px-1.5 py-0.5 rounded border border-emerald-200/50">({{ $cat->gender_category }})</span> @endif</span>
-                            </li>
+                            @php
+                                $maxQuota = method_exists($cat, 'getMaxQuota') ? $cat->getMaxQuota() : ($cat->max_quota ?? 30);
+                                $registered = method_exists($cat, 'getRegisteredTeamsCount') ? $cat->getRegisteredTeamsCount() : 0;
+                                $remaining = max(0, $maxQuota - $registered);
+                                $percentage = $maxQuota > 0 ? min(100, round(($registered / $maxQuota) * 100)) : 0;
+                                $isFull = $remaining <= 0;
+                                $isCritical = $remaining > 0 && $remaining <= 5;
+                            @endphp
+
+                            <div class="p-3 rounded-2xl bg-slate-50/90 hover:bg-white border {{ $isFull ? 'border-rose-200 bg-rose-50/30' : ($isCritical ? 'border-amber-200 bg-amber-50/25' : 'border-slate-200/80') }} transition shadow-2xs">
+                                <!-- Baris 1: Nama Cabang & Badge Kategori & Status Sisa -->
+                                <div class="flex items-center justify-between gap-2 mb-1.5">
+                                    <div class="flex items-center gap-1.5 min-w-0">
+                                        <span class="font-extrabold text-xs text-slate-900 truncate">{{ $cat->name }}</span>
+                                        @if($cat->gender_category && $cat->gender_category !== 'Umum')
+                                            <span class="text-[10px] font-bold text-emerald-800 bg-emerald-100/90 px-1.5 py-0.2 rounded border border-emerald-200 shrink-0">
+                                                {{ $cat->gender_category }}
+                                            </span>
+                                        @endif
+                                    </div>
+
+                                    <!-- Status Pill -->
+                                    @if($isFull)
+                                        <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-black bg-rose-100 text-rose-700 border border-rose-200 shrink-0">
+                                            <span class="w-1.5 h-1.5 rounded-full bg-rose-500"></span> Penuh
+                                        </span>
+                                    @elseif($isCritical)
+                                        <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-black bg-amber-100 text-amber-800 border border-amber-200 shrink-0 animate-pulse">
+                                            <span class="w-1.5 h-1.5 rounded-full bg-amber-500"></span> Sisa {{ $remaining }}
+                                        </span>
+                                    @else
+                                        <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-800 border border-emerald-200 shrink-0">
+                                            <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span> Sisa {{ $remaining }}
+                                        </span>
+                                    @endif
+                                </div>
+
+                                <!-- Baris 2: Micro Progress Bar Keterisian -->
+                                <div class="w-full bg-slate-200/80 rounded-full h-1.5 overflow-hidden mb-1.5">
+                                    <div class="h-1.5 rounded-full transition-all duration-500 {{ $isFull ? 'bg-rose-500' : ($isCritical ? 'bg-amber-500' : 'bg-emerald-500') }}" style="width: {{ $percentage }}%"></div>
+                                </div>
+
+                                <!-- Baris 3: 3 Metrik Angka (Kuota, Terdaftar, Sisa) -->
+                                <div class="flex items-center justify-between text-[10px] text-slate-500 font-medium">
+                                    <span>Kuota: <strong class="text-slate-800 font-bold">{{ $maxQuota }}</strong> Regu</span>
+                                    <span>Terdaftar: <strong class="text-slate-800 font-bold">{{ $registered }}</strong></span>
+                                    <span class="{{ $isFull ? 'text-rose-600 font-black' : ($isCritical ? 'text-amber-700 font-black' : 'text-emerald-700 font-black') }}">
+                                        Sisa: {{ $remaining }}
+                                    </span>
+                                </div>
+                            </div>
                         @endforeach
-                    </ul>
+                    </div>
 
                     <a href="{{ route('lomba.register') }}?level=Mula" class="w-full text-center py-3.5 rounded-xl font-extrabold bg-emerald-600 hover:bg-emerald-700 text-white shadow-md shadow-emerald-950/15 transition flex items-center justify-center gap-2 text-xs sm:text-sm group-hover:shadow-lg">
                         <span>Daftar Tingkat Mula</span>
@@ -1681,7 +1734,7 @@
                     </a>
                 </div>
 
-                <!-- MADYA (SMP / MTs) -->
+                <!-- 2. MADYA (SMP / MTs) -->
                 <div class="bg-white rounded-3xl p-6 sm:p-7 shadow-sm hover:shadow-xl border-2 border-blue-500/40 hover:border-blue-600 transition-all flex flex-col relative overflow-hidden group">
                     <div class="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-blue-500 to-indigo-600"></div>
                     <div class="flex items-center justify-between pb-4 border-b border-blue-100/70 mb-5">
@@ -1702,14 +1755,62 @@
                         <span>{{ $categoriesByLevel->get('Madya', collect())->count() }} Cabang Lomba Tersedia</span>
                     </div>
 
-                    <ul class="space-y-3 flex-grow text-sm text-slate-600 mb-6">
+                    <!-- List Cabang Lomba Madya dengan Detail Kuota -->
+                    <div class="space-y-2.5 flex-grow mb-6">
                         @foreach($categoriesByLevel->get('Madya', []) as $cat)
-                            <li class="flex items-start gap-2.5">
-                                <i class="fa-solid fa-circle-check text-blue-500 mt-1 shrink-0"></i>
-                                <span class="text-slate-700"><strong>{{ $cat->name }}</strong> @if($cat->gender_category !== 'Umum') <span class="text-xs font-semibold text-blue-700 bg-blue-50 px-1.5 py-0.5 rounded border border-blue-200/50">({{ $cat->gender_category }})</span> @endif</span>
-                            </li>
+                            @php
+                                $maxQuota = method_exists($cat, 'getMaxQuota') ? $cat->getMaxQuota() : ($cat->max_quota ?? 30);
+                                $registered = method_exists($cat, 'getRegisteredTeamsCount') ? $cat->getRegisteredTeamsCount() : 0;
+                                $remaining = max(0, $maxQuota - $registered);
+                                $percentage = $maxQuota > 0 ? min(100, round(($registered / $maxQuota) * 100)) : 0;
+                                $isFull = $remaining <= 0;
+                                $isCritical = $remaining > 0 && $remaining <= 5;
+                            @endphp
+
+                            <div class="p-3 rounded-2xl bg-slate-50/90 hover:bg-white border {{ $isFull ? 'border-rose-200 bg-rose-50/30' : ($isCritical ? 'border-amber-200 bg-amber-50/25' : 'border-slate-200/80') }} transition shadow-2xs">
+                                <!-- Baris 1: Nama Cabang & Badge Kategori & Status Sisa -->
+                                <div class="flex items-center justify-between gap-2 mb-1.5">
+                                    <div class="flex items-center gap-1.5 min-w-0">
+                                        <span class="font-extrabold text-xs text-slate-900 truncate">{{ $cat->name }}</span>
+                                        @if($cat->gender_category && $cat->gender_category !== 'Umum')
+                                            <span class="text-[10px] font-bold text-blue-800 bg-blue-100/90 px-1.5 py-0.2 rounded border border-blue-200 shrink-0">
+                                                {{ $cat->gender_category }}
+                                            </span>
+                                        @endif
+                                    </div>
+
+                                    <!-- Status Pill -->
+                                    @if($isFull)
+                                        <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-black bg-rose-100 text-rose-700 border border-rose-200 shrink-0">
+                                            <span class="w-1.5 h-1.5 rounded-full bg-rose-500"></span> Penuh
+                                        </span>
+                                    @elseif($isCritical)
+                                        <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-black bg-amber-100 text-amber-800 border border-amber-200 shrink-0 animate-pulse">
+                                            <span class="w-1.5 h-1.5 rounded-full bg-amber-500"></span> Sisa {{ $remaining }}
+                                        </span>
+                                    @else
+                                        <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-blue-100 text-blue-800 border border-blue-200 shrink-0">
+                                            <span class="w-1.5 h-1.5 rounded-full bg-blue-500"></span> Sisa {{ $remaining }}
+                                        </span>
+                                    @endif
+                                </div>
+
+                                <!-- Baris 2: Micro Progress Bar Keterisian -->
+                                <div class="w-full bg-slate-200/80 rounded-full h-1.5 overflow-hidden mb-1.5">
+                                    <div class="h-1.5 rounded-full transition-all duration-500 {{ $isFull ? 'bg-rose-500' : ($isCritical ? 'bg-amber-500' : 'bg-blue-600') }}" style="width: {{ $percentage }}%"></div>
+                                </div>
+
+                                <!-- Baris 3: 3 Metrik Angka (Kuota, Terdaftar, Sisa) -->
+                                <div class="flex items-center justify-between text-[10px] text-slate-500 font-medium">
+                                    <span>Kuota: <strong class="text-slate-800 font-bold">{{ $maxQuota }}</strong> Regu</span>
+                                    <span>Terdaftar: <strong class="text-slate-800 font-bold">{{ $registered }}</strong></span>
+                                    <span class="{{ $isFull ? 'text-rose-600 font-black' : ($isCritical ? 'text-amber-700 font-black' : 'text-blue-700 font-black') }}">
+                                        Sisa: {{ $remaining }}
+                                    </span>
+                                </div>
+                            </div>
                         @endforeach
-                    </ul>
+                    </div>
 
                     <a href="{{ route('lomba.register') }}?level=Madya" class="w-full text-center py-3.5 rounded-xl font-extrabold bg-blue-600 hover:bg-blue-700 text-white shadow-md shadow-blue-950/15 transition flex items-center justify-center gap-2 text-xs sm:text-sm group-hover:shadow-lg">
                         <span>Daftar Tingkat Madya</span>
@@ -1717,7 +1818,7 @@
                     </a>
                 </div>
 
-                <!-- WIRA (SMA / SMK / MA) -->
+                <!-- 3. WIRA (SMA / SMK / MA) -->
                 <div class="bg-white rounded-3xl p-6 sm:p-7 shadow-sm hover:shadow-xl border-2 border-amber-500/40 hover:border-amber-500 transition-all flex flex-col relative overflow-hidden group">
                     <div class="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-amber-400 via-amber-500 to-yellow-500"></div>
                     <div class="flex items-center justify-between pb-4 border-b border-amber-100/70 mb-5">
@@ -1738,20 +1839,71 @@
                         <span>{{ $categoriesByLevel->get('Wira', collect())->count() }} Cabang Lomba Tersedia</span>
                     </div>
 
-                    <ul class="space-y-3 flex-grow text-sm text-slate-600 mb-6">
+                    <!-- List Cabang Lomba Wira dengan Detail Kuota -->
+                    <div class="space-y-2.5 flex-grow mb-6">
                         @foreach($categoriesByLevel->get('Wira', []) as $cat)
-                            <li class="flex items-start gap-2.5">
-                                <i class="fa-solid fa-circle-check text-amber-500 mt-1 shrink-0"></i>
-                                <span class="text-slate-700"><strong>{{ $cat->name }}</strong> @if($cat->gender_category !== 'Umum') <span class="text-xs font-semibold text-amber-800 bg-amber-50 px-1.5 py-0.5 rounded border border-amber-200/50">({{ $cat->gender_category }})</span> @endif</span>
-                            </li>
+                            @php
+                                $maxQuota = method_exists($cat, 'getMaxQuota') ? $cat->getMaxQuota() : ($cat->max_quota ?? 30);
+                                $registered = method_exists($cat, 'getRegisteredTeamsCount') ? $cat->getRegisteredTeamsCount() : 0;
+                                $remaining = max(0, $maxQuota - $registered);
+                                $percentage = $maxQuota > 0 ? min(100, round(($registered / $maxQuota) * 100)) : 0;
+                                $isFull = $remaining <= 0;
+                                $isCritical = $remaining > 0 && $remaining <= 5;
+                            @endphp
+
+                            <div class="p-3 rounded-2xl bg-slate-50/90 hover:bg-white border {{ $isFull ? 'border-rose-200 bg-rose-50/30' : ($isCritical ? 'border-amber-200 bg-amber-50/25' : 'border-slate-200/80') }} transition shadow-2xs">
+                                <!-- Baris 1: Nama Cabang & Badge Kategori & Status Sisa -->
+                                <div class="flex items-center justify-between gap-2 mb-1.5">
+                                    <div class="flex items-center gap-1.5 min-w-0">
+                                        <span class="font-extrabold text-xs text-slate-900 truncate">{{ $cat->name }}</span>
+                                        @if($cat->gender_category && $cat->gender_category !== 'Umum')
+                                            <span class="text-[10px] font-bold text-amber-900 bg-amber-100/90 px-1.5 py-0.2 rounded border border-amber-200 shrink-0">
+                                                {{ $cat->gender_category }}
+                                            </span>
+                                        @endif
+                                    </div>
+
+                                    <!-- Status Pill -->
+                                    @if($isFull)
+                                        <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-black bg-rose-100 text-rose-700 border border-rose-200 shrink-0">
+                                            <span class="w-1.5 h-1.5 rounded-full bg-rose-500"></span> Penuh
+                                        </span>
+                                    @elseif($isCritical)
+                                        <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-black bg-amber-100 text-amber-800 border border-amber-200 shrink-0 animate-pulse">
+                                            <span class="w-1.5 h-1.5 rounded-full bg-amber-500"></span> Sisa {{ $remaining }}
+                                        </span>
+                                    @else
+                                        <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-100 text-amber-900 border border-amber-200 shrink-0">
+                                            <span class="w-1.5 h-1.5 rounded-full bg-amber-500"></span> Sisa {{ $remaining }}
+                                        </span>
+                                    @endif
+                                </div>
+
+                                <!-- Baris 2: Micro Progress Bar Keterisian -->
+                                <div class="w-full bg-slate-200/80 rounded-full h-1.5 overflow-hidden mb-1.5">
+                                    <div class="h-1.5 rounded-full transition-all duration-500 {{ $isFull ? 'bg-rose-500' : ($isCritical ? 'bg-amber-500' : 'bg-amber-500') }}" style="width: {{ $percentage }}%"></div>
+                                </div>
+
+                                <!-- Baris 3: 3 Metrik Angka (Kuota, Terdaftar, Sisa) -->
+                                <div class="flex items-center justify-between text-[10px] text-slate-500 font-medium">
+                                    <span>Kuota: <strong class="text-slate-800 font-bold">{{ $maxQuota }}</strong> Regu</span>
+                                    <span>Terdaftar: <strong class="text-slate-800 font-bold">{{ $registered }}</strong></span>
+                                    <span class="{{ $isFull ? 'text-rose-600 font-black' : ($isCritical ? 'text-amber-800 font-black' : 'text-amber-900 font-black') }}">
+                                        Sisa: {{ $remaining }}
+                                    </span>
+                                </div>
+                            </div>
                         @endforeach
-                    </ul>
+                    </div>
 
                     <a href="{{ route('lomba.register') }}?level=Wira" class="w-full text-center py-3.5 rounded-xl font-extrabold bg-amber-400 hover:bg-amber-500 text-slate-950 shadow-md shadow-amber-950/15 transition flex items-center justify-center gap-2 text-xs sm:text-sm group-hover:shadow-lg">
                         <span>Daftar Tingkat Wira</span>
                         <i class="fa-solid fa-arrow-right text-xs group-hover:translate-x-1 transition-transform"></i>
                     </a>
                 </div>
+            </div>
+        </div>
+    </section>
             </div>
         </div>
     </section>

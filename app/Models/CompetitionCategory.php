@@ -252,6 +252,10 @@ class CompetitionCategory extends Model
      */
     public function getRegisteredTeamsCount(): int
     {
+        if (isset($this->attributes['registered_teams_count'])) {
+            return (int) $this->attributes['registered_teams_count'];
+        }
+
         return $this->teams()
             ->whereHas('registration', fn ($q) => $q->where('status', '!=', 'rejected'))
             ->count();

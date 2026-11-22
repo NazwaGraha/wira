@@ -26,9 +26,17 @@ class CompetitionController extends Controller
 {
     public function index(Request $request)
     {
-        $event = CompetitionEvent::where('is_active', true)->with(['categories' => function ($q) {
-            $q->where('is_active', true)->orderBy('order_position');
-        }])->first();
+        $categoryLoader = function ($q) {
+            $q->where('is_active', true)
+                ->withCount(['teams as registered_teams_count' => function ($sub) {
+                    $sub->whereHas('registration', function ($reg) {
+                        $reg->where('status', '!=', 'rejected');
+                    });
+                }])
+                ->orderBy('order_position');
+        };
+
+        $event = CompetitionEvent::where('is_active', true)->with(['categories' => $categoryLoader])->first();
 
         $pageState = 'empty';
         $pastEvent = null;
@@ -57,9 +65,18 @@ class CompetitionController extends Controller
             }
         }
 
-        // Kategori lomba yang ditampilkan pada kilas balik / aktif
+        // Kategori lomba yang ditampilkan pada kilas balik / aktif (lengkap dengan perhitungan kuota regu)
         $activeTarget = ($pageState === 'empty') ? $pastEvent : $event;
-        $categoriesByLevel = $activeTarget ? $activeTarget->categories()->where('is_active', true)->orderBy('order_position')->get()->groupBy('level') : collect();
+        $categoriesByLevel = $activeTarget ? $activeTarget->categories()
+            ->where('is_active', true)
+            ->withCount(['teams as registered_teams_count' => function ($sub) {
+                $sub->whereHas('registration', function ($reg) {
+                    $reg->where('status', '!=', 'rejected');
+                });
+            }])
+            ->orderBy('order_position')
+            ->get()
+            ->groupBy('level') : collect();
 
         // Load Menu Informasi Lomba (Backoffice Managed)
         $infoMenus = collect();
