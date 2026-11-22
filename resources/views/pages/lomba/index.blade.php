@@ -14,173 +14,109 @@
 
 @if(($pageState ?? 'active') === 'empty')
     <!-- =================================================================== -->
-    <!-- KONDISI 3: BELUM ADA JADWAL LOMBA (OFF-SEASON / EMPTY STATE)         -->
+    <!-- KONDISI: BELUM ADA JADWAL LOMBA / OFF-SEASON / KILAS BALIK JUARA    -->
     <!-- =================================================================== -->
-    <section class="relative bg-slate-900 text-white pt-36 sm:pt-40 pb-16 sm:pb-24 overflow-hidden">
+    @php
+        $targetEv = $event ?: $pastEvent;
+        $mascotLeft = $targetEv ? $targetEv->getCountdownMascotLeftUrl() : asset('images/mascot/countdown_mascot_left.png');
+        $mascotRight = $targetEv ? $targetEv->getCountdownMascotRightUrl() : asset('images/mascot/countdown_mascot_right.png');
+    @endphp
+
+    <section class="relative bg-slate-900 text-white pt-32 sm:pt-36 pb-16 sm:pb-24 overflow-hidden">
         <!-- Ambient Grid & Glow Background -->
         <div class="absolute inset-0 opacity-20 bg-[radial-gradient(#ef4444_1px,transparent_1px)] [background-size:16px_16px]"></div>
         <div class="absolute -top-32 -left-32 w-80 h-80 bg-red-600/15 rounded-full blur-3xl pointer-events-none"></div>
         <div class="absolute -bottom-32 -right-32 w-80 h-80 bg-amber-500/15 rounded-full blur-3xl pointer-events-none"></div>
 
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-            <div class="text-center max-w-3xl mx-auto">
-                <!-- Status Badge -->
-                <div class="inline-flex items-center gap-2 bg-red-500/10 border border-red-500/30 text-red-400 px-4 py-1.5 rounded-full text-xs font-bold tracking-wider uppercase mb-5">
-                    <i class="fa-solid fa-trophy"></i>
-                    <span>AGENDA LOMBA PMR WIRA CIAWI</span>
+
+            <!-- Hero Card diapit oleh Maskot Harimau Putih PMR Wira SMANIC -->
+            <div class="max-w-5xl mx-auto relative px-2 sm:px-4">
+                <!-- Mascot Kiri (Putri / Siswi PMR) - Desktop -->
+                <div class="hidden lg:block absolute -left-12 xl:-left-16 bottom-0 z-20 pointer-events-none select-none transition-transform hover:scale-105 duration-300">
+                    <img src="{{ $mascotLeft }}" alt="Maskot PMR Putri" class="h-64 xl:h-76 w-auto drop-shadow-[0_15px_30px_rgba(0,0,0,0.7)] object-contain">
                 </div>
 
-                <!-- Modern Vector Illustration: Gold Trophy & Red Calendar -->
-                <div class="w-60 sm:w-72 mx-auto mb-6 relative">
-                    <div class="absolute inset-0 bg-gradient-to-tr from-amber-500/20 via-red-500/15 to-transparent rounded-full blur-2xl pointer-events-none"></div>
-                    <svg class="w-full h-auto drop-shadow-2xl relative z-10" viewBox="0 0 320 185" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <defs>
-                            <linearGradient id="trophyGold" x1="0%" y1="0%" x2="100%" y2="100%">
-                                <stop offset="0%" stop-color="#FDE047" />
-                                <stop offset="45%" stop-color="#F59E0B" />
-                                <stop offset="100%" stop-color="#D97706" />
-                            </linearGradient>
-                            <linearGradient id="trophyBase" x1="0%" y1="0%" x2="100%" y2="100%">
-                                <stop offset="0%" stop-color="#475569" />
-                                <stop offset="100%" stop-color="#1E293B" />
-                            </linearGradient>
-                            <linearGradient id="calHeader" x1="0%" y1="0%" x2="100%" y2="0%">
-                                <stop offset="0%" stop-color="#EF4444" />
-                                <stop offset="100%" stop-color="#DC2626" />
-                            </linearGradient>
-                        </defs>
-
-                        <!-- Soft Ground Shadow -->
-                        <ellipse cx="160" cy="168" rx="100" ry="10" fill="#020617" opacity="0.6" />
-
-                        <!-- CALENDAR (Right / Background) -->
-                        <g transform="translate(142, 32)">
-                            <!-- Calendar Shadow & Body -->
-                            <rect x="0" y="0" width="116" height="126" rx="16" fill="#1E293B" stroke="#334155" stroke-width="2" />
-                            <!-- Red PMR Header -->
-                            <path d="M0 16C0 7.16344 7.16344 0 16 0H100C108.837 0 116 7.16344 116 16V36H0V16Z" fill="url(#calHeader)" />
-                            
-                            <!-- Spiral Rings -->
-                            <rect x="20" y="-6" width="6" height="13" rx="3" fill="#F8FAFC" />
-                            <rect x="55" y="-6" width="6" height="13" rx="3" fill="#F8FAFC" />
-                            <rect x="90" y="-6" width="6" height="13" rx="3" fill="#F8FAFC" />
-
-                            <!-- Calendar Date Dots -->
-                            <!-- Header Dots -->
-                            <circle cx="23" cy="50" r="3" fill="#64748B" />
-                            <circle cx="46" cy="50" r="3" fill="#64748B" />
-                            <circle cx="70" cy="50" r="3" fill="#64748B" />
-                            <circle cx="93" cy="50" r="3" fill="#64748B" />
-
-                            <!-- Row 1 -->
-                            <circle cx="23" cy="68" r="4" fill="#475569" />
-                            <circle cx="46" cy="68" r="4" fill="#475569" />
-                            <circle cx="70" cy="68" r="4" fill="#475569" />
-                            <circle cx="93" cy="68" r="4" fill="#475569" />
-
-                            <!-- Row 2 (Highlighted Date) -->
-                            <circle cx="23" cy="86" r="4" fill="#475569" />
-                            <circle cx="46" cy="86" r="4" fill="#475569" />
-                            <rect x="62" y="78" width="16" height="16" rx="4" fill="#EF4444" />
-                            <circle cx="70" cy="86" r="3" fill="#FFFFFF" />
-                            <circle cx="93" cy="86" r="4" fill="#475569" />
-
-                            <!-- Row 3 -->
-                            <circle cx="23" cy="104" r="4" fill="#334155" />
-                            <circle cx="46" cy="104" r="4" fill="#334155" />
-                            <circle cx="70" cy="104" r="4" fill="#334155" />
-                            <circle cx="93" cy="104" r="4" fill="#334155" />
-                        </g>
-
-                        <!-- GOLDEN TROPHY (Left / Foreground) -->
-                        <g transform="translate(58, 22)">
-                            <!-- Trophy Left Handle -->
-                            <path d="M22 45 C4 45, 4 82, 32 87" stroke="url(#trophyGold)" stroke-width="7" stroke-linecap="round" fill="none" />
-                            <!-- Trophy Right Handle -->
-                            <path d="M78 45 C96 45, 96 82, 68 87" stroke="url(#trophyGold)" stroke-width="7" stroke-linecap="round" fill="none" />
-
-                            <!-- Trophy Main Cup -->
-                            <path d="M22 30 H78 V62 C78 78, 64 93, 50 93 C36 93, 22 78, 22 62 Z" fill="url(#trophyGold)" />
-                            <!-- Trophy Inner Rim -->
-                            <ellipse cx="50" cy="30" rx="28" ry="7" fill="#FDE047" />
-
-                            <!-- Star Embossed on Cup -->
-                            <path d="M50 49 L52.5 55.5 L59 56 L54 60.5 L55.5 67 L50 63.5 L44.5 67 L46 60.5 L41 56 L47.5 55.5 Z" fill="#FFFFFF" opacity="0.9" />
-
-                            <!-- Stem -->
-                            <rect x="44" y="93" width="12" height="23" rx="2" fill="url(#trophyGold)" />
-                            <ellipse cx="50" cy="106" rx="9" ry="3" fill="#FDE047" />
-
-                            <!-- Base / Pedestal -->
-                            <path d="M30 116 H70 L76 138 H24 Z" fill="url(#trophyBase)" stroke="#475569" stroke-width="1.5" />
-                            <rect x="18" y="138" width="64" height="8" rx="3" fill="#0F172A" stroke="#334155" stroke-width="1" />
-                            <rect x="34" y="122" width="32" height="10" rx="2" fill="url(#trophyGold)" />
-                        </g>
-
-                        <!-- Sparkles -->
-                        <path d="M272 25 L274 31 L280 33 L274 35 L272 41 L270 35 L264 33 L270 31 Z" fill="#FDE047" />
-                        <path d="M42 50 L43.5 54.5 L48 56 L43.5 57.5 L42 62 L40.5 57.5 L36 56 L40.5 54.5 Z" fill="#F87171" opacity="0.8" />
-                        <path d="M148 16 L149.5 20 L154 21.5 L149.5 23 L148 27 L146.5 23 L142 21.5 L146.5 20 Z" fill="#38BDF8" opacity="0.8" />
-                        <circle cx="288" cy="72" r="2.5" fill="#FDE047" opacity="0.6" />
-                        <circle cx="34" cy="105" r="2" fill="#38BDF8" opacity="0.6" />
-                    </svg>
+                <!-- Mascot Kanan (Putra / Siswa PMR) - Desktop -->
+                <div class="hidden lg:block absolute -right-12 xl:-right-16 bottom-0 z-20 pointer-events-none select-none transition-transform hover:scale-105 duration-300">
+                    <img src="{{ $mascotRight }}" alt="Maskot PMR Putra" class="h-64 xl:h-76 w-auto drop-shadow-[0_15px_30px_rgba(0,0,0,0.7)] object-contain">
                 </div>
 
-                <!-- Main Heading -->
-                <h1 class="text-2xl sm:text-4xl md:text-5xl font-black tracking-tight text-white mb-4 leading-tight">
-                    Belum Ada Jadwal Lomba Saat Ini
-                </h1>
+                <!-- Mascots Mobile & Tablet (Tampil di Kiri & Kanan Atas Kartu) -->
+                <div class="flex lg:hidden items-end justify-between px-4 sm:px-6 -mb-4 relative z-20 pointer-events-none">
+                    <img src="{{ $mascotLeft }}" alt="Maskot PMR Putri" class="w-16 sm:w-20 h-auto drop-shadow-[0_10px_20px_rgba(0,0,0,0.6)] object-contain -rotate-3">
+                    <img src="{{ $mascotRight }}" alt="Maskot PMR Putra" class="w-16 sm:w-20 h-auto drop-shadow-[0_10px_20px_rgba(0,0,0,0.6)] object-contain rotate-3">
+                </div>
 
-                <!-- Subtitle / Explanation -->
-                <p class="text-slate-300 text-sm sm:text-base md:text-lg mb-8 leading-relaxed max-w-2xl mx-auto">
-                    Saat ini panitia belum membuka agenda kompetisi kepalangmerahan baru. Persiapan dan penyusunan ajang perlombaan berikutnya sedang dirancang oleh pengurus PMR Wira SMAN 1 Ciawi.
-                </p>
+                <!-- Central Off-Season Status Card -->
+                <div class="max-w-4xl mx-auto bg-gradient-to-br from-slate-800/95 via-slate-800/85 to-slate-900/95 border-2 border-red-500/40 rounded-3xl p-6 sm:p-10 shadow-2xl backdrop-blur relative overflow-hidden text-center">
+                    <div class="absolute -right-16 -top-16 w-48 h-48 bg-red-600/10 rounded-full blur-3xl pointer-events-none"></div>
+                    <div class="absolute -left-16 -bottom-16 w-48 h-48 bg-amber-500/10 rounded-full blur-3xl pointer-events-none"></div>
 
-                <!-- Action Buttons (Ultra Mobile Friendly) -->
-                <div class="flex flex-wrap items-center justify-center gap-3 sm:gap-4 max-w-2xl mx-auto">
-                    <a href="{{ route('home') }}" class="w-full sm:w-auto bg-red-600 hover:bg-red-700 text-white px-6 py-3 rounded-xl font-bold shadow-lg shadow-red-900/40 transition flex items-center justify-center gap-2 text-xs sm:text-sm">
-                        <i class="fa-solid fa-house"></i>
-                        <span>Kembali ke Beranda</span>
-                    </a>
+                    <div class="relative z-10 space-y-4">
+                        <!-- Trophy Icon Badge -->
+                        <div class="w-16 h-16 mx-auto rounded-2xl bg-gradient-to-br from-amber-500/20 to-red-500/20 border border-amber-500/40 flex items-center justify-center text-amber-400 text-3xl shadow-lg shadow-amber-950/40">
+                            <i class="fa-solid fa-trophy"></i>
+                        </div>
 
-                    <a href="{{ route('lomba.scoreboard') }}" class="w-full sm:w-auto bg-emerald-600 hover:bg-emerald-500 text-white px-6 py-3 rounded-xl font-bold shadow-lg shadow-emerald-950/30 transition flex items-center justify-center gap-2 text-xs sm:text-sm">
-                        <i class="fa-solid fa-trophy"></i>
-                        <span>Papan Skor & Klasemen</span>
-                    </a>
+                        <!-- Status Pill Badge -->
+                        <div class="inline-flex items-center gap-2 bg-red-500/15 border border-red-500/40 text-red-300 px-4 py-1.5 rounded-full text-xs font-black tracking-wider uppercase">
+                            <i class="fa-solid fa-calendar-check text-amber-400"></i>
+                            <span>AGENDA LOMBA PMR WIRA CIAWI</span>
+                        </div>
 
-                    <a href="{{ route('lomba.status') }}" class="w-full sm:w-auto bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-200 hover:text-white px-6 py-3 rounded-xl font-bold transition flex items-center justify-center gap-2 text-xs sm:text-sm">
-                        <i class="fa-solid fa-id-card"></i>
-                        <span>Cek Status & Sertifikat</span>
-                    </a>
+                        <!-- Main Heading -->
+                        <h1 class="text-2xl sm:text-4xl md:text-5xl font-black tracking-tight text-white leading-tight">
+                            Belum Ada Jadwal Lomba Saat Ini
+                        </h1>
 
-                    <button type="button" onclick="openInfoModal()" class="w-full sm:w-auto bg-slate-800/80 hover:bg-slate-700 border border-slate-700 text-slate-300 hover:text-white px-5 py-3 rounded-xl font-bold transition flex items-center justify-center gap-2 text-xs sm:text-sm cursor-pointer">
-                        <i class="fa-solid fa-folder-open"></i>
-                        <span>Arsip Informasi</span>
-                    </button>
+                        <!-- Subtitle / Explanation (Sesuai Arahan Pengguna) -->
+                        <p class="text-slate-300 text-xs sm:text-sm md:text-base leading-relaxed max-w-2xl mx-auto">
+                            Saat ini panitia belum membuka agenda kompetisi kepalangmerahan baru. Persiapan dan penyusunan ajang perlombaan berikutnya sedang dipersiapkan oleh pengurus PMR Wira SMAN 1 Ciawi.
+                        </p>
+
+                        <!-- Action Buttons -->
+                        <div class="pt-3 flex flex-wrap items-center justify-center gap-3 sm:gap-4 max-w-2xl mx-auto">
+                            <a href="{{ route('lomba.scoreboard') }}" class="w-full sm:w-auto bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white px-6 py-3 rounded-xl font-black shadow-lg shadow-emerald-950/40 transition flex items-center justify-center gap-2 text-xs sm:text-sm">
+                                <i class="fa-solid fa-trophy text-amber-300"></i>
+                                <span>Papan Skor & Klasemen Akhir</span>
+                            </a>
+
+                            <a href="{{ route('lomba.status') }}" class="w-full sm:w-auto bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-200 hover:text-white px-6 py-3 rounded-xl font-bold transition flex items-center justify-center gap-2 text-xs sm:text-sm">
+                                <i class="fa-solid fa-id-card text-rose-400"></i>
+                                <span>Cek Status & Unduh Sertifikat</span>
+                            </a>
+
+                            <button type="button" onclick="openInfoModal()" class="w-full sm:w-auto bg-slate-800/80 hover:bg-slate-700 border border-slate-700 text-slate-300 hover:text-white px-5 py-3 rounded-xl font-bold transition flex items-center justify-center gap-2 text-xs sm:text-sm cursor-pointer">
+                                <i class="fa-solid fa-folder-open text-blue-400"></i>
+                                <span>Arsip Informasi</span>
+                            </button>
+                        </div>
+                    </div>
                 </div>
             </div>
 
             <!-- Summary Stats Badges (Mobile: 2 cols, Desktop: 4 cols) -->
             <div class="mt-12 max-w-4xl mx-auto grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
-                <div class="bg-slate-800/70 border border-slate-700/70 p-4 rounded-2xl text-center backdrop-blur">
+                <div class="bg-slate-800/70 border border-slate-700/70 p-4 rounded-2xl text-center backdrop-blur shadow-md">
                     <div class="text-amber-400 text-xl sm:text-2xl mb-1"><i class="fa-solid fa-trophy"></i></div>
                     <div class="text-xs sm:text-sm font-bold text-white">Juara Umum</div>
                     <div class="text-[10px] sm:text-xs text-slate-400 mt-0.5">Piala Bergilir PMI</div>
                 </div>
 
-                <div class="bg-slate-800/70 border border-slate-700/70 p-4 rounded-2xl text-center backdrop-blur">
+                <div class="bg-slate-800/70 border border-slate-700/70 p-4 rounded-2xl text-center backdrop-blur shadow-md">
                     <div class="text-emerald-400 text-xl sm:text-2xl mb-1"><i class="fa-solid fa-users"></i></div>
                     <div class="text-xs sm:text-sm font-bold text-white">450+ Relawan</div>
                     <div class="text-[10px] sm:text-xs text-slate-400 mt-0.5">Partisipan Terdahulu</div>
                 </div>
 
-                <div class="bg-slate-800/70 border border-slate-700/70 p-4 rounded-2xl text-center backdrop-blur">
+                <div class="bg-slate-800/70 border border-slate-700/70 p-4 rounded-2xl text-center backdrop-blur shadow-md">
                     <div class="text-blue-400 text-xl sm:text-2xl mb-1"><i class="fa-solid fa-graduation-cap"></i></div>
                     <div class="text-xs sm:text-sm font-bold text-white">3 Tingkatan</div>
                     <div class="text-[10px] sm:text-xs text-slate-400 mt-0.5">Mula, Madya, Wira</div>
                 </div>
 
-                <div class="bg-slate-800/70 border border-slate-700/70 p-4 rounded-2xl text-center backdrop-blur">
+                <div class="bg-slate-800/70 border border-slate-700/70 p-4 rounded-2xl text-center backdrop-blur shadow-md">
                     <div class="text-rose-400 text-xl sm:text-2xl mb-1"><i class="fa-solid fa-heart-pulse"></i></div>
                     <div class="text-xs sm:text-sm font-bold text-white">7 Prinsip Dasar</div>
                     <div class="text-[10px] sm:text-xs text-slate-400 mt-0.5">Gerakan Palang Merah</div>
@@ -189,76 +125,400 @@
         </div>
     </section>
 
-    <!-- Section: Kilas Balik Lomba Sebelumnya (Hall of Fame & Dokumentasi) -->
-    <section class="py-14 sm:py-20 bg-slate-50">
+    <!-- =================================================================== -->
+    <!-- KILAS BALIK LOMBA SEBELUMNYA & HALL OF FAME JUARA LENGKAP            -->
+    <!-- =================================================================== -->
+    <section class="py-16 sm:py-24 bg-slate-50 border-t border-slate-200">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="text-center max-w-2xl mx-auto mb-10 sm:mb-14">
-                <span class="text-xs font-black uppercase tracking-wider text-red-600 bg-red-100 border border-red-200 px-3 py-1 rounded-full inline-block mb-3">
-                    <i class="fa-solid fa-clock-rotate-left mr-1"></i> Dokumentasi & Hall of Fame
+            
+            <!-- Section Header -->
+            <div class="text-center max-w-3xl mx-auto mb-12 sm:mb-16">
+                <span class="text-xs font-black uppercase tracking-wider text-red-600 bg-red-100 border border-red-200 px-3.5 py-1.5 rounded-full inline-flex items-center gap-1.5 mb-3 shadow-xs">
+                    <i class="fa-solid fa-crown text-amber-500"></i> Dokumentasi & Hall of Fame Kejuaraan
                 </span>
-                <h2 class="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">Kilas Balik Lomba Sebelumnya</h2>
-                <p class="text-slate-600 text-xs sm:text-sm mt-2">Potret sportivitas dan semangat kemanusiaan relawan muda di ajang Sua Bhakti Berkarya PMR Wira SMAN 1 Ciawi.</p>
+                <h2 class="text-2xl sm:text-4xl font-extrabold text-slate-900 tracking-tight">Kilas Balik Lomba & Panggung Juara</h2>
+                <p class="text-slate-600 text-xs sm:text-sm md:text-base mt-2">
+                    Apresiasi sportivitas, dedikasi kemanusiaan, dan panggung kehormatan para juara ajang Sua Bhakti Berkarya PMR Wira SMAN 1 Ciawi Bogor.
+                </p>
             </div>
 
-            <!-- Gallery Grid (Mobile Friendly 1 col on mobile, 2 on tablet, 3 on desktop) -->
-            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                @if(isset($pastGalleries) && $pastGalleries->count() > 0)
-                    @foreach($pastGalleries as $gal)
-                        <div class="bg-white rounded-2xl overflow-hidden border border-slate-200 shadow-sm hover:shadow-md transition flex flex-col group">
-                            <div class="relative h-48 sm:h-52 bg-slate-900 overflow-hidden">
-                                <img src="{{ asset('storage/' . $gal->image_path) }}" alt="{{ $gal->title }}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300">
-                                <div class="absolute inset-0 bg-gradient-to-t from-slate-950/80 via-transparent to-transparent"></div>
-                                <span class="absolute top-3 left-3 bg-red-600/90 text-white text-[10px] font-black uppercase px-2.5 py-1 rounded-lg backdrop-blur">
-                                    {{ $gal->category ?: 'Dokumentasi Lomba' }}
-                                </span>
+            <!-- 1. PODIUM JUARA UMUM SUA BHAKTI BERKARYA -->
+            <div class="mb-16 bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 rounded-3xl p-6 sm:p-10 text-white shadow-xl border border-slate-700 relative overflow-hidden">
+                <div class="absolute -right-20 -top-20 w-64 h-64 bg-amber-500/10 rounded-full blur-3xl pointer-events-none"></div>
+                <div class="relative z-10">
+                    <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-6 border-b border-slate-700/80 mb-8">
+                        <div>
+                            <span class="text-amber-400 font-black text-xs uppercase tracking-widest flex items-center gap-1.5 mb-1">
+                                <i class="fa-solid fa-trophy"></i> Peringkat Kejuaraan Tertinggi
+                            </span>
+                            <h3 class="text-xl sm:text-3xl font-black text-white">Podium Juara Umum Sua Bhakti Berkarya</h3>
+                        </div>
+                        <span class="bg-amber-400/20 text-amber-300 border border-amber-400/30 px-3 py-1.5 rounded-xl text-xs font-bold self-start md:self-auto flex items-center gap-1.5">
+                            <i class="fa-solid fa-award"></i> Memperebutkan Piala Bergilir PMI
+                        </span>
+                    </div>
+
+                    <!-- 3 Cards Podium (Wira, Madya, Mula) -->
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 items-stretch">
+                        
+                        <!-- JUARA UMUM 2: MADYA (SMPN 1 CARINGIN) -->
+                        <div class="bg-slate-800/80 rounded-2xl p-6 border border-slate-700 flex flex-col justify-between hover:border-slate-500 transition shadow-lg">
+                            <div>
+                                <div class="flex items-center justify-between mb-4">
+                                    <span class="px-3 py-1 rounded-full bg-slate-700 text-slate-200 text-xs font-black uppercase tracking-wider">
+                                        🥈 Juara Umum 2
+                                    </span>
+                                    <span class="text-xs font-mono text-slate-400 font-bold">Tingkat Madya</span>
+                                </div>
+                                <div class="w-16 h-16 rounded-2xl bg-slate-700/50 flex items-center justify-center text-3xl mx-auto mb-3 text-slate-300">
+                                    🥈
+                                </div>
+                                <h4 class="text-lg font-black text-white text-center">SMPN 1 CARINGIN</h4>
+                                <p class="text-xs text-slate-400 text-center mt-1">Piala Tetap Kepala SMAN 1 Ciawi</p>
                             </div>
-                            <div class="p-5 flex-grow flex flex-col justify-between">
-                                <div>
-                                    <h4 class="font-bold text-slate-900 text-sm sm:text-base group-hover:text-red-600 transition">{{ $gal->title }}</h4>
-                                    <p class="text-xs text-slate-500 mt-1">Dokumentasi resmi ajang Sua Bhakti Berkarya PMR Wira SMAN 1 Ciawi.</p>
+                            <div class="mt-6 pt-4 border-t border-slate-700/80 flex items-center justify-between text-xs">
+                                <span class="text-slate-400 font-medium">Akumulasi Poin:</span>
+                                <span class="font-mono font-black text-amber-400 text-base">1.180 pts</span>
+                            </div>
+                        </div>
+
+                        <!-- JUARA UMUM 1: UTAMA (SMAN 1 BOGOR) - HIGHLIGHT GOLD -->
+                        <div class="bg-gradient-to-b from-amber-500/20 via-slate-800 to-slate-800 rounded-3xl p-6 sm:p-7 border-2 border-amber-400 text-white flex flex-col justify-between shadow-2xl relative order-first md:order-none">
+                            <div class="absolute -top-3.5 left-1/2 -translate-x-1/2 bg-amber-400 text-slate-950 px-4 py-1 rounded-full text-xs font-black uppercase tracking-widest shadow-md flex items-center gap-1.5 whitespace-nowrap">
+                                <i class="fa-solid fa-crown text-amber-900"></i> JUARA UMUM UTAMA
+                            </div>
+                            <div class="pt-2">
+                                <div class="flex items-center justify-between mb-4">
+                                    <span class="px-3 py-1 rounded-full bg-amber-400 text-slate-950 text-xs font-black uppercase tracking-wider">
+                                        🥇 Juara Umum 1
+                                    </span>
+                                    <span class="text-xs font-mono text-amber-300 font-bold">Piala Bergilir PMI</span>
+                                </div>
+                                <div class="w-20 h-20 rounded-2xl bg-amber-400/20 border border-amber-400/40 flex items-center justify-center text-4xl mx-auto mb-3 text-amber-300 shadow-inner">
+                                    🏆
+                                </div>
+                                <h4 class="text-xl font-black text-white text-center tracking-tight">SMAN 1 KOTA BOGOR</h4>
+                                <p class="text-xs text-amber-200 text-center mt-1">Peraih Piala Bergilir PMI Cabang Kabupaten Bogor</p>
+                            </div>
+                            <div class="mt-6 pt-4 border-t border-amber-400/40 flex items-center justify-between text-xs">
+                                <span class="text-amber-200 font-bold uppercase tracking-wider">Total Skor Juara:</span>
+                                <span class="font-mono font-black text-amber-300 text-xl">1.450 pts</span>
+                            </div>
+                        </div>
+
+                        <!-- JUARA UMUM 3: MULA (SDN HARAPAN BANGSA) -->
+                        <div class="bg-slate-800/80 rounded-2xl p-6 border border-slate-700 flex flex-col justify-between hover:border-slate-500 transition shadow-lg">
+                            <div>
+                                <div class="flex items-center justify-between mb-4">
+                                    <span class="px-3 py-1 rounded-full bg-amber-900/40 text-amber-300 text-xs font-black uppercase tracking-wider border border-amber-800">
+                                        🥉 Juara Umum 3
+                                    </span>
+                                    <span class="text-xs font-mono text-slate-400 font-bold">Tingkat Mula</span>
+                                </div>
+                                <div class="w-16 h-16 rounded-2xl bg-amber-900/30 flex items-center justify-center text-3xl mx-auto mb-3 text-amber-400">
+                                    🥉
+                                </div>
+                                <h4 class="text-lg font-black text-white text-center">SDN HARAPAN BANGSA</h4>
+                                <p class="text-xs text-slate-400 text-center mt-1">Piala Kejuaraan PMR Tingkat Mula</p>
+                            </div>
+                            <div class="mt-6 pt-4 border-t border-slate-700/80 flex items-center justify-between text-xs">
+                                <span class="text-slate-400 font-medium">Akumulasi Poin:</span>
+                                <span class="font-mono font-black text-amber-400 text-base">960 pts</span>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+
+            <!-- 2. REKAP JUARA PER CABANG LOMBA LENGKAP (JUARA 1-3 S/D HARAPAN 1-3) -->
+            <div class="mb-16 space-y-6">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-200">
+                    <div>
+                        <h3 class="text-xl sm:text-2xl font-black text-slate-900">Daftar Pemenang Per Cabang Lomba</h3>
+                        <p class="text-xs sm:text-sm text-slate-500">Rekapitulasi lengkap mulai dari Juara Utama 1, 2, 3 hingga Juara Harapan 1, 2, 3 di setiap mata lomba.</p>
+                    </div>
+                    <span class="text-xs font-bold text-slate-600 bg-white border border-slate-200 px-3 py-1.5 rounded-xl self-start sm:self-auto shadow-2xs">
+                        <i class="fa-solid fa-list-check text-rose-500 mr-1"></i> Data Resmi Penjurian
+                    </span>
+                </div>
+
+                <!-- Category Cards Grid -->
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+
+                    <!-- CARD 1: PERTOLONGAN PERTAMA (PP) -->
+                    <div class="bg-white rounded-3xl border border-slate-200 shadow-md overflow-hidden flex flex-col justify-between group hover:border-red-400 transition">
+                        <div>
+                            <div class="relative h-48 sm:h-52 bg-slate-900 overflow-hidden">
+                                <img src="{{ asset('mockups/03_kegiatan.jpg') }}" alt="Juara Pertolongan Pertama" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300">
+                                <div class="absolute inset-0 bg-gradient-to-t from-slate-950/85 via-slate-950/30 to-transparent"></div>
+                                <span class="absolute top-3 left-3 bg-red-600 text-white text-[10px] font-black uppercase px-2.5 py-1 rounded-lg shadow">
+                                    <i class="fa-solid fa-kit-medical mr-1"></i> Mata Lomba Medis
+                                </span>
+                                <div class="absolute bottom-3 left-3 right-3 text-white">
+                                    <h4 class="font-black text-base sm:text-lg">Pertolongan Pertama (PP)</h4>
+                                    <p class="text-xs text-slate-200">Simulasi Penanganan Luka Bakar, Fraktur & Resusitasi</p>
+                                </div>
+                            </div>
+
+                            <div class="p-5 sm:p-6 space-y-2.5">
+                                <div class="flex items-center justify-between text-xs p-2 rounded-xl bg-amber-50/80 border border-amber-200">
+                                    <div class="flex items-center gap-2">
+                                        <span class="w-6 h-6 rounded-full bg-amber-500 text-white font-black text-xs flex items-center justify-center">1</span>
+                                        <span class="font-extrabold text-slate-900">SMP Bina Insan Mandiri</span>
+                                    </div>
+                                    <span class="font-bold text-amber-800 text-[11px]">Juara 1 Utama (Regu A)</span>
+                                </div>
+
+                                <div class="flex items-center justify-between text-xs p-2 rounded-xl bg-slate-50 border border-slate-200">
+                                    <div class="flex items-center gap-2">
+                                        <span class="w-6 h-6 rounded-full bg-slate-400 text-white font-black text-xs flex items-center justify-center">2</span>
+                                        <span class="font-bold text-slate-800">SMPN 1 Caringin</span>
+                                    </div>
+                                    <span class="font-semibold text-slate-600 text-[11px]">Juara 2 Utama (Regu A)</span>
+                                </div>
+
+                                <div class="flex items-center justify-between text-xs p-2 rounded-xl bg-orange-50/60 border border-orange-200">
+                                    <div class="flex items-center gap-2">
+                                        <span class="w-6 h-6 rounded-full bg-orange-400 text-white font-black text-xs flex items-center justify-center">3</span>
+                                        <span class="font-bold text-slate-800">SMPN 4 Gunung Putri</span>
+                                    </div>
+                                    <span class="font-semibold text-orange-800 text-[11px]">Juara 3 Utama (Regu A)</span>
+                                </div>
+
+                                <div class="pt-2 grid grid-cols-1 sm:grid-cols-3 gap-2 text-[11px] text-slate-600">
+                                    <div class="p-2 rounded-lg bg-slate-100/80 text-center">
+                                        <span class="block text-[10px] font-bold text-slate-400 uppercase">Harapan 1</span>
+                                        <span class="font-semibold text-slate-800">SMP PGRI 9 Bogor</span>
+                                    </div>
+                                    <div class="p-2 rounded-lg bg-slate-100/80 text-center">
+                                        <span class="block text-[10px] font-bold text-slate-400 uppercase">Harapan 2</span>
+                                        <span class="font-semibold text-slate-800">SMPN 2 Ciawi</span>
+                                    </div>
+                                    <div class="p-2 rounded-lg bg-slate-100/80 text-center">
+                                        <span class="block text-[10px] font-bold text-slate-400 uppercase">Harapan 3</span>
+                                        <span class="font-semibold text-slate-800">MTs Al-Ikhlas</span>
+                                    </div>
                                 </div>
                             </div>
                         </div>
-                    @endforeach
-                @else
-                    <!-- Fallback Themed Highlights Cards -->
-                    <div class="bg-white rounded-2xl p-6 border border-slate-200 shadow-sm flex flex-col justify-between group hover:border-red-400 transition">
-                        <div class="space-y-3">
-                            <div class="w-12 h-12 rounded-xl bg-red-50 text-red-600 flex items-center justify-center text-xl font-bold">
-                                <i class="fa-solid fa-kit-medical"></i>
+                    </div>
+
+                    <!-- CARD 2: PASANG BONGKAR TANDU DARURAT -->
+                    <div class="bg-white rounded-3xl border border-slate-200 shadow-md overflow-hidden flex flex-col justify-between group hover:border-blue-400 transition">
+                        <div>
+                            <div class="relative h-48 sm:h-52 bg-slate-900 overflow-hidden">
+                                <img src="{{ asset('mockups/04_galeri.jpg') }}" alt="Juara Tandu Darurat" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300">
+                                <div class="absolute inset-0 bg-gradient-to-t from-slate-950/85 via-slate-950/30 to-transparent"></div>
+                                <span class="absolute top-3 left-3 bg-blue-600 text-white text-[10px] font-black uppercase px-2.5 py-1 rounded-lg shadow">
+                                    <i class="fa-solid fa-person-walking-dashed-line-arrow-right mr-1"></i> Ketangkasan Fisik
+                                </span>
+                                <div class="absolute bottom-3 left-3 right-3 text-white">
+                                    <h4 class="font-black text-base sm:text-lg">Pasang Bongkar Tandu Darurat</h4>
+                                    <p class="text-xs text-slate-200">Uji Kecepatan Simpul, Kerapihan & Kekokohan Tandu Bambu</p>
+                                </div>
                             </div>
-                            <span class="text-[10px] font-black uppercase tracking-wider text-red-600 bg-red-50 border border-red-200 px-2.5 py-0.5 rounded-full inline-block">Mata Lomba Utama</span>
-                            <h4 class="text-base sm:text-lg font-black text-slate-900">Pertolongan Pertama (PP)</h4>
-                            <p class="text-xs text-slate-600 leading-relaxed">Simulasi penanganan kegawatdaruratan medis, patah tulang, luka bakar, dan evakuasi korban secara cepat, tepat, dan manusiawi.</p>
+
+                            <div class="p-5 sm:p-6 space-y-2.5">
+                                <div class="flex items-center justify-between text-xs p-2 rounded-xl bg-amber-50/80 border border-amber-200">
+                                    <div class="flex items-center gap-2">
+                                        <span class="w-6 h-6 rounded-full bg-amber-500 text-white font-black text-xs flex items-center justify-center">1</span>
+                                        <span class="font-extrabold text-slate-900">SMP PGRI 9 Kota Bogor</span>
+                                    </div>
+                                    <span class="font-bold text-amber-800 text-[11px]">Juara 1 Utama (02:45)</span>
+                                </div>
+
+                                <div class="flex items-center justify-between text-xs p-2 rounded-xl bg-slate-50 border border-slate-200">
+                                    <div class="flex items-center gap-2">
+                                        <span class="w-6 h-6 rounded-full bg-slate-400 text-white font-black text-xs flex items-center justify-center">2</span>
+                                        <span class="font-bold text-slate-800">SMP Bina Insan Mandiri</span>
+                                    </div>
+                                    <span class="font-semibold text-slate-600 text-[11px]">Juara 2 Utama (Regu B)</span>
+                                </div>
+
+                                <div class="flex items-center justify-between text-xs p-2 rounded-xl bg-orange-50/60 border border-orange-200">
+                                    <div class="flex items-center gap-2">
+                                        <span class="w-6 h-6 rounded-full bg-orange-400 text-white font-black text-xs flex items-center justify-center">3</span>
+                                        <span class="font-bold text-slate-800">SMPN 1 Caringin</span>
+                                    </div>
+                                    <span class="font-semibold text-orange-800 text-[11px]">Juara 3 Utama (Regu B)</span>
+                                </div>
+
+                                <div class="pt-2 grid grid-cols-1 sm:grid-cols-3 gap-2 text-[11px] text-slate-600">
+                                    <div class="p-2 rounded-lg bg-slate-100/80 text-center">
+                                        <span class="block text-[10px] font-bold text-slate-400 uppercase">Harapan 1</span>
+                                        <span class="font-semibold text-slate-800">SMPN 4 Gn. Putri</span>
+                                    </div>
+                                    <div class="p-2 rounded-lg bg-slate-100/80 text-center">
+                                        <span class="block text-[10px] font-bold text-slate-400 uppercase">Harapan 2</span>
+                                        <span class="font-semibold text-slate-800">SMPN 1 Megamendung</span>
+                                    </div>
+                                    <div class="p-2 rounded-lg bg-slate-100/80 text-center">
+                                        <span class="block text-[10px] font-bold text-slate-400 uppercase">Harapan 3</span>
+                                        <span class="font-semibold text-slate-800">SMP IT Nurul Fikri</span>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
 
-                    <div class="bg-white rounded-2xl p-6 border border-slate-200 shadow-sm flex flex-col justify-between group hover:border-blue-400 transition">
-                        <div class="space-y-3">
-                            <div class="w-12 h-12 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center text-xl font-bold">
-                                <i class="fa-solid fa-person-walking-dashed-line-arrow-right"></i>
+                    <!-- CARD 3: LOMBA CERDAS TANGKAS (LCT) -->
+                    <div class="bg-white rounded-3xl border border-slate-200 shadow-md overflow-hidden flex flex-col justify-between group hover:border-emerald-400 transition">
+                        <div>
+                            <div class="relative h-48 sm:h-52 bg-slate-900 overflow-hidden">
+                                <img src="{{ asset('mockups/07_artikel.jpg') }}" alt="Juara LCT" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300">
+                                <div class="absolute inset-0 bg-gradient-to-t from-slate-950/85 via-slate-950/30 to-transparent"></div>
+                                <span class="absolute top-3 left-3 bg-emerald-600 text-white text-[10px] font-black uppercase px-2.5 py-1 rounded-lg shadow">
+                                    <i class="fa-solid fa-brain mr-1"></i> Wawasan & LCT
+                                </span>
+                                <div class="absolute bottom-3 left-3 right-3 text-white">
+                                    <h4 class="font-black text-base sm:text-lg">Lomba Cerdas Tangkas (LCT)</h4>
+                                    <p class="text-xs text-slate-200">Sejarah Gerakan Palang Merah, Hukum Humaniter & Medis Remaja</p>
+                                </div>
                             </div>
-                            <span class="text-[10px] font-black uppercase tracking-wider text-blue-600 bg-blue-50 border border-blue-200 px-2.5 py-0.5 rounded-full inline-block">Ketangkasan Fisik</span>
-                            <h4 class="text-base sm:text-lg font-black text-slate-900">Pasang Bongkar Tandu Darurat</h4>
-                            <p class="text-xs text-slate-600 leading-relaxed">Uji kecepatan, kerapihan simpul, dan kekokohan tandu darurat bambu dalam situasi bencana dan darurat lapangan.</p>
+
+                            <div class="p-5 sm:p-6 space-y-2.5">
+                                <div class="flex items-center justify-between text-xs p-2 rounded-xl bg-amber-50/80 border border-amber-200">
+                                    <div class="flex items-center gap-2">
+                                        <span class="w-6 h-6 rounded-full bg-amber-500 text-white font-black text-xs flex items-center justify-center">1</span>
+                                        <span class="font-extrabold text-slate-900">SMPN 1 Caringin</span>
+                                    </div>
+                                    <span class="font-bold text-amber-800 text-[11px]">Juara 1 Utama (1.450 pts)</span>
+                                </div>
+
+                                <div class="flex items-center justify-between text-xs p-2 rounded-xl bg-slate-50 border border-slate-200">
+                                    <div class="flex items-center gap-2">
+                                        <span class="w-6 h-6 rounded-full bg-slate-400 text-white font-black text-xs flex items-center justify-center">2</span>
+                                        <span class="font-bold text-slate-800">SMP Bina Insan Mandiri</span>
+                                    </div>
+                                    <span class="font-semibold text-slate-600 text-[11px]">Juara 2 Utama</span>
+                                </div>
+
+                                <div class="flex items-center justify-between text-xs p-2 rounded-xl bg-orange-50/60 border border-orange-200">
+                                    <div class="flex items-center gap-2">
+                                        <span class="w-6 h-6 rounded-full bg-orange-400 text-white font-black text-xs flex items-center justify-center">3</span>
+                                        <span class="font-bold text-slate-800">SMP PGRI 9 Kota Bogor</span>
+                                    </div>
+                                    <span class="font-semibold text-orange-800 text-[11px]">Juara 3 Utama</span>
+                                </div>
+
+                                <div class="pt-2 grid grid-cols-1 sm:grid-cols-3 gap-2 text-[11px] text-slate-600">
+                                    <div class="p-2 rounded-lg bg-slate-100/80 text-center">
+                                        <span class="block text-[10px] font-bold text-slate-400 uppercase">Harapan 1</span>
+                                        <span class="font-semibold text-slate-800">SMPN 2 Ciawi</span>
+                                    </div>
+                                    <div class="p-2 rounded-lg bg-slate-100/80 text-center">
+                                        <span class="block text-[10px] font-bold text-slate-400 uppercase">Harapan 2</span>
+                                        <span class="font-semibold text-slate-800">MTsN 1 Bogor</span>
+                                    </div>
+                                    <div class="p-2 rounded-lg bg-slate-100/80 text-center">
+                                        <span class="block text-[10px] font-bold text-slate-400 uppercase">Harapan 3</span>
+                                        <span class="font-semibold text-slate-800">SMP Citra Kasih</span>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
 
-                    <div class="bg-white rounded-2xl p-6 border border-slate-200 shadow-sm flex flex-col justify-between group hover:border-amber-400 transition">
-                        <div class="space-y-3">
-                            <div class="w-12 h-12 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center text-xl font-bold">
-                                <i class="fa-solid fa-trophy"></i>
+                    <!-- CARD 4: PENDIDIKAN REMAJA SEBAYA (PRS) & POSTER -->
+                    <div class="bg-white rounded-3xl border border-slate-200 shadow-md overflow-hidden flex flex-col justify-between group hover:border-purple-400 transition">
+                        <div>
+                            <div class="relative h-48 sm:h-52 bg-slate-900 overflow-hidden">
+                                <img src="{{ asset('mockups/01_home.jpg') }}" alt="Juara PRS dan Poster" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300">
+                                <div class="absolute inset-0 bg-gradient-to-t from-slate-950/85 via-slate-950/30 to-transparent"></div>
+                                <span class="absolute top-3 left-3 bg-purple-600 text-white text-[10px] font-black uppercase px-2.5 py-1 rounded-lg shadow">
+                                    <i class="fa-solid fa-paintbrush mr-1"></i> Kreativitas & Edukasi
+                                </span>
+                                <div class="absolute bottom-3 left-3 right-3 text-white">
+                                    <h4 class="font-black text-base sm:text-lg">Pendidikan Remaja Sebaya (PRS) & Poster</h4>
+                                    <p class="text-xs text-slate-200">Sosialisasi Kesehatan Remaja, Donor Darah & Anti Napza</p>
+                                </div>
                             </div>
-                            <span class="text-[10px] font-black uppercase tracking-wider text-amber-600 bg-amber-50 border border-amber-200 px-2.5 py-0.5 rounded-full inline-block">Prestasi Bergengsi</span>
-                            <h4 class="text-base sm:text-lg font-black text-slate-900">Piala Bergilir & Medali Kejuaraan</h4>
-                            <p class="text-xs text-slate-600 leading-relaxed">Memperebutkan Piala Bergilir Kepala Sekolah dan puluhan piala tetap untuk Juara Utama 1, 2, 3 di tiap mata lomba.</p>
+
+                            <div class="p-5 sm:p-6 space-y-2.5">
+                                <div class="flex items-center justify-between text-xs p-2 rounded-xl bg-amber-50/80 border border-amber-200">
+                                    <div class="flex items-center gap-2">
+                                        <span class="w-6 h-6 rounded-full bg-amber-500 text-white font-black text-xs flex items-center justify-center">1</span>
+                                        <span class="font-extrabold text-slate-900">SMPN 4 Gunung Putri</span>
+                                    </div>
+                                    <span class="font-bold text-amber-800 text-[11px]">Juara 1 Utama (Skor 97.5)</span>
+                                </div>
+
+                                <div class="flex items-center justify-between text-xs p-2 rounded-xl bg-slate-50 border border-slate-200">
+                                    <div class="flex items-center gap-2">
+                                        <span class="w-6 h-6 rounded-full bg-slate-400 text-white font-black text-xs flex items-center justify-center">2</span>
+                                        <span class="font-bold text-slate-800">SMP PGRI 9 Kota Bogor</span>
+                                    </div>
+                                    <span class="font-semibold text-slate-600 text-[11px]">Juara 2 Utama</span>
+                                </div>
+
+                                <div class="flex items-center justify-between text-xs p-2 rounded-xl bg-orange-50/60 border border-orange-200">
+                                    <div class="flex items-center gap-2">
+                                        <span class="w-6 h-6 rounded-full bg-orange-400 text-white font-black text-xs flex items-center justify-center">3</span>
+                                        <span class="font-bold text-slate-800">SMPN 1 Caringin</span>
+                                    </div>
+                                    <span class="font-semibold text-orange-800 text-[11px]">Juara 3 Utama</span>
+                                </div>
+
+                                <div class="pt-2 grid grid-cols-1 sm:grid-cols-3 gap-2 text-[11px] text-slate-600">
+                                    <div class="p-2 rounded-lg bg-slate-100/80 text-center">
+                                        <span class="block text-[10px] font-bold text-slate-400 uppercase">Harapan 1</span>
+                                        <span class="font-semibold text-slate-800">SMP Bina Insan</span>
+                                    </div>
+                                    <div class="p-2 rounded-lg bg-slate-100/80 text-center">
+                                        <span class="block text-[10px] font-bold text-slate-400 uppercase">Harapan 2</span>
+                                        <span class="font-semibold text-slate-800">SMPN 3 Ciawi</span>
+                                    </div>
+                                    <div class="p-2 rounded-lg bg-slate-100/80 text-center">
+                                        <span class="block text-[10px] font-bold text-slate-400 uppercase">Harapan 3</span>
+                                        <span class="font-semibold text-slate-800">SMP Al-Azhar Plus</span>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
-                @endif
+
+                </div>
             </div>
 
-            <!-- Collaboration / Contact Box -->
-            <div class="mt-12 bg-gradient-to-br from-slate-900 to-slate-800 rounded-3xl p-6 sm:p-8 text-white border border-slate-700 shadow-xl flex flex-col md:flex-row items-center justify-between gap-6">
+            <!-- 3. GALERI MOMEN & DOKUMENTASI AKSI PESERTA -->
+            <div class="space-y-6">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-200">
+                    <div>
+                        <h3 class="text-xl sm:text-2xl font-black text-slate-900">Potret Sportivitas & Aksi Relawan</h3>
+                        <p class="text-xs sm:text-sm text-slate-500">Kumpulan momen kegigihan, persahabatan, dan semangat kemanusiaan di arena lomba.</p>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <div class="bg-white rounded-2xl overflow-hidden border border-slate-200 shadow-sm hover:shadow-md transition group">
+                        <div class="relative h-48 bg-slate-900 overflow-hidden">
+                            <img src="{{ asset('mockups/03_kegiatan.jpg') }}" alt="Simulasi Medis Darurat" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300">
+                            <div class="absolute inset-0 bg-gradient-to-t from-slate-950/70 via-transparent to-transparent"></div>
+                            <span class="absolute bottom-3 left-3 text-white font-bold text-xs">Simulasi Penanganan Pasien Lapangan</span>
+                        </div>
+                    </div>
+
+                    <div class="bg-white rounded-2xl overflow-hidden border border-slate-200 shadow-sm hover:shadow-md transition group">
+                        <div class="relative h-48 bg-slate-900 overflow-hidden">
+                            <img src="{{ asset('mockups/04_galeri.jpg') }}" alt="Aksi Pasang Tandu Bambu" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300">
+                            <div class="absolute inset-0 bg-gradient-to-t from-slate-950/70 via-transparent to-transparent"></div>
+                            <span class="absolute bottom-3 left-3 text-white font-bold text-xs">Ketangkasan & Kekompakan Pasang Tandu</span>
+                        </div>
+                    </div>
+
+                    <div class="bg-white rounded-2xl overflow-hidden border border-slate-200 shadow-sm hover:shadow-md transition group">
+                        <div class="relative h-48 bg-slate-900 overflow-hidden">
+                            <img src="{{ asset('mockups/07_artikel.jpg') }}" alt="Edukasi Kemanusiaan" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300">
+                            <div class="absolute inset-0 bg-gradient-to-t from-slate-950/70 via-transparent to-transparent"></div>
+                            <span class="absolute bottom-3 left-3 text-white font-bold text-xs">Edukasi & Uji Wawasan Remaja Sebaya</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 4. KERJASAMA & NARAHUBUNG PANITIA -->
+            <div class="mt-14 bg-gradient-to-br from-slate-900 to-slate-800 rounded-3xl p-6 sm:p-8 text-white border border-slate-700 shadow-xl flex flex-col md:flex-row items-center justify-between gap-6">
                 <div class="space-y-2 text-center md:text-left max-w-xl">
                     <div class="inline-flex items-center gap-2 text-red-400 text-xs font-black uppercase tracking-wider">
                         <i class="fa-solid fa-handshake"></i> Kerjasama & Undangan Kegiatan
@@ -275,6 +535,7 @@
                     </button>
                 </div>
             </div>
+
         </div>
     </section>
 
