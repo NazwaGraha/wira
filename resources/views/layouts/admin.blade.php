@@ -564,6 +564,13 @@
                         </div>
                     </a>
                     @endif
+                    <a href="{{ route('admin.competition-galleries.index') }}" class="flex items-center gap-2.5 px-3 py-2 rounded-xl font-medium text-xs md:text-sm transition {{ request()->routeIs('admin.competition-galleries.*') ? 'bg-pmr-primary text-white shadow-md shadow-red-950/40' : 'hover:bg-slate-800 text-slate-300' }}">
+                        <i class="fa-solid fa-camera-retro w-4 text-center text-amber-400"></i>
+                        <div class="flex items-center justify-between flex-grow min-w-0">
+                            <span class="truncate">Dokumentasi & Galeri Lomba</span>
+                            <span class="text-[9px] bg-amber-500/20 text-amber-300 border border-amber-500/30 px-1.5 py-0.2 rounded font-black uppercase shrink-0 ml-1">Momen</span>
+                        </div>
+                    </a>
                     @endif
                     @if(auth()->user()?->hasPermission('competition_bank_accounts.manage'))
                     <a href="{{ route('admin.competition-bank-accounts.index') }}" class="flex items-center gap-2.5 px-3 py-2 rounded-xl font-medium text-xs md:text-sm transition {{ request()->routeIs('admin.competition-bank-accounts.*') ? 'bg-pmr-primary text-white shadow-md shadow-red-950/40' : 'hover:bg-slate-800 text-slate-300' }}">

@@ -932,40 +932,128 @@
             </script>
 
             <!-- 3. GALERI MOMEN & DOKUMENTASI AKSI PESERTA -->
+            @php
+                $eventGalleries = ($pastEvent && method_exists($pastEvent, 'galleries'))
+                    ? $pastEvent->galleries()->where('is_active', true)->get()
+                    : collect();
+            @endphp
             <div class="space-y-6">
                 <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-200">
                     <div>
-                        <h3 class="text-xl sm:text-2xl font-black text-slate-900">Potret Sportivitas & Aksi Relawan</h3>
-                        <p class="text-xs sm:text-sm text-slate-500">Kumpulan momen kegigihan, persahabatan, dan semangat kemanusiaan di arena lomba.</p>
+                        <div class="flex items-center gap-2">
+                            <h3 class="text-xl sm:text-2xl font-black text-slate-900">Potret Sportivitas & Aksi Relawan</h3>
+                            @if($eventGalleries->isNotEmpty())
+                                <span class="bg-red-100 text-red-700 text-xs font-bold px-2.5 py-0.5 rounded-full border border-red-200">
+                                    {{ $eventGalleries->count() }} Foto
+                                </span>
+                            @endif
+                        </div>
+                        <p class="text-xs sm:text-sm text-slate-500 mt-0.5">
+                            Kumpulan momen kegigihan, persahabatan, dan semangat kemanusiaan di arena {{ $pastEvent->title ?? 'Sua Bhakti Berkarya' }}.
+                        </p>
                     </div>
+
+                    @if(auth()->check() && auth()->user()->hasPermission('competition_event.view'))
+                        <a href="{{ route('admin.competition-galleries.index', ['event_id' => $pastEvent?->id]) }}" class="text-xs font-bold text-red-600 hover:text-red-700 bg-red-50 hover:bg-red-100 border border-red-200 px-3 py-1.5 rounded-xl transition flex items-center gap-1.5 self-start sm:self-auto shadow-2xs">
+                            <i class="fa-solid fa-camera-retro"></i>
+                            <span>Kelola Foto Momen di Backoffice &rarr;</span>
+                        </a>
+                    @endif
                 </div>
 
-                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                    <div class="bg-white rounded-2xl overflow-hidden border border-slate-200 shadow-sm hover:shadow-md transition group">
-                        <div class="relative h-48 bg-slate-900 overflow-hidden">
-                            <img src="{{ asset('mockups/03_kegiatan.jpg') }}" alt="Simulasi Medis Darurat" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300">
-                            <div class="absolute inset-0 bg-gradient-to-t from-slate-950/70 via-transparent to-transparent"></div>
-                            <span class="absolute bottom-3 left-3 text-white font-bold text-xs">Simulasi Penanganan Pasien Lapangan</span>
+                @if($eventGalleries->isNotEmpty())
+                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                        @foreach($eventGalleries as $gal)
+                            <div class="bg-white rounded-2xl overflow-hidden border border-slate-200 shadow-sm hover:shadow-md transition group cursor-pointer" onclick="openPhotoLightbox('{{ $gal->image_url }}', '{{ addslashes($gal->caption) }}', '{{ addslashes($gal->tag) }}')">
+                                <div class="relative h-52 bg-slate-900 overflow-hidden">
+                                    <img src="{{ $gal->image_url }}" alt="{{ $gal->caption }}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300">
+                                    <div class="absolute inset-0 bg-gradient-to-t from-slate-950/80 via-transparent to-transparent"></div>
+                                    @if($gal->tag)
+                                        <span class="absolute top-3 left-3 bg-slate-900/80 backdrop-blur-xs text-white text-[10px] font-bold px-2.5 py-1 rounded-md border border-slate-700 shadow-xs">
+                                            {{ $gal->tag }}
+                                        </span>
+                                    @endif
+                                    <div class="absolute bottom-3 left-3 right-3 text-white">
+                                        <span class="font-bold text-xs sm:text-sm block truncate drop-shadow">
+                                            {{ $gal->caption ?: 'Dokumentasi Lomba' }}
+                                        </span>
+                                    </div>
+                                    <div class="absolute top-3 right-3 w-7 h-7 rounded-lg bg-black/40 backdrop-blur-xs text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition">
+                                        <i class="fa-solid fa-magnifying-glass-plus text-xs"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        @endforeach
+                    </div>
+                @else
+                    <!-- Fallback default momen jika belum ada foto yang diunggah -->
+                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                        <div class="bg-white rounded-2xl overflow-hidden border border-slate-200 shadow-sm hover:shadow-md transition group cursor-pointer" onclick="openPhotoLightbox('{{ asset('mockups/03_kegiatan.jpg') }}', 'Simulasi Penanganan Pasien Lapangan', 'Pertolongan Pertama')">
+                            <div class="relative h-52 bg-slate-900 overflow-hidden">
+                                <img src="{{ asset('mockups/03_kegiatan.jpg') }}" alt="Simulasi Medis Darurat" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300">
+                                <div class="absolute inset-0 bg-gradient-to-t from-slate-950/70 via-transparent to-transparent"></div>
+                                <span class="absolute top-3 left-3 bg-red-600/90 text-white text-[10px] font-bold px-2 py-0.5 rounded-md">Pertolongan Pertama</span>
+                                <span class="absolute bottom-3 left-3 right-3 text-white font-bold text-xs truncate">Simulasi Penanganan Pasien Lapangan</span>
+                            </div>
+                        </div>
+
+                        <div class="bg-white rounded-2xl overflow-hidden border border-slate-200 shadow-sm hover:shadow-md transition group cursor-pointer" onclick="openPhotoLightbox('{{ asset('mockups/04_galeri.jpg') }}', 'Ketangkasan & Kekompakan Pasang Tandu', 'Tandu Darurat')">
+                            <div class="relative h-52 bg-slate-900 overflow-hidden">
+                                <img src="{{ asset('mockups/04_galeri.jpg') }}" alt="Aksi Pasang Tandu Bambu" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300">
+                                <div class="absolute inset-0 bg-gradient-to-t from-slate-950/70 via-transparent to-transparent"></div>
+                                <span class="absolute top-3 left-3 bg-amber-600/90 text-white text-[10px] font-bold px-2 py-0.5 rounded-md">Tandu Darurat</span>
+                                <span class="absolute bottom-3 left-3 right-3 text-white font-bold text-xs truncate">Ketangkasan & Kekompakan Pasang Tandu</span>
+                            </div>
+                        </div>
+
+                        <div class="bg-white rounded-2xl overflow-hidden border border-slate-200 shadow-sm hover:shadow-md transition group cursor-pointer" onclick="openPhotoLightbox('{{ asset('mockups/07_artikel.jpg') }}', 'Edukasi & Uji Wawasan Remaja Sebaya', 'LCT & Wawasan')">
+                            <div class="relative h-52 bg-slate-900 overflow-hidden">
+                                <img src="{{ asset('mockups/07_artikel.jpg') }}" alt="Edukasi Kemanusiaan" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300">
+                                <div class="absolute inset-0 bg-gradient-to-t from-slate-950/70 via-transparent to-transparent"></div>
+                                <span class="absolute top-3 left-3 bg-purple-600/90 text-white text-[10px] font-bold px-2 py-0.5 rounded-md">LCT & Wawasan</span>
+                                <span class="absolute bottom-3 left-3 right-3 text-white font-bold text-xs truncate">Edukasi & Uji Wawasan Remaja Sebaya</span>
+                            </div>
                         </div>
                     </div>
+                @endif
+            </div>
 
-                    <div class="bg-white rounded-2xl overflow-hidden border border-slate-200 shadow-sm hover:shadow-md transition group">
-                        <div class="relative h-48 bg-slate-900 overflow-hidden">
-                            <img src="{{ asset('mockups/04_galeri.jpg') }}" alt="Aksi Pasang Tandu Bambu" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300">
-                            <div class="absolute inset-0 bg-gradient-to-t from-slate-950/70 via-transparent to-transparent"></div>
-                            <span class="absolute bottom-3 left-3 text-white font-bold text-xs">Ketangkasan & Kekompakan Pasang Tandu</span>
-                        </div>
-                    </div>
-
-                    <div class="bg-white rounded-2xl overflow-hidden border border-slate-200 shadow-sm hover:shadow-md transition group">
-                        <div class="relative h-48 bg-slate-900 overflow-hidden">
-                            <img src="{{ asset('mockups/07_artikel.jpg') }}" alt="Edukasi Kemanusiaan" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300">
-                            <div class="absolute inset-0 bg-gradient-to-t from-slate-950/70 via-transparent to-transparent"></div>
-                            <span class="absolute bottom-3 left-3 text-white font-bold text-xs">Edukasi & Uji Wawasan Remaja Sebaya</span>
-                        </div>
+            <!-- Lightbox Zoom Modal -->
+            <div id="modal-photo-lightbox" class="fixed inset-0 bg-slate-950/90 backdrop-blur-md z-50 hidden items-center justify-center p-4 cursor-pointer" onclick="closePhotoLightbox()">
+                <div class="relative max-w-4xl w-full max-h-[90vh] flex flex-col items-center" onclick="event.stopPropagation()">
+                    <button type="button" onclick="closePhotoLightbox()" class="absolute -top-12 right-0 w-9 h-9 rounded-full bg-white/20 hover:bg-white/30 text-white flex items-center justify-center transition">
+                        <i class="fa-solid fa-xmark text-lg"></i>
+                    </button>
+                    <img id="lightbox-img" src="" alt="Momen Dokumentasi" class="w-auto max-h-[75vh] object-contain rounded-2xl shadow-2xl border border-white/10">
+                    <div class="mt-3 text-center text-white">
+                        <span id="lightbox-tag" class="inline-block text-[10px] uppercase font-bold px-2.5 py-0.5 rounded-full bg-red-600 text-white mb-1"></span>
+                        <h4 id="lightbox-caption" class="text-sm sm:text-base font-bold text-white"></h4>
                     </div>
                 </div>
             </div>
+
+            <script>
+                function openPhotoLightbox(src, caption, tag) {
+                    document.getElementById('lightbox-img').src = src;
+                    document.getElementById('lightbox-caption').textContent = caption || '';
+                    const tagEl = document.getElementById('lightbox-tag');
+                    if (tag) {
+                        tagEl.textContent = tag;
+                        tagEl.classList.remove('hidden');
+                    } else {
+                        tagEl.classList.add('hidden');
+                    }
+                    const modal = document.getElementById('modal-photo-lightbox');
+                    modal.classList.remove('hidden');
+                    modal.classList.add('flex');
+                }
+
+                function closePhotoLightbox() {
+                    const modal = document.getElementById('modal-photo-lightbox');
+                    modal.classList.add('hidden');
+                    modal.classList.remove('flex');
+                }
+            </script>
 
             <!-- 4. KERJASAMA & NARAHUBUNG PANITIA -->
             <div class="mt-14 bg-gradient-to-br from-slate-900 to-slate-800 rounded-3xl p-6 sm:p-8 text-white border border-slate-700 shadow-xl flex flex-col md:flex-row items-center justify-between gap-6">

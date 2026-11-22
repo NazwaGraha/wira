@@ -362,6 +362,11 @@ class CompetitionEvent extends Model
         return $this->hasMany(CompetitionInfoMenu::class)->orderBy('order_position');
     }
 
+    public function galleries(): HasMany
+    {
+        return $this->hasMany(CompetitionGallery::class)->orderBy('order_position')->orderBy('id');
+    }
+
     /**
      * Dapatkan detail rekening tujuan transfer sesuai tingkatan peserta (Mula, Madya, Wira).
      * Jika rekening khusus tingkat belum diisi, otomatis fallback ke rekening utama event.

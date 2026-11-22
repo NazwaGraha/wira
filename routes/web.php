@@ -16,6 +16,7 @@ use App\Http\Controllers\Admin\CompetitionBroadcastController;
 use App\Http\Controllers\Admin\CompetitionCheckinController;
 use App\Http\Controllers\Admin\CompetitionEventController;
 use App\Http\Controllers\Admin\CompetitionFeeController;
+use App\Http\Controllers\Admin\CompetitionGalleryController;
 use App\Http\Controllers\Admin\CompetitionInfoMenuController;
 use App\Http\Controllers\Admin\CompetitionJuryController;
 use App\Http\Controllers\Admin\CompetitionLeaderboardController;
@@ -392,6 +393,12 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::post('/competition-bank-accounts', [CompetitionBankAccountController::class, 'update'])->name('competition-bank-accounts.update');
         Route::get('/competition-bank-account', fn () => redirect()->route('admin.competition-bank-accounts.index'));
         Route::get('/rekening-lomba', fn () => redirect()->route('admin.competition-bank-accounts.index'));
+
+        // Dokumentasi & Galeri Momen Lomba Per Edisi (Potret Sportivitas & Aksi Relawan)
+        Route::get('/competition-galleries', [CompetitionGalleryController::class, 'index'])->name('competition-galleries.index');
+        Route::post('/competition-galleries', [CompetitionGalleryController::class, 'store'])->name('competition-galleries.store');
+        Route::put('/competition-galleries/{gallery}', [CompetitionGalleryController::class, 'update'])->name('competition-galleries.update');
+        Route::delete('/competition-galleries/{gallery}', [CompetitionGalleryController::class, 'destroy'])->name('competition-galleries.destroy');
 
         // Pengaturan Kuota Regu & Batasan Kontingen Sekolah
         Route::get('/competition-quotas', [CompetitionQuotaController::class, 'index'])->name('competition-quotas.index');
