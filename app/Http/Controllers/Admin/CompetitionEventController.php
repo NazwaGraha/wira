@@ -347,12 +347,17 @@ class CompetitionEventController extends Controller
             'max_team_members' => 'nullable|integer|min:1|max:20',
             'order_position' => 'nullable|integer',
             'is_active' => 'nullable|boolean',
+            'image' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:5120',
         ]);
 
         $validated['competition_event_id'] = $event->id;
         $validated['is_active'] = $request->boolean('is_active', true);
         $validated['registration_fee'] = $validated['registration_fee'] ?? ($event->registration_fee ?: 150000);
         $validated['max_team_members'] = $validated['max_team_members'] ?? 2;
+
+        if ($request->hasFile('image')) {
+            $validated['image'] = $request->file('image')->store('competition/categories', 'public');
+        }
 
         if (empty($validated['code'])) {
             $words = explode(' ', $validated['name']);
@@ -400,10 +405,23 @@ class CompetitionEventController extends Controller
             'max_team_members' => 'nullable|integer|min:1|max:20',
             'order_position' => 'nullable|integer',
             'is_active' => 'nullable|boolean',
+            'image' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:5120',
         ]);
 
         $validated['is_active'] = $request->boolean('is_active');
         $validated['registration_fee'] = $validated['registration_fee'] ?? ($event->registration_fee ?: 150000);
+
+        if ($request->boolean('delete_image')) {
+            if ($category->image && Storage::disk('public')->exists($category->image)) {
+                Storage::disk('public')->delete($category->image);
+            }
+            $validated['image'] = null;
+        } elseif ($request->hasFile('image')) {
+            if ($category->image && Storage::disk('public')->exists($category->image)) {
+                Storage::disk('public')->delete($category->image);
+            }
+            $validated['image'] = $request->file('image')->store('competition/categories', 'public');
+        }
 
         $category->update($validated);
 

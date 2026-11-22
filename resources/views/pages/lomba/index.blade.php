@@ -261,234 +261,131 @@
                     </div>
                 </div>
 
-                <!-- DAFTAR JUARA MATA LOMBA WIRA -->
+                <!-- DAFTAR SELURUH JUARA MATA LOMBA WIRA -->
+                @php
+                    $wiraCats = $categoriesByLevel->get('Wira') ?? collect();
+                    $sampleWiraJuara = [
+                        ['SMAN 1 Kota Bogor', 'SMAN 2 Cibinong', 'SMKN 1 Ciawi', 'SMAN 1 Sukaraja', 'SMA Plus PGRI', 'MAN 2 Kota Bogor'],
+                        ['SMAN 2 Cibinong', 'SMAN 1 Kota Bogor', 'SMA Kosgoro Bogor', 'SMKN 1 Ciomas', 'SMA Bina Bangsa Mandiri', 'SMAN 1 Cisarua'],
+                        ['SMAN 1 Kota Bogor', 'SMA Plus PGRI Cibinong', 'SMAN 1 Megamendung', 'SMAN 1 Dramaga', 'SMAN 3 Kota Bogor', 'SMAIT Ummul Quro'],
+                        ['SMA Plus PGRI Cibinong', 'SMAN 1 Kota Bogor', 'MAN 2 Kota Bogor', 'SMAN 2 Cibinong', 'SMA Dwiwarna', 'SMAN 1 Babakan Madang'],
+                        ['SMAN 1 Megamendung', 'SMAN 1 Kota Bogor', 'SMAN 2 Cibinong', 'SMKN 1 Ciawi', 'SMA Kornita IPB', 'SMA Regina Pacis'],
+                        ['SMKN 1 Ciawi', 'SMAN 1 Ciawi', 'SMA Bina Profesi', 'SMA Plus PGRI Cibinong', 'SMAN 1 Cigombong', 'SMK Wikrama Bogor'],
+                        ['SMAN 1 Kota Bogor', 'SMAN 2 Cibinong', 'SMA Regina Pacis', 'SMAN 1 Caringin', 'SMA IT Al-Madinah', 'SMKN 1 Bogor'],
+                        ['SMAN 2 Cibinong', 'SMAN 1 Megamendung', 'SMA Plus PGRI Cibinong', 'SMAN 1 Kota Bogor', 'SMKN 1 Ciawi', 'SMA Kosgoro Bogor'],
+                    ];
+                    $wiraList = $wiraCats->isNotEmpty() ? $wiraCats : collect([
+                        (object)['name' => 'Pertolongan Pertama', 'gender_category' => 'Putra', 'level' => 'Wira', 'code' => 'LPP-WIRA-PA', 'image_url' => asset('mockups/03_kegiatan.jpg')],
+                        (object)['name' => 'Pertolongan Pertama', 'gender_category' => 'Putri', 'level' => 'Wira', 'code' => 'LPP-WIRA-PI', 'image_url' => asset('mockups/03_kegiatan.jpg')],
+                        (object)['name' => 'Ketangkasan Tandu Reguler', 'gender_category' => 'Putra', 'level' => 'Wira', 'code' => 'LKTR-WIRA-PA', 'image_url' => asset('mockups/04_galeri.jpg')],
+                        (object)['name' => 'Ketangkasan Tandu Reguler', 'gender_category' => 'Putri', 'level' => 'Wira', 'code' => 'LKTR-WIRA-PI', 'image_url' => asset('mockups/04_galeri.jpg')],
+                        (object)['name' => 'Lomba Cepat Tepat (LCT)', 'gender_category' => 'Umum', 'level' => 'Wira', 'code' => 'LCT-WIRA', 'image_url' => asset('mockups/07_artikel.jpg')],
+                        (object)['name' => 'Olimpiade Kepalangmerahan', 'gender_category' => 'Umum', 'level' => 'Wira', 'code' => 'OLIM-WIRA', 'image_url' => asset('mockups/07_artikel.jpg')],
+                        (object)['name' => 'Mading Kreasi 3D', 'gender_category' => 'Umum', 'level' => 'Wira', 'code' => 'MADING-WIRA', 'image_url' => asset('mockups/01_home.jpg')],
+                        (object)['name' => 'PMR Favorite (Sosial Media)', 'gender_category' => 'Umum', 'level' => 'Wira', 'code' => 'FAV-WIRA', 'image_url' => asset('mockups/01_home.jpg')],
+                    ]);
+                @endphp
+
                 <div class="space-y-6">
                     <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-200">
                         <div>
-                            <h3 class="text-xl sm:text-2xl font-black text-slate-900">Rekapitulasi Juara Mata Lomba Tingkat Wira</h3>
-                            <p class="text-xs sm:text-sm text-slate-500">Daftar peraih Juara Utama 1, 2, 3 hingga Juara Harapan 1, 2, 3 untuk unit SMA/SMK/MA sederajat.</p>
+                            <div class="flex items-center gap-2 mb-1">
+                                <h3 class="text-xl sm:text-2xl font-black text-slate-900">Rekapitulasi Seluruh Cabang Lomba Tingkat Wira</h3>
+                                <span class="bg-red-100 text-red-800 text-[11px] font-black px-2.5 py-0.5 rounded-full border border-red-200">
+                                    {{ $wiraList->count() }} Mata Lomba
+                                </span>
+                            </div>
+                            <p class="text-xs sm:text-sm text-slate-500">Daftar pemenang Juara Utama 1, 2, 3 hingga Juara Harapan 1, 2, 3 untuk seluruh mata lomba unit SMA/SMK/MA sederajat.</p>
                         </div>
                         <span class="text-xs font-bold text-red-700 bg-red-50 border border-red-200 px-3 py-1.5 rounded-xl self-start sm:self-auto shadow-2xs">
-                            <i class="fa-solid fa-list-check text-red-500 mr-1"></i> Penjurian Tingkat Wira
+                            <i class="fa-solid fa-list-check text-red-500 mr-1"></i> Penjurian Resmi Wira
                         </span>
                     </div>
 
                     <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                        <!-- PP WIRA -->
-                        <div class="bg-white rounded-3xl border border-slate-200 shadow-md overflow-hidden flex flex-col justify-between group hover:border-red-400 transition">
-                            <div>
-                                <div class="relative h-44 sm:h-48 bg-slate-900 overflow-hidden">
-                                    <img src="{{ asset('mockups/03_kegiatan.jpg') }}" alt="Pertolongan Pertama Wira" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300">
-                                    <div class="absolute inset-0 bg-gradient-to-t from-slate-950/85 via-slate-950/30 to-transparent"></div>
-                                    <span class="absolute top-3 left-3 bg-red-600 text-white text-[10px] font-black uppercase px-2.5 py-1 rounded-lg shadow">
-                                        <i class="fa-solid fa-kit-medical mr-1"></i> Wira • Medis Darurat
-                                    </span>
-                                    <div class="absolute bottom-3 left-3 right-3 text-white">
-                                        <h4 class="font-black text-base sm:text-lg">Pertolongan Pertama (PP) Wira</h4>
-                                        <p class="text-xs text-slate-200">Penanganan Fraktur, Trauma Kapitis & Resusitasi Jantung Paru (RJP)</p>
-                                    </div>
-                                </div>
-                                <div class="p-5 sm:p-6 space-y-2.5">
-                                    <div class="flex items-center justify-between text-xs p-2 rounded-xl bg-amber-50/80 border border-amber-200">
-                                        <div class="flex items-center gap-2">
-                                            <span class="w-6 h-6 rounded-full bg-amber-500 text-white font-black text-xs flex items-center justify-center">1</span>
-                                            <span class="font-extrabold text-slate-900">SMAN 1 Kota Bogor</span>
-                                        </div>
-                                        <span class="font-bold text-amber-800 text-[11px]">Juara 1 Utama (98.5)</span>
-                                    </div>
-                                    <div class="flex items-center justify-between text-xs p-2 rounded-xl bg-slate-50 border border-slate-200">
-                                        <div class="flex items-center gap-2">
-                                            <span class="w-6 h-6 rounded-full bg-slate-400 text-white font-black text-xs flex items-center justify-center">2</span>
-                                            <span class="font-bold text-slate-800">SMAN 2 Cibinong</span>
-                                        </div>
-                                        <span class="font-semibold text-slate-600 text-[11px]">Juara 2 Utama (96.0)</span>
-                                    </div>
-                                    <div class="flex items-center justify-between text-xs p-2 rounded-xl bg-orange-50/60 border border-orange-200">
-                                        <div class="flex items-center gap-2">
-                                            <span class="w-6 h-6 rounded-full bg-orange-400 text-white font-black text-xs flex items-center justify-center">3</span>
-                                            <span class="font-bold text-slate-800">SMKN 1 Ciawi</span>
-                                        </div>
-                                        <span class="font-semibold text-orange-800 text-[11px]">Juara 3 Utama (94.5)</span>
-                                    </div>
-                                    <div class="pt-2 grid grid-cols-3 gap-2 text-[11px] text-slate-600">
-                                        <div class="p-2 rounded-lg bg-slate-100/80 text-center">
-                                            <span class="block text-[10px] font-bold text-slate-400 uppercase">Harapan 1</span>
-                                            <span class="font-semibold text-slate-800 truncate block">SMAN 1 Sukaraja</span>
-                                        </div>
-                                        <div class="p-2 rounded-lg bg-slate-100/80 text-center">
-                                            <span class="block text-[10px] font-bold text-slate-400 uppercase">Harapan 2</span>
-                                            <span class="font-semibold text-slate-800 truncate block">SMA Plus PGRI</span>
-                                        </div>
-                                        <div class="p-2 rounded-lg bg-slate-100/80 text-center">
-                                            <span class="block text-[10px] font-bold text-slate-400 uppercase">Harapan 3</span>
-                                            <span class="font-semibold text-slate-800 truncate block">MAN 2 Bogor</span>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
+                        @foreach($wiraList as $index => $cat)
+                            @php
+                                $catWins = method_exists($cat, 'getWinners') ? $cat->getWinners() : collect();
+                                $w1 = $catWins->firstWhere('official_rank', 1) ?? $catWins->firstWhere('rank', 1);
+                                $w2 = $catWins->firstWhere('official_rank', 2) ?? $catWins->firstWhere('rank', 2);
+                                $w3 = $catWins->firstWhere('official_rank', 3) ?? $catWins->firstWhere('rank', 3);
+                                $h1 = $catWins->firstWhere('official_rank', 4) ?? $catWins->firstWhere('rank', 4);
+                                $h2 = $catWins->firstWhere('official_rank', 5) ?? $catWins->firstWhere('rank', 5);
+                                $h3 = $catWins->firstWhere('official_rank', 6) ?? $catWins->firstWhere('rank', 6);
+                                $sample = $sampleWiraJuara[$index % count($sampleWiraJuara)];
+                                $imgUrl = $cat->image_url ?? asset('mockups/03_kegiatan.jpg');
+                            @endphp
 
-                        <!-- TANDU WIRA -->
-                        <div class="bg-white rounded-3xl border border-slate-200 shadow-md overflow-hidden flex flex-col justify-between group hover:border-blue-400 transition">
-                            <div>
-                                <div class="relative h-44 sm:h-48 bg-slate-900 overflow-hidden">
-                                    <img src="{{ asset('mockups/04_galeri.jpg') }}" alt="Tandu Darurat Wira" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300">
-                                    <div class="absolute inset-0 bg-gradient-to-t from-slate-950/85 via-slate-950/30 to-transparent"></div>
-                                    <span class="absolute top-3 left-3 bg-blue-600 text-white text-[10px] font-black uppercase px-2.5 py-1 rounded-lg shadow">
-                                        <i class="fa-solid fa-person-walking-dashed-line-arrow-right mr-1"></i> Wira • Ketangkasan
-                                    </span>
-                                    <div class="absolute bottom-3 left-3 right-3 text-white">
-                                        <h4 class="font-black text-base sm:text-lg">Pasang Bongkar Tandu Darurat Wira</h4>
-                                        <p class="text-xs text-slate-200">Kecepatan Tali Jangkar, Kerapihan Simpul & Kekokohan Evakuasi</p>
-                                    </div>
-                                </div>
-                                <div class="p-5 sm:p-6 space-y-2.5">
-                                    <div class="flex items-center justify-between text-xs p-2 rounded-xl bg-amber-50/80 border border-amber-200">
-                                        <div class="flex items-center gap-2">
-                                            <span class="w-6 h-6 rounded-full bg-amber-500 text-white font-black text-xs flex items-center justify-center">1</span>
-                                            <span class="font-extrabold text-slate-900">SMAN 2 Cibinong</span>
+                            <div class="bg-white rounded-3xl border border-slate-200 shadow-md overflow-hidden flex flex-col justify-between group hover:border-red-400 transition">
+                                <div>
+                                    <div class="relative h-44 sm:h-48 bg-slate-900 overflow-hidden">
+                                        <img src="{{ $imgUrl }}" alt="{{ $cat->name }}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300">
+                                        <div class="absolute inset-0 bg-gradient-to-t from-slate-950/85 via-slate-950/30 to-transparent"></div>
+                                        <div class="absolute top-3 left-3 flex items-center gap-1.5 flex-wrap">
+                                            <span class="bg-red-600 text-white text-[10px] font-black uppercase px-2.5 py-1 rounded-lg shadow">
+                                                Wira • {{ $cat->gender_category }}
+                                            </span>
+                                            @if(!empty($cat->code))
+                                                <span class="bg-slate-900/80 backdrop-blur-xs text-slate-300 text-[10px] font-mono font-bold px-2 py-0.5 rounded-lg border border-slate-700">
+                                                    {{ $cat->code }}
+                                                </span>
+                                            @endif
                                         </div>
-                                        <span class="font-bold text-amber-800 text-[11px]">Juara 1 Utama (03:12)</span>
-                                    </div>
-                                    <div class="flex items-center justify-between text-xs p-2 rounded-xl bg-slate-50 border border-slate-200">
-                                        <div class="flex items-center gap-2">
-                                            <span class="w-6 h-6 rounded-full bg-slate-400 text-white font-black text-xs flex items-center justify-center">2</span>
-                                            <span class="font-bold text-slate-800">SMAN 1 Kota Bogor</span>
-                                        </div>
-                                        <span class="font-semibold text-slate-600 text-[11px]">Juara 2 Utama (03:25)</span>
-                                    </div>
-                                    <div class="flex items-center justify-between text-xs p-2 rounded-xl bg-orange-50/60 border border-orange-200">
-                                        <div class="flex items-center gap-2">
-                                            <span class="w-6 h-6 rounded-full bg-orange-400 text-white font-black text-xs flex items-center justify-center">3</span>
-                                            <span class="font-bold text-slate-800">SMA Kosgoro Bogor</span>
-                                        </div>
-                                        <span class="font-semibold text-orange-800 text-[11px]">Juara 3 Utama (03:40)</span>
-                                    </div>
-                                    <div class="pt-2 grid grid-cols-3 gap-2 text-[11px] text-slate-600">
-                                        <div class="p-2 rounded-lg bg-slate-100/80 text-center">
-                                            <span class="block text-[10px] font-bold text-slate-400 uppercase">Harapan 1</span>
-                                            <span class="font-semibold text-slate-800 truncate block">SMKN 1 Ciomas</span>
-                                        </div>
-                                        <div class="p-2 rounded-lg bg-slate-100/80 text-center">
-                                            <span class="block text-[10px] font-bold text-slate-400 uppercase">Harapan 2</span>
-                                            <span class="font-semibold text-slate-800 truncate block">SMA BBM Bogor</span>
-                                        </div>
-                                        <div class="p-2 rounded-lg bg-slate-100/80 text-center">
-                                            <span class="block text-[10px] font-bold text-slate-400 uppercase">Harapan 3</span>
-                                            <span class="font-semibold text-slate-800 truncate block">SMAN 1 Cisarua</span>
+                                        <div class="absolute bottom-3 left-3 right-3 text-white">
+                                            <h4 class="font-black text-base sm:text-lg">
+                                                {{ $cat->name }} {{ ($cat->gender_category && $cat->gender_category !== 'Umum') ? '('.$cat->gender_category.')' : '' }}
+                                            </h4>
+                                            <p class="text-xs text-slate-200">Ajang Kejuaraan PMR Wira SMAN 1 Ciawi Bogor</p>
                                         </div>
                                     </div>
-                                </div>
-                            </div>
-                        </div>
 
-                        <!-- LCT WIRA -->
-                        <div class="bg-white rounded-3xl border border-slate-200 shadow-md overflow-hidden flex flex-col justify-between group hover:border-emerald-400 transition">
-                            <div>
-                                <div class="relative h-44 sm:h-48 bg-slate-900 overflow-hidden">
-                                    <img src="{{ asset('mockups/07_artikel.jpg') }}" alt="LCT Wira" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300">
-                                    <div class="absolute inset-0 bg-gradient-to-t from-slate-950/85 via-slate-950/30 to-transparent"></div>
-                                    <span class="absolute top-3 left-3 bg-emerald-600 text-white text-[10px] font-black uppercase px-2.5 py-1 rounded-lg shadow">
-                                        <i class="fa-solid fa-brain mr-1"></i> Wira • Wawasan & LCT
-                                    </span>
-                                    <div class="absolute bottom-3 left-3 right-3 text-white">
-                                        <h4 class="font-black text-base sm:text-lg">Lomba Cerdas Tangkas (LCT) Wira</h4>
-                                        <p class="text-xs text-slate-200">Sejarah Gerakan PMI, Hukum Humaniter Internasional & Kode Etik Relawan</p>
-                                    </div>
-                                </div>
-                                <div class="p-5 sm:p-6 space-y-2.5">
-                                    <div class="flex items-center justify-between text-xs p-2 rounded-xl bg-amber-50/80 border border-amber-200">
-                                        <div class="flex items-center gap-2">
-                                            <span class="w-6 h-6 rounded-full bg-amber-500 text-white font-black text-xs flex items-center justify-center">1</span>
-                                            <span class="font-extrabold text-slate-900">SMAN 1 Kota Bogor</span>
+                                    <div class="p-5 sm:p-6 space-y-2.5">
+                                        <!-- JUARA 1 -->
+                                        <div class="flex items-center justify-between text-xs p-2 rounded-xl bg-amber-50/80 border border-amber-200">
+                                            <div class="flex items-center gap-2 min-w-0">
+                                                <span class="w-6 h-6 rounded-full bg-amber-500 text-white font-black text-xs flex items-center justify-center shrink-0">1</span>
+                                                <span class="font-extrabold text-slate-900 truncate">{{ $w1 ? ($w1->team?->registration?->school_name ?? $w1->team?->team_name) : $sample[0] }}</span>
+                                            </div>
+                                            <span class="font-bold text-amber-800 text-[11px] shrink-0 ml-2">{{ $w1 ? ($w1->award_title ?: 'Juara 1 Utama') : 'Juara 1 Utama' }}</span>
                                         </div>
-                                        <span class="font-bold text-amber-800 text-[11px]">Juara 1 Utama (1.520 pts)</span>
-                                    </div>
-                                    <div class="flex items-center justify-between text-xs p-2 rounded-xl bg-slate-50 border border-slate-200">
-                                        <div class="flex items-center gap-2">
-                                            <span class="w-6 h-6 rounded-full bg-slate-400 text-white font-black text-xs flex items-center justify-center">2</span>
-                                            <span class="font-bold text-slate-800">SMA Plus PGRI Cibinong</span>
-                                        </div>
-                                        <span class="font-semibold text-slate-600 text-[11px]">Juara 2 Utama</span>
-                                    </div>
-                                    <div class="flex items-center justify-between text-xs p-2 rounded-xl bg-orange-50/60 border border-orange-200">
-                                        <div class="flex items-center gap-2">
-                                            <span class="w-6 h-6 rounded-full bg-orange-400 text-white font-black text-xs flex items-center justify-center">3</span>
-                                            <span class="font-bold text-slate-800">SMAN 1 Megamendung</span>
-                                        </div>
-                                        <span class="font-semibold text-orange-800 text-[11px]">Juara 3 Utama</span>
-                                    </div>
-                                    <div class="pt-2 grid grid-cols-3 gap-2 text-[11px] text-slate-600">
-                                        <div class="p-2 rounded-lg bg-slate-100/80 text-center">
-                                            <span class="block text-[10px] font-bold text-slate-400 uppercase">Harapan 1</span>
-                                            <span class="font-semibold text-slate-800 truncate block">SMAN 1 Dramaga</span>
-                                        </div>
-                                        <div class="p-2 rounded-lg bg-slate-100/80 text-center">
-                                            <span class="block text-[10px] font-bold text-slate-400 uppercase">Harapan 2</span>
-                                            <span class="font-semibold text-slate-800 truncate block">SMAN 3 Bogor</span>
-                                        </div>
-                                        <div class="p-2 rounded-lg bg-slate-100/80 text-center">
-                                            <span class="block text-[10px] font-bold text-slate-400 uppercase">Harapan 3</span>
-                                            <span class="font-semibold text-slate-800 truncate block">SMAIT Ummul Quro</span>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
 
-                        <!-- PRS WIRA -->
-                        <div class="bg-white rounded-3xl border border-slate-200 shadow-md overflow-hidden flex flex-col justify-between group hover:border-purple-400 transition">
-                            <div>
-                                <div class="relative h-44 sm:h-48 bg-slate-900 overflow-hidden">
-                                    <img src="{{ asset('mockups/01_home.jpg') }}" alt="PRS Wira" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300">
-                                    <div class="absolute inset-0 bg-gradient-to-t from-slate-950/85 via-slate-950/30 to-transparent"></div>
-                                    <span class="absolute top-3 left-3 bg-purple-600 text-white text-[10px] font-black uppercase px-2.5 py-1 rounded-lg shadow">
-                                        <i class="fa-solid fa-paintbrush mr-1"></i> Wira • Kreativitas
-                                    </span>
-                                    <div class="absolute bottom-3 left-3 right-3 text-white">
-                                        <h4 class="font-black text-base sm:text-lg">Pendidikan Remaja Sebaya (PRS) & Poster</h4>
-                                        <p class="text-xs text-slate-200">Edukasi Kesehatan Reproduksi Remaja, Donor Darah Siswa & Karya Poster</p>
-                                    </div>
-                                </div>
-                                <div class="p-5 sm:p-6 space-y-2.5">
-                                    <div class="flex items-center justify-between text-xs p-2 rounded-xl bg-amber-50/80 border border-amber-200">
-                                        <div class="flex items-center gap-2">
-                                            <span class="w-6 h-6 rounded-full bg-amber-500 text-white font-black text-xs flex items-center justify-center">1</span>
-                                            <span class="font-extrabold text-slate-900">SMAN 1 Megamendung</span>
+                                        <!-- JUARA 2 -->
+                                        <div class="flex items-center justify-between text-xs p-2 rounded-xl bg-slate-50 border border-slate-200">
+                                            <div class="flex items-center gap-2 min-w-0">
+                                                <span class="w-6 h-6 rounded-full bg-slate-400 text-white font-black text-xs flex items-center justify-center shrink-0">2</span>
+                                                <span class="font-bold text-slate-800 truncate">{{ $w2 ? ($w2->team?->registration?->school_name ?? $w2->team?->team_name) : $sample[1] }}</span>
+                                            </div>
+                                            <span class="font-semibold text-slate-600 text-[11px] shrink-0 ml-2">{{ $w2 ? ($w2->award_title ?: 'Juara 2 Utama') : 'Juara 2 Utama' }}</span>
                                         </div>
-                                        <span class="font-bold text-amber-800 text-[11px]">Juara 1 Utama (98.0)</span>
-                                    </div>
-                                    <div class="flex items-center justify-between text-xs p-2 rounded-xl bg-slate-50 border border-slate-200">
-                                        <div class="flex items-center gap-2">
-                                            <span class="w-6 h-6 rounded-full bg-slate-400 text-white font-black text-xs flex items-center justify-center">2</span>
-                                            <span class="font-bold text-slate-800">SMAN 1 Kota Bogor</span>
+
+                                        <!-- JUARA 3 -->
+                                        <div class="flex items-center justify-between text-xs p-2 rounded-xl bg-orange-50/60 border border-orange-200">
+                                            <div class="flex items-center gap-2 min-w-0">
+                                                <span class="w-6 h-6 rounded-full bg-orange-400 text-white font-black text-xs flex items-center justify-center shrink-0">3</span>
+                                                <span class="font-bold text-slate-800 truncate">{{ $w3 ? ($w3->team?->registration?->school_name ?? $w3->team?->team_name) : $sample[2] }}</span>
+                                            </div>
+                                            <span class="font-semibold text-orange-800 text-[11px] shrink-0 ml-2">{{ $w3 ? ($w3->award_title ?: 'Juara 3 Utama') : 'Juara 3 Utama' }}</span>
                                         </div>
-                                        <span class="font-semibold text-slate-600 text-[11px]">Juara 2 Utama</span>
-                                    </div>
-                                    <div class="flex items-center justify-between text-xs p-2 rounded-xl bg-orange-50/60 border border-orange-200">
-                                        <div class="flex items-center gap-2">
-                                            <span class="w-6 h-6 rounded-full bg-orange-400 text-white font-black text-xs flex items-center justify-center">3</span>
-                                            <span class="font-bold text-slate-800">SMAN 2 Cibinong</span>
-                                        </div>
-                                        <span class="font-semibold text-orange-800 text-[11px]">Juara 3 Utama</span>
-                                    </div>
-                                    <div class="pt-2 grid grid-cols-3 gap-2 text-[11px] text-slate-600">
-                                        <div class="p-2 rounded-lg bg-slate-100/80 text-center">
-                                            <span class="block text-[10px] font-bold text-slate-400 uppercase">Harapan 1</span>
-                                            <span class="font-semibold text-slate-800 truncate block">SMKN 1 Ciawi</span>
-                                        </div>
-                                        <div class="p-2 rounded-lg bg-slate-100/80 text-center">
-                                            <span class="block text-[10px] font-bold text-slate-400 uppercase">Harapan 2</span>
-                                            <span class="font-semibold text-slate-800 truncate block">SMA Kornita IPB</span>
-                                        </div>
-                                        <div class="p-2 rounded-lg bg-slate-100/80 text-center">
-                                            <span class="block text-[10px] font-bold text-slate-400 uppercase">Harapan 3</span>
-                                            <span class="font-semibold text-slate-800 truncate block">SMA Regina Pacis</span>
+
+                                        <!-- HARAPAN 1, 2, 3 -->
+                                        <div class="pt-2 grid grid-cols-3 gap-2 text-[11px] text-slate-600">
+                                            <div class="p-2 rounded-lg bg-slate-100/80 text-center">
+                                                <span class="block text-[10px] font-bold text-slate-400 uppercase">Harapan 1</span>
+                                                <span class="font-semibold text-slate-800 truncate block">{{ $h1 ? ($h1->team?->registration?->school_name ?? $h1->team?->team_name) : $sample[3] }}</span>
+                                            </div>
+                                            <div class="p-2 rounded-lg bg-slate-100/80 text-center">
+                                                <span class="block text-[10px] font-bold text-slate-400 uppercase">Harapan 2</span>
+                                                <span class="font-semibold text-slate-800 truncate block">{{ $h2 ? ($h2->team?->registration?->school_name ?? $h2->team?->team_name) : $sample[4] }}</span>
+                                            </div>
+                                            <div class="p-2 rounded-lg bg-slate-100/80 text-center">
+                                                <span class="block text-[10px] font-bold text-slate-400 uppercase">Harapan 3</span>
+                                                <span class="font-semibold text-slate-800 truncate block">{{ $h3 ? ($h3->team?->registration?->school_name ?? $h3->team?->team_name) : $sample[5] }}</span>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
                             </div>
-                        </div>
+                        @endforeach
                     </div>
                 </div>
 
@@ -586,234 +483,131 @@
                     </div>
                 </div>
 
-                <!-- DAFTAR JUARA MATA LOMBA MADYA -->
+                <!-- DAFTAR SELURUH JUARA MATA LOMBA MADYA -->
+                @php
+                    $madyaCats = $categoriesByLevel->get('Madya') ?? collect();
+                    $sampleMadyaJuara = [
+                        ['SMP Bina Insan Mandiri', 'SMPN 1 Caringin', 'SMPN 4 Gunung Putri', 'SMP PGRI 9 Bogor', 'SMPN 2 Ciawi', 'MTs Al-Ikhlas'],
+                        ['SMPN 1 Caringin', 'SMPN 1 Ciawi', 'SMPN 2 Megamendung', 'SMP Al-Azhar Plus', 'MTsN 1 Bogor', 'SMP Amaliah Ciawi'],
+                        ['SMP PGRI 9 Kota Bogor', 'SMP Bina Insan Mandiri', 'SMPN 1 Caringin', 'SMPN 4 Gn. Putri', 'SMPN 1 Megamendung', 'SMP IT Nurul Fikri'],
+                        ['SMPN 2 Megamendung', 'SMP PGRI 9 Kota Bogor', 'SMPN 1 Caringin', 'SMP IT Al-Fityan', 'SMPN 1 Ciawi', 'SMP PGRI Ciawi'],
+                        ['SMPN 1 Caringin', 'SMP Bina Insan Mandiri', 'SMP PGRI 9 Kota Bogor', 'SMPN 2 Ciawi', 'MTsN 1 Bogor', 'SMP Citra Kasih'],
+                        ['SMPN 1 Ciawi', 'SMPN 1 Bogor', 'MTsN 2 Bogor', 'SMP Islam Terpadu', 'SMPN 2 Ciawi', 'SMP IT BBS Bogor'],
+                        ['SMPN 4 Gunung Putri', 'SMP PGRI 9 Kota Bogor', 'SMPN 1 Caringin', 'SMP Bina Insan', 'SMPN 3 Ciawi', 'SMP Al-Azhar Plus'],
+                        ['SMPN 1 Ciawi', 'SMPN 1 Caringin', 'SMPN 2 Megamendung', 'SMP Al-Azhar Plus', 'SMPN 4 Bogor', 'SMP Amaliah Ciawi'],
+                    ];
+                    $madyaList = $madyaCats->isNotEmpty() ? $madyaCats : collect([
+                        (object)['name' => 'Pertolongan Pertama', 'gender_category' => 'Putra', 'level' => 'Madya', 'code' => 'LPP-MADYA-PA', 'image_url' => asset('mockups/03_kegiatan.jpg')],
+                        (object)['name' => 'Pertolongan Pertama', 'gender_category' => 'Putri', 'level' => 'Madya', 'code' => 'LPP-MADYA-PI', 'image_url' => asset('mockups/03_kegiatan.jpg')],
+                        (object)['name' => 'Ketangkasan Tandu Reguler', 'gender_category' => 'Putra', 'level' => 'Madya', 'code' => 'LKTR-MADYA-PA', 'image_url' => asset('mockups/04_galeri.jpg')],
+                        (object)['name' => 'Ketangkasan Tandu Reguler', 'gender_category' => 'Putri', 'level' => 'Madya', 'code' => 'LKTR-MADYA-PI', 'image_url' => asset('mockups/04_galeri.jpg')],
+                        (object)['name' => 'Lomba Cepat Tepat (LCT)', 'gender_category' => 'Umum', 'level' => 'Madya', 'code' => 'LCT-MADYA', 'image_url' => asset('mockups/07_artikel.jpg')],
+                        (object)['name' => 'Olimpiade Kepalangmerahan', 'gender_category' => 'Umum', 'level' => 'Madya', 'code' => 'OLIM-MADYA', 'image_url' => asset('mockups/07_artikel.jpg')],
+                        (object)['name' => 'Pendidikan Remaja Sebaya (PRS)', 'gender_category' => 'Umum', 'level' => 'Madya', 'code' => 'PRS-MADYA', 'image_url' => asset('mockups/01_home.jpg')],
+                        (object)['name' => 'Mading Kreasi', 'gender_category' => 'Umum', 'level' => 'Madya', 'code' => 'MADING-MADYA', 'image_url' => asset('mockups/01_home.jpg')],
+                    ]);
+                @endphp
+
                 <div class="space-y-6">
                     <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-200">
                         <div>
-                            <h3 class="text-xl sm:text-2xl font-black text-slate-900">Rekapitulasi Juara Mata Lomba Tingkat Madya</h3>
-                            <p class="text-xs sm:text-sm text-slate-500">Daftar peraih Juara Utama 1, 2, 3 hingga Juara Harapan 1, 2, 3 untuk unit SMP/MTs sederajat.</p>
+                            <div class="flex items-center gap-2 mb-1">
+                                <h3 class="text-xl sm:text-2xl font-black text-slate-900">Rekapitulasi Seluruh Cabang Lomba Tingkat Madya</h3>
+                                <span class="bg-blue-100 text-blue-800 text-[11px] font-black px-2.5 py-0.5 rounded-full border border-blue-200">
+                                    {{ $madyaList->count() }} Mata Lomba
+                                </span>
+                            </div>
+                            <p class="text-xs sm:text-sm text-slate-500">Daftar pemenang Juara Utama 1, 2, 3 hingga Juara Harapan 1, 2, 3 untuk unit SMP/MTs sederajat.</p>
                         </div>
                         <span class="text-xs font-bold text-blue-700 bg-blue-50 border border-blue-200 px-3 py-1.5 rounded-xl self-start sm:self-auto shadow-2xs">
-                            <i class="fa-solid fa-list-check text-blue-500 mr-1"></i> Penjurian Tingkat Madya
+                            <i class="fa-solid fa-list-check text-blue-500 mr-1"></i> Penjurian Resmi Madya
                         </span>
                     </div>
 
                     <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                        <!-- PP MADYA -->
-                        <div class="bg-white rounded-3xl border border-slate-200 shadow-md overflow-hidden flex flex-col justify-between group hover:border-red-400 transition">
-                            <div>
-                                <div class="relative h-44 sm:h-48 bg-slate-900 overflow-hidden">
-                                    <img src="{{ asset('mockups/03_kegiatan.jpg') }}" alt="Pertolongan Pertama Madya" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300">
-                                    <div class="absolute inset-0 bg-gradient-to-t from-slate-950/85 via-slate-950/30 to-transparent"></div>
-                                    <span class="absolute top-3 left-3 bg-red-600 text-white text-[10px] font-black uppercase px-2.5 py-1 rounded-lg shadow">
-                                        <i class="fa-solid fa-kit-medical mr-1"></i> Madya • Medis Lapangan
-                                    </span>
-                                    <div class="absolute bottom-3 left-3 right-3 text-white">
-                                        <h4 class="font-black text-base sm:text-lg">Pertolongan Pertama (PP) Madya</h4>
-                                        <p class="text-xs text-slate-200">Simulasi Evakuasi, Balut Bidai & Penanganan Luka Fisik</p>
-                                    </div>
-                                </div>
-                                <div class="p-5 sm:p-6 space-y-2.5">
-                                    <div class="flex items-center justify-between text-xs p-2 rounded-xl bg-amber-50/80 border border-amber-200">
-                                        <div class="flex items-center gap-2">
-                                            <span class="w-6 h-6 rounded-full bg-amber-500 text-white font-black text-xs flex items-center justify-center">1</span>
-                                            <span class="font-extrabold text-slate-900">SMP Bina Insan Mandiri</span>
-                                        </div>
-                                        <span class="font-bold text-amber-800 text-[11px]">Juara 1 Utama (97.0)</span>
-                                    </div>
-                                    <div class="flex items-center justify-between text-xs p-2 rounded-xl bg-slate-50 border border-slate-200">
-                                        <div class="flex items-center gap-2">
-                                            <span class="w-6 h-6 rounded-full bg-slate-400 text-white font-black text-xs flex items-center justify-center">2</span>
-                                            <span class="font-bold text-slate-800">SMPN 1 Caringin</span>
-                                        </div>
-                                        <span class="font-semibold text-slate-600 text-[11px]">Juara 2 Utama (95.5)</span>
-                                    </div>
-                                    <div class="flex items-center justify-between text-xs p-2 rounded-xl bg-orange-50/60 border border-orange-200">
-                                        <div class="flex items-center gap-2">
-                                            <span class="w-6 h-6 rounded-full bg-orange-400 text-white font-black text-xs flex items-center justify-center">3</span>
-                                            <span class="font-bold text-slate-800">SMPN 4 Gunung Putri</span>
-                                        </div>
-                                        <span class="font-semibold text-orange-800 text-[11px]">Juara 3 Utama (93.0)</span>
-                                    </div>
-                                    <div class="pt-2 grid grid-cols-3 gap-2 text-[11px] text-slate-600">
-                                        <div class="p-2 rounded-lg bg-slate-100/80 text-center">
-                                            <span class="block text-[10px] font-bold text-slate-400 uppercase">Harapan 1</span>
-                                            <span class="font-semibold text-slate-800 truncate block">SMP PGRI 9 Bogor</span>
-                                        </div>
-                                        <div class="p-2 rounded-lg bg-slate-100/80 text-center">
-                                            <span class="block text-[10px] font-bold text-slate-400 uppercase">Harapan 2</span>
-                                            <span class="font-semibold text-slate-800 truncate block">SMPN 2 Ciawi</span>
-                                        </div>
-                                        <div class="p-2 rounded-lg bg-slate-100/80 text-center">
-                                            <span class="block text-[10px] font-bold text-slate-400 uppercase">Harapan 3</span>
-                                            <span class="font-semibold text-slate-800 truncate block">MTs Al-Ikhlas</span>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
+                        @foreach($madyaList as $index => $cat)
+                            @php
+                                $catWins = method_exists($cat, 'getWinners') ? $cat->getWinners() : collect();
+                                $w1 = $catWins->firstWhere('official_rank', 1) ?? $catWins->firstWhere('rank', 1);
+                                $w2 = $catWins->firstWhere('official_rank', 2) ?? $catWins->firstWhere('rank', 2);
+                                $w3 = $catWins->firstWhere('official_rank', 3) ?? $catWins->firstWhere('rank', 3);
+                                $h1 = $catWins->firstWhere('official_rank', 4) ?? $catWins->firstWhere('rank', 4);
+                                $h2 = $catWins->firstWhere('official_rank', 5) ?? $catWins->firstWhere('rank', 5);
+                                $h3 = $catWins->firstWhere('official_rank', 6) ?? $catWins->firstWhere('rank', 6);
+                                $sample = $sampleMadyaJuara[$index % count($sampleMadyaJuara)];
+                                $imgUrl = $cat->image_url ?? asset('mockups/03_kegiatan.jpg');
+                            @endphp
 
-                        <!-- TANDU MADYA -->
-                        <div class="bg-white rounded-3xl border border-slate-200 shadow-md overflow-hidden flex flex-col justify-between group hover:border-blue-400 transition">
-                            <div>
-                                <div class="relative h-44 sm:h-48 bg-slate-900 overflow-hidden">
-                                    <img src="{{ asset('mockups/04_galeri.jpg') }}" alt="Tandu Darurat Madya" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300">
-                                    <div class="absolute inset-0 bg-gradient-to-t from-slate-950/85 via-slate-950/30 to-transparent"></div>
-                                    <span class="absolute top-3 left-3 bg-blue-600 text-white text-[10px] font-black uppercase px-2.5 py-1 rounded-lg shadow">
-                                        <i class="fa-solid fa-person-walking-dashed-line-arrow-right mr-1"></i> Madya • Ketangkasan
-                                    </span>
-                                    <div class="absolute bottom-3 left-3 right-3 text-white">
-                                        <h4 class="font-black text-base sm:text-lg">Pasang Bongkar Tandu Darurat Madya</h4>
-                                        <p class="text-xs text-slate-200">Uji Kecepatan Simpul, Kerapihan Palang & Kekokohan Tandu</p>
-                                    </div>
-                                </div>
-                                <div class="p-5 sm:p-6 space-y-2.5">
-                                    <div class="flex items-center justify-between text-xs p-2 rounded-xl bg-amber-50/80 border border-amber-200">
-                                        <div class="flex items-center gap-2">
-                                            <span class="w-6 h-6 rounded-full bg-amber-500 text-white font-black text-xs flex items-center justify-center">1</span>
-                                            <span class="font-extrabold text-slate-900">SMP PGRI 9 Kota Bogor</span>
+                            <div class="bg-white rounded-3xl border border-slate-200 shadow-md overflow-hidden flex flex-col justify-between group hover:border-blue-400 transition">
+                                <div>
+                                    <div class="relative h-44 sm:h-48 bg-slate-900 overflow-hidden">
+                                        <img src="{{ $imgUrl }}" alt="{{ $cat->name }}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300">
+                                        <div class="absolute inset-0 bg-gradient-to-t from-slate-950/85 via-slate-950/30 to-transparent"></div>
+                                        <div class="absolute top-3 left-3 flex items-center gap-1.5 flex-wrap">
+                                            <span class="bg-blue-600 text-white text-[10px] font-black uppercase px-2.5 py-1 rounded-lg shadow">
+                                                Madya • {{ $cat->gender_category }}
+                                            </span>
+                                            @if(!empty($cat->code))
+                                                <span class="bg-slate-900/80 backdrop-blur-xs text-slate-300 text-[10px] font-mono font-bold px-2 py-0.5 rounded-lg border border-slate-700">
+                                                    {{ $cat->code }}
+                                                </span>
+                                            @endif
                                         </div>
-                                        <span class="font-bold text-amber-800 text-[11px]">Juara 1 Utama (02:45)</span>
-                                    </div>
-                                    <div class="flex items-center justify-between text-xs p-2 rounded-xl bg-slate-50 border border-slate-200">
-                                        <div class="flex items-center gap-2">
-                                            <span class="w-6 h-6 rounded-full bg-slate-400 text-white font-black text-xs flex items-center justify-center">2</span>
-                                            <span class="font-bold text-slate-800">SMP Bina Insan Mandiri</span>
-                                        </div>
-                                        <span class="font-semibold text-slate-600 text-[11px]">Juara 2 Utama (03:02)</span>
-                                    </div>
-                                    <div class="flex items-center justify-between text-xs p-2 rounded-xl bg-orange-50/60 border border-orange-200">
-                                        <div class="flex items-center gap-2">
-                                            <span class="w-6 h-6 rounded-full bg-orange-400 text-white font-black text-xs flex items-center justify-center">3</span>
-                                            <span class="font-bold text-slate-800">SMPN 1 Caringin</span>
-                                        </div>
-                                        <span class="font-semibold text-orange-800 text-[11px]">Juara 3 Utama (03:18)</span>
-                                    </div>
-                                    <div class="pt-2 grid grid-cols-3 gap-2 text-[11px] text-slate-600">
-                                        <div class="p-2 rounded-lg bg-slate-100/80 text-center">
-                                            <span class="block text-[10px] font-bold text-slate-400 uppercase">Harapan 1</span>
-                                            <span class="font-semibold text-slate-800 truncate block">SMPN 4 Gn. Putri</span>
-                                        </div>
-                                        <div class="p-2 rounded-lg bg-slate-100/80 text-center">
-                                            <span class="block text-[10px] font-bold text-slate-400 uppercase">Harapan 2</span>
-                                            <span class="font-semibold text-slate-800 truncate block">SMPN 1 Megamendung</span>
-                                        </div>
-                                        <div class="p-2 rounded-lg bg-slate-100/80 text-center">
-                                            <span class="block text-[10px] font-bold text-slate-400 uppercase">Harapan 3</span>
-                                            <span class="font-semibold text-slate-800 truncate block">SMP IT Nurul Fikri</span>
+                                        <div class="absolute bottom-3 left-3 right-3 text-white">
+                                            <h4 class="font-black text-base sm:text-lg">
+                                                {{ $cat->name }} {{ ($cat->gender_category && $cat->gender_category !== 'Umum') ? '('.$cat->gender_category.')' : '' }}
+                                            </h4>
+                                            <p class="text-xs text-slate-200">Ajang Kejuaraan PMR Madya SMAN 1 Ciawi Bogor</p>
                                         </div>
                                     </div>
-                                </div>
-                            </div>
-                        </div>
 
-                        <!-- LCT MADYA -->
-                        <div class="bg-white rounded-3xl border border-slate-200 shadow-md overflow-hidden flex flex-col justify-between group hover:border-emerald-400 transition">
-                            <div>
-                                <div class="relative h-44 sm:h-48 bg-slate-900 overflow-hidden">
-                                    <img src="{{ asset('mockups/07_artikel.jpg') }}" alt="LCT Madya" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300">
-                                    <div class="absolute inset-0 bg-gradient-to-t from-slate-950/85 via-slate-950/30 to-transparent"></div>
-                                    <span class="absolute top-3 left-3 bg-emerald-600 text-white text-[10px] font-black uppercase px-2.5 py-1 rounded-lg shadow">
-                                        <i class="fa-solid fa-brain mr-1"></i> Madya • Wawasan
-                                    </span>
-                                    <div class="absolute bottom-3 left-3 right-3 text-white">
-                                        <h4 class="font-black text-base sm:text-lg">Lomba Cerdas Tangkas (LCT) Madya</h4>
-                                        <p class="text-xs text-slate-200">Sejarah Gerakan Palang Merah, Prinsip Dasar PMI & Medis Remaja</p>
-                                    </div>
-                                </div>
-                                <div class="p-5 sm:p-6 space-y-2.5">
-                                    <div class="flex items-center justify-between text-xs p-2 rounded-xl bg-amber-50/80 border border-amber-200">
-                                        <div class="flex items-center gap-2">
-                                            <span class="w-6 h-6 rounded-full bg-amber-500 text-white font-black text-xs flex items-center justify-center">1</span>
-                                            <span class="font-extrabold text-slate-900">SMPN 1 Caringin</span>
+                                    <div class="p-5 sm:p-6 space-y-2.5">
+                                        <!-- JUARA 1 -->
+                                        <div class="flex items-center justify-between text-xs p-2 rounded-xl bg-amber-50/80 border border-amber-200">
+                                            <div class="flex items-center gap-2 min-w-0">
+                                                <span class="w-6 h-6 rounded-full bg-amber-500 text-white font-black text-xs flex items-center justify-center shrink-0">1</span>
+                                                <span class="font-extrabold text-slate-900 truncate">{{ $w1 ? ($w1->team?->registration?->school_name ?? $w1->team?->team_name) : $sample[0] }}</span>
+                                            </div>
+                                            <span class="font-bold text-amber-800 text-[11px] shrink-0 ml-2">{{ $w1 ? ($w1->award_title ?: 'Juara 1 Utama') : 'Juara 1 Utama' }}</span>
                                         </div>
-                                        <span class="font-bold text-amber-800 text-[11px]">Juara 1 Utama (1.450 pts)</span>
-                                    </div>
-                                    <div class="flex items-center justify-between text-xs p-2 rounded-xl bg-slate-50 border border-slate-200">
-                                        <div class="flex items-center gap-2">
-                                            <span class="w-6 h-6 rounded-full bg-slate-400 text-white font-black text-xs flex items-center justify-center">2</span>
-                                            <span class="font-bold text-slate-800">SMP Bina Insan Mandiri</span>
-                                        </div>
-                                        <span class="font-semibold text-slate-600 text-[11px]">Juara 2 Utama</span>
-                                    </div>
-                                    <div class="flex items-center justify-between text-xs p-2 rounded-xl bg-orange-50/60 border border-orange-200">
-                                        <div class="flex items-center gap-2">
-                                            <span class="w-6 h-6 rounded-full bg-orange-400 text-white font-black text-xs flex items-center justify-center">3</span>
-                                            <span class="font-bold text-slate-800">SMP PGRI 9 Kota Bogor</span>
-                                        </div>
-                                        <span class="font-semibold text-orange-800 text-[11px]">Juara 3 Utama</span>
-                                    </div>
-                                    <div class="pt-2 grid grid-cols-3 gap-2 text-[11px] text-slate-600">
-                                        <div class="p-2 rounded-lg bg-slate-100/80 text-center">
-                                            <span class="block text-[10px] font-bold text-slate-400 uppercase">Harapan 1</span>
-                                            <span class="font-semibold text-slate-800 truncate block">SMPN 2 Ciawi</span>
-                                        </div>
-                                        <div class="p-2 rounded-lg bg-slate-100/80 text-center">
-                                            <span class="block text-[10px] font-bold text-slate-400 uppercase">Harapan 2</span>
-                                            <span class="font-semibold text-slate-800 truncate block">MTsN 1 Bogor</span>
-                                        </div>
-                                        <div class="p-2 rounded-lg bg-slate-100/80 text-center">
-                                            <span class="block text-[10px] font-bold text-slate-400 uppercase">Harapan 3</span>
-                                            <span class="font-semibold text-slate-800 truncate block">SMP Citra Kasih</span>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
 
-                        <!-- PRS MADYA -->
-                        <div class="bg-white rounded-3xl border border-slate-200 shadow-md overflow-hidden flex flex-col justify-between group hover:border-purple-400 transition">
-                            <div>
-                                <div class="relative h-44 sm:h-48 bg-slate-900 overflow-hidden">
-                                    <img src="{{ asset('mockups/01_home.jpg') }}" alt="PRS Madya" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300">
-                                    <div class="absolute inset-0 bg-gradient-to-t from-slate-950/85 via-slate-950/30 to-transparent"></div>
-                                    <span class="absolute top-3 left-3 bg-purple-600 text-white text-[10px] font-black uppercase px-2.5 py-1 rounded-lg shadow">
-                                        <i class="fa-solid fa-paintbrush mr-1"></i> Madya • Sosialisasi
-                                    </span>
-                                    <div class="absolute bottom-3 left-3 right-3 text-white">
-                                        <h4 class="font-black text-base sm:text-lg">Pendidikan Remaja Sebaya (PRS) & Poster</h4>
-                                        <p class="text-xs text-slate-200">Sosialisasi Pola Hidup Bersih & Sehat (PHBS), Anti Perundungan & Karya Poster</p>
-                                    </div>
-                                </div>
-                                <div class="p-5 sm:p-6 space-y-2.5">
-                                    <div class="flex items-center justify-between text-xs p-2 rounded-xl bg-amber-50/80 border border-amber-200">
-                                        <div class="flex items-center gap-2">
-                                            <span class="w-6 h-6 rounded-full bg-amber-500 text-white font-black text-xs flex items-center justify-center">1</span>
-                                            <span class="font-extrabold text-slate-900">SMPN 4 Gunung Putri</span>
+                                        <!-- JUARA 2 -->
+                                        <div class="flex items-center justify-between text-xs p-2 rounded-xl bg-slate-50 border border-slate-200">
+                                            <div class="flex items-center gap-2 min-w-0">
+                                                <span class="w-6 h-6 rounded-full bg-slate-400 text-white font-black text-xs flex items-center justify-center shrink-0">2</span>
+                                                <span class="font-bold text-slate-800 truncate">{{ $w2 ? ($w2->team?->registration?->school_name ?? $w2->team?->team_name) : $sample[1] }}</span>
+                                            </div>
+                                            <span class="font-semibold text-slate-600 text-[11px] shrink-0 ml-2">{{ $w2 ? ($w2->award_title ?: 'Juara 2 Utama') : 'Juara 2 Utama' }}</span>
                                         </div>
-                                        <span class="font-bold text-amber-800 text-[11px]">Juara 1 Utama (97.5)</span>
-                                    </div>
-                                    <div class="flex items-center justify-between text-xs p-2 rounded-xl bg-slate-50 border border-slate-200">
-                                        <div class="flex items-center gap-2">
-                                            <span class="w-6 h-6 rounded-full bg-slate-400 text-white font-black text-xs flex items-center justify-center">2</span>
-                                            <span class="font-bold text-slate-800">SMP PGRI 9 Kota Bogor</span>
+
+                                        <!-- JUARA 3 -->
+                                        <div class="flex items-center justify-between text-xs p-2 rounded-xl bg-orange-50/60 border border-orange-200">
+                                            <div class="flex items-center gap-2 min-w-0">
+                                                <span class="w-6 h-6 rounded-full bg-orange-400 text-white font-black text-xs flex items-center justify-center shrink-0">3</span>
+                                                <span class="font-bold text-slate-800 truncate">{{ $w3 ? ($w3->team?->registration?->school_name ?? $w3->team?->team_name) : $sample[2] }}</span>
+                                            </div>
+                                            <span class="font-semibold text-orange-800 text-[11px] shrink-0 ml-2">{{ $w3 ? ($w3->award_title ?: 'Juara 3 Utama') : 'Juara 3 Utama' }}</span>
                                         </div>
-                                        <span class="font-semibold text-slate-600 text-[11px]">Juara 2 Utama</span>
-                                    </div>
-                                    <div class="flex items-center justify-between text-xs p-2 rounded-xl bg-orange-50/60 border border-orange-200">
-                                        <div class="flex items-center gap-2">
-                                            <span class="w-6 h-6 rounded-full bg-orange-400 text-white font-black text-xs flex items-center justify-center">3</span>
-                                            <span class="font-bold text-slate-800">SMPN 1 Ciawi</span>
-                                        </div>
-                                        <span class="font-semibold text-orange-800 text-[11px]">Juara 3 Utama</span>
-                                    </div>
-                                    <div class="pt-2 grid grid-cols-3 gap-2 text-[11px] text-slate-600">
-                                        <div class="p-2 rounded-lg bg-slate-100/80 text-center">
-                                            <span class="block text-[10px] font-bold text-slate-400 uppercase">Harapan 1</span>
-                                            <span class="font-semibold text-slate-800 truncate block">SMPN 1 Caringin</span>
-                                        </div>
-                                        <div class="p-2 rounded-lg bg-slate-100/80 text-center">
-                                            <span class="block text-[10px] font-bold text-slate-400 uppercase">Harapan 2</span>
-                                            <span class="font-semibold text-slate-800 truncate block">SMP Al-Azhar Plus</span>
-                                        </div>
-                                        <div class="p-2 rounded-lg bg-slate-100/80 text-center">
-                                            <span class="block text-[10px] font-bold text-slate-400 uppercase">Harapan 3</span>
-                                            <span class="font-semibold text-slate-800 truncate block">SMP Amaliah Ciawi</span>
+
+                                        <!-- HARAPAN 1, 2, 3 -->
+                                        <div class="pt-2 grid grid-cols-3 gap-2 text-[11px] text-slate-600">
+                                            <div class="p-2 rounded-lg bg-slate-100/80 text-center">
+                                                <span class="block text-[10px] font-bold text-slate-400 uppercase">Harapan 1</span>
+                                                <span class="font-semibold text-slate-800 truncate block">{{ $h1 ? ($h1->team?->registration?->school_name ?? $h1->team?->team_name) : $sample[3] }}</span>
+                                            </div>
+                                            <div class="p-2 rounded-lg bg-slate-100/80 text-center">
+                                                <span class="block text-[10px] font-bold text-slate-400 uppercase">Harapan 2</span>
+                                                <span class="font-semibold text-slate-800 truncate block">{{ $h2 ? ($h2->team?->registration?->school_name ?? $h2->team?->team_name) : $sample[4] }}</span>
+                                            </div>
+                                            <div class="p-2 rounded-lg bg-slate-100/80 text-center">
+                                                <span class="block text-[10px] font-bold text-slate-400 uppercase">Harapan 3</span>
+                                                <span class="font-semibold text-slate-800 truncate block">{{ $h3 ? ($h3->team?->registration?->school_name ?? $h3->team?->team_name) : $sample[5] }}</span>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
                             </div>
-                        </div>
+                        @endforeach
                     </div>
                 </div>
 
@@ -911,234 +705,127 @@
                     </div>
                 </div>
 
-                <!-- DAFTAR JUARA MATA LOMBA MULA -->
+                <!-- DAFTAR SELURUH JUARA MATA LOMBA MULA -->
+                @php
+                    $mulaCats = $categoriesByLevel->get('Mula') ?? collect();
+                    $sampleMulaJuara = [
+                        ['SDN Harapan Bangsa', 'SDN Ciawi 01', 'SDIT Insan Kamil Bogor', 'SDN Pandansari 02', 'SDN Bendungan 01', 'MIS Ciawi'],
+                        ['SDN Ciawi 01', 'SDN Harapan Bangsa', 'SDIT Insan Kamil Bogor', 'SDN Ciawi 02', 'SDN Pandansari 01', 'MIS Al-Hidayah'],
+                        ['SDN Ciawi 01', 'SDN Harapan Bangsa', 'SDN Pandansari 01', 'SDIT Insan Kamil', 'SDN Teluk Pinang 02', 'SDN Bitungsari 01'],
+                        ['SDIT Insan Kamil Bogor', 'SDN Ciawi 01', 'SDN Harapan Bangsa', 'SDN Banjarwaru 01', 'SDN Citapen 01', 'SDN Cipayung 02'],
+                        ['SDIT Insan Kamil Bogor', 'SDN Harapan Bangsa', 'SDN Ciawi 01', 'SDN Banjarwaru 01', 'SDN Citapen 01', 'SDN Cipayung 02'],
+                        ['SDN Harapan Bangsa', 'SDIT Insan Kamil Bogor', 'SDN Ciawi 01', 'SDN Ciawi 02', 'MIS Al-Hidayah', 'SDN Banjarsari 01'],
+                    ];
+                    $mulaList = $mulaCats->isNotEmpty() ? $mulaCats : collect([
+                        (object)['name' => 'Pertolongan Pertama', 'gender_category' => 'Putra', 'level' => 'Mula', 'code' => 'LPP-MULA-PA', 'image_url' => asset('mockups/03_kegiatan.jpg')],
+                        (object)['name' => 'Pertolongan Pertama', 'gender_category' => 'Putri', 'level' => 'Mula', 'code' => 'LPP-MULA-PI', 'image_url' => asset('mockups/03_kegiatan.jpg')],
+                        (object)['name' => 'Ketangkasan Tandu Reguler', 'gender_category' => 'Umum', 'level' => 'Mula', 'code' => 'LKTR-MULA', 'image_url' => asset('mockups/04_galeri.jpg')],
+                        (object)['name' => 'Ketangkasan Cuci Tangan (CTPS)', 'gender_category' => 'Umum', 'level' => 'Mula', 'code' => 'CTPS-MULA', 'image_url' => asset('mockups/03_kegiatan.jpg')],
+                        (object)['name' => 'Lomba Mewarnai & Menggambar', 'gender_category' => 'Umum', 'level' => 'Mula', 'code' => 'WARNA-MULA', 'image_url' => asset('mockups/01_home.jpg')],
+                        (object)['name' => 'Mading Kreasi Mula', 'gender_category' => 'Umum', 'level' => 'Mula', 'code' => 'MADING-MULA', 'image_url' => asset('mockups/01_home.jpg')],
+                    ]);
+                @endphp
+
                 <div class="space-y-6">
                     <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-200">
                         <div>
-                            <h3 class="text-xl sm:text-2xl font-black text-slate-900">Rekapitulasi Juara Mata Lomba Tingkat Mula</h3>
-                            <p class="text-xs sm:text-sm text-slate-500">Daftar peraih Juara Utama 1, 2, 3 hingga Juara Harapan 1, 2, 3 untuk unit SD/MI sederajat.</p>
+                            <div class="flex items-center gap-2 mb-1">
+                                <h3 class="text-xl sm:text-2xl font-black text-slate-900">Rekapitulasi Seluruh Cabang Lomba Tingkat Mula</h3>
+                                <span class="bg-emerald-100 text-emerald-800 text-[11px] font-black px-2.5 py-0.5 rounded-full border border-emerald-200">
+                                    {{ $mulaList->count() }} Mata Lomba
+                                </span>
+                            </div>
+                            <p class="text-xs sm:text-sm text-slate-500">Daftar pemenang Juara Utama 1, 2, 3 hingga Juara Harapan 1, 2, 3 untuk unit SD/MI sederajat.</p>
                         </div>
                         <span class="text-xs font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 px-3 py-1.5 rounded-xl self-start sm:self-auto shadow-2xs">
-                            <i class="fa-solid fa-list-check text-emerald-500 mr-1"></i> Penjurian Tingkat Mula
+                            <i class="fa-solid fa-list-check text-emerald-500 mr-1"></i> Penjurian Resmi Mula
                         </span>
                     </div>
 
                     <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                        <!-- PP MULA -->
-                        <div class="bg-white rounded-3xl border border-slate-200 shadow-md overflow-hidden flex flex-col justify-between group hover:border-red-400 transition">
-                            <div>
-                                <div class="relative h-44 sm:h-48 bg-slate-900 overflow-hidden">
-                                    <img src="{{ asset('mockups/03_kegiatan.jpg') }}" alt="Pertolongan Pertama Mula" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300">
-                                    <div class="absolute inset-0 bg-gradient-to-t from-slate-950/85 via-slate-950/30 to-transparent"></div>
-                                    <span class="absolute top-3 left-3 bg-red-600 text-white text-[10px] font-black uppercase px-2.5 py-1 rounded-lg shadow">
-                                        <i class="fa-solid fa-kit-medical mr-1"></i> Mula • Dasar Medis
-                                    </span>
-                                    <div class="absolute bottom-3 left-3 right-3 text-white">
-                                        <h4 class="font-black text-base sm:text-lg">Pertolongan Pertama (PP) Mula</h4>
-                                        <p class="text-xs text-slate-200">Penanganan Luka Lecet, Mimisan, Pingsan & Pembalutan Sederhana</p>
-                                    </div>
-                                </div>
-                                <div class="p-5 sm:p-6 space-y-2.5">
-                                    <div class="flex items-center justify-between text-xs p-2 rounded-xl bg-amber-50/80 border border-amber-200">
-                                        <div class="flex items-center gap-2">
-                                            <span class="w-6 h-6 rounded-full bg-amber-500 text-white font-black text-xs flex items-center justify-center">1</span>
-                                            <span class="font-extrabold text-slate-900">SDN Harapan Bangsa</span>
-                                        </div>
-                                        <span class="font-bold text-amber-800 text-[11px]">Juara 1 Utama (96.0)</span>
-                                    </div>
-                                    <div class="flex items-center justify-between text-xs p-2 rounded-xl bg-slate-50 border border-slate-200">
-                                        <div class="flex items-center gap-2">
-                                            <span class="w-6 h-6 rounded-full bg-slate-400 text-white font-black text-xs flex items-center justify-center">2</span>
-                                            <span class="font-bold text-slate-800">SDN Ciawi 01</span>
-                                        </div>
-                                        <span class="font-semibold text-slate-600 text-[11px]">Juara 2 Utama (94.0)</span>
-                                    </div>
-                                    <div class="flex items-center justify-between text-xs p-2 rounded-xl bg-orange-50/60 border border-orange-200">
-                                        <div class="flex items-center gap-2">
-                                            <span class="w-6 h-6 rounded-full bg-orange-400 text-white font-black text-xs flex items-center justify-center">3</span>
-                                            <span class="font-bold text-slate-800">SDIT Insan Kamil Bogor</span>
-                                        </div>
-                                        <span class="font-semibold text-orange-800 text-[11px]">Juara 3 Utama (92.5)</span>
-                                    </div>
-                                    <div class="pt-2 grid grid-cols-3 gap-2 text-[11px] text-slate-600">
-                                        <div class="p-2 rounded-lg bg-slate-100/80 text-center">
-                                            <span class="block text-[10px] font-bold text-slate-400 uppercase">Harapan 1</span>
-                                            <span class="font-semibold text-slate-800 truncate block">SDN Pandansari 02</span>
-                                        </div>
-                                        <div class="p-2 rounded-lg bg-slate-100/80 text-center">
-                                            <span class="block text-[10px] font-bold text-slate-400 uppercase">Harapan 2</span>
-                                            <span class="font-semibold text-slate-800 truncate block">SDN Bendungan 01</span>
-                                        </div>
-                                        <div class="p-2 rounded-lg bg-slate-100/80 text-center">
-                                            <span class="block text-[10px] font-bold text-slate-400 uppercase">Harapan 3</span>
-                                            <span class="font-semibold text-slate-800 truncate block">MIS Ciawi</span>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
+                        @foreach($mulaList as $index => $cat)
+                            @php
+                                $catWins = method_exists($cat, 'getWinners') ? $cat->getWinners() : collect();
+                                $w1 = $catWins->firstWhere('official_rank', 1) ?? $catWins->firstWhere('rank', 1);
+                                $w2 = $catWins->firstWhere('official_rank', 2) ?? $catWins->firstWhere('rank', 2);
+                                $w3 = $catWins->firstWhere('official_rank', 3) ?? $catWins->firstWhere('rank', 3);
+                                $h1 = $catWins->firstWhere('official_rank', 4) ?? $catWins->firstWhere('rank', 4);
+                                $h2 = $catWins->firstWhere('official_rank', 5) ?? $catWins->firstWhere('rank', 5);
+                                $h3 = $catWins->firstWhere('official_rank', 6) ?? $catWins->firstWhere('rank', 6);
+                                $sample = $sampleMulaJuara[$index % count($sampleMulaJuara)];
+                                $imgUrl = $cat->image_url ?? asset('mockups/03_kegiatan.jpg');
+                            @endphp
 
-                        <!-- TANDU MULA -->
-                        <div class="bg-white rounded-3xl border border-slate-200 shadow-md overflow-hidden flex flex-col justify-between group hover:border-blue-400 transition">
-                            <div>
-                                <div class="relative h-44 sm:h-48 bg-slate-900 overflow-hidden">
-                                    <img src="{{ asset('mockups/04_galeri.jpg') }}" alt="Tandu Darurat Mula" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300">
-                                    <div class="absolute inset-0 bg-gradient-to-t from-slate-950/85 via-slate-950/30 to-transparent"></div>
-                                    <span class="absolute top-3 left-3 bg-blue-600 text-white text-[10px] font-black uppercase px-2.5 py-1 rounded-lg shadow">
-                                        <i class="fa-solid fa-person-walking-dashed-line-arrow-right mr-1"></i> Mula • Ketangkasan
-                                    </span>
-                                    <div class="absolute bottom-3 left-3 right-3 text-white">
-                                        <h4 class="font-black text-base sm:text-lg">Pasang Bongkar Tandu Darurat Mula</h4>
-                                        <p class="text-xs text-slate-200">Kekompakan Regu, Ketepatan Simpul Pangkal & Evakuasi Ceria</p>
-                                    </div>
-                                </div>
-                                <div class="p-5 sm:p-6 space-y-2.5">
-                                    <div class="flex items-center justify-between text-xs p-2 rounded-xl bg-amber-50/80 border border-amber-200">
-                                        <div class="flex items-center gap-2">
-                                            <span class="w-6 h-6 rounded-full bg-amber-500 text-white font-black text-xs flex items-center justify-center">1</span>
-                                            <span class="font-extrabold text-slate-900">SDN Ciawi 01</span>
+                            <div class="bg-white rounded-3xl border border-slate-200 shadow-md overflow-hidden flex flex-col justify-between group hover:border-emerald-400 transition">
+                                <div>
+                                    <div class="relative h-44 sm:h-48 bg-slate-900 overflow-hidden">
+                                        <img src="{{ $imgUrl }}" alt="{{ $cat->name }}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300">
+                                        <div class="absolute inset-0 bg-gradient-to-t from-slate-950/85 via-slate-950/30 to-transparent"></div>
+                                        <div class="absolute top-3 left-3 flex items-center gap-1.5 flex-wrap">
+                                            <span class="bg-emerald-600 text-white text-[10px] font-black uppercase px-2.5 py-1 rounded-lg shadow">
+                                                Mula • {{ $cat->gender_category }}
+                                            </span>
+                                            @if(!empty($cat->code))
+                                                <span class="bg-slate-900/80 backdrop-blur-xs text-slate-300 text-[10px] font-mono font-bold px-2 py-0.5 rounded-lg border border-slate-700">
+                                                    {{ $cat->code }}
+                                                </span>
+                                            @endif
                                         </div>
-                                        <span class="font-bold text-amber-800 text-[11px]">Juara 1 Utama (04:20)</span>
-                                    </div>
-                                    <div class="flex items-center justify-between text-xs p-2 rounded-xl bg-slate-50 border border-slate-200">
-                                        <div class="flex items-center gap-2">
-                                            <span class="w-6 h-6 rounded-full bg-slate-400 text-white font-black text-xs flex items-center justify-center">2</span>
-                                            <span class="font-bold text-slate-800">SDN Harapan Bangsa</span>
-                                        </div>
-                                        <span class="font-semibold text-slate-600 text-[11px]">Juara 2 Utama (04:35)</span>
-                                    </div>
-                                    <div class="flex items-center justify-between text-xs p-2 rounded-xl bg-orange-50/60 border border-orange-200">
-                                        <div class="flex items-center gap-2">
-                                            <span class="w-6 h-6 rounded-full bg-orange-400 text-white font-black text-xs flex items-center justify-center">3</span>
-                                            <span class="font-bold text-slate-800">SDN Pandansari 01</span>
-                                        </div>
-                                        <span class="font-semibold text-orange-800 text-[11px]">Juara 3 Utama (04:50)</span>
-                                    </div>
-                                    <div class="pt-2 grid grid-cols-3 gap-2 text-[11px] text-slate-600">
-                                        <div class="p-2 rounded-lg bg-slate-100/80 text-center">
-                                            <span class="block text-[10px] font-bold text-slate-400 uppercase">Harapan 1</span>
-                                            <span class="font-semibold text-slate-800 truncate block">SDIT Insan Kamil</span>
-                                        </div>
-                                        <div class="p-2 rounded-lg bg-slate-100/80 text-center">
-                                            <span class="block text-[10px] font-bold text-slate-400 uppercase">Harapan 2</span>
-                                            <span class="font-semibold text-slate-800 truncate block">SDN Teluk Pinang 02</span>
-                                        </div>
-                                        <div class="p-2 rounded-lg bg-slate-100/80 text-center">
-                                            <span class="block text-[10px] font-bold text-slate-400 uppercase">Harapan 3</span>
-                                            <span class="font-semibold text-slate-800 truncate block">SDN Bitungsari 01</span>
+                                        <div class="absolute bottom-3 left-3 right-3 text-white">
+                                            <h4 class="font-black text-base sm:text-lg">
+                                                {{ $cat->name }} {{ ($cat->gender_category && $cat->gender_category !== 'Umum') ? '('.$cat->gender_category.')' : '' }}
+                                            </h4>
+                                            <p class="text-xs text-slate-200">Ajang Kejuaraan PMR Mula SMAN 1 Ciawi Bogor</p>
                                         </div>
                                     </div>
-                                </div>
-                            </div>
-                        </div>
 
-                        <!-- CERDAS CERMAT MULA -->
-                        <div class="bg-white rounded-3xl border border-slate-200 shadow-md overflow-hidden flex flex-col justify-between group hover:border-emerald-400 transition">
-                            <div>
-                                <div class="relative h-44 sm:h-48 bg-slate-900 overflow-hidden">
-                                    <img src="{{ asset('mockups/07_artikel.jpg') }}" alt="Cerdas Cermat Mula" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300">
-                                    <div class="absolute inset-0 bg-gradient-to-t from-slate-950/85 via-slate-950/30 to-transparent"></div>
-                                    <span class="absolute top-3 left-3 bg-emerald-600 text-white text-[10px] font-black uppercase px-2.5 py-1 rounded-lg shadow">
-                                        <i class="fa-solid fa-brain mr-1"></i> Mula • Cerdas Cermat
-                                    </span>
-                                    <div class="absolute bottom-3 left-3 right-3 text-white">
-                                        <h4 class="font-black text-base sm:text-lg">Cerdas Cermat Kepalangmerahan Mula</h4>
-                                        <p class="text-xs text-slate-200">Mengenal Jean Henry Dunant, 7 Prinsip Palang Merah & Hidup Sehat</p>
-                                    </div>
-                                </div>
-                                <div class="p-5 sm:p-6 space-y-2.5">
-                                    <div class="flex items-center justify-between text-xs p-2 rounded-xl bg-amber-50/80 border border-amber-200">
-                                        <div class="flex items-center gap-2">
-                                            <span class="w-6 h-6 rounded-full bg-amber-500 text-white font-black text-xs flex items-center justify-center">1</span>
-                                            <span class="font-extrabold text-slate-900">SDN Harapan Bangsa</span>
+                                    <div class="p-5 sm:p-6 space-y-2.5">
+                                        <!-- JUARA 1 -->
+                                        <div class="flex items-center justify-between text-xs p-2 rounded-xl bg-amber-50/80 border border-amber-200">
+                                            <div class="flex items-center gap-2 min-w-0">
+                                                <span class="w-6 h-6 rounded-full bg-amber-500 text-white font-black text-xs flex items-center justify-center shrink-0">1</span>
+                                                <span class="font-extrabold text-slate-900 truncate">{{ $w1 ? ($w1->team?->registration?->school_name ?? $w1->team?->team_name) : $sample[0] }}</span>
+                                            </div>
+                                            <span class="font-bold text-amber-800 text-[11px] shrink-0 ml-2">{{ $w1 ? ($w1->award_title ?: 'Juara 1 Utama') : 'Juara 1 Utama' }}</span>
                                         </div>
-                                        <span class="font-bold text-amber-800 text-[11px]">Juara 1 Utama</span>
-                                    </div>
-                                    <div class="flex items-center justify-between text-xs p-2 rounded-xl bg-slate-50 border border-slate-200">
-                                        <div class="flex items-center gap-2">
-                                            <span class="w-6 h-6 rounded-full bg-slate-400 text-white font-black text-xs flex items-center justify-center">2</span>
-                                            <span class="font-bold text-slate-800">SDIT Insan Kamil Bogor</span>
-                                        </div>
-                                        <span class="font-semibold text-slate-600 text-[11px]">Juara 2 Utama</span>
-                                    </div>
-                                    <div class="flex items-center justify-between text-xs p-2 rounded-xl bg-orange-50/60 border border-orange-200">
-                                        <div class="flex items-center gap-2">
-                                            <span class="w-6 h-6 rounded-full bg-orange-400 text-white font-black text-xs flex items-center justify-center">3</span>
-                                            <span class="font-bold text-slate-800">SDN Ciawi 01</span>
-                                        </div>
-                                        <span class="font-semibold text-orange-800 text-[11px]">Juara 3 Utama</span>
-                                    </div>
-                                    <div class="pt-2 grid grid-cols-3 gap-2 text-[11px] text-slate-600">
-                                        <div class="p-2 rounded-lg bg-slate-100/80 text-center">
-                                            <span class="block text-[10px] font-bold text-slate-400 uppercase">Harapan 1</span>
-                                            <span class="font-semibold text-slate-800 truncate block">SDN Ciawi 02</span>
-                                        </div>
-                                        <div class="p-2 rounded-lg bg-slate-100/80 text-center">
-                                            <span class="block text-[10px] font-bold text-slate-400 uppercase">Harapan 2</span>
-                                            <span class="font-semibold text-slate-800 truncate block">MIS Al-Hidayah</span>
-                                        </div>
-                                        <div class="p-2 rounded-lg bg-slate-100/80 text-center">
-                                            <span class="block text-[10px] font-bold text-slate-400 uppercase">Harapan 3</span>
-                                            <span class="font-semibold text-slate-800 truncate block">SDN Banjarsari 01</span>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
 
-                        <!-- MENGGAMBAR & POSTER MULA -->
-                        <div class="bg-white rounded-3xl border border-slate-200 shadow-md overflow-hidden flex flex-col justify-between group hover:border-purple-400 transition">
-                            <div>
-                                <div class="relative h-44 sm:h-48 bg-slate-900 overflow-hidden">
-                                    <img src="{{ asset('mockups/01_home.jpg') }}" alt="Menggambar Poster Mula" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300">
-                                    <div class="absolute inset-0 bg-gradient-to-t from-slate-950/85 via-slate-950/30 to-transparent"></div>
-                                    <span class="absolute top-3 left-3 bg-purple-600 text-white text-[10px] font-black uppercase px-2.5 py-1 rounded-lg shadow">
-                                        <i class="fa-solid fa-paintbrush mr-1"></i> Mula • Seni Kemanusiaan
-                                    </span>
-                                    <div class="absolute bottom-3 left-3 right-3 text-white">
-                                        <h4 class="font-black text-base sm:text-lg">Menggambar & Poster Kemanusiaan Mula</h4>
-                                        <p class="text-xs text-slate-200">Ekspresi Warna Kasih Sayang, Tolong Menolong & Persahabatan Palang Merah</p>
-                                    </div>
-                                </div>
-                                <div class="p-5 sm:p-6 space-y-2.5">
-                                    <div class="flex items-center justify-between text-xs p-2 rounded-xl bg-amber-50/80 border border-amber-200">
-                                        <div class="flex items-center gap-2">
-                                            <span class="w-6 h-6 rounded-full bg-amber-500 text-white font-black text-xs flex items-center justify-center">1</span>
-                                            <span class="font-extrabold text-slate-900">SDIT Insan Kamil Bogor</span>
+                                        <!-- JUARA 2 -->
+                                        <div class="flex items-center justify-between text-xs p-2 rounded-xl bg-slate-50 border border-slate-200">
+                                            <div class="flex items-center gap-2 min-w-0">
+                                                <span class="w-6 h-6 rounded-full bg-slate-400 text-white font-black text-xs flex items-center justify-center shrink-0">2</span>
+                                                <span class="font-bold text-slate-800 truncate">{{ $w2 ? ($w2->team?->registration?->school_name ?? $w2->team?->team_name) : $sample[1] }}</span>
+                                            </div>
+                                            <span class="font-semibold text-slate-600 text-[11px] shrink-0 ml-2">{{ $w2 ? ($w2->award_title ?: 'Juara 2 Utama') : 'Juara 2 Utama' }}</span>
                                         </div>
-                                        <span class="font-bold text-amber-800 text-[11px]">Juara 1 Utama (96.5)</span>
-                                    </div>
-                                    <div class="flex items-center justify-between text-xs p-2 rounded-xl bg-slate-50 border border-slate-200">
-                                        <div class="flex items-center gap-2">
-                                            <span class="w-6 h-6 rounded-full bg-slate-400 text-white font-black text-xs flex items-center justify-center">2</span>
-                                            <span class="font-bold text-slate-800">SDN Harapan Bangsa</span>
+
+                                        <!-- JUARA 3 -->
+                                        <div class="flex items-center justify-between text-xs p-2 rounded-xl bg-orange-50/60 border border-orange-200">
+                                            <div class="flex items-center gap-2 min-w-0">
+                                                <span class="w-6 h-6 rounded-full bg-orange-400 text-white font-black text-xs flex items-center justify-center shrink-0">3</span>
+                                                <span class="font-bold text-slate-800 truncate">{{ $w3 ? ($w3->team?->registration?->school_name ?? $w3->team?->team_name) : $sample[2] }}</span>
+                                            </div>
+                                            <span class="font-semibold text-orange-800 text-[11px] shrink-0 ml-2">{{ $w3 ? ($w3->award_title ?: 'Juara 3 Utama') : 'Juara 3 Utama' }}</span>
                                         </div>
-                                        <span class="font-semibold text-slate-600 text-[11px]">Juara 2 Utama</span>
-                                    </div>
-                                    <div class="flex items-center justify-between text-xs p-2 rounded-xl bg-orange-50/60 border border-orange-200">
-                                        <div class="flex items-center gap-2">
-                                            <span class="w-6 h-6 rounded-full bg-orange-400 text-white font-black text-xs flex items-center justify-center">3</span>
-                                            <span class="font-bold text-slate-800">SDN Ciawi 01</span>
-                                        </div>
-                                        <span class="font-semibold text-orange-800 text-[11px]">Juara 3 Utama</span>
-                                    </div>
-                                    <div class="pt-2 grid grid-cols-3 gap-2 text-[11px] text-slate-600">
-                                        <div class="p-2 rounded-lg bg-slate-100/80 text-center">
-                                            <span class="block text-[10px] font-bold text-slate-400 uppercase">Harapan 1</span>
-                                            <span class="font-semibold text-slate-800 truncate block">SDN Banjarwaru 01</span>
-                                        </div>
-                                        <div class="p-2 rounded-lg bg-slate-100/80 text-center">
-                                            <span class="block text-[10px] font-bold text-slate-400 uppercase">Harapan 2</span>
-                                            <span class="font-semibold text-slate-800 truncate block">SDN Citapen 01</span>
-                                        </div>
-                                        <div class="p-2 rounded-lg bg-slate-100/80 text-center">
-                                            <span class="block text-[10px] font-bold text-slate-400 uppercase">Harapan 3</span>
-                                            <span class="font-semibold text-slate-800 truncate block">SDN Cipayung 02</span>
+
+                                        <!-- HARAPAN 1, 2, 3 -->
+                                        <div class="pt-2 grid grid-cols-3 gap-2 text-[11px] text-slate-600">
+                                            <div class="p-2 rounded-lg bg-slate-100/80 text-center">
+                                                <span class="block text-[10px] font-bold text-slate-400 uppercase">Harapan 1</span>
+                                                <span class="font-semibold text-slate-800 truncate block">{{ $h1 ? ($h1->team?->registration?->school_name ?? $h1->team?->team_name) : $sample[3] }}</span>
+                                            </div>
+                                            <div class="p-2 rounded-lg bg-slate-100/80 text-center">
+                                                <span class="block text-[10px] font-bold text-slate-400 uppercase">Harapan 2</span>
+                                                <span class="font-semibold text-slate-800 truncate block">{{ $h2 ? ($h2->team?->registration?->school_name ?? $h2->team?->team_name) : $sample[4] }}</span>
+                                            </div>
+                                            <div class="p-2 rounded-lg bg-slate-100/80 text-center">
+                                                <span class="block text-[10px] font-bold text-slate-400 uppercase">Harapan 3</span>
+                                                <span class="font-semibold text-slate-800 truncate block">{{ $h3 ? ($h3->team?->registration?->school_name ?? $h3->team?->team_name) : $sample[5] }}</span>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
                             </div>
-                        </div>
+                        @endforeach
                     </div>
                 </div>
 

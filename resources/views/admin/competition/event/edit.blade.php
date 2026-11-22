@@ -775,6 +775,7 @@
                             data-fee="{{ intval($cat->registration_fee) }}"
                             data-members="{{ $cat->max_team_members }}"
                             data-order="{{ $cat->order_position }}"
+                            data-image="{{ $cat->image ? asset('storage/' . $cat->image) : '' }}"
                             data-active="{{ $cat->is_active ? '1' : '0' }}">
                             
                             <td class="py-3 px-4 text-center font-bold text-slate-400">
@@ -788,11 +789,22 @@
                             </td>
 
                             <td class="py-3 px-4">
-                                <div class="font-black text-slate-900 text-sm">
-                                    {{ $cat->name }}
-                                </div>
-                                <div class="text-[10px] text-slate-400 mt-0.5">
-                                    Maks. {{ $cat->max_team_members }} orang / regu
+                                <div class="flex items-center gap-2.5">
+                                    @if($cat->image)
+                                        <img src="{{ asset('storage/' . $cat->image) }}" alt="{{ $cat->name }}" class="w-8 h-8 rounded-lg object-cover border border-slate-200 shadow-2xs shrink-0">
+                                    @else
+                                        <div class="w-8 h-8 rounded-lg bg-slate-100 border border-slate-200 flex items-center justify-center text-slate-400 text-xs shrink-0" title="Ilustrasi Standar">
+                                            <i class="fa-solid fa-image"></i>
+                                        </div>
+                                    @endif
+                                    <div>
+                                        <div class="font-black text-slate-900 text-sm">
+                                            {{ $cat->name }}
+                                        </div>
+                                        <div class="text-[10px] text-slate-400 mt-0.5">
+                                            Maks. {{ $cat->max_team_members }} orang / regu
+                                        </div>
+                                    </div>
                                 </div>
                             </td>
 
@@ -938,7 +950,7 @@
             </button>
         </div>
 
-        <form action="{{ route('admin.competition-event.categories.store', $event->id) }}" method="POST" class="space-y-4">
+        <form action="{{ route('admin.competition-event.categories.store', $event->id) }}" method="POST" enctype="multipart/form-data" class="space-y-4">
             @csrf
 
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -1034,6 +1046,25 @@
                 </div>
             </div>
 
+            <!-- Upload Foto / Thumbnail Cabang Lomba -->
+            <div>
+                <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">
+                    Foto / Thumbnail Lomba (Opsional)
+                </label>
+                <div id="edit-image-preview-container" class="mb-2 hidden items-center gap-3 p-2.5 rounded-xl bg-slate-50 border border-slate-200">
+                    <img id="edit-image-preview" src="" alt="Thumbnail Cabang Lomba" class="w-14 h-14 rounded-lg object-cover border border-slate-300 shadow-2xs">
+                    <div class="text-xs">
+                        <span class="font-bold text-slate-800 block">Foto Saat Ini</span>
+                        <label class="inline-flex items-center gap-1.5 text-red-600 text-[11px] font-bold mt-1 cursor-pointer">
+                            <input type="checkbox" name="delete_image" value="1" class="w-3.5 h-3.5 rounded text-red-600 focus:ring-red-500 border-slate-300">
+                            <span>Hapus Foto (Gunakan Standar)</span>
+                        </label>
+                    </div>
+                </div>
+                <input type="file" name="image" accept="image/jpeg,image/png,image/jpg,image/webp" class="w-full px-3 py-2 text-xs border border-slate-200 rounded-xl bg-slate-50 focus:outline-none file:mr-3 file:py-1 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-bold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100">
+                <span class="text-[10px] text-slate-400 mt-1 block">Unggah foto baru untuk mengganti thumbnail lomba di kartu pemenang & panggung juara publik</span>
+            </div>
+
             <!-- Status Aktif Checkbox -->
             <div class="pt-2">
                 <label class="inline-flex items-center gap-2 cursor-pointer">
@@ -1073,7 +1104,7 @@
             </button>
         </div>
 
-        <form id="form-edit-category" action="" method="POST" class="space-y-4">
+        <form id="form-edit-category" action="" method="POST" enctype="multipart/form-data" class="space-y-4">
             @csrf
             @method('PUT')
 
@@ -1167,6 +1198,25 @@
                     </label>
                     <input type="number" name="order_position" id="edit-order" class="w-full px-3 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:border-blue-500 text-xs font-bold text-slate-800">
                 </div>
+            </div>
+
+            <!-- Upload Foto / Thumbnail Cabang Lomba -->
+            <div>
+                <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">
+                    Foto / Thumbnail Lomba (Opsional)
+                </label>
+                <div id="edit-image-preview-container" class="mb-2 hidden items-center gap-3 p-2.5 rounded-xl bg-slate-50 border border-slate-200">
+                    <img id="edit-image-preview" src="" alt="Thumbnail Cabang Lomba" class="w-14 h-14 rounded-lg object-cover border border-slate-300 shadow-2xs">
+                    <div class="text-xs">
+                        <span class="font-bold text-slate-800 block">Foto Saat Ini</span>
+                        <label class="inline-flex items-center gap-1.5 text-red-600 text-[11px] font-bold mt-1 cursor-pointer">
+                            <input type="checkbox" name="delete_image" value="1" class="w-3.5 h-3.5 rounded text-red-600 focus:ring-red-500 border-slate-300">
+                            <span>Hapus Foto (Gunakan Standar)</span>
+                        </label>
+                    </div>
+                </div>
+                <input type="file" name="image" accept="image/jpeg,image/png,image/jpg,image/webp" class="w-full px-3 py-2 text-xs border border-slate-200 rounded-xl bg-slate-50 focus:outline-none file:mr-3 file:py-1 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-bold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100">
+                <span class="text-[10px] text-slate-400 mt-1 block">Unggah foto baru untuk mengganti thumbnail lomba di kartu pemenang & panggung juara publik</span>
             </div>
 
             <!-- Status Aktif Checkbox -->
@@ -1381,6 +1431,7 @@
         const fee = row.getAttribute('data-fee');
         const order = row.getAttribute('data-order');
         const active = row.getAttribute('data-active') === '1';
+        const image = row.getAttribute('data-image');
 
         const form = document.getElementById('form-edit-category');
         form.action = "{{ url('admin/competition-events/' . $event->id . '/categories') }}/" + id;
@@ -1394,6 +1445,17 @@
         document.getElementById('edit-fee').value = fee;
         document.getElementById('edit-order').value = order;
         document.getElementById('edit-active').checked = active;
+
+        const previewContainer = document.getElementById('edit-image-preview-container');
+        const previewImg = document.getElementById('edit-image-preview');
+        if (image) {
+            previewImg.src = image;
+            previewContainer.classList.remove('hidden');
+            previewContainer.classList.add('flex');
+        } else {
+            previewContainer.classList.add('hidden');
+            previewContainer.classList.remove('flex');
+        }
 
         openEditCategoryModal();
     }

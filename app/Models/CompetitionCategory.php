@@ -19,6 +19,7 @@ class CompetitionCategory extends Model
         'name',
         'level',
         'gender_category',
+        'image',
         'scoring_type',
         'is_photo_required',
         'point_tier',
@@ -96,6 +97,31 @@ class CompetitionCategory extends Model
         $gender = ($this->gender_category && $this->gender_category !== 'Umum') ? " {$this->gender_category}" : '';
 
         return "{$this->name} - {$this->level}{$gender}";
+    }
+
+    /**
+     * URL Foto / Thumbnail Dokumentasi Cabang Lomba
+     */
+    public function getImageUrlAttribute(): string
+    {
+        if (! empty($this->image)) {
+            return str_starts_with($this->image, 'http') || str_starts_with($this->image, '/')
+                ? $this->image
+                : asset('storage/'.$this->image);
+        }
+
+        $nameLower = strtolower($this->name.' '.$this->code);
+        if (str_contains($nameLower, 'pertolongan') || str_contains($nameLower, 'medis') || str_contains($nameLower, 'lpp')) {
+            return asset('mockups/03_kegiatan.jpg');
+        }
+        if (str_contains($nameLower, 'tandu') || str_contains($nameLower, 'lktr')) {
+            return asset('mockups/04_galeri.jpg');
+        }
+        if (str_contains($nameLower, 'cepat tepat') || str_contains($nameLower, 'lct') || str_contains($nameLower, 'olimpiade') || str_contains($nameLower, 'cerdas')) {
+            return asset('mockups/07_artikel.jpg');
+        }
+
+        return asset('mockups/01_home.jpg');
     }
 
     public function getRegistrationFeeAttribute($value)
