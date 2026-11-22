@@ -63,7 +63,7 @@
                         {{ $selectedEvent->title ?? 'Pilih Edisi Lomba' }}
                     </h2>
                     <p class="text-xs text-slate-300 mt-1">
-                        Foto yang diunggah di bawah ini akan tampil di bagian <strong>Potret Sportivitas & Aksi Relawan</strong> pada edisi ini.
+                        Foto yang diunggah di bawah ini akan tampil di bagian <strong>Potret Sportivitas & Aksi Peserta Lomba</strong> pada edisi ini.
                     </p>
                 </div>
             </div>
@@ -144,7 +144,7 @@
                                 <option value="Lomba Mewarnai">
                                 <option value="Upacara Pembukaan">
                                 <option value="Panggung Juara">
-                                <option value="Aksi Relawan">
+                                <option value="Aksi Peserta Lomba">
                             </datalist>
 
                             <button type="submit" class="bg-red-600 hover:bg-red-700 text-white font-black px-5 py-2 rounded-xl text-xs shadow-md transition flex items-center gap-1.5 shrink-0">
@@ -222,7 +222,7 @@
                     </div>
                     <div class="font-bold text-slate-800 text-sm">Belum Ada Foto Terunggah Untuk Edisi Ini</div>
                     <p class="text-xs text-slate-500 mt-1 max-w-md mx-auto leading-relaxed">
-                        Gunakan form di atas untuk mengunggah beberapa foto momen lomba. Foto-foto tersebut akan langsung tampil di halaman depan pada bagian <strong>Potret Sportivitas & Aksi Relawan</strong>.
+                        Gunakan form di atas untuk mengunggah beberapa foto momen lomba. Foto-foto tersebut akan langsung tampil di halaman depan pada bagian <strong>Potret Sportivitas & Aksi Peserta Lomba</strong>.
                     </p>
                 </div>
             @endif

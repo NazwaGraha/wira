@@ -941,7 +941,7 @@
                 <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-200">
                     <div>
                         <div class="flex items-center gap-2">
-                            <h3 class="text-xl sm:text-2xl font-black text-slate-900">Potret Sportivitas & Aksi Relawan</h3>
+                            <h3 class="text-xl sm:text-2xl font-black text-slate-900">Potret Sportivitas & Aksi Peserta Lomba</h3>
                             @if($eventGalleries->isNotEmpty())
                                 <span class="bg-red-100 text-red-700 text-xs font-bold px-2.5 py-0.5 rounded-full border border-red-200">
                                     {{ $eventGalleries->count() }} Foto
