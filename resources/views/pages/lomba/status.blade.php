@@ -1247,19 +1247,6 @@
                                         Lihat Juklak Juknis &rarr;
                                     </a>
                                 </div>
-
-                                <div class="p-5 rounded-2xl border border-slate-200 bg-slate-50 space-y-2">
-                                    <div class="flex items-center gap-2 font-bold text-sm text-slate-900">
-                                        <i class="fa-solid fa-chart-simple text-emerald-600"></i>
-                                        <span>Live Klasemen & Papan Skor Realtime</span>
-                                    </div>
-                                    <p class="text-xs text-slate-500">
-                                        Pantau perolehan nilai dan peringkat kontingen secara transparan saat hari-H lomba.
-                                    </p>
-                                    <a href="{{ route('lomba.scoreboard') }}" target="_blank" class="inline-flex items-center gap-1.5 text-xs font-bold text-emerald-600 hover:text-emerald-700 pt-1">
-                                        Buka Live Scoreboard &rarr;
-                                    </a>
-                                </div>
                             </div>
                         </div>
 
