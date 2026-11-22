@@ -24,7 +24,7 @@ use Illuminate\Support\Str;
 
 class CompetitionController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
         $event = CompetitionEvent::where('is_active', true)->with(['categories' => function ($q) {
             $q->where('is_active', true)->orderBy('order_position');
@@ -33,14 +33,33 @@ class CompetitionController extends Controller
         $pageState = 'empty';
         $pastEvent = null;
 
-        if ($event) {
-            $pageState = $event->getDisplayState();
-        } else {
-            // Find most recent previous event to display in history/hall of fame
-            $pastEvent = CompetitionEvent::latest()->first();
+        // Ambil seluruh arsip edisi lomba yang tercatat di database (urut dari yang terbaru)
+        $allEvents = CompetitionEvent::orderByDesc('start_date')->orderByDesc('id')->get();
+
+        // Cek apakah pengunjung memilih edisi tertentu melalui dropdown/URL (misal: ?edisi=3 atau ?edisi=sua-bhakti-berkarya-ii-2024)
+        $selectedEdition = $request->query('edisi') ?: $request->query('event_id');
+        if ($selectedEdition) {
+            $pastEvent = CompetitionEvent::where('id', $selectedEdition)
+                ->orWhere('slug', $selectedEdition)
+                ->first();
         }
 
-        $categoriesByLevel = $event ? $event->categories->groupBy('level') : ($pastEvent ? $pastEvent->categories()->where('is_active', true)->get()->groupBy('level') : collect());
+        if ($event) {
+            $pageState = $event->getDisplayState();
+            // Jika pengunjung tidak memilih edisi tertentu, default kilas balik ke event aktif atau edisi terakhir
+            if (! $pastEvent) {
+                $pastEvent = $event;
+            }
+        } else {
+            // Jika tidak ada lomba aktif, default ke edisi terbaru jika belum dipilih
+            if (! $pastEvent) {
+                $pastEvent = $allEvents->first();
+            }
+        }
+
+        // Kategori lomba yang ditampilkan pada kilas balik / aktif
+        $activeTarget = ($pageState === 'empty') ? $pastEvent : $event;
+        $categoriesByLevel = $activeTarget ? $activeTarget->categories()->where('is_active', true)->orderBy('order_position')->get()->groupBy('level') : collect();
 
         // Load Menu Informasi Lomba (Backoffice Managed)
         $infoMenus = collect();
@@ -97,7 +116,7 @@ class CompetitionController extends Controller
         // Pengaturan Tarif Parkir Umum
         $parkingFareSetting = ParkingFareSetting::current();
 
-        return view('pages.lomba.index', compact('event', 'pastEvent', 'pageState', 'categoriesByLevel', 'infoMenus', 'isInfoMenuVisible', 'pastGalleries', 'parkingFareSetting'));
+        return view('pages.lomba.index', compact('event', 'pastEvent', 'allEvents', 'pageState', 'categoriesByLevel', 'infoMenus', 'isInfoMenuVisible', 'pastGalleries', 'parkingFareSetting'));
     }
 
     public function register()

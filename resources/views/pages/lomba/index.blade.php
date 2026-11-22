@@ -128,11 +128,11 @@
     <!-- =================================================================== -->
     <!-- KILAS BALIK LOMBA SEBELUMNYA & HALL OF FAME JUARA LENGKAP            -->
     <!-- =================================================================== -->
-    <section class="py-16 sm:py-24 bg-slate-50 border-t border-slate-200">
+    <section id="kilas-balik" class="py-16 sm:py-24 bg-slate-50 border-t border-slate-200">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             
             <!-- Section Header -->
-            <div class="text-center max-w-3xl mx-auto mb-12 sm:mb-16">
+            <div class="text-center max-w-3xl mx-auto mb-8 sm:mb-10">
                 <span class="text-xs font-black uppercase tracking-wider text-red-600 bg-red-100 border border-red-200 px-3.5 py-1.5 rounded-full inline-flex items-center gap-1.5 mb-3 shadow-xs">
                     <i class="fa-solid fa-crown text-amber-500"></i> Dokumentasi & Hall of Fame Kejuaraan
                 </span>
@@ -141,6 +141,75 @@
                     Apresiasi sportivitas, dedikasi kemanusiaan, dan panggung kehormatan para juara ajang Sua Bhakti Berkarya PMR Wira SMAN 1 Ciawi Bogor.
                 </p>
             </div>
+
+            <!-- =================================================================== -->
+            <!-- SELECTOR PILIHAN EDISI / TAHUN LOMBA (ARSHIV KEJUARAAN)            -->
+            <!-- =================================================================== -->
+            @if(isset($allEvents) && $allEvents->count() > 1)
+                <div class="max-w-4xl mx-auto mb-10 bg-white rounded-3xl p-5 sm:p-6 border border-slate-200 shadow-md">
+                    <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                        <div class="flex items-center gap-3.5">
+                            <div class="w-12 h-12 rounded-2xl bg-amber-500/15 border border-amber-500/30 text-amber-600 flex items-center justify-center text-xl font-black shrink-0 shadow-xs">
+                                <i class="fa-solid fa-clock-rotate-left"></i>
+                            </div>
+                            <div>
+                                <div class="flex items-center gap-2 flex-wrap">
+                                    <span class="text-[10px] sm:text-xs font-black uppercase tracking-wider text-slate-400">Arsip Kejuaraan Terpilih:</span>
+                                    @if($pastEvent && $pastEvent->start_date)
+                                        <span class="text-[11px] font-mono font-black text-red-700 bg-red-50 border border-red-200 px-2 py-0.5 rounded-md">
+                                            {{ $pastEvent->start_date->format('Y') }}
+                                        </span>
+                                    @endif
+                                    @if($pastEvent && $pastEvent->is_active)
+                                        <span class="text-[10px] font-black uppercase tracking-wider text-emerald-800 bg-emerald-100 border border-emerald-200 px-2 py-0.5 rounded-full">
+                                            Edisi Terbaru
+                                        </span>
+                                    @endif
+                                </div>
+                                <h3 class="text-base sm:text-lg font-black text-slate-900 mt-0.5">
+                                    {{ $pastEvent->title ?? 'SUA BHAKTI BERKARYA' }}
+                                </h3>
+                                @if($pastEvent && $pastEvent->theme)
+                                    <p class="text-xs text-slate-500 italic mt-0.5">&ldquo;{{ $pastEvent->theme }}&rdquo;</p>
+                                @endif
+                            </div>
+                        </div>
+
+                        <!-- Dropdown & Navigasi Edisi Lomba -->
+                        <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 w-full md:w-auto">
+                            <label for="select-edisi-lomba" class="text-xs font-bold text-slate-700 sr-only">Pilih Edisi Lomba</label>
+                            <div class="relative w-full sm:w-auto">
+                                <select id="select-edisi-lomba" onchange="window.location.href = '{{ route('lomba.index') }}?edisi=' + this.value + '#kilas-balik'" class="w-full sm:w-72 bg-slate-50 hover:bg-slate-100 border border-slate-300 text-slate-900 text-xs font-black rounded-xl px-4 py-2.5 pr-8 focus:outline-none focus:ring-2 focus:ring-red-500 cursor-pointer shadow-xs transition appearance-none">
+                                    @foreach($allEvents as $evOption)
+                                        <option value="{{ $evOption->id }}" {{ ($pastEvent && $pastEvent->id === $evOption->id) ? 'selected' : '' }}>
+                                            {{ $evOption->title }} ({{ $evOption->start_date ? $evOption->start_date->format('Y') : '-' }})
+                                        </option>
+                                    @endforeach
+                                </select>
+                                <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-slate-500">
+                                    <i class="fa-solid fa-chevron-down text-xs"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Quick Switcher Pills -->
+                    <div class="mt-4 pt-3.5 border-t border-slate-100 flex items-center gap-2 overflow-x-auto text-xs pb-1">
+                        <span class="text-slate-400 font-bold shrink-0 text-[11px]">Pintas Edisi:</span>
+                        @foreach($allEvents as $evQuick)
+                            @php
+                                $isActivePill = ($pastEvent && $pastEvent->id === $evQuick->id);
+                            @endphp
+                            <a href="{{ route('lomba.index', ['edisi' => $evQuick->id]) }}#kilas-balik" class="shrink-0 px-3 py-1 rounded-lg text-[11px] font-bold transition flex items-center gap-1.5 {{ $isActivePill ? 'bg-red-600 text-white shadow-xs' : 'bg-slate-100 hover:bg-slate-200 text-slate-700' }}">
+                                <span>{{ $evQuick->title }}</span>
+                                @if($evQuick->start_date)
+                                    <span class="opacity-75 font-mono text-[10px]">({{ $evQuick->start_date->format('Y') }})</span>
+                                @endif
+                            </a>
+                        @endforeach
+                    </div>
+                </div>
+            @endif
 
             <!-- =================================================================== -->
             <!-- TAB BAR FILTER TINGKATAN (WIRA, MADYA, MULA, SEMUA)               -->
