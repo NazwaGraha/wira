@@ -160,8 +160,18 @@
             <h3 class="font-extrabold text-sm text-slate-800 uppercase tracking-wider mb-4">Aksi Verifikasi</h3>
             
             <div class="bg-slate-50 p-4 rounded-xl mb-4 text-xs">
-                <div class="text-slate-500">Total Nominal Tagihan:</div>
-                <div class="text-xl font-black text-red-600 font-mono mt-0.5">Rp {{ number_format($registration->total_payment, 0, ',', '.') }}</div>
+                <div class="flex items-center justify-between">
+                    <span class="text-slate-500">Total Nominal Tagihan:</span>
+                    <span class="px-2 py-0.5 rounded text-[10px] font-black {{ $registration->registration_wave == 2 ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-800' }}">
+                        Gelombang {{ $registration->registration_wave ?? 1 }}
+                    </span>
+                </div>
+                <div class="text-xl font-black text-red-600 font-mono mt-1">Rp {{ number_format($registration->total_payment, 0, ',', '.') }}</div>
+
+                <button type="button" onclick="document.getElementById('modalEditWavePayment').classList.remove('hidden')" class="mt-3 w-full inline-flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg bg-white border border-slate-300 text-slate-700 hover:bg-slate-100 text-xs font-bold shadow-2xs transition">
+                    <i class="fa-solid fa-pen-to-square text-blue-600"></i>
+                    <span>Ubah Gelombang / Nominal</span>
+                </button>
             </div>
 
             @if($registration->hasPendingFollowup())
@@ -289,4 +299,114 @@
     </div>
 
 </div>
+
+<!-- Modal Ubah Gelombang & Tagihan -->
+@php
+    $autoWave1Total = 0;
+    $autoWave2Total = 0;
+    foreach ($registration->teams as $t) {
+        $c = $t->category;
+        $autoWave1Total += $c ? $c->getFeeForWave(1) : floatval($registration->event->registration_fee ?: 150000);
+        $autoWave2Total += $c ? $c->getFeeForWave(2) : floatval($registration->event->registration_fee ?: 150000);
+    }
+@endphp
+<div id="modalEditWavePayment" class="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-xs p-4 hidden">
+    <div class="bg-white rounded-2xl shadow-2xl max-w-lg w-full p-6 sm:p-7 border border-slate-100 animate-in fade-in zoom-in-95 duration-200">
+        <div class="flex items-center justify-between pb-4 border-b border-slate-100">
+            <div class="flex items-center gap-2.5">
+                <div class="w-9 h-9 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center font-bold text-sm">
+                    <i class="fa-solid fa-pen-to-square"></i>
+                </div>
+                <div>
+                    <h4 class="font-extrabold text-base text-slate-900">Ubah Gelombang & Tagihan</h4>
+                    <p class="text-xs text-slate-500 font-medium">{{ $registration->school_name }} ({{ $registration->registration_code }})</p>
+                </div>
+            </div>
+            <button type="button" onclick="document.getElementById('modalEditWavePayment').classList.add('hidden')" class="w-8 h-8 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-500 flex items-center justify-center transition">
+                <i class="fa-solid fa-xmark text-sm"></i>
+            </button>
+        </div>
+
+        <form action="{{ route('admin.competition-registrations.update', $registration->id) }}" method="POST" class="mt-5 space-y-4">
+            @csrf
+            @method('PUT')
+
+            <div>
+                <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">Pilih Gelombang Pendaftaran</label>
+                <div class="grid grid-cols-2 gap-3">
+                    <label class="relative flex flex-col p-3.5 border-2 rounded-xl cursor-pointer transition hover:border-amber-400 has-checked:border-amber-500 has-checked:bg-amber-50/50 border-slate-200">
+                        <input type="radio" name="registration_wave" value="1" {{ ($registration->registration_wave ?? 1) == 1 ? 'checked' : '' }} onchange="updateModalAmountPreview(1)" class="sr-only">
+                        <span class="text-xs font-extrabold text-slate-900 flex items-center justify-between">
+                            <span>Gelombang 1</span>
+                            <span class="w-2.5 h-2.5 rounded-full border border-slate-300 peer-checked:bg-amber-500"></span>
+                        </span>
+                        <span class="text-[11px] text-slate-500 mt-1">Tarif Gel. 1 (Total: Rp {{ number_format($autoWave1Total, 0, ',', '.') }})</span>
+                    </label>
+
+                    <label class="relative flex flex-col p-3.5 border-2 rounded-xl cursor-pointer transition hover:border-emerald-400 has-checked:border-emerald-500 has-checked:bg-emerald-50/50 border-slate-200">
+                        <input type="radio" name="registration_wave" value="2" {{ ($registration->registration_wave ?? 1) == 2 ? 'checked' : '' }} onchange="updateModalAmountPreview(2)" class="sr-only">
+                        <span class="text-xs font-extrabold text-slate-900 flex items-center justify-between">
+                            <span>Gelombang 2</span>
+                            <span class="w-2.5 h-2.5 rounded-full border border-slate-300 peer-checked:bg-emerald-500"></span>
+                        </span>
+                        <span class="text-[11px] text-slate-500 mt-1">Tarif Gel. 2 (Total: Rp {{ number_format($autoWave2Total, 0, ',', '.') }})</span>
+                    </label>
+                </div>
+            </div>
+
+            <div>
+                <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">Total Nominal Tagihan (Rp)</label>
+                <div class="relative">
+                    <span class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400 font-bold text-xs">Rp</span>
+                    <input type="number" id="inputTotalPayment" name="total_payment" value="{{ intval($registration->total_payment) }}" min="0" step="1000" class="w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-black font-mono text-slate-900 focus:bg-white focus:outline-none focus:border-blue-500 transition">
+                </div>
+                <p class="text-[11px] text-slate-400 mt-1.5 leading-relaxed">
+                    Nominal ini akan tertera pada kolom pembayaran admin serta e-Kwitansi resmi peserta.
+                </p>
+            </div>
+
+            <div class="p-3 bg-slate-50 rounded-xl border border-slate-200/80">
+                <label class="flex items-start gap-2.5 cursor-pointer">
+                    <input type="checkbox" id="checkRecalculate" name="recalculate_payment" value="1" checked onchange="toggleManualInput(this)" class="mt-0.5 rounded text-blue-600 focus:ring-blue-500 border-slate-300">
+                    <span class="text-xs text-slate-600 font-medium">
+                        <strong class="text-slate-800">Hitung Otomatis</strong>: Sinkronkan total nominal pembayaran secara otomatis sesuai akumulasi tarif cabang lomba pada gelombang yang dipilih.
+                    </span>
+                </label>
+            </div>
+
+            <div class="flex items-center justify-end gap-3 pt-3 border-t border-slate-100">
+                <button type="button" onclick="document.getElementById('modalEditWavePayment').classList.add('hidden')" class="px-4 py-2.5 rounded-xl text-xs font-bold text-slate-600 hover:bg-slate-100 transition">
+                    Batal
+                </button>
+                <button type="submit" class="px-5 py-2.5 rounded-xl text-xs font-black bg-blue-600 hover:bg-blue-700 text-white shadow-md shadow-blue-500/20 transition flex items-center gap-1.5">
+                    <i class="fa-solid fa-check"></i>
+                    <span>Simpan Perubahan</span>
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    const wave1AutoAmount = {{ $autoWave1Total }};
+    const wave2AutoAmount = {{ $autoWave2Total }};
+
+    function updateModalAmountPreview(wave) {
+        const check = document.getElementById('checkRecalculate');
+        const input = document.getElementById('inputTotalPayment');
+        if (check && check.checked && input) {
+            input.value = (wave === 1) ? wave1AutoAmount : wave2AutoAmount;
+        }
+    }
+
+    function toggleManualInput(checkbox) {
+        const input = document.getElementById('inputTotalPayment');
+        if (!input) return;
+        if (checkbox.checked) {
+            const selectedWave = document.querySelector('input[name="registration_wave"]:checked');
+            const waveVal = selectedWave ? parseInt(selectedWave.value) : 1;
+            input.value = (waveVal === 1) ? wave1AutoAmount : wave2AutoAmount;
+        }
+    }
+</script>
 @endsection

@@ -138,6 +138,39 @@ class CompetitionRegistrationController extends Controller
         return view('admin.competition.registrations.show', compact('registration'));
     }
 
+    public function update(Request $request, $id)
+    {
+        $registration = CompetitionRegistration::with(['event', 'teams.category'])->findOrFail($id);
+
+        $validated = $request->validate([
+            'registration_wave' => 'required|in:1,2',
+            'total_payment' => 'nullable|numeric|min:0',
+            'recalculate_payment' => 'nullable|boolean',
+        ]);
+
+        $newWave = intval($validated['registration_wave']);
+        $registration->registration_wave = $newWave;
+
+        if ($request->boolean('recalculate_payment') || ! isset($validated['total_payment']) || $validated['total_payment'] === null) {
+            $calculatedTotal = 0;
+            foreach ($registration->teams as $team) {
+                $cat = $team->category;
+                $fee = $cat
+                    ? $cat->getFeeForWave($newWave)
+                    : floatval($registration->event->registration_fee ?: 150000);
+                $calculatedTotal += $fee;
+            }
+            $registration->total_payment = $calculatedTotal;
+        } else {
+            $registration->total_payment = floatval($validated['total_payment']);
+        }
+
+        $registration->save();
+
+        return redirect()->route('admin.competition-registrations.show', $registration->id)
+            ->with('success', "Gelombang & nominal tagihan {$registration->school_name} berhasil diubah ke Gelombang {$newWave} dengan total nominal Rp ".number_format($registration->total_payment, 0, ',', '.').'.');
+    }
+
     public function verify($id)
     {
         $registration = CompetitionRegistration::with(['event', 'teams.category'])->findOrFail($id);
