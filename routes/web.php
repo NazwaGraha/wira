@@ -324,6 +324,7 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::get('/competition-participants', [CompetitionParticipantController::class, 'index'])->name('competition-participants.index');
         Route::get('/competition-participants/export-excel', [CompetitionParticipantController::class, 'exportExcel'])->name('competition-participants.export-excel');
         Route::post('/competition-participants/{team}', [CompetitionParticipantController::class, 'update'])->name('competition-participants.update');
+        Route::delete('/competition-participants/{team}/clear-members', [CompetitionParticipantController::class, 'clearMembers'])->name('competition-participants.clear-members');
         Route::post('/competition-participants-bulk-orders', [CompetitionParticipantController::class, 'bulkUpdateOrders'])->name('competition-participants.bulk-update-orders');
         Route::post('/competition-participants-auto-orders', [CompetitionParticipantController::class, 'autoAssignOrders'])->name('competition-participants.auto-assign-orders');
         Route::get('/competition-participants-print', [CompetitionParticipantController::class, 'printSheet'])->name('competition-participants.print');

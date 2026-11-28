@@ -121,12 +121,22 @@
                                             <i class="fa-solid fa-users text-blue-600"></i>
                                             Daftar Anggota / Peserta ({{ count($members) }} Orang):
                                         </span>
-                                        @if($team->members_file_url)
-                                            <a href="{{ $team->members_file_url }}" target="_blank" class="inline-flex items-center gap-1.5 px-2.5 py-1 text-[11px] font-bold rounded-lg bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-emerald-100 transition">
-                                                <i class="fa-solid fa-file-excel text-emerald-600"></i>
-                                                <span>Download File Excel</span>
-                                            </a>
-                                        @endif
+                                        <div class="flex items-center gap-2">
+                                            @if($team->members_file_url)
+                                                <a href="{{ $team->members_file_url }}" target="_blank" class="inline-flex items-center gap-1.5 px-2.5 py-1 text-[11px] font-bold rounded-lg bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-emerald-100 transition">
+                                                    <i class="fa-solid fa-file-excel text-emerald-600"></i>
+                                                    <span>Download File Excel</span>
+                                                </a>
+                                            @endif
+                                            <form action="{{ route('admin.competition-participants.clear-members', $team->id) }}" method="POST" onsubmit="return confirm('Yakin ingin menghapus seluruh daftar anggota/peserta regu {{ addslashes($team->team_name) }}? Data nama peserta akan dikosongkan dan dapat diisi ulang.');">
+                                                @csrf
+                                                @method('DELETE')
+                                                <button type="submit" class="inline-flex items-center gap-1.5 px-2.5 py-1 text-[11px] font-bold rounded-lg bg-rose-50 text-rose-700 border border-rose-200 hover:bg-rose-100 transition">
+                                                    <i class="fa-solid fa-trash-can text-rose-600"></i>
+                                                    <span>Hapus Peserta</span>
+                                                </button>
+                                            </form>
+                                        </div>
                                     </div>
                                     @if(!empty($members))
                                         <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-1.5 pt-1">

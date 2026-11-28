@@ -9,6 +9,7 @@ use App\Models\CompetitionParticipantTeam;
 use App\Models\CompetitionRegistration;
 use App\Services\CompetitionSpreadsheetService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
 class CompetitionParticipantController extends Controller
@@ -368,6 +369,26 @@ class CompetitionParticipantController extends Controller
         ]);
 
         return redirect()->back()->with('success', "Data peserta/regu {$team->team_name} berhasil diperbarui!");
+    }
+
+    /**
+     * Hapus daftar anggota/peserta regu (members_list & members_file) agar bisa diisi ulang.
+     */
+    public function clearMembers(CompetitionParticipantTeam $team)
+    {
+        $teamName = $team->team_name;
+
+        // Hapus berkas Excel peserta jika ada di storage
+        if ($team->members_file && Storage::disk('public')->exists($team->members_file)) {
+            Storage::disk('public')->delete($team->members_file);
+        }
+
+        $team->update([
+            'members_list' => null,
+            'members_file' => null,
+        ]);
+
+        return redirect()->back()->with('success', "Daftar anggota peserta regu {$teamName} berhasil dihapus. Silakan input ulang data peserta.");
     }
 
     public function bulkUpdateOrders(Request $request)
